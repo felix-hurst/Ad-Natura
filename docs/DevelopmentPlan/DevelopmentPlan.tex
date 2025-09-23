@@ -2,6 +2,8 @@
 
 \usepackage{booktabs}
 \usepackage{tabularx}
+\usepackage{hyperref}
+\usepackage{indentfirst}
 
 \title{Development Plan\\\progname}
 
@@ -22,219 +24,222 @@
 \toprule
 \textbf{Date} & \textbf{Developer(s)} & \textbf{Change}\\
 \midrule
-Date1 & Name(s) & Description of changes\\
-Date2 & Name(s) & Description of changes\\
-... & ... & ...\\
+2025-09-21 & All & Created Document\\
+2025-09-22 & Marcos, Felix & Fixed some missing sections\\
+2025-09-22 & Marcos, Felix & Fixed issues with grammar, punctuation\\
 \bottomrule
 \end{tabularx}
 \end{table}
 
 \newpage{}
 
-\wss{Put your introductory blurb here.  Often the blurb is a brief roadmap of
-what is contained in the report.}
-
-\wss{Additional information on the development plan can be found in the
-\href{https://gitlab.cas.mcmaster.ca/courses/capstone/-/blob/main/Lectures/L02b_POCAndDevPlan/POCAndDevPlan.pdf?ref_type=heads}
-{lecture slides}.}
+\tableofcontents
 
 \section{Confidential Information?}
 
-\wss{State whether your project has confidential information from industry, or
-not.  If there is confidential information, point to the agreement you have in
-place.}
+There is no confidential information to protect.
 
-\wss{For most teams this section will just state that there is no confidential
-information to protect.}
 \section{IP to Protect}
 
-\wss{State whether there is IP to protect.  If there is, point to the agreement.
-All students who are working on a project that requires an IP agreement are also
-required to sign the ``Intellectual Property Guide Acknowledgement.''}
+There is no intellectual property to protect.
 
 \section{Copyright License}
 
-\wss{What copyright license is your team adopting.  Point to the license in your
-repo.}
+For licensing, our team is using \href{https://github.com/felix-hurst/Ad-Natura/blob/main/LICENSE}{LGPL-2.1 license}.
 
 \section{Team Meeting Plan}
 
-\wss{How often will you meet? where?}
 
-\wss{If the meeting is a physical location (not virtual), out of an abundance of
-caution for safety reasons you shouldn't put the location online}
+Our team plans to meet on our Discord server every Sunday and via server messaging channels. We will stay in contact with our supervisor on Microsoft Teams, where we will share updates of our development progress, and may invite them to our Sunday meetings or dedicated meetings as needed, usually occurring on Thursdays if a meeting is necessary. \\
 
-\wss{How often will you meet with your industry advisor?  when?  where?}
+The meetings, which are mostly virtual, will generally last 30 minutes to 1 hour and will cover topics on a prewritten agenda. Each meeting will have a chair that will keep the discussion on track and ensure all agenda topics are covered. \\
 
-\wss{Will meetings be virtual?  At least some meetings should likely be
-in-person.}
+Meetings are recorded on our GitHub repository as issues. The issues contain the agenda as well as the meeting minutes.\\
 
-\wss{How will the meetings be structured?  There should be a chair for all meetings.  There should be an agenda for all meetings.}
 
 \section{Team Communication Plan}
 
-\wss{Issues on GitHub should be part of your communication plan.}
+Our team will communicate primarily using Discord, where we will plan, ask questions to each other, and give each other feedback. With our webhook, team members are notified of all updates made to the GitHub repository within the Discord application. Commits are pushed as pull requests which are then reviewed and pulled by at least one other team member.\\
+
+GitHub issues are used to track meetings, major feature development, bugs, and other key tasks.\\
+
 
 \section{Team Member Roles}
 
-\wss{You should identify the types of roles you anticipate, like notetaker,
-leader, meeting chair, reviewer.  Assigning specific people to those roles is
-not necessary at this stage.  In a student team the role of the individuals will
-likely change throughout the year.}
+We anticipate the following roles and responsibilities:
+\begin{itemize}
+\item{Team Leader - Keeps the team informed and reminded of deliverable deadlines, communicates with instructors, and has final say on topics the team cannot agree on.}
+\item{Art Director - Determines the aesthetic direction of the game’s artwork.}
+\item{Character Artist - Draws sprites of the player character.}
+\item{Environment Artist - Draws assets of the environment in the game world.}
+\item{Programmer - Writes the game code.}
+\item{Music Director - Determines the aesthetic direction of the game’s soundtrack.}
+\item{Composer - Composes music for the game.}
+\item{Meeting Chair - Keeps the team on track during meetings and ensures all agenda topics are discussed.}
+\item{Reviewer - Reviews pull requests and accepts or rejects them.}
+\end{itemize}
+
 
 \section{Workflow Plan}
 
-\begin{itemize}
-	\item How will you be using git, including branches, pull request, etc.?
-	\item How will you be managing issues, including template issues, issue
-	classification, etc.?
-  \item Use of CI/CD
-\end{itemize}
+Each individual, or group of individuals, is assigned a specific feature / bug fix / task to implement in a branch. When implementation is complete, a merge request for that branch will be opened and reviewed by another team member. All pull requests will also undergo unit testing via CI/CD.\\
+
+We will use given template issues for team meetings, TA meetings, supervisor meetings, lectures, and peer reviews. We will use our own format of issues for features, bugs, and other miscellaneous tasks.\\
 
 \section{Project Decomposition and Scheduling}
 
+\textbf{September - December Recess}
 \begin{itemize}
-  \item How will you be using GitHub projects?
-  \item Include a link to your GitHub project
+\item{Technical Environment of the game (Destructible environment, player character, player tools, Slime mold traversal)}
+\item{V\&V Plan Revision 0}
+\item{Design Document Revision 1}
+\item{Proof of Concept Demonstration}
 \end{itemize}
 
-\wss{How will the project be scheduled?  This is the big picture schedule, not
-details. You will need to reproduce information that is in the course outline
-for deadlines.}
+\textbf{Start of January - Mid January}
+\begin{itemize}
+\item{Level Design}
+\item{Revision 0 Demonstration}
+\end{itemize}
+
+\textbf{January - End of February}
+\begin{itemize}
+\item{Integration}
+\item{Design Document Revision 0}
+\end{itemize}
+
+\textbf{January to End of March}
+\begin{itemize}
+\item{Bug fixing}
+\item{V\&V Report and Extras Revision 0}
+\item{Final Demonstration (Revision 1)}
+\end{itemize}
+
+We will be using a Kanban board on GitHub projects to keep track of our current tasks and what we have yet to work on, what we are currently working on, and what we have already completed. It will be populated with issues that may have one or more collaborators, but always have one person responsible to make sure it gets completed. The issues will be created as tasks are identified and each task will be something small that the assigned individual(s) can do within a relatively short amount of time.\\
+
+GitHub Project available \href{https://github.com/users/felix-hurst/projects/2}{HERE.}
 
 \section{Proof of Concept Demonstration Plan}
 
-What is the main risk, or risks, for the success of your project?  What will you
-demonstrate during your proof of concept demonstration to convince yourself that
-you will be able to overcome this risk?
+The main risk for the success of our project, which we will demonstrate during our proof of concept demonstration, will be the behaviour of our organism that is modelled by the slime mold algorithm.\\
+
+Compounding errors due to effects on performance of our procedural and physics based features interacting with each other (pixels are in random shapes and quantities which in conjunction with the non-deterministic mold traversal would result in significantly different results each time), if the sandbox level has all features working well in conjunction with one another, then it proves the feasibility of level design centered around these technical libraries.\\
+
+The proof of concept will be a specially curated sandbox level with a player controlled character and sample environment which contains objects that highlight the functionality of player’s tools and mold traversal. In terms of our demonstration of the slime mold, it will be represented by a segmented game object, such as a plant or fungus. The player can manipulate the terrain to unearth some water. The slime mold will then react by traversing closer to the water source. Other similar environmental manipulations may be involved in this demonstration, such as heat and light sources, which also cause the slime mold to react in different ways.\\
+
 
 \section{Expected Technology}
 
-\wss{What programming language or languages do you expect to use?  What external
-libraries?  What frameworks?  What technologies.  Are there major components of
-the implementation that you expect you will implement, despite the existence of
-libraries that provide the required functionality.  For projects with machine
-learning, will you use pre-trained models, or be training your own model?  }
+Git and GitHub will be used as a version control system.\\
 
-\wss{The implementation decisions can, and likely will, change over the course
-of the project.  The initial documentation should be written in an abstract way;
-it should be agnostic of the implementation choices, unless the implementation
-choices are project constraints.  However, recording our initial thoughts on
-implementation helps understand the challenge level and feasibility of a
-project.  It may also help with early identification of areas where project
-members will need to augment their training.}
-
-Topics to discuss include the following:
-
+The game will be primarily developed in Unity 6.1 game engine. Our team expects to use C\# as our main scripting language and libraries used are developed within our team. Use of license-free material may be used in a transformative manner within designs and artwork. The main technology focuses of our project are as follows:
 \begin{itemize}
-\item Specific programming language
-\item Specific libraries
-\item Pre-trained models
-\item Specific linter tool (if appropriate)
-\item Specific unit testing framework
-\item Investigation of code coverage measuring tools
-\item Specific plans for Continuous Integration (CI), or an explanation that CI
-  is not being done
-\item Specific performance measuring tools (like Valgrind), if
-  appropriate
-\item Tools you will likely be using?
+\item{Procedural destructable environment}
+\item{Intelligent level traversal of segmented game object}
+\item{Visible player inventory}
 \end{itemize}
 
-\wss{git, GitHub and GitHub projects should be part of your technology.}
+Continuous integration is implemented with updates on each member’s area of specialization (libraries, and functions) with team code standups and code reviews.\\
+
+In terms of testing, our team will be extensively testing each technology separately in specially designed unit tests after each update. Continuous integration will involve unit test, security, and formatting checks.
+
 
 \section{Coding Standard}
 
-\wss{What coding standard will you adopt?}
+We will use Pascal case for files, camelCase for functions and classes, and Snake case for variables. Code formatting will be done in Kernighan \& Ritchie style.
 
 \newpage{}
 
 \section*{Appendix --- Reflection}
 
-\wss{Not required for CAS 741}
-
 \input{../Reflection.tex}
-
-\begin{enumerate}
-    \item Why is it important to create a development plan prior to starting the
-    project?
-    \item In your opinion, what are the advantages and disadvantages of using
-    CI/CD?
-    \item What disagreements did your group have in this deliverable, if any,
-    and how did you resolve them?
-\end{enumerate}
 
 \newpage{}
 
 \section*{Appendix --- Team Charter}
 
-\wss{borrows from
-\href{https://engineering.up.edu/industry_partnerships/files/team-charter.pdf}
-{University of Portland Team Charter}}
-
 \subsection*{External Goals}
 
-\wss{What are your team's external goals for this project? These are not the
-goals related to the functionality or quality fo the project.  These are the
-goals on what the team wishes to achieve with the project.  Potential goals are
-to win a prize at the Capstone EXPO, or to have something to talk about in
-interviews, or to get an A+, etc.}
+Our teams goals are to:
+\begin{itemize}
+\item{Create a project worthy of a good grade, and one that we can all be proud of. i.e. Aim for Level 4 on the rubrics.}
+\item{Learn and develop new technical skills.}
+\item{Further develop interpersonal and teamwork skills}
+\end{itemize}
+
+We are making a video game as our project, because most of us find that highly interesting and useful for our own personal careers in the future.\\
 
 \subsection*{Attendance}
 
 \subsubsection*{Expectations}
 
-\wss{What are your team's expectations regarding meeting attendance (being on
-time, leaving early, missing meetings, etc.)?}
+Each team member is expected to:
+\begin{enumerate}
+\item{Attend all scheduled meetings, both on Discord and in-person. This applies to Team Meetings, TA Meetings, Supervisor Meetings, and any other kind of meetings involving our team.\\ If you have a valid excuse for missing a meeting, you must inform the team prior to the meeting. This helps us plan with your absence and start the meeting faster instead of wasting time waiting for you to come.}
+\item{Reply to questions asked on Discord within a period of 24 hours.}
+\item{Contribute around 20-25\% of commits, opened/closed issues, and other administrative duties. This percentage will be a rough estimate as contribution ratios vary a lot throughout the project lifespan, but this is the ideal split.}
+\end{enumerate}
 
 \subsubsection*{Acceptable Excuse}
 
-\wss{What constitutes an acceptable excuse for missing a meeting or a deadline?
-What types of excuses will not be considered acceptable?}
+Acceptable excuses for temporary inactivity / missed meetings include:
+\begin{itemize}
+\item{Illness/Injury}
+\item{Family issues}
+\item{Unexpected complications with other school work (explained to team)}
+\item{Other similar serious issues}
+\end{itemize}
+
+Unacceptable excuses include:
+\begin{itemize}
+\item{Oversleeping}
+\item{Double booking}
+\item{Forgetting}
+\item{Other similar preventable complications
+}
+\end{itemize}
 
 \subsubsection*{In Case of Emergency}
 
-\wss{What process will team members follow if they have an emergency and cannot
-attend a team meeting or complete their individual work promised for a team
-deliverable?}
+If a team member has an emergency, they will be excused from their responsibilities until their emergency is resolved. The rest of the team is not expected to pick up the slack in the meantime. If this emergency causes the team to submit an unfinished deliverable, the situation will be discussed with the instructor. Otherwise, the team member who had an emergency is expected to catch back up on their work as best they can.
 
 \subsection*{Accountability and Teamwork}
 
 \subsubsection*{Quality} 
 
-\wss{What are your team's expectations regarding the quality
-of team members' preparation for team meetings and the quality of the
-deliverables that members bring to the team?}
+Team members should be properly briefed on the agenda of meetings, and deliverables assigned to them should be complete and ready for code review before the deadline. Any questions or concerns should be prepared and brought up to the team. All team members are responsible for properly testing their code with the appropriate endpoints and in the “Sandbox Environment”.
 
 \subsubsection*{Attitude}
 
-\wss{What are your team's expectations regarding team members' ideas,
-interactions with the team, cooperation, attitudes, and anything else regarding
-team member contributions?  Do you want to introduce a code of conduct?  Do you
-want a conflict resolution plan?  Can adopt existing codes of conduct.}
+Team members should listen and be respectful of all members’ ideas and code commits, and an open environment should be facilitated to encourage feedback on coding practices and logic improvements. Any disagreements will be resolved by team polls, and all team members will adhere to McMaster’s and the Department of Engineering Code of Conduct.
 
 \subsubsection*{Stay on Track}
 
-\wss{What methods will be used to keep the team on track? How will your team
-ensure that members contribute as expected to the team and that the team
-performs as expected? How will your team reward members who do well and manage
-members whose performance is below expectations?  What are the consequences for
-someone not contributing their fair share?}
+Discord events and/or Google/Outlook calendar events may be used to keep track of meeting schedules.\\
 
-\wss{You may wish to use the project management metrics collected for the TA and
-instructor for this.}
+Activity will be tracked through:
+\begin{enumerate}
+\item{GitHub issues marking meeting attendance}
+\item{Discord chat history}
+\item{GitHub commit history}
+\end{enumerate}
 
-\wss{You can set target metrics for attendance, commits, etc.  What are the
-consequences if someone doesn't hit their targets?  Do they need to bring the
-coffee to the next team meeting?  Does the team need to make an appointment with
-their TA, or the instructor?  Are there incentives for reaching targets early?}
+If team expectations are not met and cause problems for the team, we'll first give a gentle reminder. If the rules are broken again, a more firm warning will be given. Finally, if rules continue to be broken and harm the team after the firm warning, then team members in good standing will take the issue up with the TA and/or instructor.
+
 
 \subsubsection*{Team Building}
 
-\wss{How will you build team cohesion (fun time, group rituals, etc.)? }
+A team building activity we will partake in is play testing our game for fun and coming up with cool and unique levels in the sandbox. We will have a channel dedicated to showcasing our creations and fun moments in our Discord server.
 
 \subsubsection*{Decision Making} 
 
-\wss{How will you make decisions in your group? Consensus?  Vote? How will you
-handle disagreements? }
+Our team will make decisions primarily by majority vote. Everyone is encouraged to suggest a solution that will be voted upon. Then, we will use a poll system, such as built-in Discord polls, to collect everyone's votes. The solution with the most votes wins.
+Ties may be broken by reducing the options to select from to only the ones involved in the tie. If there are two options that are still stuck in a tie, then we may decide either by:
+\begin{itemize}
+\item{Further discussion and arguments of both sides that may persuade a team member to change their vote.}
+\item{Flipping a coin.}
+\end{itemize}
+If there is still strong disagreement even after a decision is made, the Team Leader will settle disputes.
+
 
 \end{document}
