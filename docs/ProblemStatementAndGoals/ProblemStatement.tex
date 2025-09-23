@@ -2,6 +2,7 @@
 
 \usepackage{tabularx}
 \usepackage{booktabs}
+\usepackage{indentfirst}
 
 \title{Problem Statement and Goals\\\progname}
 
@@ -22,68 +23,106 @@
 \toprule
 \textbf{Date} & \textbf{Developer(s)} & \textbf{Change}\\
 \midrule
-Date1 & Name(s) & Description of changes\\
-Date2 & Name(s) & Description of changes\\
-... & ... & ...\\
+2025-09-21 & All & Created Document\\
 \bottomrule
 \end{tabularx}
 \end{table}
 
+\newpage{}
+
+\tableofcontents
+
 \section{Problem Statement}
-
-\wss{You should check your problem statement with the
-\href{https://github.com/smiths/capTemplate/blob/main/docs/Checklists/ProbState-Checklist.pdf}
-{problem statement checklist}.} 
-
-\wss{You can change the section headings, as long as you include the required
-information.}
 
 \subsection{Problem}
 
+Modern civilization has severed the feedback loops between human systems and natural intelligence, creating landscapes of extraction rather than regeneration. Players must rediscover the art of collaborative growth, learning to think not as conquerors but as participants in nature's distributed problem-solving networks. Players will understand the close bond humanity has with nature, and why the preservation and coexistence with nature is not only ideal, but absolutely necessary for humanity's future.
+
 \subsection{Inputs and Outputs}
 
-\wss{Characterize the problem in terms of ``high level'' inputs and outputs.  
-Use abstraction so that you can avoid details.}
+Inputs: The player inputs their intended character actions by using an input device such as a keyboard and mouse, or a gamepad controller.\\
+Outputs: The system displays the result of the player’s actions in their environment on the screen, showing the player how their action had a positive or negative impact on the virtual world.
 
 \subsection{Stakeholders}
 
+\begin{itemize}
+\item{Casual and avid gamers especially within the indie genre}
+\item{People who are brand new to video games, but have interest in the story}
+\end{itemize}
+
 \subsection{Environment}
 
-\wss{Hardware and Software Environment}
+Windows environment only (Steam release)\\
+
+Minimum Specs:
+\begin{itemize}
+\item{Requires a 64-bit processor and OS}
+\item{\textbf{OS:} Windows 10 64-bit}
+\item{\textbf{Processor:} 4th Gen i3/ 1st Gen Ryzen}
+\item{\textbf{Memory:} 4 GB RAM}
+\item{\textbf{Graphics:} Intel HD (Integrated), GeForce 6 series/Radeon R7 Series}
+\item{\textbf{Storage:} 4 GB available space}
+\end{itemize}
+
 
 \section{Goals}
 
+\begin{itemize}
+\item{4 to 5 handcrafted levels}
+\item{1 to 1.5 hours of gameplay to experience, for the average player}
+\item{3 unique environmental interaction methods}
+\item{1 slime mold organism traversal}
+\end{itemize}
+
 \section{Stretch Goals}
+
+\begin{itemize}
+\item{External or researched weather data for acclimate game weather}
+\item{Split Screen Support}
+\item{Interactive with the real world}
+\end{itemize}
 
 \section{Extras}
 
-\wss{For CAS 741: State whether the project is a research project. This
-designation, with the approval (or request) of the instructor, can be modified
-over the course of the term.}
+Design Thinking Report\\
 
-\wss{For SE Capstone: List your extras.  Potential extras include usability
-testing, code walkthroughs, user documentation, formal proof, GenderMag
-personas, Design Thinking, etc.  (The full list is on the course outline and in
-Lecture 02.) Normally the number of extras will be two.  Approval of the extras
-will be part of the discussion with the instructor for approving the project.
-The extras, with the approval (or request) of the instructor, can be modified
-over the course of the term.}
+We will create a report of our design process. This will include design discussions, concept art, test levels, and so on. This report will also touch on Norman’s Principles.\\
+
+Usability Report\\
+
+We will create a report that documents the game’s usability. This will involve data collected from testing done with stakeholders.\\
+
 
 \newpage{}
 
 \section*{Appendix --- Reflection}
 
-\wss{Not required for CAS 741}
-
-\input{../Reflection.tex}
-
+\textbf{Andy Liang}
 \begin{enumerate}
-    \item What went well while writing this deliverable? 
-    \item What pain points did you experience during this deliverable, and how
-    did you resolve them?
-    \item How did you and your team adjust the scope of your goals to ensure
-    they are suitable for a Capstone project (not overly ambitious but also of
-    appropriate complexity for a senior design project)?
-\end{enumerate}  
+\item{We aligned quickly on the project’s North Star (human–nature co-agency) and translated it into concrete, measurable goals, which kept scope realistic. Stakeholders and platform constraints were defined early, clarifying usability targets and technical limits. Collaboration was smooth with a shared outline and tracked revisions, so the document stayed consistent and traceable.}
+\item{Balancing evocative worldbuilding with precise requirements was tricky, so we moved poetic language to setting sections and rewrote core claims as testable statements. Scope creep surfaced often; we applied MoSCoW and parked items like dynamic weather and split-screen as stretch goals. “Environmental interactions” were vague, so we defined three clear pillars with acceptance criteria. We standardized terminology (slime mold vs. mycelium), assigned outline ownership to reduce edit collisions, and added concrete usability plans (two hallway tests with success criteria) to anchor evaluation.}
+\item{We originally wanted 10 levels to our game but because of the scope and various aspects we want to achieve in the game, we trimmed it down to 4-5 levels for a more polished game choosing quality over quantity. }
+\end{enumerate}
+
+\textbf{BoWen Liu}
+\begin{enumerate}
+\item{Through previous meetings, our team has already thoroughly went over all key aspects such as the topics in this deliverable and as such we found it easy and clear to complete it.}
+\item{Pain points primarily involve the overarching story, mechanics implementation specifics, and character design. Our members were all in agreeance on the overarching goal, story, and mechanics of the game however we needed to discuss concrete details on how elements should be implemented and the business value of each decision}
+\item{Our team started off with a good mindset of “keep it simple and keep it focused”, due to our tight deadline our team really zeroed in on the core mechanics (destructable environment and mold traversal) and planned out a manageable and debuggable game design around it.}
+\end{enumerate}
+
+\textbf{Felix Hurst}
+\begin{enumerate}
+\item{It was easy to think about our goals when writing this deliverable, as our team is in agreement about what we want to get out of our project.}
+\item{Our team had some disagreement over the presentation of the project and its aesthetic and art direction; whether or not it made sense to include real world atmospheric sensors that interface with the game, and whether or not to equip the player character with weaponry associated with war, death and destruction. We discussed these topics together to come to agreements that sensors are not necessary and neither are war-related weapons. We are keeping our options open and design decisions abstract for the time being.}
+\item{Originally, we thought of having a total of ten levels in our game. We trimmed this down to just four or five, giving us more time to focus on the foundations of the game which we believe are more important to showcase for this design project.}
+\end{enumerate}
+
+\textbf{Marcos Hernandez-Rivero}
+\begin{enumerate}
+\item{Our team seemed pretty much on the same page when it came to the overall story and direction that we wanted to bring this game into. it made it a lot easier to focus on smaller aspects. We generally all agreed on the goals for this project as well, which made things easy as we knew how much work to expect out of each person.}
+\item{Since our project was a game, some sections were difficult to complete while being confident that what we decided to write for that section was the best we could have done. For example we all felt as though the stakeholders and inputs/outputs were a bit weak, but we did not really know what else we could put for it that would make sense.}
+\item{We originally had ideas of combining real world sensors with our game, and making many levels as to be a long experience, but then we realized that we needed to demonstrate this at expo, and so focusing on getting a working game, with fewer but more polished levels, would be a better idea, and to only incorporate the real world sensors if we had the time to do so. We still felt as though it was complex enough, as creating a game is not an easy task and involves many different aspects and technologies working together.}
+\end{enumerate} 
 
 \end{document}
