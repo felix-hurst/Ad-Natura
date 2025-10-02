@@ -5,5 +5,4 @@ ifdef::env-draft[]
 TIP: _High-level view of the project: organizational context and reason for building a system. It explains why the project is needed, recalls the business context, and presents the general business objectives._  <<BM22>>
 endif::[]
 
-{emptysec}
-
+In today's society, a large portion of the population is not well educated regarding the impact humans have on our natural environment. By launching the video game {project-title}, we will spread awareness about the importance of restoring harmony with nature. This will be done through the simulated organisms modelled by the slime mold algorithm, which the player must work with in order to solve puzzles and make progress, slowly leading them from a wasteland to a utopia.
