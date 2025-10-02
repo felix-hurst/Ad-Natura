@@ -5,4 +5,27 @@ ifdef::env-draft[]
 TIP: _Groups of people who can affect the project or be affected by it, and other places to consider for information about the project and system. It lists stakeholders and other requirements sources. It should define stakeholders as categories of people, not individuals, even if such individuals are known at the time of writing. The main goal of chapter <<g7>> is to avoid forgetting any category of people whose input is relevant to the project. It also lists documents and other information that the project, aside from soliciting input from stakeholders, can consult for requirements information._  <<BM22>>
 endif::[]
 
-{emptysec}
+==== (G.7.1) Direct Stakeholders
+===== Casual Gamers
+Gamers who play games in a non-competitive capacity and as such value the experience rather than solely a challenge. Being familiar with similar games, basic game controls should be intuitive to them. These players may enjoy the game just for its puzzles, or may also spread our message after playing the game.
+
+===== Environmentalists
+Activists whose main purpose is to spread awareness of the importance of protecting our natural environment, habitats and wildlife. They would be interested in the success of our game.
+
+===== Educators
+Instructors may use technology to assist in the teaching of their classes. Our game may be used for educational purposes in a classroom environment.
+
+==== (G.7.2) Indirect Stakeholders
+===== Valve
+Valve operates Steam, the shopfront and regulator of the sale of our game. Its algorithms and policies can determine the success or failure of our game.
+
+===== Entertainment Software Rating Board (ESRB)
+This organization will assign an age rating to our game, determining what age range our audience will be.
+
+==== (G.7.3) Requirements Sources
+
+- *Reviews* for games sharing the same genre(s) as ours, will be read, with strong praises and criticisms being noted.
+- *Steam's Terms of Service:* These terms must be followed in order for us to sell our game on the Steam platform.
+** https://store.steampowered.com/eula/2585120_eula_1
+- *ESRB's Rating System:* To ensure our game meets an "E for Everyone" rating to maximize our potential audience, we will need to follow their rating guidelines.
+** https://www.esrb.org/ratings-guide/
