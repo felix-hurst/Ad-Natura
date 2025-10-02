@@ -5,4 +5,7 @@ ifdef::env-draft[]
 TIP: _Aspects that the system need not address. It states what the system will not do. This chapter addresses a key quality attribute of good requirements: the requirements must be delimited (or “scoped”). <<g6>> is not, however, the place for an analysis of risks and obstacles, which pertain to the project rather than the goals and correspondingly appears in chapter <<p6>>._  <<BM22>>
 endif::[]
 
-{emptysec}
+Below is a list of limitations that the game will not do:
+
+- The game will not be designed for multiplayer. It will be single player only.
+- The game will not strive to be completely and utterly realistic in player capabilities, environment behaviour, etc. Creative liberties will be taken to adapt the concept into an enjoyable 2D platformer game, while maintaining core features that simulate the real world closely enough for our message to get across as intended.

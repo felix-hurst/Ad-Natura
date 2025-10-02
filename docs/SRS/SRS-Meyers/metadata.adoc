@@ -1,7 +1,6 @@
-Author 1 <a1@mcmaster.ca>; Author 2 <a2@mcmaster.ca>
-:project-title: Our Awesome Project
-:course-number: SE/CS 3RA3
-:course-term: Fall
+Felix Hurst <hursts4@mcmaster.ca>; Marcos Hernandez-Rivero <hernam10@mcmaster.ca>; BoWen Liu <liu1028@mcmaster.ca>; Andy Liang <liangz40@mcmaster.ca>
+:project-title: Ad Natura
+:course-number: SE 4G06
+:course-term: Fall 2025 / Winter 2026
 :revnumber: 1
-:milestone: 4
-:env-draft:
+// :env-draft:
