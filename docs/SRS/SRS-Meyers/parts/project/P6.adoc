@@ -25,7 +25,7 @@ The overall critical risk is Scope Creep and uncontrolled technical debt, which 
 **Sprint 2 (Integration and Documentation)**
 
 * Obstacle: Integration reveals significant technical incompatibilities or performance issues between game systems.
-*Systemic Debugging:** Enforce a strict code freeze on new features. Reallocate all resources to integration and bug-fixing. Simplify or temporarily remove any component deemed too unstable to preserve the overall build's playability.
+**Systemic Debugging:** Enforce a strict code freeze on new features. Reallocate all resources to integration and bug-fixing. Simplify or temporarily remove any component deemed too unstable to preserve the overall build's playability.
 
 * Obstacle: Design Document Revision 0 is delayed, leading to a lack of clarity for the final push.
 **Decouple Documentation:** Prioritize the Integration and stability of the game build. Accept a delay on the documentation revision, aiming to finalize it early in Sprint 3, ensuring it still accurately reflects the final game state.
@@ -33,6 +33,6 @@ The overall critical risk is Scope Creep and uncontrolled technical debt, which 
 **Sprint 3 (Finalization and Delivery)**
 
 * Obstacle: Bug Fixing effort reveals high-priority defects that are difficult to resolve late in the process.
-**Critical Path Focus:** Categorize bugs by severity. Only fix absolute highest priority bugs that most affect functionality. Lower-priority bugs are to be documented as **Known Issues** in the final V&V Report to ensure the project meets the Final Demonstration deadline.
+**Critical Path Focus:** Categorize bugs by severity. Only fix absolute highest priority bugs that most affect functionality. Lower-priority bugs are to be documented as Known Issues in the final V&V Report to ensure the project meets the Final Demonstration deadline.
 
 {emptysec}
