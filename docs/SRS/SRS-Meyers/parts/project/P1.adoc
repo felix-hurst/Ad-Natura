@@ -1,17 +1,32 @@
-[#p7,reftext=P.7]
-=== (P.7) Requirements process and report
+[#p1,reftext=P.1]
+=== (P.1) Roles and personnel
 
 ifdef::env-draft[]
-TIP: _Initially, description of what the requirements process will be; later, report on its steps. It starts out as a plan for conducting the requirements elicitation process, but is meant to be updated as part of that process so that it includes the key lessons of elicitation._  <<BM22>>
+TIP: _Main responsibilities in the project; required project staff and their needed qualifications. It defines the roles (as a human responsibility) involved in the project._ <<BM22>>
 endif::[]
 
-The requirements elicitation process will likely be done using open-ended surveys for large populations and open interviews for smaller, more technical stakeholders, since they offer a greater amount of possible responses compared to open interviews, but still allow for the user to asnwer in a way that they feel is the most correct, as opposed to forcing arbitrary choices on them. If the stakeholder is a non-human entity, they likely have documentation for which document analysis will be our primary elicitation method.
+* *Team Leader:* Responsible for keeping the team informed and reminded of deliverable deadlines, communicating with instructors, and having final say on topics the team cannot agree on. This role typically requires organizational and leadership skills, with experience in coordinating collaborative projects.
 
-*   Surveys with some open-ended answer options should be used when eliciting requirements from our casual gamer stakeholders. With this stakeholder, it's important to remember that everyone games in a different way, and what might be normal for one person might not even be considered by another. Closed-form questions will not accurately capture the requirements that we need from this stakeholder. 
+* *Developers / Programmers:* These individuals are responsible for developing and maintaining the application, ensuring it functions properly and that it matches the requirements of what the product owner wants. Within this group, programmers specifically write the game code. Together, they ensure all game systems work as expected. They are usually required to have prior development experience, ideally in collaborative teams and with relevant game engines or frameworks.
 
-*   Open interviews should be used when eliciting requirements from developers. Unlike casual gamers, developers can provide highly technical and design-oriented feedback, often rooted in best practices, prior experience, and knowledge of what makes games successful. Open interviews allow for in-depth conversations where specific points can be expanded on, and where follow-up questions can be asked if developers identify potential risks, implementation challenges, or opportunities for improvement. This approach ensures that critical insights aren't lost in rigid survey structures and instead are captured through detailed discussion.
+* *Testers:* Responsible for testing the functionality of all the game systems, including performance, graphics, sound, gameplay, and ensuring that both the mechanics function as intended and that usability requirements (such as accessibility and clear player communication) are met. They typically have QA testing experience, ideally in the context of video games.
 
-*   Document analysis is the primary requirement elicitation method for Steam, as they are an established marketplace and regulator of content, they have certain standards which they have documented. Steam is generally not represented by just a few individuals so our normal requirements elicitation process does not work, but if after the document analysis we still have questions, asking questions to their support is the way to elicit requirements.
+* *Product Manager:* Oversees the project from planning to deployment, coordinating between teams to ensure progress is on schedule and risks are managed effectively. They also communicate with stakeholders to obtain requirements and provide progress updates. They typically have project management experience, ideally in game development contexts.
 
-*   Document analysis is the primary elicitation method for Government Organizations, as they are literally required to have their standards in writing. This will include studying regional legislation in places where we plan to make the game available, or other rating standards. In cases where regulation is unclear, formal correspondance or consultations with legal experts or compliance officers may be necessary
+* *Level Designers:* Responsible for creating puzzles and challenges for the game. They need a strong understanding of what captures player attention, how to communicate game information effectively, and how to work with developers to ensure player experience is prioritized. They typically have experience in game design or interactive storytelling.
+
+* *Art Director:* Determines the aesthetic direction of the game's artwork, ensuring a cohesive visual style. This role requires strong artistic vision and experience in guiding creative teams.
+
+* *Character Artist:* Creates sprites of the player character, requiring both artistic skill and familiarity with pixel art or digital illustration techniques relevant to the project's style.
+
+* *Environment Artist:* Responsible for drawing assets of the game world, such as backgrounds, terrain, and interactive objects. This role requires creativity and experience in environment or asset design.
+
+* *Music Director:* Determines the aesthetic direction of the game's soundtrack, ensuring that the music aligns with the game's mood and gameplay. This role requires musical expertise and familiarity with game audio design.
+
+* *Composer:* Composes original music for the game, requiring strong composition skills and the ability to create pieces that enhance immersion and match gameplay pacing.
+
+* *Meeting Chair:* Keeps the team on track during meetings and ensures that all agenda topics are discussed. This role requires organizational and communication skills, as well as the ability to maintain meeting focus.
+
+* *Reviewer:* Reviews pull requests and determines whether they should be accepted or rejected. This role requires technical knowledge of the project's codebase, attention to detail, and experience in peer code review.
+
 {emptysec}
