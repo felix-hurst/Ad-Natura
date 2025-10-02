@@ -5,4 +5,4 @@ ifdef::env-draft[]
 TIP: _Current state of processes to be addressed by the project and the resulting system. It describes the current situation, upon which the system is expected to improve_  <<BM22>>
 endif::[]
 
-{emptysec}
+There is a wide variety of media, including video games, which present a message promoting environmentalism. However, these media only incorporate characters and objects with highly predictable and limited behaviour. They have yet to introduce a game entity that uses a sophisticated algorithm to mimic the behaviour of real world organisms, which are chaotic, though still able to be influenced in mostly predictable ways. Through our slime mold simulation and its highly organic behaviour, the player will form a stronger connection to the organism they are assisting. This will offer more insights to the player than existing media does currently.
