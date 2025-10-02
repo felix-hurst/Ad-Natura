@@ -5,5 +5,34 @@ ifdef::env-draft[]
 TIP: _Potential obstacles to meeting the schedule of <<p4>>, and measures for adapting the plan if they do arise. It is essential to be on the lookout for events that could derail the project, and devise mitigation strategies. It can include a SWOT analysis (Strengths, Weaknesses, Opportunities, Threats) for the project._  <<BM22>>
 endif::[]
 
+**Obstacles and Mitigation Strategies by Sprint**
+
+The overall critical risk is Scope Creep and uncontrolled technical debt, which could compromise the final delivery quality. The primary mitigation strategy is a rigorous adherence to the initial design scope and a strict policy of refactoring code before major new features are added.
+
+**Sprint 0 (Foundation and Planning)**
+
+* Obstacle: Technical Environment Setup takes longer than anticipated due to complexity of core mechanics.
+**Prioritize Core Gameplay:** If specialized mechanics (e.g., advanced destruction physics) prove too time-consuming, reduce their scope to a "minimum viable feature" set to ensure the prototype is finished. Defer advanced elements to the Extras list in Sprint 3.
+
+* Obstacle: Proof of Concept Demonstration fails to validate feasibility of key technical risks.
+**Immediate Re-evaluation:** Implement a 1-2 week engineering halt to re-engineer the failed component or pivot the technical approach. This may require a reduction of feature scope to keep the overall schedule intact.
+
+**Sprint 1 (Level Design and Demonstration)**
+
+* Obstacle: Level Design Demonstration feedback is overwhelmingly negative, suggesting a major flaw in the design philosophy.
+**Focused Redesign:** Dedicate the first half of Sprint 2 entirely to a major redesign of the level structure and mechanics based on feedback. Accept that this will compress the time available for the Integration task in Sprint 2.
+
+**Sprint 2 (Integration and Documentation)**
+
+* Obstacle: Integration reveals significant technical incompatibilities or performance issues between game systems.
+*Systemic Debugging:** Enforce a strict code freeze on new features. Reallocate all resources to integration and bug-fixing. Simplify or temporarily remove any component deemed too unstable to preserve the overall build's playability.
+
+* Obstacle: Design Document Revision 0 is delayed, leading to a lack of clarity for the final push.
+**Decouple Documentation:** Prioritize the Integration and stability of the game build. Accept a delay on the documentation revision, aiming to finalize it early in Sprint 3, ensuring it still accurately reflects the final game state.
+
+**Sprint 3 (Finalization and Delivery)**
+
+* Obstacle: Bug Fixing effort reveals high-priority defects that are difficult to resolve late in the process.
+**Critical Path Focus:** Categorize bugs by severity. Only fix absolute highest priority bugs that most affect functionality. Lower-priority bugs are to be documented as **Known Issues** in the final V&V Report to ensure the project meets the Final Demonstration deadline.
 
 {emptysec}
