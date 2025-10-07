@@ -9,7 +9,7 @@ The success of the project depends on the availability of the following external
 
 * *Unity 6.1:* The core game engine. Availability and continued support from Unity are critical. Any disruption to licensing, version stability, or major API changes would directly impact the project timeline.  
 
-* *C# Language and Unity Libraries:* The scripting environment, including Unity' physics and rendering libraries, is essential for implementing game systems. If updates deprecate critical libraries, significant refactoring may be required.  
+* *C# Language and Unity Libraries:* The scripting environment, including Unity's physics and rendering libraries, is essential for implementing game systems. If updates deprecate critical libraries, significant refactoring may be required.  
 
 * *GitHub:* The project depends on GitHub for version control, issue tracking, and collaboration. Extended downtime or loss of access would risk development continuity.  
 
@@ -17,8 +17,6 @@ The success of the project depends on the availability of the following external
   - Development workstations capable of running Unity 6.1, Visual Studio, and testing builds efficiently (Our own computers).  
   - Target platforms (PC with sufficient specifications) for testing destructible environments, traversal, and player tools.  
 
-* *Testing Frameworks:* External unity libraries and Unity Test Runner will be required for automated unit testing. Their availability ensures reliable verification of mechanics, performance, and stability.  
+* *Testing Frameworks:* External Unity libraries and Unity Test Runner will be required for automated unit testing. Their availability ensures reliable verification of mechanics, performance, and stability.  
 
 * *Asset Tools:* External tools such as digital art programs (e.g., Krita, Photoshop alternatives), audio editing software (e.g., Audacity), and 3D modeling tools may be required for assets. Availability of license-free resources is also important.  
-
-{emptysec}

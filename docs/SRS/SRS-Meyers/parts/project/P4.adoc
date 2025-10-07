@@ -7,14 +7,14 @@ endif::[]
 
 **Sprint 0 (September – December): Foundation and Planning**
 
-* *Technical Environment Setup:* Establish the game' foundational systems, including destructible environment mechanics, player character implementation, player tools, and slime mold traversal.  
+* *Technical Environment Setup:* Establish the game's foundational systems, including destructible environment mechanics, player character implementation, player tools, and slime mold traversal.  
 **Expected Outcome:** A working prototype environment where all fundamental gameplay mechanics are present in basic form, serving as the baseline for future iterations.  
 
-* *V&V Plan Revision 0:* Create the first version of the Verification and Validation (V&V) plan, outlining methods for testing functionality, performance, and usability.  
+* *V&V Plan:* Create the first version of the Verification and Validation (V&V) plan, outlining methods for testing functionality, performance, and usability.  
 **Expected Outcome:** A documented strategy that guides how the game' features will be tested throughout development.  
 
-* *Design Document Revision -1:* Produce an early revision of the game design document capturing initial concepts, gameplay vision, and scope.  
-**Expected Outcome:** A draft design framework that communicates the project' direction to stakeholders and supports proof-of-concept work.  
+* *Design Document Revision 0:* Produce an early revision of the game design document capturing initial concepts, gameplay vision, and scope.  
+**Expected Outcome:** A draft design framework that communicates the project's direction to stakeholders and supports proof-of-concept work.  
 
 * *Proof of Concept Demonstration:* Build and present a minimal implementation that demonstrates feasibility of key gameplay ideas.  
 **Expected Outcome:** A validated concept showing that the proposed mechanics and tools can be implemented effectively.  
@@ -39,7 +39,7 @@ endif::[]
 * *Integration:* Combine different game systems (art, code, mechanics, audio) into a unified build.  
 **Expected Outcome:** A cohesive and playable version of the game that integrates all developed components.  
 
-* *Design Document Revision 0:* Update the design document to reflect changes made during integration and align it with the current build.  
+* *Design Document Revision 1:* Update the design document to reflect changes made during integration and align it with the current build.  
 **Expected Outcome:** A refined and consistent design document that matches the state of the game and guides further development.  
 
 *Justification:* This sprint focuses on combining individual contributions into a working whole. It ensures that design documentation stays current with implementation, reducing the risk of misalignment as development progresses.  
@@ -49,12 +49,10 @@ endif::[]
 * *Bug Fixing:* Identify and resolve defects across systems, including gameplay, performance, audio, and usability.  
 **Expected Outcome:** A more stable and polished game experience, ready for final testing and demonstration.  
 
-* *V&V Report and Extras Revision 0:* Conduct structured testing according to the V&V plan, and produce the first version of the report. Additional features or enhancements are also included if feasible.  
+* *V&V Report and Extras:* Conduct structured testing according to the V&V plan, and produce the first version of the report. Additional features or enhancements are also included if feasible.  
 **Expected Outcome:** Verified evidence of functionality and a clear report documenting testing activities, along with any implemented extras.  
 
-* *Final Demonstration (Revision 1):* Deliver the game in its most complete and stable form for final stakeholder review.  
+* *Final Demonstration:* Deliver the game in its most complete and stable form for final stakeholder review.  
 **Expected Outcome:** A fully playable game with documented testing results, representing the final milestone of the project.  
 
-*Justification:* This sprint ensures the project reaches a stable and polished final state. Verification and validation activities confirm functionality, while the final demonstration provides stakeholders with confidence in the product' quality and readiness.  
-
-{emptysec}
+*Justification:* This sprint ensures the project reaches a stable and polished final state. Verification and validation activities confirm functionality, while the final demonstration provides stakeholders with confidence in the product's quality and readiness.  
