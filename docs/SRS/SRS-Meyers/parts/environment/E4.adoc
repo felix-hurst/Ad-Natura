@@ -7,7 +7,7 @@ endif::[]
 
 ==== Assumptions (helpful truths we will treat as given)
 
-GPU drivers:: A DX11-class graphics driver is installed and working on the machine.
+GPU drivers:: A DX11-class <<gl-gpu,GPU>> driver is installed and working on the machine.
 
 Offline play:: The game is fully playable without an internet connection. (Future online features, if any, are optional.)
 
@@ -15,11 +15,11 @@ Display:: At least one display is available at 1280×720 or higher. OS DPI scali
 
 Audio device:: A standard Windows audio output device exists; if none, the game continues without audio.
 
-Input:: A keyboard and mouse are available. A gamepad may or may not be present; all actions remain doable on keyboard/mouse.
+Input:: A <<gl-input,keyboard and mouse>> are available. A gamepad may or may not be present; all actions remain doable on keyboard/mouse.
 
 File system:: The user has a writable, non-admin path for saves/settings/logs (e.g., under their profile). No administrator rights are needed.
 
-Clock:: A stable wall-clock/monotonic timer is available for measuring delays and frame timing.
+Clock:: A stable wall-clock/monotonic timer is available for measuring delays/<<gl-latency,latency>> and frame timing.
 
 Locale:: UI is English for MVP; number/date formatting does not depend on system locale.
 
@@ -29,6 +29,7 @@ Power/thermal:: Normal OS scheduling/throttling can occur (laptops on battery). 
 
 Controller API:: If a controller is used, it follows standard XInput mappings (no custom vendor remaps required).
 
-CI test host:: A Windows runner with a DX11-class GPU can execute headless/automated scenes; seeded runs are reproducible on the same machine.
+CI test host:: A Windows runner with a DX11-class <<gl-gpu,GPU>> can execute automated scenes (<<gl-ci,CI>>); seeded runs are reproducible on the same machine using a <<gl-prng,PRNG>>.
+
 
 

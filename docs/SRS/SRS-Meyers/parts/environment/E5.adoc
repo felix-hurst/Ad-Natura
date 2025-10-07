@@ -5,5 +5,28 @@ ifdef::env-draft[]
 TIP: _Elements and properties of the environment that the system will affect. It defines effects of the system's operations on properties of the environment. Where the previous two categories (<<e3>>, <<e4>>) defined influences of the environment on the system, effects are influences in the reverse direction._  <<BM22>>
 endif::[]
 
+==== Effects (what changes in the environment when the system acts)
 
-{emptysec}
+NOTE: “Publish” = the environment makes updated data available to the system. Exact system responses live in S.* and will be verified in S.6.
+
+[%header,cols="3,5,2,2,3"]
+|===
+| Trigger | Environment property changed | Publish ≤ | Scope | Persistence
+| Reveal water | Increase <<gl-water,Water Field>> on affected <<gl-cell,cells>> (clamped to safe range) | 1.0 s | Local (tool AOE) | Until overwritten or cleared
+| Add heat | Increase <<gl-heat,Heat Field>>; mark “hot zones” above threshold | 1.0 s | Local | Until overwritten or cleared
+| Adjust light | Modify <<gl-light,Light Field>> intensity on cells | 1.0 s | Local/Global (per tool) | Until overwritten or cleared
+| Carve terrain | Change <<gl-cell,cells>> from blocked → passable in <<gl-terrain,terrain>>; update collision space | 1.0 s | Local | Persistent until edited again
+| Build terrain | Change <<gl-cell,cells>> from passable → blocked in <<gl-terrain,terrain>>; update collision space | 1.0 s | Local | Persistent until edited again
+| Place obstacle / hazard | Mark cells as blocked / hazardous (non-traversable) | 1.0 s | Local | Until removed
+| Reset / undo | Revert the most recent environment change (fields or terrain) | 1.0 s | Local | Restores prior values/states
+|===
+
+Platform / OS facing effects (non-level):
+* Saves & settings: write/update small files under a user-writable path.
+* Logs: append diagnostic entries to a text log (rotation defined in Project).
+* Display: present frames to the primary display device.
+* Audio: play sound on the current output device; if none, continue silently.
+* Controller rumble (if present): activate vibration for a specified duration.
+
+(See E.6 for invariants like “no NaN/Inf” and “a cell cannot be both passable and blocked in the same frame”.)
+

@@ -9,23 +9,24 @@ endif::[]
 
 Platform & OS:: Windows 10+ (x64) only for release. No macOS/Linux requirements.
 
-Minimum hardware floor:: Must operate on the project’s **Minimum Spec** (see E.1 “Minimum Spec”). All targets/acceptance numbers live in S.6.
+Minimum hardware floor:: Must operate on the project’s <<gl-minspec,Minimum Spec>>. All targets/acceptance numbers live in S.6.
 
-Input availability:: Keyboard + mouse must be fully usable. XInput-style gamepads are supported but not required for play.
+Input availability:: <<gl-input,Keyboard + mouse>> must be fully usable. XInput-style gamepads are supported but not required for play.
 
 Display baseline:: Game must be playable and UI text readable at 1280×720 (windowed or fullscreen).
 
-Graphics API class:: Target a DX11-class GPU typical of the Minimum Spec era; no ray-tracing or VR-specific features are assumed.
+Graphics API class:: Target a DX11-class GPU typical of the <<gl-minspec,Minimum Spec>> era; no ray-tracing or VR-specific features are assumed.
 
 File system & permissions:: Saves/settings/logs must live in a user-writable path. No administrator privileges required.
 
-Time base:: All delays/latencies are measured in wall-clock seconds; the game must tolerate normal OS scheduling jitter.
+Time base:: All delays/<<gl-latency,latencies>> are measured in wall-clock seconds; the game must tolerate normal OS scheduling jitter.
 
-Numeric sanity:: Environment values (fields, timers, counters) must be finite (no NaN/Inf) and within project-defined safe ranges.
+Numeric sanity:: Environment values (<<gl-field,fields>>, timers, counters) must be finite (no NaN/Inf) and within project-defined safe ranges.
 
-World envelope:: Scene size, active objects, and editable terrain density must stay within bounds that keep playability on Minimum Spec (exact budgets verified in S.6).
+World envelope:: Scene size, active objects, and editable <<gl-terrain,terrain>> density must stay within bounds that keep playability on <<gl-minspec,Minimum Spec>> (exact budgets verified in S.6).
 
 I/O devices:: Support standard Windows audio output and the primary display device; no external sensors or network devices are required.
 
 Determinism for tests:: For verification scenes only, a seeded run must be reproducible on the same machine; live gameplay is allowed to be non-deterministic.
+
 
