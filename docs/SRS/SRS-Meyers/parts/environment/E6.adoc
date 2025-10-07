@@ -5,4 +5,28 @@ ifdef::env-draft[]
 TIP: _Properties of the environment that the system's operation must preserve, i.e., properties of the environment that operations of the system may assume to hold when they start, and must maintain_  <<BM22>>
 endif::[]
 
-{emptysec}
+==== Invariants (facts that must always hold)
+
+[[e-inv-finite]]Finite fields:: All <<gl-field,fields>> are finite numbers (no NaN/Inf) and kept within configured safe ranges each <<gl-frame,frame>>.
+
+[[e-inv-atomic-edit]]Atomic terrain edits:: A terrain edit applies atomically within a frame; readers see either the pre-edit or post-edit state, never a mix.
+
+[[e-inv-publish-latency]]Publish bound:: After a valid trigger, environment updates are <<gl-publish,published>> within ≤1.0 s (see <<gl-latency,latency>>).
+
+[[e-inv-frame-immut]]Frame immutability:: Once a frame advances, past environment values are immutable.
+
+[[e-inv-collision-coherence]]Collision coherence:: Collision/physics space matches the terrain state for the same frame.
+
+[[e-inv-scope]]Effect scope:: A local change only affects its declared scope (no unintended global spillover).
+
+[[e-inv-seeded-tests]]Seeded reproducibility (tests):: In verification scenes, a fixed <<gl-prng,PRNG>> seed produces the same published environment sequence on the same machine.
+
+[[e-inv-files]]File hygiene:: Environment file writes (saves/settings/logs) target user-writable paths and complete atomically (no partial/corrupt files).
+
+[[e-inv-minspec]]Min-spec gating:: Levels labeled “min-spec” never exceed content/material/asset budgets required for <<gl-minspec,Minimum Spec>> playability.
+
+[[e-inv-bounds]]Bounds & clamps:: All field values are clamped to their min/max before publish.
+
+[[e-inv-time]]Monotonic time:: Timers used for publish/latency derive from a monotonic clock and do not go backward.
+
+[[e-inv-envelope]]World envelope respected:: Scene size and editable <<gl-terrain,terrain>> density remain within the bounds defined by constraints in E.3 during play and tests.

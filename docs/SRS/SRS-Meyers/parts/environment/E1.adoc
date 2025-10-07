@@ -7,28 +7,29 @@ endif::[]
 
 ==== Terms (alphabetical)
 
-Benchmark Scene:: A simple test level used to check performance and behavior consistently.
-Cell:: The smallest terrain unit the game reasons about (a tile in the grid).
-Field:: A number stored per cell that influences behavior (e.g., water, heat, light).
-Frame:: One step of update/render in the game loop.
-Heat Field:: A field where higher values mean “hotter” areas that the organism tends to avoid.
-Input Device:: Keyboard + mouse or a standard Windows gamepad.
-Latency:: Time between an environment change and when that change is made available to the system.
-Light Field:: A field representing illumination intensity across the level.
-Minimum Spec:: The lowest hardware/OS we support for stable play (see Problem Statement for the numbers).
-Organism:: The slime-mould-like entity that moves through levels.
-Publish (Environment):: Making updated fields/terrain available to the system after a change.
-Stimulus:: A player/scripted action that changes fields or terrain (e.g., reveal water, add heat).
-Terrain:: The destructible/editable level geometry made of cells.
-Traversal:: How the organism moves through the level under the influence of fields and terrain.
-Water Field:: A field where higher values mean more water availability that tends to attract the organism.
+[[gl-bench]]Benchmark Scene:: A simple test level used to check performance and behavior consistently.
+[[gl-cell]]Cell:: The smallest terrain unit the game reasons about (a tile in the grid).
+[[gl-field]]Field:: A number stored per cell that influences behavior (e.g., water, heat, light).
+[[gl-frame]]Frame:: One step of update/render in the game loop.
+[[gl-heat]]Heat Field:: A field where higher values mean “hotter” areas that the organism tends to avoid.
+[[gl-input]]Input Device:: Keyboard + mouse or a standard Windows gamepad.
+[[gl-latency]]Latency:: Time between an environment change and when that change is made available to the system.
+[[gl-light]]Light Field:: A field representing illumination intensity across the level.
+[[gl-minspec]]Minimum Spec:: The lowest hardware/OS we support for stable play (see Problem Statement for the numbers).
+[[gl-organism]]Organism:: The slime-mould-like entity that moves through levels.
+[[gl-publish]]Publish (Environment):: Making updated fields/terrain available to the system after a change.
+[[gl-stimulus]]Stimulus:: A player/scripted action that changes fields or terrain (e.g., reveal water, add heat).
+[[gl-terrain]]Terrain:: The destructible/editable level geometry made of cells.
+[[gl-traversal]]Traversal:: How the organism moves through the level under the influence of fields and terrain.
+[[gl-water]]Water Field:: A field where higher values mean more water availability that tends to attract the organism.
 
 ==== Acronyms
 
-CPU — Central Processing Unit  
-GPU — Graphics Processing Unit  
-FPS — Frames Per Second  
-I/O — Input / Output  
-CI — Continuous Integration  
-PRNG — Pseudo-Random Number Generator
+[[gl-cpu]]CPU — Central Processing Unit  
+[[gl-gpu]]GPU — Graphics Processing Unit  
+[[gl-fps]]FPS — Frames Per Second  
+[[gl-io]]I/O — Input / Output  
+[[gl-ci]]CI — Continuous Integration  
+[[gl-prng]]PRNG — Pseudo-Random Number Generator
+
 
