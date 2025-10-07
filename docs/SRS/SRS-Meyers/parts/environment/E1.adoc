@@ -5,5 +5,30 @@ ifdef::env-draft[]
 TIP: _Clear and precise definitions of all the vocabulary specific to the application domain, including technical terms, words from ordinary language used in a special meaning, and acronyms. It introduces the terminology of the project; not just of the environment in the strict sense, but of all its parts._  <<BM22>>
 endif::[]
 
+==== Terms (alphabetical)
 
-{emptysec}
+Benchmark Scene:: A simple test level used to check performance and behavior consistently.
+Cell:: The smallest terrain unit the game reasons about (a tile in the grid).
+Field:: A number stored per cell that influences behavior (e.g., water, heat, light).
+Frame:: One step of update/render in the game loop.
+Heat Field:: A field where higher values mean “hotter” areas that the organism tends to avoid.
+Input Device:: Keyboard + mouse or a standard Windows gamepad.
+Latency:: Time between an environment change and when that change is made available to the system.
+Light Field:: A field representing illumination intensity across the level.
+Minimum Spec:: The lowest hardware/OS we support for stable play (see Problem Statement for the numbers).
+Organism:: The slime-mould-like entity that moves through levels.
+Publish (Environment):: Making updated fields/terrain available to the system after a change.
+Stimulus:: A player/scripted action that changes fields or terrain (e.g., reveal water, add heat).
+Terrain:: The destructible/editable level geometry made of cells.
+Traversal:: How the organism moves through the level under the influence of fields and terrain.
+Water Field:: A field where higher values mean more water availability that tends to attract the organism.
+
+==== Acronyms
+
+CPU — Central Processing Unit  
+GPU — Graphics Processing Unit  
+FPS — Frames Per Second  
+I/O — Input / Output  
+CI — Continuous Integration  
+PRNG — Pseudo-Random Number Generator
+
