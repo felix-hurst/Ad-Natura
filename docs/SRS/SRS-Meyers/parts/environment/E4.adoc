@@ -5,6 +5,30 @@ ifdef::env-draft[]
 TIP: _Properties of the environment that may be assumed, with the goal of facilitating the project and simplifying the system. It defines properties that are not imposed by the environment (like those in <<e3>>) but assumed to hold, as an explicit decision meant to facilitate the system's construction._  <<BM22>>
 endif::[]
 
+==== Assumptions (helpful truths we will treat as given)
 
-{emptysec}
+GPU drivers:: A DX11-class graphics driver is installed and working on the machine.
+
+Offline play:: The game is fully playable without an internet connection. (Future online features, if any, are optional.)
+
+Display:: At least one display is available at 1280×720 or higher. OS DPI scaling is within common ranges (100–150%).
+
+Audio device:: A standard Windows audio output device exists; if none, the game continues without audio.
+
+Input:: A keyboard and mouse are available. A gamepad may or may not be present; all actions remain doable on keyboard/mouse.
+
+File system:: The user has a writable, non-admin path for saves/settings/logs (e.g., under their profile). No administrator rights are needed.
+
+Clock:: A stable wall-clock/monotonic timer is available for measuring delays and frame timing.
+
+Locale:: UI is English for MVP; number/date formatting does not depend on system locale.
+
+Color space:: Displays run in SDR/sRGB. HDR or wide-gamut displays are treated as SDR.
+
+Power/thermal:: Normal OS scheduling/throttling can occur (laptops on battery). The game does not require real-time guarantees.
+
+Controller API:: If a controller is used, it follows standard XInput mappings (no custom vendor remaps required).
+
+CI test host:: A Windows runner with a DX11-class GPU can execute headless/automated scenes; seeded runs are reproducible on the same machine.
+
 
