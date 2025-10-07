@@ -1,8 +1,7 @@
 [#e6,reftext=E.6]
 === (E.6) Invariants
 
-ifdef::env-draft[]
-TIP: _Properties of the environment that the system's operation must preserve, i.e., properties of the environment that operations of the system may assume to hold when they start, and must maintain_  <<BM22>>
-endif::[]
-
-{emptysec}
+The invariants of our game are as follows:
+-Single player 4-5 level game experience with well defined 2 critical systems as its main gameplay elements (destructable environment, slime mold traversal). 
+-The goal for each level is always to get from point A to point B often in an ascending fashion by utilizing the two core game systems.  
+-The central theme of all levels tied in with the core mechanics is centered upon the dichotomy of how humans interact(often times destructively) with the environment and how it in contrast interacts with the environment.

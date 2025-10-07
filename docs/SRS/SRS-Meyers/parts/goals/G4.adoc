@@ -1,9 +1,16 @@
 [#g4,reftext=G.4]
 === (G.4) Functionality overview
 
-ifdef::env-draft[]
-TIP: _Overview of the functions (behavior) of the system. Principal properties only (details are in the System book). It is a short overview of the functions of the future system, a kind of capsule version of book S, skipping details but enabling readers to get a quick grasp of what the system will do._  <<BM22>>
-endif::[]
+The following are the functional requirements for our 2d pixel platformer game in no particular order.
+
+-Destructable Environment. Players are able to destroy environment objects and terrain to shape the landscape to clear and/or traverse past obstacles. Certain destroyed objects and terrain can also release water which the slime mold is attracted to
+
+-Organic dynamic paths(Slime mold) By shaping the environment and thereby water sources, the player is able to guide the slime mold in order to create dynamic paths to bypass obstacles
+
+-Replayable and Reproducible Levels Due to the indeterministic nature of slime mold and the unpredictable nature of the Destructable Environment, every playthrough of the game will introduce new and challenges to the player that while being challenging and replayable is also able to be cleared every time given some thought.
+
+-Verticality as Design and Game Mechanic Not only is verticality central to the theme of the game it also plays a part of how the player navigates levels and utilizes the game’s mechanics to traverse the verticality while watching out for falling objects
+
 
 {emptysec}
 

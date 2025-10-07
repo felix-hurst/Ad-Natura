@@ -1,8 +1,14 @@
 [#s1,reftext=S.1]
 === (S.1) Components
 
-ifdef::env-draft[]
-TIP: _Overall structure expressed by the list of major software and, if applicable, hardware parts._  <<BM22>>
-endif::[]
+The major components of our project are as follows:
+Debris System
+Player strike's object creating debris which could be manipulated and traversed Over
 
-{emptysec}
+Inventory System
+Player uses inventory to select the appropriate tools
+
+Organic Pathway System
+Player is able to guide slime mold present in the level in order to traverse distances
+
+

@@ -1,13 +1,20 @@
 [#g5,reftext=G.5]
 === (G.5) High-level usage scenarios
 
-ifdef::env-draft[]
-TIP: _Fundamental usage paths through the system. It presents the main scenarios (use cases) that the system should cover. The scenarios chosen for appearing here, in the Goals book, should only be the **main usage patterns**, without details such as special and erroneous cases; they should be stated in user terms only, independently of the system's structure. Detailed usage scenarios, taking into account system details and special cases, will appear in the System book (<<s4>>)._  <<BM22>>
-endif::[]
-
-.High Level use cases diagram
-image::models/use_case.svg[scale=70%,align="center"]
-
+-Destructable Environment. 
+1. Player aim their mouse at the destination of their tool strike
+2. When clicked breaks up the striked part of the game object, creating debris
+3. When an obstacle is destroyed and/or partially destroyed, player is able to navigate past it and/or use the debris created to their advantage
+-Organic dynamic paths(Slime mold)
+Player manipulates environment with tools or body causing water debris to be located in the intended location
+Slime mold will traverse from its starting point to the location of the water debris
+Player is able to walk over the slime mold to traverse past obstacles
+-Replayable and Reproducible Levels
+Player clicks play in the main menu and is taken to the first level
+Player gradually picks up all the tools with tutorials for every tool and mechanic
+Player uses available tools and organic environment to traverse obstacles
+When Player reaches the designated point in the level, the next level is loaded
+image::images/high_level_usage_diagram.PNG[high_level_usage_diagramt,175,100,high_level_usage_diagram]
 {emptysec}
 
 
