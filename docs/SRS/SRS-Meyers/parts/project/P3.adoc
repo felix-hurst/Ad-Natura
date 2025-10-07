@@ -7,22 +7,19 @@ endif::[]
 
 **Sprint 0 (September – December): Foundation and Planning**  
 - Technical Environment setup (Destructible environment, player character, player tools, Slime mold traversal)  
-- V&V Plan Revision 0  
-- Design Document Revision -1  
+- V&V Plan 
+- Design Document Revision 0  
 - Proof of Concept Demonstration  
-- September – December Recess  
 
 **Sprint 1 (January – Mid-January): Level Design and Demonstration**  
-- Level Design Revision 0  
+- Level Design Document
 - Level Design Demonstration  
 
 **Sprint 2 (January – End of February): Integration and Documentation**  
 - System Integration  
-- Design Document Revision 0  
+- Design Document Revision 1  
 
 **Sprint 3 (March): Finalization and Delivery**  
 - Bug Fixing  
-- V&V Report and Extras Revision 0  
+- V&V Report and Extras 
 - Final Demonstration (Revision 1)  
-
-{emptysec}
