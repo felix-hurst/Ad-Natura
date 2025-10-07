@@ -9,25 +9,26 @@ endif::[]
 
 Player (human):: The person solving puzzles and triggering changes in the world.
 
-Input devices:: Keyboard + mouse; standard Windows gamepad (XInput-style).
+Input devices (<<gl-input>>):: Keyboard + mouse; standard Windows gamepad (XInput-style).
 
 Display & audio:: Monitor and speakers/headset the game renders to and plays through.
 
 Platform & OS:: Windows 10+ (x64). Provides process, windowing, timers, and device drivers.
 
-Hardware resources:: CPU, GPU, RAM, and storage available to the game.
+Hardware resources:: <<gl-cpu,CPU>>, <<gl-gpu,GPU>>, RAM, and storage available to the game.
 
 File system:: Location for saves, settings, and logs (user-writable path).
 
-Clock/time base:: Wall-clock time used to measure delays/latency and advance frames.
+Clock/time base:: Wall-clock time used to measure delays/<<gl-latency,latency>> and advance frames.
 
-Terrain (grid of cells):: Destructible/editable level geometry the player modifies.
+<<gl-terrain,Terrain>> (grid of <<gl-cell,cells>>) :: Destructible/editable level geometry the player modifies.
 
-Environmental fields:: Water, heat, and light values defined per cell that influence behavior.
+<<gl-field,Environmental fields>>:: <<gl-water,Water>>, <<gl-heat,heat>>, and <<gl-light,light>> values defined per cell that influence behavior.
 
-Stimulus sources/tools:: In-level items or actions that change fields or terrain (e.g., “reveal water,” “add heat,” “adjust light”).
+<<gl-stimulus,Stimulus sources/tools>>:: In-level items or actions that change fields or terrain (e.g., "reveal water", "add heat", "adjust light").
 
 Obstacles/material states:: Passable vs. blocked regions, hazards, and surfaces that constrain movement.
 
 Collision/physics space:: The world’s physical layout (static/dynamic) that defines contact and blocking—described here only as facts of the world.
+
 
