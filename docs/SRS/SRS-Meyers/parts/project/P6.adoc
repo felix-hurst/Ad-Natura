@@ -34,5 +34,3 @@ The overall critical risk is Scope Creep and uncontrolled technical debt, which 
 
 * Obstacle: Bug Fixing effort reveals high-priority defects that are difficult to resolve late in the process.
 **Critical Path Focus:** Categorize bugs by severity. Only fix absolute highest priority bugs that most affect functionality. Lower-priority bugs are to be documented as Known Issues in the final V&V Report to ensure the project meets the Final Demonstration deadline.
-
-{emptysec}

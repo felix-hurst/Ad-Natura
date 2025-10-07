@@ -28,5 +28,3 @@ endif::[]
 * *Meeting Chair:* Keeps the team on track during meetings and ensures that all agenda topics are discussed. This role requires organizational and communication skills, as well as the ability to maintain meeting focus.
 
 * *Reviewer:* Reviews pull requests and determines whether they should be accepted or rejected. This role requires technical knowledge of the project's codebase, attention to detail, and experience in peer code review.
-
-{emptysec}
