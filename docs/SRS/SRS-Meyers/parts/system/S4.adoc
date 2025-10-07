@@ -1,8 +1,36 @@
 [#s4,reftext=S.4]
 === (S.4) Detailed usage scenarios
 
-ifdef::env-draft[]
-TIP: _Examples of interaction between the environment (or human users) and the system, expressed as user stories. Such scenarios are not by themselves a substitute for precise descriptions of functionality (<<s3>>), but provide an important complement by specifying cases that these behavior descriptions must support; they also serve as a basis for developing test cases. The scenarios most relevant for stakeholders are given in chapter <<g5>> in the Goals book, at a general level, as use cases; in contrast, <<s4>> can refer to system components and functionality (from other chapters of the System book) as well as special and erroneous cases, and introduce more specific scenarios._  <<BM22>>
-endif::[]
+Destructable Environment
+• Use Case: UC1, UC2, UC3
+• Primary Actor: Player
+• Precondition: Has access to reachable game object that is destructible
+• Trigger: Player strikes through the object with their tool and causes damage above certain threshold
+Main Success Scenario
+Player aims tool at game object or terrain
+Object/s in the aim path are highlighted of the chunk that will be broken off
+Player clicks left mouse button and the strike is executed
+The chunk is broken off and breaks down further into small debris to be manipulated and/or traversed by player
+Secondary Scenario
+The object or terrain the player carves off contains water and water is released
+Water accumulates at a point which can be utilized by the slime mold as a destination point to traverse to
 
-{emptysec}
+Success PostCondition
+Player is able to traverse over obstacles by breaking up game objects and debris  and/or guide water flow to unlock pathways and/or guide slime mold
+
+
+Organic Dynamic Paths(slime mold)
+• Use Case: UC1, UC2, UC3
+• Primary Actor: Player
+• Precondition: Has existing slime mold sources in the game
+• Trigger: There is flowing source of water either released and/or guided by player
+Main Success Scenario
+Player releases water source to the right location either by striking object or solving a level puzzle
+Slime mold finds a creative path from its original location to water source
+Player walks over top of the organic pathway in order to traverse previously untraversable distances
+Secondary Scenario
+N/A
+
+Success PostCondition
+Player is able to traverse over obstacles by breaking up game objects and debris  and/or guide water flow to unlock pathways and/or guide slime mold
+

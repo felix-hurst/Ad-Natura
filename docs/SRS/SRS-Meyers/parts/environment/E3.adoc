@@ -1,8 +1,5 @@
 [#e3,reftext=E.3]
 === (E.3) Constraints
 
-ifdef::env-draft[]
-TIP: _Obligations and limits imposed on the project and system by the environment. This chapter defines non-negotiable restrictions coming from the environment (business rules, physical laws, engineering decisions), which the development will have to take into account._  <<BM22>>
-endif::[]
+Our game will consist of a maximum of 4 unique levels of different challenges and environmental backdrop. The player will have in their inventory at any one time a maximum of 3 tools in which to manipulate the environment. The game shall take up no more than 2gb of the player’s system storage. Maximum vertices that should be considered when deforming a game object or terrain is 4. The game shall introduce no more core game mechanics other than destructible environment and slime mold pathway. We are aiming for a minimum of 30 fps for our game at the most computationally intensive areas.
 
-{emptysec}
