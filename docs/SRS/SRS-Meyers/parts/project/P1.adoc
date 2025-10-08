@@ -2,7 +2,29 @@
 === (P.1) Roles and personnel
 
 ifdef::env-draft[]
-TIP: _Main responsibilities in the project; required project staff and their needed qualifications. It defines the roles (as a human responsibility) involved in the project._  <<BM22>>
+TIP: _Main responsibilities in the project; required project staff and their needed qualifications. It defines the roles (as a human responsibility) involved in the project._ <<BM22>>
 endif::[]
 
-{emptysec}
+* *Team Leader:* Responsible for keeping the team informed and reminded of deliverable deadlines, communicating with instructors, and having final say on topics the team cannot agree on. This role typically requires organizational and leadership skills, with experience in coordinating collaborative projects.
+
+* *Developers / Programmers:* These individuals are responsible for developing and maintaining the application, ensuring it functions properly and that it matches the requirements of what the product owner wants. Within this group, programmers specifically write the game code. Together, they ensure all game systems work as expected. They are usually required to have prior development experience, ideally in collaborative teams and with relevant game engines or frameworks.
+
+* *Testers:* Responsible for testing the functionality of all the game systems, including performance, graphics, sound, gameplay, and ensuring that both the mechanics function as intended and that usability requirements (such as accessibility and clear player communication) are met. They typically have QA testing experience, ideally in the context of video games.
+
+* *Product Manager:* Oversees the project from planning to deployment, coordinating between teams to ensure progress is on schedule and risks are managed effectively. They also communicate with stakeholders to obtain requirements and provide progress updates. They typically have project management experience, ideally in game development contexts.
+
+* *Level Designers:* Responsible for creating puzzles and challenges for the game. They need a strong understanding of what captures player attention, how to communicate game information effectively, and how to work with developers to ensure player experience is prioritized. They typically have experience in game design or interactive storytelling.
+
+* *Art Director:* Determines the aesthetic direction of the game's artwork, ensuring a cohesive visual style. This role requires strong artistic vision and experience in guiding creative teams.
+
+* *Character Artist:* Creates sprites of the player character, requiring both artistic skill and familiarity with pixel art or digital illustration techniques relevant to the project's style.
+
+* *Environment Artist:* Responsible for drawing assets of the game world, such as backgrounds, terrain, and interactive objects. This role requires creativity and experience in environment or asset design.
+
+* *Music Director:* Determines the aesthetic direction of the game's soundtrack, ensuring that the music aligns with the game's mood and gameplay. This role requires musical expertise and familiarity with game audio design.
+
+* *Composer:* Composes original music for the game, requiring strong composition skills and the ability to create pieces that enhance immersion and match gameplay pacing.
+
+* *Meeting Chair:* Keeps the team on track during meetings and ensures that all agenda topics are discussed. This role requires organizational and communication skills, as well as the ability to maintain meeting focus.
+
+* *Reviewer:* Reviews pull requests and determines whether they should be accepted or rejected. This role requires technical knowledge of the project's codebase, attention to detail, and experience in peer code review.

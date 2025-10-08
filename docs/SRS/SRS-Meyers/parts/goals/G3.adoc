@@ -5,4 +5,15 @@ ifdef::env-draft[]
 TIP: _New processes, or improvement to existing processes, made possible by the project’s results. It presents the business benefits expected from the successful execution of the project. **This chapter is the core of the Goals book**, describing what the organization expects from the system. It ensures that the project remains focused: if at some stage it gets pushed in different directions, with “creeping featurism” threatening its integrity, a reminder about the original business goals stated in those chapters will help._  <<BM22>>
 endif::[]
 
-{emptysec}
+{project-title} is expected to enhance the realism of a video game experience in two specific ways:
+
+1. *The deformation of terrain.* The player will have access to a few specialized tools, each affecting a differently-sized and shaped chunk of terrain. For instance, a shovel will allow the deformation of a small square chunk of terrain at the player's feet. The deformed terrain is replaced by small and loose pixel particles, each with collision. The pixel particles can be moved or manipulated to eliminate or introduce obstacles in the environment. This may alter the position of water sources, light sources, etc.
+
+2. *The slime mold organism.* There will be an organism (such as a plant or fungus) that is modelled by the slime mold algorithm. It will react to atmospheric conditions, such as light, heat and moisture. It will grow towards favourable conditions, and retract away from unfavourable conditions. The organism's growth can influence other parts of the environment, which can cause a pathway to open up that the player can traverse across to make progress. For example, the plant may grow large leaves the player can jump on, if the plant is given enough favourable conditions to grow in.
+
+In summary, the gameplay involves the manipulation of terrain to move sources of favourable or unfavourable conditions in such a way that directs the slime mold organism to grow in the direction that allows the player to traverse forward.
+
+The gameplay will teach the player that they must work with nature to succeed, and it will do so in ways other games have not done before. This will promote our message of environmentalism in a unique and deep way that will make a lasting memory for our players.
+
+// .Goal Model Diagram for Ad Natura
+// image::models/goal_model_diagram.png[scale=50%,align="center"]

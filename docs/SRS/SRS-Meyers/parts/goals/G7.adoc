@@ -1,8 +1,12 @@
 [#g7,reftext=G.7]
 === (G.7) Stakeholders and requirements sources
 
-ifdef::env-draft[]
-TIP: _Groups of people who can affect the project or be affected by it, and other places to consider for information about the project and system. It lists stakeholders and other requirements sources. It should define stakeholders as categories of people, not individuals, even if such individuals are known at the time of writing. The main goal of chapter <<g7>> is to avoid forgetting any category of people whose input is relevant to the project. It also lists documents and other information that the project, aside from soliciting input from stakeholders, can consult for requirements information._  <<BM22>>
-endif::[]
+Direct Stakeholders
+Casual Gamers: Gamers who play games on a non competitive capacity and as such value the experience rather than solely a challenge. Having already been familiar with similar games, basic game controls should be intuitive to them
 
-{emptysec}
+Developers: The prospective developers of this game should have baseline knowledge of games and gaming are anticipated to be somewhat inexperienced with game development. However they are able to leverage their preexisting knowledge to understand what is fun and entertaining in a game from an user perspective as well as conduct internal debugging - potentially expand with external company developers. 
+
+Indirect Stakeholders
+Steam: The shopfront and regulator of the sale of our game. Its algorithms and policies can determine the success and failure of our game. All aspects in the game are required to be complaint with Steam policies
+
+Government Organizations: Different government set policies on what is allowed and not allowed in games
