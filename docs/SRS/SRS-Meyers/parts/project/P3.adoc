@@ -5,4 +5,21 @@ ifdef::env-draft[]
 TIP: _List of tasks to be carried out and their scheduling. It defines the project's key dates._  <<BM22>>
 endif::[]
 
-{emptysec}
+**Sprint 0 (September 2 – December 4): Foundation and Planning**  
+- Technical Environment setup (Destructible environment, player character, player tools, Slime mold traversal)  
+- V&V Plan 
+- Design Document Revision 0  
+- Proof of Concept Demonstration  
+
+**Sprint 1 (January 5 – January 16): Level Design and Demonstration**  
+- Level Design Document
+- Level Design Demonstration  
+
+**Sprint 2 (January 5 – February 28): Integration and Documentation**  
+- System Integration  
+- Design Document Revision 1  
+
+**Sprint 3 (February 16 - April 7): Finalization and Delivery**  
+- Bug Fixing  
+- V&V Report and Extras 
+- Final Demonstration (Revision 1)  
