@@ -5,7 +5,7 @@ ifdef::env-draft[]
 TIP: _**This is the core of the Project book**. It details the individual tasks listed under <<p3>> and their expected outcomes. It define the project's main activities and the results they must produce, associated with the milestone dates defined in <<p3>>._  <<BM22>>
 endif::[]
 
-**Sprint 0 (September – December): Foundation and Planning**
+**Sprint 0 (September 2 – December 4): Foundation and Planning**
 
 * *Technical Environment Setup:* Establish the game's foundational systems, including destructible environment mechanics, player character implementation, player tools, and slime mold traversal.  
 **Expected Outcome:** A working prototype environment where all fundamental gameplay mechanics are present in basic form, serving as the baseline for future iterations.  
@@ -19,12 +19,9 @@ endif::[]
 * *Proof of Concept Demonstration:* Build and present a minimal implementation that demonstrates feasibility of key gameplay ideas.  
 **Expected Outcome:** A validated concept showing that the proposed mechanics and tools can be implemented effectively.  
 
-* *September – December Recess:* Downtime allocated for academic break.  
-**Expected Outcome:** No development progress expected; planning may continue informally.  
-
 *Justification:* This sprint establishes the technical and conceptual foundation of the project. By demonstrating feasibility and producing the first design materials, the team ensures that subsequent sprints have a stable baseline to build upon.  
 
-**Sprint 1 (January – Mid-January): Level Design and Demonstration**
+**Sprint 1 (January 5 – January 16): Level Design and Demonstration**
 
 * *Level Design Revision 0:* Develop the first set of puzzles, environments, and challenges for players.  
 **Expected Outcome:** A playable draft level that demonstrates intended design philosophy and player experience goals.  
@@ -34,7 +31,7 @@ endif::[]
 
 *Justification:* This sprint introduces the first playable content, allowing stakeholders and testers to evaluate how players will experience the game. Early validation of level design ensures that future development stays aligned with gameplay goals.  
 
-**Sprint 2 (January – End of February): Integration and Documentation**
+**Sprint 2 (January 5 – February 28): Integration and Documentation**
 
 * *Integration:* Combine different game systems (art, code, mechanics, audio) into a unified build.  
 **Expected Outcome:** A cohesive and playable version of the game that integrates all developed components.  
@@ -44,7 +41,7 @@ endif::[]
 
 *Justification:* This sprint focuses on combining individual contributions into a working whole. It ensures that design documentation stays current with implementation, reducing the risk of misalignment as development progresses.  
 
-**Sprint 3 (March): Finalization and Delivery**
+**Sprint 3 (February 16 - April 7): Finalization and Delivery**
 
 * *Bug Fixing:* Identify and resolve defects across systems, including gameplay, performance, audio, and usability.  
 **Expected Outcome:** A more stable and polished game experience, ready for final testing and demonstration.  
