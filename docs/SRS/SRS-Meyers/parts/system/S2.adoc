@@ -23,20 +23,23 @@ Each level shall be completable within a reasonable amount of time
 
  Functional Requirements
 
--Destructable Environment. 
-Striking an object or terrain with a tool shall carve out a section of that object or terrain
+-Destructable Environment S2-FLD-1. 
+1. Striking an object or terrain with a tool shall carve out a section of that object or terrain.
 
-Terrain that is carved out shall produce dynamically generated debris which are game objects players and environment can interact with
+2. Terrain that is carved out shall produce dynamically generated debris which are game objects players and environment can interact with.
 
--Organic dynamic paths(Slime mold)
-Slime mold will be attracted to water sources and will traverse to it
+3. Debris game objects generated shall be of the specifications to that game object referenced via characteristics dictionary as to the size, shape, color, etc.
 
-Slime mold will provide player a traversable path in each level over obstacles and/or untraversable distances(a cliff for example)
+-Organic dynamic paths(Slime mold) S2-FLD-2
+1. Slime mold shall be attracted to sources of and will traverse to it
 
--Replayable and Reproducible Levels
+2. Slime mold shall provide player a traversable path in each level over obstacles and/or untraversable distances(a cliff for example)
 
-Each level shall be completable within a reasonable amount of time
--Levels shall provide obstacles which can be cleared via the use of the game mechanics
+-Replayable and Reproducible Levels S2-FLD-3
 
--Each level shall provide unique challenges which leverage height and dynamic debris generation in different ways
+1. Each level shall be completable within 1 hour of time
+
+2. Levels shall provide obstacles which can be cleared via the use of the game mechanics
+
+3. Each level shall provide unique challenges which leverage height and dynamic debris generation in different ways
 

@@ -2,13 +2,13 @@
 === (S.1) Components
 
 The major components of our project are as follows:
-Debris System
-Player strike's object creating debris which could be manipulated and traversed Over
 
-Inventory System
-Player uses inventory to select the appropriate tools
+1. Debris System
 
-Organic Pathway System
-Player is able to guide slime mold present in the level in order to traverse distances
+2. Inventory System
+
+3. Player Controller
+
+4. Organic Pathway System
 
 

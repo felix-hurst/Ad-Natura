@@ -2,7 +2,7 @@
 === (S.4) Detailed usage scenarios
 
 Destructable Environment
-• Use Case: UC1, UC2, UC3
+• Use Case: S2-FLD-1
 • Primary Actor: Player
 • Precondition: Has access to reachable game object that is destructible
 • Trigger: Player strikes through the object with their tool and causes damage above certain threshold
@@ -20,7 +20,7 @@ Player is able to traverse over obstacles by breaking up game objects and debris
 
 
 Organic Dynamic Paths(slime mold)
-• Use Case: UC1, UC2, UC3
+• Use Case: S2-FLD-2
 • Primary Actor: Player
 • Precondition: Has existing slime mold sources in the game
 • Trigger: There is flowing source of water either released and/or guided by player
