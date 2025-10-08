@@ -5,4 +5,62 @@ ifdef::env-draft[]
 TIP: _Classification of the behaviors, interfaces and scenarios (<<s2>>, <<s3>> and <<s4>>) by their degree of criticality. It is useful in particular if during the course of the project various pressures force the team to drop certain functions._  <<BM22>>
 endif::[]
 
-{emptysec}
+==== Prioritization approach (MoSCoW)
+
+We classify features by criticality to gameplay and to meeting constraints on <<gl-minspec,Minimum Spec>>:
+* **Must** — core to puzzle loop and acceptance; cannot ship without.
+* **Should** — important quality/usability; de-scope only if Musts are safe.
+* **Could** — nice to have; first to drop under time pressure.
+* **Won’t (this release)** — explicitly out of scope.
+
+[%header,cols="1,3,1,4,3"]
+|===
+| ID | Item | Priority | Why it matters | Notes / Dependencies
+
+| S5-PR-1 | Stimulus → field updates (<<e5-reveal-water>>, <<e5-add-heat>>, <<e5-adjust-light>>) | Must | Core loop: player applies <<gl-stimulus,stimuli>> that change <<gl-field,fields>> the <<gl-organism,organism>> follows. | Bound by publish ≤1.0 s (<<e-inv-publish-latency>>).
+
+| S5-PR-2 | Traversal reacts to fields | Must | Without traversal responding to <<gl-field,fields>>, puzzles do not function. | Acceptance in S.6; uses benchmark scene.
+
+| S5-PR-3 | Terrain edit tools (carve/build) | Must | Player agency over <<gl-terrain,terrain>> is required to solve puzzles. | Keep atomic per frame (<<e-inv-atomic-edit>>).
+
+| S5-PR-4 | Finite fields & clamps | Must | Prevents corrupt state / crashes. | See <<e-inv-finite>>, <<e-inv-bounds>>.
+
+| S5-PR-5 | Publish latency ≤ 1.0 s | Must | Feedback must feel immediate and testable. | See <<gl-latency>> and <<e-inv-publish-latency>>.
+
+| S5-PR-6 | Playable on <<gl-minspec,Minimum Spec>> with ≥30 <<gl-fps,FPS>> (benchmark) | Must | Meets platform promise; grading/acceptance hinge on this. | Targets verified in S.6 using benchmark scene.
+
+| S5-PR-7 | Keyboard+mouse fully playable (rebindable) | Must | Accessibility and lab machines; no controller required. | Maps defined in S.3; saves to user path.
+
+| S5-PR-8 | Saves/settings/logs to user path | Must | Persistence and debugability. | Atomic writes (<<e-inv-files>>).
+
+| S5-PR-9 | Seeded reproducibility in test scenes | Must | CI/marking require repeatable runs. | See <<e-inv-seeded-tests>>.
+
+| S5-PR-10 | XInput gamepad support + rumble toggle | Should | Improves experience for many players. | Falls back to K/M (S5-PR-7).
+
+| S5-PR-11 | Undo/redo last environment change | Should | Reduces frustration while experimenting. | Applies to fields and terrain; respects invariants.
+
+| S5-PR-12 | Readable UI at 1280×720; basic color-safe palette | Should | Meets display baseline and color-vision needs. | Numbers in S.6; palette toggle optional.
+
+| S5-PR-13 | Logging with rotation | Should | Helps QA; prevents unbounded disk use. | Project section defines policy.
+
+| S5-PR-14 | Benchmark scene + CI smoke test | Should | Keeps perf and publish bounds from regressing. | Uses fixed seed and scripted inputs.
+
+| S5-PR-15 | Extra stimuli (e.g., wind/toxin) | Could | Increases puzzle variety. | Only if Must/Should are solid.
+
+| S5-PR-16 | Visual polish (advanced VFX/HDR) | Could | Aesthetic improvement; not required for loop. | Ensure does not harm <<gl-minspec,Min Spec>> perf.
+
+| S5-PR-17 | Photo/replay mode | Could | Portfolio value; non-essential to puzzles. | Defer if schedule tight.
+
+| S5-PR-18 | Online features / networking | Won’t | Out of scope for this release. | N/A.
+
+| S5-PR-19 | macOS/Linux builds | Won’t | Platform scope is Windows-only. | Could revisit post-release.
+
+| S5-PR-20 | VR / ray tracing | Won’t | Incompatible with perf/Min Spec constraints. | N/A.
+|===
+
+===== De-scope order & guardrails
+* Drop **Could** items first; then **Should** only if **S5-PR-1..9** remain intact.
+* Never violate E.6 invariants when de-scoping; Must items are non-negotiable.
+* Any change to **S5-PR-6** (perf target) or **S5-PR-5** (latency bound) requires team approval and rubric impact review.
+
+
