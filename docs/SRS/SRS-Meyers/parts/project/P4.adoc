@@ -5,4 +5,51 @@ ifdef::env-draft[]
 TIP: _**This is the core of the Project book**. It details the individual tasks listed under <<p3>> and their expected outcomes. It define the project's main activities and the results they must produce, associated with the milestone dates defined in <<p3>>._  <<BM22>>
 endif::[]
 
-{emptysec}
+**Sprint 0 (September 2 – December 4): Foundation and Planning**
+
+* *Technical Environment Setup:* Establish the game's foundational systems, including destructible environment mechanics, player character implementation, player tools, and slime mold traversal.  
+**Expected Outcome:** A working prototype environment where all fundamental gameplay mechanics are present in basic form, serving as the baseline for future iterations.  
+
+* *V&V Plan:* Create the first version of the Verification and Validation (V&V) plan, outlining methods for testing functionality, performance, and usability.  
+**Expected Outcome:** A documented strategy that guides how the game' features will be tested throughout development.  
+
+* *Design Document Revision 0:* Produce an early revision of the game design document capturing initial concepts, gameplay vision, and scope.  
+**Expected Outcome:** A draft design framework that communicates the project's direction to stakeholders and supports proof-of-concept work.  
+
+* *Proof of Concept Demonstration:* Build and present a minimal implementation that demonstrates feasibility of key gameplay ideas.  
+**Expected Outcome:** A validated concept showing that the proposed mechanics and tools can be implemented effectively.  
+
+*Justification:* This sprint establishes the technical and conceptual foundation of the project. By demonstrating feasibility and producing the first design materials, the team ensures that subsequent sprints have a stable baseline to build upon.  
+
+**Sprint 1 (January 5 – January 16): Level Design and Demonstration**
+
+* *Level Design Revision 0:* Develop the first set of puzzles, environments, and challenges for players.  
+**Expected Outcome:** A playable draft level that demonstrates intended design philosophy and player experience goals.  
+
+* *Level Design Demonstration:* Present the initial level to gather early feedback on gameplay flow, challenge balance, and communication of mechanics.  
+**Expected Outcome:** Feedback that validates or informs revisions of level design practices.  
+
+*Justification:* This sprint introduces the first playable content, allowing stakeholders and testers to evaluate how players will experience the game. Early validation of level design ensures that future development stays aligned with gameplay goals.  
+
+**Sprint 2 (January 5 – February 28): Integration and Documentation**
+
+* *Integration:* Combine different game systems (art, code, mechanics, audio) into a unified build.  
+**Expected Outcome:** A cohesive and playable version of the game that integrates all developed components.  
+
+* *Design Document Revision 1:* Update the design document to reflect changes made during integration and align it with the current build.  
+**Expected Outcome:** A refined and consistent design document that matches the state of the game and guides further development.  
+
+*Justification:* This sprint focuses on combining individual contributions into a working whole. It ensures that design documentation stays current with implementation, reducing the risk of misalignment as development progresses.  
+
+**Sprint 3 (February 16 - April 7): Finalization and Delivery**
+
+* *Bug Fixing:* Identify and resolve defects across systems, including gameplay, performance, audio, and usability.  
+**Expected Outcome:** A more stable and polished game experience, ready for final testing and demonstration.  
+
+* *V&V Report and Extras:* Conduct structured testing according to the V&V plan, and produce the first version of the report. Additional features or enhancements are also included if feasible.  
+**Expected Outcome:** Verified evidence of functionality and a clear report documenting testing activities, along with any implemented extras.  
+
+* *Final Demonstration:* Deliver the game in its most complete and stable form for final stakeholder review.  
+**Expected Outcome:** A fully playable game with documented testing results, representing the final milestone of the project.  
+
+*Justification:* This sprint ensures the project reaches a stable and polished final state. Verification and validation activities confirm functionality, while the final demonstration provides stakeholders with confidence in the product's quality and readiness.  

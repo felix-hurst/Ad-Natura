@@ -5,4 +5,8 @@ ifdef::env-draft[]
 TIP: _Any a priori choices binding the project to specific tools, hardware, languages or other technical parameters. Not all technical choices in projects derive from a pure technical analysis; some result from company policies. While some project members may dislike non-strictly-technical decisions, they are a fact of project life and must be documented, in particular for the benefit of one of the quality factors for requirements: "requirements must be justified"._  <<BM22>>
 endif::[]
 
-{emptysec}
+* *Game Engine:* The Unity 6.1 game engine has been chosen. It is highly documented, widely used in both academic and professional contexts, and offers extensive support for complex physics, AI behaviors, and modular world-building. Its cross-platform deployment capability ensures the game can later be expanded to different devices if required.  
+
+* *Programming Language:* C# has been selected as the primary scripting language. Unity natively supports C#, making it the most efficient choice. It provides strong performance, clear syntax, and robust libraries, ensuring that game logic and physics calculations can be implemented efficiently.  
+
+* *Version Control:* Git and GitHub will be used for collaborative development and version control. This choice ensures proper tracking of contributions, clear project history, and facilitates pull request reviews, continuous integration, and rollback when necessary.  
