@@ -5,4 +5,30 @@ ifdef::env-draft[]
 TIP: _List of elements of the environment that may affect or be affected by the system and project. It includes other systems to which the system must be interfaced. These components may include existing systems, particularly software systems, with which the system will interact — by using their APIs (program interfaces), or by providing APIs to them, or both. These are interfaces provided to the system from the outside world. They are distinct from both: interfaces provided by the system to the outside world (<<s3>>); and technology elements that the system's development will require (<<p5>>)._  <<BM22>>
 endif::[]
 
-{emptysec}
+==== Components (things outside the software that we read from or affect)
+
+Player (human):: The person solving puzzles and triggering changes in the world.
+
+Input devices (<<gl-input>>):: Keyboard + mouse; standard Windows gamepad (XInput-style).
+
+Display & audio:: Monitor and speakers/headset the game renders to and plays through.
+
+Platform & OS:: Windows 10+ (x64). Provides process, windowing, timers, and device drivers.
+
+Hardware resources:: <<gl-cpu,CPU>>, <<gl-gpu,GPU>>, RAM, and storage available to the game.
+
+File system:: Location for saves, settings, and logs (user-writable path).
+
+Clock/time base:: Wall-clock time used to measure delays/<<gl-latency,latency>> and advance frames.
+
+<<gl-terrain,Terrain>> (grid of <<gl-cell,cells>>) :: Destructible/editable level geometry the player modifies.
+
+<<gl-field,Environmental fields>>:: <<gl-water,Water>>, <<gl-heat,heat>>, and <<gl-light,light>> values defined per cell that influence behavior.
+
+<<gl-stimulus,Stimulus sources/tools>>:: In-level items or actions that change fields or terrain (e.g., "reveal water", "add heat", "adjust light").
+
+Obstacles/material states:: Passable vs. blocked regions, hazards, and surfaces that constrain movement.
+
+Collision/physics space:: The world’s physical layout (static/dynamic) that defines contact and blocking—described here only as facts of the world.
+
+
