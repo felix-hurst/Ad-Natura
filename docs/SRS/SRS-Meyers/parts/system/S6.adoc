@@ -1,8 +1,105 @@
-[#s6,reftext=S.6]
-=== (S.6) Verification and acceptance criteria
+==== Verification setup (baseline)
 
-ifdef::env-draft[]
-TIP: _Specification of the conditions under which an implementation will be deemed satisfactory. Here, "verification" as shorthand for what is more explicitly called "Verification & Validation" (V&V), covering several levels of testing — module testing, integration testing, system testing, user acceptance testing — as well as other techniques such as static analysis and, when applicable, program proving._  <<BM22>>
-endif::[]
+* Test scene: <<gl-bench,Benchmark Scene>> with scripted inputs.
+* Hardware target: <<gl-minspec,Minimum Spec>> (lab box or equivalent VM).
+* Timing: wall-clock; use monotonic timers for latency (see <<gl-latency,latency>>).
+* Seeds: fixed <<gl-prng,PRNG>> seed for reproducible runs in CI (<<gl-ci,CI>>).
+* Data sources: in-game counters/markers and lightweight logs; no debugger required.
 
-{emptysec}
+==== Acceptance matrix — Must items
+
+[cols="1,3,3,2,3",options="header"]
+|===
+| ID | What we verify | How we test | Measure | Accept
+
+| S6-LAT-1
+| Publish latency for field changes (<<e5-reveal-water>>, <<e5-add-heat>>, <<e5-adjust-light>>)
+| In the benchmark scene, trigger each effect; record time from trigger to environment <<gl-publish,publish>> event
+| Δt (trigger → publish)
+| ≤ 1.0 s (see <<e-inv-publish-latency>>)
+
+| S6-TRV-1
+| Traversal reacts to published <<gl-field,fields>>
+| After S6-LAT-1, observe organism path change under fixed seed
+| Time to first path deviation
+| ≤ 1.0 s after publish (bench scene)
+
+| S6-PERF-1
+| Playability on <<gl-minspec,Minimum Spec>>
+| Run benchmark scene 5 minutes
+| Avg <<gl-fps,FPS>>, 99th-pct frame time
+| Avg ≥ 30 FPS; 99th-pct ≤ 60 ms
+
+| S6-MEM-1
+| Memory ceiling during gameplay
+| 10-minute play session with edits and stimuli
+| Peak RAM (task/process)
+| ≤ 3.0 GB
+
+| S6-LOAD-1
+| Scene load time budget
+| Cold-start load of 3 representative levels on HDD-baseline
+| Time to first interactive frame
+| ≤ 10 s each
+
+| S6-IO-1
+| Keyboard + mouse fully playable
+| Complete tutorial goals with no gamepad; rebind all actions
+| Completeness; bind persistence
+| 100% actions rebindable; bindings persist across restart
+
+| S6-FILE-1
+| File hygiene for saves/settings/logs
+| Save, restart, reload; inspect files during write
+| Path + atomicity
+| User-writable path; no partial/corrupt files (see <<e-inv-files>>)
+
+| S6-DET-1
+| Seeded reproducibility in test scenes
+| Run headless twice in CI with same seed
+| Event/log hashes
+| Identical outputs on same machine (see <<e-inv-seeded-tests>>)
+
+| S6-COLL-1
+| Collision matches terrain edits
+| Carve/build then sample collision that frame
+| Contact vs. cell state
+| Match within same frame (see <<e-inv-collision-coherence>>)
+
+| S6-FIN-1
+| Finite/clamped environment values
+| Sweep stimuli to extremes; log field samples
+| NaN/Inf count; clamp range
+| Zero NaN/Inf; all within configured bounds (see <<e-inv-finite>>, <<e-inv-bounds>>)
+|===
+
+==== Acceptance — Should items
+
+[cols="1,3,3,2,3",options="header"]
+|===
+| ID | What we verify | How we test | Measure | Accept
+
+| S6-UNDO-1
+| Undo/redo last environment change
+| Perform edit; undo; redo; sample fields/terrain
+| State equivalence
+| Restores exact prior values/states
+
+| S6-LOG-1
+| Logging with rotation
+| Generate 30 min of logs; trigger rotation
+| Max file size/count
+| Within configured cap; no data loss
+
+| S6-UI-1
+| Readability at 1280×720
+| UI audit in bench scene at 1280×720
+| Text height/contrast
+| Meets project baseline (readable without scaling)
+|===
+
+==== Gating & traceability
+
+* A build **passes** S.6 only if all **Must** IDs above are met on <<gl-minspec,Minimum Spec>> in the <<gl-bench,benchmark scene>>.
+* Failures on **Should** items are acceptable only if all **Must** remain green and the de-scope order in S.5 is followed.
+* Relevant invariants and effects referenced: <<e-inv-publish-latency>>, <<e-inv-finite>>, <<e-inv-bounds>>, <<e-inv-atomic-edit>>, <<e-inv-collision-coherence>>, <<e-inv-seeded-tests>>, <<e5-reveal-water>>, <<e5-add-heat>>, <<e5-adjust-light>>.
