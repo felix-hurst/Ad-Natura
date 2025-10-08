@@ -9,6 +9,7 @@ endif::[]
 
 [[gl-bench]]Benchmark Scene:: A simple test level used to check performance and behavior consistently.
 [[gl-cell]]Cell:: The smallest terrain unit the game reasons about (a tile in the grid).
+[[gl-devscene]]Development Scene:: A flexible test scene used for debugging and iteration; not used for performance acceptance or timing. Distinct from <<gl-bench,Benchmark Scene>>.
 [[gl-field]]Field:: A number stored per cell that influences behavior (e.g., water, heat, light).
 [[gl-frame]]Frame:: One step of update/render in the game loop.
 [[gl-heat]]Heat Field:: A field where higher values mean “hotter” areas that the organism tends to avoid.
@@ -18,6 +19,7 @@ endif::[]
 [[gl-minspec]]Minimum Spec:: The lowest hardware/OS we support for stable play (see Problem Statement for the numbers).
 [[gl-organism]]Organism:: The slime-mould-like entity that moves through levels.
 [[gl-publish]]Publish (Environment):: Making updated fields/terrain available to the system after a change.
+[[gl-playertrav]]Player Traversal:: How the player character moves and navigates levels (separate from <<gl-traversal,Organism Traversal>>).
 [[gl-stimulus]]Stimulus:: A player/scripted action that changes fields or terrain (e.g., reveal water, add heat).
 [[gl-terrain]]Terrain:: The destructible/editable level geometry made of cells.
 [[gl-traversal]]Traversal:: How the organism moves through the level under the influence of fields and terrain.
