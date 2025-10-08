@@ -1,8 +1,45 @@
 [#s2,reftext=S.2]
 === (S.2) Functionality
 
-ifdef::env-draft[]
-TIP: _**This is the bulk of the System book, describing elements of functionality (behaviors)**. This chapter corresponds to the traditional view of requirements as defining "**what the system does**”. It is organized as one section, S.2.n, for each of the components identified in <<s1>>, describing the corresponding behaviors (functional and non-functional properties)._  <<BM22>>
-endif::[]
+ Non-Functional Requirements
 
-{emptysec}
+-Destructable Environment. 
+
+System shall produce randomly shaped game objects the sum of which is the same dimensions as the removed dimensions of the parent game object. This is so that the terrain we carved out produces logical debris amount and shape
+
+System shall correctly identify and produce logical debris amount, color, shape and parameters of the original object
+
+-Organic dynamic paths(Slime mold)
+-Slime mold shall correctly select series waypoints in the level which will allow for traversable terrain for the player to clear obstacles from its starting point to the indicated end point by the water source
+
+-Slime mold shall move in an indeterministic manner which will create variation and replayability of each game level
+
+-Replayable and Reproducible Levels
+
+Levels should be testable and results reproducible within given reasonable constraints onto the two main mechanics. This is because the two systems we currently have are exceedingly dynamic and we must put constraints on them to ensure reproducible game results that do not impede challenge and entertainment value
+
+Each level shall be completable within a reasonable amount of time
+
+
+ Functional Requirements
+
+-Destructable Environment S2-FLD-1. 
+1. Striking an object or terrain with a tool shall carve out a section of that object or terrain.
+
+2. Terrain that is carved out shall produce dynamically generated debris which are game objects players and environment can interact with.
+
+3. Debris game objects generated shall be of the specifications to that game object referenced via characteristics dictionary as to the size, shape, color, etc.
+
+-Organic dynamic paths(Slime mold) S2-FLD-2
+1. Slime mold shall be attracted to sources of and will traverse to it
+
+2. Slime mold shall provide player a traversable path in each level over obstacles and/or untraversable distances(a cliff for example)
+
+-Replayable and Reproducible Levels S2-FLD-3
+
+1. Each level shall be completable within 1 hour of time
+
+2. Levels shall provide obstacles which can be cleared via the use of the game mechanics
+
+3. Each level shall provide unique challenges which leverage height and dynamic debris generation in different ways
+
