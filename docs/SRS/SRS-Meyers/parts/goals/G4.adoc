@@ -12,5 +12,3 @@ The following are the functional requirements for our 2d pixel platformer game i
 4. Verticality as Design and Game Mechanic Not only is verticality central to the theme of the game it also plays a part of how the player navigates levels and utilizes the game’s mechanics to traverse the verticality while watching out for falling objects
 
 
-{emptysec}
-
