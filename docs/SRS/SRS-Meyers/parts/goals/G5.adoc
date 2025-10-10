@@ -15,6 +15,6 @@ Player gradually picks up all the tools with tutorials for every tool and mechan
 Player uses available tools and organic environment to traverse obstacles
 When Player reaches the designated point in the level, the next level is loaded
 image::images/high_level_usage_diagram.PNG[high_level_usage_diagramt,175,100,high_level_usage_diagram]
-{emptysec}
+
 
 

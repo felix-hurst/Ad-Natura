@@ -5,11 +5,11 @@
 |===
 |Section | Version | Lead | Delivered | Reviewer | Approved 
 
-| **<<p1>>** | | | | |
-| **<<p2>>** | | | | |
-| **<<p3>>** | | | | |
-| **<<p4>>** | | | | |
-| **<<p5>>** | | | | |
-| **<<p6>>** | | | | |
-| **<<p7>>** | | | | |
+| **<<p1>>** | 1.0 | Marcos Hernandez-Rivero | 2025-10-03 | Felix Hurst | 2025-10-07
+| **<<p2>>** | 1.0 | Marcos Hernandez-Rivero | 2025-10-03 | Felix Hurst | 2025-10-07
+| **<<p3>>** | 1.0 | Marcos Hernandez-Rivero | 2025-10-03 | Felix Hurst | 2025-10-07
+| **<<p4>>** | 1.0 | Marcos Hernandez-Rivero | 2025-10-03 | Felix Hurst | 2025-10-07
+| **<<p5>>** | 1.0 | Marcos Hernandez-Rivero | 2025-10-03 | Felix Hurst | 2025-10-07
+| **<<p6>>** | 1.0 | Marcos Hernandez-Rivero | 2025-10-03 | Felix Hurst | 2025-10-07
+| **<<p7>>** | 1.0 | Marcos Hernandez-Rivero | 2025-10-03 | Felix Hurst | 2025-10-07
 |===
