@@ -113,18 +113,12 @@ We make assumptions regarding user system specifications. We assume the final ga
 \section{Safety and Security Requirements}
 
 \begin{itemize}
-\item{System must experience crashes no more frequently than once every two hours on average.}
-\item{System must be able to run without requiring administrator privileges.}
-\item{Autosaves should happen at the start of new levels and at key checkpoints on each level.}
-\item{Any Unity security vulnerabilities should be patched in a timely fashion.}
-\item{Crash log should be adequately informative and detailed.}
-\item{Avoid offensive language.}
-\item{Offer security updates post-launch.}
-\item{Have an ingame Heads-Up Display.}
-\item{Have a tutorial level.}
-\item{Support a wide variety of controllers.}
-\item{Contact information for bug reporting in the built-in crash window.}
-\item{Auto-save feature.}
+\item{\textbf{Auto-save:} Each time the player completes a puzzle and progresses to the next scene, the game will automatically save their progress, updating the save file. (F213).}
+\item{\textbf{Reset Puzzle:} The player has the option to reset a puzzle room to start over, in case they got lost or softlocked. (F214).}
+\item{\textbf{Stability:} The system shall experience crashes no more frequently than once every two hours on average. (NF231).}
+\item{\textbf{Crash logs:} Should a crash occur, the system shall display as much detail about the crash as possible in a pop-up window, for diagnostic purposes. Developer contact information will be provided for the purpose of bug reporting. (NF232).}
+\item{\textbf{Privileges:} The system shall be able to run without requiring administrator privileges. (NF233).}
+\item{\textbf{Software Vulnerabilities:} Any Unity security vulnerabilities shall be patched in a timely fashion and distributed in a software update. (NF234).}
 \end{itemize}
 
 \section{Roadmap}
@@ -169,6 +163,28 @@ Malware vulnerability: Does the system have any extreme weaknesses that could be
 \item{For us, "Hazards" sounded a bit harsh, and given that we are making a game, we did not really see (at first) how a game could have "hazards" apart from a memory leak affecting the computer, especially since we do not intend to make this an online game, so the user's communication with external parties is VERY limited.}
 \item{See team answer above.}
 \item{One such risk is a memory leak, where a program consumed more and more memory due to not closing off access to the memory, eventually affecting the entire computer's performance if it goes on long enough. Another suck risk would be malware. We plan to release this game on the Steam platform which does verify files for malware and is widely known and trusted, but at the end of the day, we are not the ones hosting the game, and a malicious actor in Steam's system may be able to change our game files and add in malware. These risks are important to consider because they are sometimes invisible, it's almost impossible to tell just from looking at a screen if a memory leak is happening or if a virus is on your computer until it has already acted and caused severe damage, thus we must ensure that we are very careful to not introduce these risks.}
+\end{enumerate}
+
+\textbf{Andy Liang}
+\begin{enumerate}
+\item{Once we reframed “hazard” for a game (beyond physical harm) to include usability, data integrity, stability, and player enjoyment, ideas flowed quickly.\\
+
+Breaking the system into components (controller/input, debris/destructible world, organism traversal, UI/save I/O) made the FMEA systematic instead of ad-hoc.\\
+
+Turning mitigations into testable requirements was smooth (e.g., autosave at level starts/checkpoints, room reset to avoid softlocks, readable UI at 1280×720, wide controller support, informative crash log). This improved traceability into our SRS/tests and gave us clear acceptance criteria.}
+\item{Quantifying “fun” as a risk was tricky; “not fun” isn’t directly testable. We resolved this by proxying it with measurable hazards: softlocks, unclear puzzle affordances, and poor onboarding. That led to concrete mitigations (tutorial level, HUD cues, reset options, playtest checkpoints).\\
+
+Assigning severity/likelihood scores without real data caused disagreement. We aligned by anchoring to minimum spec and failure impact (e.g., save corruption $\geq$ high severity, single-room art glitch $\leq$\ lower severity) and recording rationales next to each score.\\
+
+Scope creep (future features like mic input) kept sneaking in. We explicitly bounded R1 to our offline Windows build and noted future risks separately, which kept the FMEA focused and implementable.}
+\item{See team answer above.}
+\item{Data integrity risk (e.g., corrupted/partial saves/settings): threatens player time/progress and trust; mitigated via atomic/defensive writes and checkpointed autosaves.\\
+
+Accessibility/usability risk (e.g., unreadable UI at 1280×720; unsupported controllers): can make the game unplayable for part of our audience; mitigated via readability constraints, input remapping, and controller coverage.\\
+
+Stability/performance risk (crashes, hangs, resource spikes): directly blocks play and generates negative sentiment; mitigated with crash logging, performance budgets, and soak tests.\\
+
+Legal/compliance risk (licensing, writing outside user-writable paths): can cause takedowns or user hostility; mitigated via asset audits and correct file I/O locations.}
 \end{enumerate}
 
 \end{document}

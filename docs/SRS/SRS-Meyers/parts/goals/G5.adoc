@@ -2,9 +2,9 @@
 === (G.5) High-level usage scenarios
 
 -Destructable Environment. 
-1. Player aim their mouse at the destination of their tool strike
-2. When clicked breaks up the striked part of the game object, creating debris
-3. When an obstacle is destroyed and/or partially destroyed, player is able to navigate past it and/or use the debris created to their advantage
+. Player aim their mouse at the destination of their tool strike
+. When clicked breaks up the striked part of the game object, creating debris
+. When an obstacle is destroyed and/or partially destroyed, player is able to navigate past it and/or use the debris created to their advantage
 -Organic dynamic paths(Slime mold)
 Player manipulates environment with tools or body causing water debris to be located in the intended location
 Slime mold will traverse from its starting point to the location of the water debris
