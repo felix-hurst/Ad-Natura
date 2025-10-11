@@ -1,45 +1,38 @@
 [#s2,reftext=S.2]
 === (S.2) Functionality
 
- Non-Functional Requirements
+==== (S.2.1) Save Data Manager
 
--Destructable Environment. 
+===== Functional Requirements
 
-System shall produce randomly shaped game objects the sum of which is the same dimensions as the removed dimensions of the parent game object. This is so that the terrain we carved out produces logical debris amount and shape
+1. **Create save data:** Upon launching the game, if there is no save file found, a new save file will be generated on the user's computer file system. (F211)
+2. **Restore from save data:** Upon launching the game, if there is an existing save file found, then that file will be loaded to restore the player's progress from their previous session. (F212)
+3. **Auto-save:** Each time the player completes a puzzle and progresses to the next scene, the game will automatically save their progress, updating the save file. (F213)
+4. **Reset puzzle:** The player has the option to reset a puzzle room to start over, in case they got lost or softlocked. (F214)
 
-System shall correctly identify and produce logical debris amount, color, shape and parameters of the original object
+===== Non-Functional Requirements
 
--Organic dynamic paths(Slime mold)
--Slime mold shall correctly select series waypoints in the level which will allow for traversable terrain for the player to clear obstacles from its starting point to the indicated end point by the water source
+1. **Data privacy:** Only data related to game progression is saved to the save file; personal information is not collected. (NF211)
+2. **Compression:** The save file will be in a compressed, binary format to minimize the file space required to store it on the player's computer. (NF212)
 
--Slime mold shall move in an indeterministic manner which will create variation and replayability of each game level
+==== (S.2.2) Game Objects & Environment
 
--Replayable and Reproducible Levels
+===== Functional Requirements
 
-Levels should be testable and results reproducible within given reasonable constraints onto the two main mechanics. This is because the two systems we currently have are exceedingly dynamic and we must put constraints on them to ensure reproducible game results that do not impede challenge and entertainment value
+1. **Destructible environment:** The system shall simulate the usage of destructive tools, which, when interacting with terrain designated as destructible, will decompose the terrain game object into several smaller blocks of terrain. The sum of the areas of the decomposed blocks is roughly equal to the area of the terrain that was removed. The system shall correctly identify and produce logical debris amount, colour and shape, based on the attributes of the original object. (F221)
+2. **Slime mold simulation:** The system shall simulate an organism whose behaviour is modelled by the slime mold algorithm, which shall be nondeterministic but largely predictable and manipulable, based on attraction or repulsion to/from water, light and heat. (F222)
+3. **Puzzle progression:** The system shall contain environmental puzzles with a definite start and end which the player can traverse through by solving the puzzle; each puzzle requires the player to assist the slime mold organism in order to reveal a path forward. (F223)
 
-Each level shall be completable within a reasonable amount of time
+===== Non-Functional Requirements
 
+1. **Game difficulty and length:** The puzzles in the game shall be presented in chunks (referred to as "levels"), such that each level can be completed within a reasonable time frame (an estimated 15-20 minutes). (NF221)
+2. **Replayability and randomness:** The nondeterministic behaviour of the slime mold organism and the decomposed terrain generation shall create variance in a way that improves replayability of the game, while the puzzles themselves can still be solved regardless of the random elements of game behaviour. (NF222)
 
- Functional Requirements
+==== (S.2.3) Safety & Security
 
--Destructable Environment S2-FLD-1. 
-1. Striking an object or terrain with a tool shall carve out a section of that object or terrain.
+===== Non-Functional Requirements
 
-2. Terrain that is carved out shall produce dynamically generated debris which are game objects players and environment can interact with.
-
-3. Debris game objects generated shall be of the specifications to that game object referenced via characteristics dictionary as to the size, shape, color, etc.
-
--Organic dynamic paths(Slime mold) S2-FLD-2
-1. Slime mold shall be attracted to sources of and will traverse to it
-
-2. Slime mold shall provide player a traversable path in each level over obstacles and/or untraversable distances(a cliff for example)
-
--Replayable and Reproducible Levels S2-FLD-3
-
-1. Each level shall be completable within 1 hour of time
-
-2. Levels shall provide obstacles which can be cleared via the use of the game mechanics
-
-3. Each level shall provide unique challenges which leverage height and dynamic debris generation in different ways
-
+1. **Stability:** The system shall experience crashes no more frequently than once every two hours on average. (NF231)
+2. **Crash logs:** Should a crash occur, the system shall display as much detail about the crash as possible in a pop-up window, for diagnostic purposes. Developer contact information will be provided for the purpose of bug reporting. (NF232)
+3. **Privileges:** The system shall be able to run without requiring administrator privileges. (NF233)
+4. **Software vulnerabilities:**  Any Unity security vulnerabilities shall be patched in a timely fashion and distributed in a software update. (NF234)
