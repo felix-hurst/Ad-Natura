@@ -1,5 +1,5 @@
 [#g5,reftext=G.5]
-=== G.5 High-Level Usage Scenarios
+=== (G.5) High-Level Usage Scenarios
 
 ==== UC1: Destructible Environment
 

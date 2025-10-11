@@ -3,7 +3,7 @@
 
  Non-Functional Requirements
 
--Destructable Environment. 
+-Destructible Environment. 
 
 System shall produce randomly shaped game objects the sum of which is the same dimensions as the removed dimensions of the parent game object. This is so that the terrain we carved out produces logical debris amount and shape
 
@@ -23,7 +23,7 @@ Each level shall be completable within a reasonable amount of time
 
  Functional Requirements
 
--Destructable Environment S2-FLD-1. 
+-Destructible Environment S2-FLD-1. 
 1. Striking an object or terrain with a tool shall carve out a section of that object or terrain.
 
 2. Terrain that is carved out shall produce dynamically generated debris which are game objects players and environment can interact with.
