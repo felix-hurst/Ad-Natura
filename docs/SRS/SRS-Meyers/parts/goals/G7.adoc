@@ -1,12 +1,27 @@
 [#g7,reftext=G.7]
 === (G.7) Stakeholders and requirements sources
 
-Direct Stakeholders
-Casual Gamers: Gamers who play games on a non competitive capacity and as such value the experience rather than solely a challenge. Having already been familiar with similar games, basic game controls should be intuitive to them
+==== (G.7.1) Direct Stakeholders
+===== Casual Gamers
+Gamers who play games in a non-competitive capacity and as such value the experience rather than solely a challenge. Being familiar with similar games, basic game controls should be intuitive to them. These players may enjoy the game just for its puzzles, or may also spread our message after playing the game.
 
-Developers: The prospective developers of this game should have baseline knowledge of games and gaming are anticipated to be somewhat inexperienced with game development. However they are able to leverage their preexisting knowledge to understand what is fun and entertaining in a game from an user perspective as well as conduct internal debugging - potentially expand with external company developers. 
+===== Environmentalists
+Activists whose main purpose is to spread awareness of the importance of protecting our natural environment, habitats and wildlife. They would be interested in the success of our game.
 
-Indirect Stakeholders
-Steam: The shopfront and regulator of the sale of our game. Its algorithms and policies can determine the success and failure of our game. All aspects in the game are required to be complaint with Steam policies
+===== Educators
+Instructors may use technology to assist in the teaching of their classes. Our game may be used for educational purposes in a classroom environment.
 
-Government Organizations: Different government set policies on what is allowed and not allowed in games
+==== (G.7.2) Indirect Stakeholders
+===== Valve
+Valve operates Steam, the shopfront and regulator of the sale of our game. Its algorithms and policies can determine the success or failure of our game.
+
+===== Entertainment Software Rating Board (ESRB)
+This organization will assign an age rating to our game, determining what age range our audience will be.
+
+==== (G.7.3) Requirements Sources
+
+- *Reviews* for games sharing the same genre(s) as ours, will be read, with strong praises and criticisms being noted.
+- *Steam's Terms of Service:* These terms must be followed in order for us to sell our game on the Steam platform.
+** https://store.steampowered.com/eula/2585120_eula_1
+- *ESRB's Rating System:* To ensure our game meets an "E for Everyone" rating to maximize our potential audience, we will need to follow their rating guidelines.
+** https://www.esrb.org/ratings-guide/
