@@ -1,36 +1,42 @@
 [#s4,reftext=S.4]
-=== (S.4) Detailed usage scenarios
+=== (S.4) Detailed Usage Scenarios
 
-Destructable Environment
-• Use Case: S2-FLD-1
-• Primary Actor: Player
-• Precondition: Has access to reachable game object that is destructible
-• Trigger: Player strikes through the object with their tool and causes damage above certain threshold
-Main Success Scenario
-Player aims tool at game object or terrain
-Object/s in the aim path are highlighted of the chunk that will be broken off
-Player clicks left mouse button and the strike is executed
-The chunk is broken off and breaks down further into small debris to be manipulated and/or traversed by player
-Secondary Scenario
-The object or terrain the player carves off contains water and water is released
-Water accumulates at a point which can be utilized by the slime mold as a destination point to traverse to
+==== Destructible Environment
 
-Success PostCondition
-Player is able to traverse over obstacles by breaking up game objects and debris  and/or guide water flow to unlock pathways and/or guide slime mold
+Use Case:: UC1
+Primary Actor:: Player
+Precondition:: Player has access to a reachable destructible game object.
+Trigger:: Player strikes the object with their tool, causing damage above a certain threshold.
 
+==== Main Success Scenario
+* Player aims the tool at a game object or terrain.
+* Objects in the aim path are highlighted to show the chunk that will be broken off.
+* Player clicks the left mouse button to execute the strike.
+* The chunk is broken off and breaks down further into smaller debris that can be manipulated and/or traversed by the player.
 
-Organic Dynamic Paths(slime mold)
-• Use Case: S2-FLD-2
-• Primary Actor: Player
-• Precondition: Has existing slime mold sources in the game
-• Trigger: There is flowing source of water either released and/or guided by player
-Main Success Scenario
-Player releases water source to the right location either by striking object or solving a level puzzle
-Slime mold finds a creative path from its original location to water source
-Player walks over top of the organic pathway in order to traverse previously untraversable distances
-Secondary Scenario
-N/A
+==== Secondary Scenario
+* The object or terrain the player carves off contains water, which is released.
+* Water accumulates at a point that can be utilized by the slime mold as a destination to traverse toward.
 
-Success PostCondition
-Player is able to traverse over obstacles by breaking up game objects and debris  and/or guide water flow to unlock pathways and/or guide slime mold
+==== Success Postcondition
+The player can traverse obstacles by breaking up game objects and debris, and/or by guiding water flow to unlock pathways and guide slime mold.
 
+'''
+
+==== Organic Dynamic Paths (Slime Mold)
+
+Use Case:: UC2
+Primary Actor:: Player
+Precondition:: Slime mold sources exist in the game.
+Trigger:: Flowing water is released or guided by the player.
+
+==== Main Success Scenario
+* The player releases a water source at the correct location by striking an object or solving a puzzle.
+* The slime mold finds a path from its original location to the water source.
+* The player walks over the organic pathway to traverse previously unreachable areas.
+
+==== Secondary Scenario
+_No alternate scenario applies._
+
+==== Success Postcondition
+The player can traverse obstacles by breaking up game objects and debris, and/or by guiding water flow to unlock pathways and guide slime mold.

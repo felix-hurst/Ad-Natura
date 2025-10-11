@@ -3,12 +3,15 @@
 
 The major components of our project are as follows:
 
-1. Debris System
+1. Debris System +
+   Generates debris objects and reshapes preexisting objects for terrain traversal and environmental manipulation. It is essential that this component behaves as expected, and that level design is built with this system in mind to avoid game-breaking bugs.
 
-2. Inventory System
+2. Inventory System +
+   Selects tools, each of which has a unique effect on objects and terrain. Game levels and other systems must be designed with each tool type in mind.
 
-3. Player Controller
+3. Player Controller +
+   Handles player input and movement. It should be designed in coordination with the slime traversal and debris systems. Considerations such as jump height and terrain scaling should be factored in.
 
-4. Organic Pathway System
-
+4. Organic Pathway System +
+   Determines how the slime mold traverses the game level. The system should be tested and refined to ensure effective pathways are generated.
 

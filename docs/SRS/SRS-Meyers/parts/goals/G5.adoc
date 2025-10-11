@@ -1,20 +1,27 @@
 [#g5,reftext=G.5]
-=== (G.5) High-level usage scenarios
+=== (G.5) High-Level Usage Scenarios
 
--Destructable Environment. 
-1. Player aim their mouse at the destination of their tool strike
-2. When clicked breaks up the striked part of the game object, creating debris
-3. When an obstacle is destroyed and/or partially destroyed, player is able to navigate past it and/or use the debris created to their advantage
--Organic dynamic paths(Slime mold)
-Player manipulates environment with tools or body causing water debris to be located in the intended location
-Slime mold will traverse from its starting point to the location of the water debris
-Player is able to walk over the slime mold to traverse past obstacles
--Replayable and Reproducible Levels
-Player clicks play in the main menu and is taken to the first level
-Player gradually picks up all the tools with tutorials for every tool and mechanic
-Player uses available tools and organic environment to traverse obstacles
-When Player reaches the designated point in the level, the next level is loaded
-image::images/high_level_usage_diagram.PNG[high_level_usage_diagramt,175,100,high_level_usage_diagram]
+==== UC1: Destructible Environment
+
+1. Player aims their mouse at the destination of their tool strike.
+2. When clicked, the struck part of the game object breaks apart, creating debris.
+3. When an obstacle is destroyed or partially destroyed, the player can navigate past it or use the debris to their advantage.
+
+==== UC2: Organic Dynamic Paths (Slime Mold)
+
+1. Player manipulates the environment with tools or their body, causing water debris to accumulate in the intended location.
+2. The slime mold traverses from its starting point to the location of the water debris.
+3. The player can walk over the slime mold to traverse past obstacles.
+
+==== UC3: Replayable and Reproducible Levels
+
+1. The player clicks “Play” in the main menu and is taken to the first level.
+2. The player gradually acquires all tools, with tutorials provided for each tool and mechanic.
+3. The player uses available tools and the organic environment to traverse obstacles.
+4. When the player reaches the designated point in the level, the next level is loaded.
+
+[#high_level_usage_diagram]
+image::images/high_level_usage_diagram.PNG[High-level usage diagram,175,100]
 
 
 

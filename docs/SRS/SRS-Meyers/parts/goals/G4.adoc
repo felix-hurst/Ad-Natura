@@ -1,13 +1,12 @@
 [#g4,reftext=G.4]
-=== (G.4) Functionality overview
+=== (G.4) Functionality Overview
 
-The following are the functional requirements for our 2d pixel platformer game in no particular order.
+The following are the functional requirements for our 2D pixel platformer game in no particular order.
 
-1. Destructable Environment. Players are able to destroy environment objects and terrain to shape the landscape to clear and/or traverse past obstacles. Certain destroyed objects and terrain can also release water which the slime mold is attracted to
+1. Destructible environment. Players are able to destroy environment objects and terrain to shape the landscape to clear and/or traverse past obstacles. Certain destroyed objects and terrain can also release water, which the slime mold is attracted to.
 
-2. Organic dynamic paths(Slime mold) By shaping the environment and thereby water sources, the player is able to guide the slime mold in order to create dynamic paths to bypass obstacles
+2. Organic dynamic paths (slime mold). By shaping the environment and thereby water sources, the player is able to guide the slime mold to create dynamic paths to bypass obstacles.
 
-3. Replayable and Reproducible Levels Due to the indeterministic nature of slime mold and the unpredictable nature of the Destructable Environment, every playthrough of the game will introduce new and challenges to the player that while being challenging and replayable is also able to be cleared every time given some thought.
+3. Replayable and reproducible levels. Due to the indeterministic nature of slime mold and the unpredictable nature of the destructible environment, every playthrough of the game will introduce new challenges to the player. While being challenging and replayable, it is also always possible to complete each level with enough thought.
 
-4. Verticality as Design and Game Mechanic Not only is verticality central to the theme of the game it also plays a part of how the player navigates levels and utilizes the game’s mechanics to traverse the verticality while watching out for falling objects
-
+4. Verticality as design and game mechanic. Not only is verticality central to the theme of the game, it also influences how the player navigates levels and utilizes the game’s mechanics to traverse height while watching out for falling objects.
