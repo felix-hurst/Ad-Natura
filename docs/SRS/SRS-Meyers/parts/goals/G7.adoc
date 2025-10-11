@@ -1,9 +1,6 @@
 [#g7,reftext=G.7]
 === (G.7) Stakeholders and requirements sources
 
-Direct Stakeholders
-Casual Gamers: Gamers who play games on a non competitive capacity and as such value the experience rather than solely a challenge. Having already been familiar with similar games, basic game controls should be intuitive to them
-
 ==== (G.7.1) Direct Stakeholders
 ===== Casual Gamers
 Gamers who play games in a non-competitive capacity and as such value the experience rather than solely a challenge. Being familiar with similar games, basic game controls should be intuitive to them. These players may enjoy the game just for its puzzles, or may also spread our message after playing the game.
@@ -28,4 +25,3 @@ This organization will assign an age rating to our game, determining what age ra
 ** https://store.steampowered.com/eula/2585120_eula_1
 - *ESRB's Rating System:* To ensure our game meets an "E for Everyone" rating to maximize our potential audience, we will need to follow their rating guidelines.
 ** https://www.esrb.org/ratings-guide/
-
