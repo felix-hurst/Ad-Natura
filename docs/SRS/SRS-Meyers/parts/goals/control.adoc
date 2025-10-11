@@ -6,11 +6,11 @@
 |===
 |Section | Version | Lead | Delivered on| Reviewer | Approved on
 
-| **<<g1>>** | V1 | Felix Hurst | 10/01/2025 | BoWen Liu |
-| **<<g2>>** | V1 | Felix Hurst | 10/01/2025 | BoWen Liu |
-| **<<g3>>** | V1 | Felix Hurst | 10/01/2025 | BoWen Liu |
-| **<<g4>>** |  |  |  |  |
-| **<<g5>>** |  |  |  |  |
-| **<<g6>>** | V1 | Felix Hurst | 10/01/2025 | BoWen Liu |
-| **<<g7>>** | V1 | Felix Hurst | 10/01/2025 | BoWen Liu |
+| **<<g1>>** | 1.0 | Felix Hurst | 2025-10-01 | BoWen Liu | 2025-10-07
+| **<<g2>>** | 1.0 | Felix Hurst | 2025-10-01 | BoWen Liu | 2025-10-07
+| **<<g3>>** | 1.0 | Felix Hurst | 2025-10-01 | BoWen Liu | 2025-10-07
+| **<<g4>>** | 1.0 | BoWen Liu | 2025-10-01 | Andy Liang | 2025-10-07
+| **<<g5>>** | 1.0 | BoWen Liu | 2025-10-01 | Andy Liang | 2025-10-07
+| **<<g6>>** | 1.0 | Felix Hurst | 2025-10-01 | BoWen Liu | 2025-10-07
+| **<<g7>>** | 1.0 | Felix Hurst | 2025-10-01 | BoWen Liu | 2025-10-07
 |===
