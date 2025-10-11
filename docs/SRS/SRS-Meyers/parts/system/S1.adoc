@@ -1,7 +1,7 @@
 [#s1,reftext=S.1]
 === (S.1) Components
+.Components Diagram
 image::images/components_diagram.PNG[alt="components", width=1000]
-[caption="Figure 2: Components Diagram"]
 The major components of our project are as follows:
 
 1. Debris System +
