@@ -21,7 +21,7 @@
 4. When the player reaches the designated point in the level, the next level is loaded.
 
 [#high_level_usage_diagram]
-image::images/high_level_usage_diagram.PNG[High-level usage diagram,175,100]
+image::images/high_level_usage_diagram.PNG[alt="high_level_usage_diagram", width=175]
 
 
 
