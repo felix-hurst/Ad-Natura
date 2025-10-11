@@ -1,5 +1,5 @@
 [#g4,reftext=G.4]
-=== G.4 Functionality Overview
+=== (G.4) Functionality Overview
 
 The following are the functional requirements for our 2D pixel platformer game in no particular order.
 

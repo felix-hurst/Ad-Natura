@@ -1,5 +1,5 @@
 [#s4,reftext=S.4]
-=== S.4 Detailed Usage Scenarios
+=== (S.4) Detailed Usage Scenarios
 
 ==== Destructible Environment
 

@@ -1,5 +1,5 @@
 [#s1,reftext=S.1]
-=== S.1 Components
+=== (S.1) Components
 
 The major components of our project are as follows:
 
