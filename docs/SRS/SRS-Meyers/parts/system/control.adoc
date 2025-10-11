@@ -5,10 +5,10 @@
 |===
 |Section | Version | Lead | Delivered | Reviewer | Approved 
 
-| **<<s1>>** | | | | |
-| **<<s2>>** | | | | |
-| **<<s3>>** | | | | |
-| **<<s4>>** | | | | |
-| **<<s5>>** | | | | |
-| **<<s6>>** | | | | |
+| **<<s1>>** | 1.0 | BoWen Liu | 2025-10-01 | Andy Liang | 2025-10-07
+| **<<s2>>** | 1.0 | BoWen Liu | 2025-10-01 | Andy Liang | 2025-10-07
+| **<<s3>>** | 1.0 | BoWen Liu | 2025-10-01 | Andy Liang | 2025-10-07
+| **<<s4>>** | 1.0 | BoWen Liu | 2025-10-01 | Andy Liang | 2025-10-07
+| **<<s5>>** | 1.0 | Andy Liang | 2025-10-07 | Marcos Hernandez-Rivero | 2025-10-07
+| **<<s6>>** | 1.0 | Andy Liang | 2025-10-07 | Marcos Hernandez-Rivero | 2025-10-07
 |===
