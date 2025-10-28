@@ -2,14 +2,14 @@ name: buildtex
 
 on:
   push:
-    branches: main
+    branches: [main]
     paths: [docs/**]
   pull_request:
-    branches: main
+    branches: [main]
     paths: [docs/**]
 
 permissions:
-  contents: write
+  contents: write  # needed for push->main commits
 
 jobs:
   compile-latex:
@@ -18,36 +18,69 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      - name: Get changed LaTeX files
-        id: latex-files
+
+      - name: Find changed .tex files
+        id: changes
+        shell: bash
         run: |
-          CHANGED_FILES=$(git diff --name-only ${{ github.event.before }} ${{ github.sha }} -- docs/**/*.tex | xargs)
-          echo "Changed files: $CHANGED_FILES"
-          echo "CHANGED_FILES=$CHANGED_FILES" >> $GITHUB_ENV
-          CHANGED_FILENAMES=$(for file in $CHANGED_FILES; do basename "$file"; done | xargs)
-          echo "CHANGED_FILENAMES=$CHANGED_FILENAMES" >> $GITHUB_ENV
-          FILE_COUNT=$(echo $CHANGED_FILENAMES | wc -w)
-          if [ $FILE_COUNT -gt 1 ]; then
-            PLURAL_S='s'
+          set -euo pipefail
+          if [[ "${{ github.event_name }}" == "pull_request" ]]; then
+            # Compare PR head against base
+            git fetch origin "${{ github.base_ref }}" --depth=1
+            CHANGED=$(git diff --name-only --diff-filter=ACMR \
+              "origin/${{ github.base_ref }}...HEAD" -- ':(glob)docs/**/*.tex')
           else
-            PLURAL_S=''
+            # Regular push compare
+            CHANGED=$(git diff --name-only --diff-filter=ACMR \
+              "${{ github.event.before }}" "${{ github.sha }}" -- ':(glob)docs/**/*.tex')
           fi
-          echo "PLURAL_S=$PLURAL_S" >> $GITHUB_ENV
+
+          echo "CHANGED:"
+          echo "$CHANGED"
+          # Export as space-separated for loops
+          CHANGED_S=$(echo "$CHANGED" | xargs || true)
+          echo "CHANGED_FILES=$CHANGED_S" >> "$GITHUB_ENV"
+
+          # Human-friendly names
+          CHANGED_NAMES=$(for f in $CHANGED_S; do basename "$f"; done | xargs || true)
+          echo "CHANGED_FILENAMES=$CHANGED_NAMES" >> "$GITHUB_ENV"
+
+          COUNT=$(wc -w <<< "$CHANGED_NAMES")
+          [[ "$COUNT" -gt 1 ]] && echo "PLURAL_S=s" >> "$GITHUB_ENV" || echo "PLURAL_S=" >> "$GITHUB_ENV"
+
+      - name: Skip if nothing changed
+        if: env.CHANGED_FILES == ''
+        run: echo "No .tex changes in docs/**. Nothing to build."
+
       - uses: xu-cheng/texlive-action@v2
-        name: Compile LaTeX Files
+        if: env.CHANGED_FILES != ''
+        name: Compile LaTeX with latexmk
         with:
           scheme: full
           texlive_version: 2024
           run: |
-            apk add make
-            cd docs
-            for file in ${{ env.CHANGED_FILES }}; do 
-              dir=$(dirname "$file" | cut -d'/' -f2-)
-              make -B "$dir/$(basename "$file" .tex).pdf" 
+            set -euo pipefail
+            # Build each changed .tex in its own directory
+            for f in ${{ env.CHANGED_FILES }}; do
+              d=$(dirname "$f")
+              b=$(basename "$f")
+              (cd "$d" && latexmk -pdf -interaction=nonstopmode -halt-on-error "$b")
             done
-      - name: Commit and push PDFs
+
+      # On pull_request: upload PDFs as artifacts (don’t push to main)
+      - name: Upload PDFs (PR)
+        if: github.event_name == 'pull_request'
+        uses: actions/upload-artifact@v4
+        with:
+          name: built-pdfs
+          path: docs/**/*.pdf
+          if-no-files-found: ignore
+
+      # On push to main: commit PDFs back to main
+      - name: Commit and push PDFs (push only)
+        if: github.event_name == 'push'
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: 'Add/Update PDF${{ env.PLURAL_S }} for changed LaTeX file${{ env.PLURAL_S }}: ${{ env.CHANGED_FILENAMES }}'
-          file_pattern: 'docs/*.pdf'
+          file_pattern: 'docs/**/*.pdf'
           branch: main
