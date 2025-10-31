@@ -1,3 +1,4 @@
+
 ## Core latex/pdflatex auxiliary files:
 *.aux
 *.lof
@@ -277,3 +278,82 @@ TSWLatexianTemp*
 
 # DS_Store file from Mac computers
 .DS_Store
+Thumbs.db
+
+# User-specific files
+*.swp
+*.suo
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+*.pdb
+*.opendb
+*.VC.db
+
+# Unity generated folders
+[Ll]ibrary/
+[Tt]emp/
+[Oo]bj/
+[Bb]uild/
+[Bb]uilds/
+[Ll]ogs/
+[Mm]emoryCaptures/
+UserSettings/
+
+# Cache
+[Ll]ightmapSnapshot/
+*.stackdump
+
+# Visual Studio
+.vscode/
+.vs/
+*.csproj
+*.unityproj
+*.sln
+*.suo
+*.tmp
+*.user
+*.userprefs
+*.pidb
+*.booproj
+*.svd
+
+# Unity Package Manager
+Packages/manifest.json
+Packages/packages-lock.json
+
+# Addressables
+[Aa]sset[Bb]undles/
+[Aa]sset[Bb]undle[Bb]uilds/
+
+# Crash reports
+sysinfo.txt
+
+# Builds
+*.apk
+*.aab
+*.xcodeproj
+*.xcworkspace
+
+# Ignore Unity’s auto-generated files
+my_project/Library/
+my_project/Temp/
+my_project/Obj/
+my_project/Build/
+my_project/Builds/
+my_project/Logs/
+my_project/UserSettings/
+my_project/MemoryCaptures/
+
+# Ignore other large artifacts
+*.dll
+*.exe
+*.zip
+*.tar
+*.7z
+*.rar
+
+# JetBrains Rider
+.idea/
