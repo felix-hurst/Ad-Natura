@@ -27,6 +27,7 @@
 \textbf{Date} & \textbf{Developer(s)} & \textbf{Change}\\
 \midrule
 2025-10-09 & All & Created Document\\
+2025-11-11 & Andy Liang & Addressed peer review feedback from Team 11: Added health/safety requirements (NF235-237) for photosensitivity and audio warnings; Added definition of "not fun to play" failure mode; Added detailed recommended actions for visual appeal issues\\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -86,15 +87,54 @@ We make assumptions regarding user system specifications. We assume the final ga
 
 \section{Failure Mode and Effect Analysis}
 
+\subsection{Definition of Key Failure Modes}
+
+\textbf{Not Fun to Play:} In the context of this hazard analysis, "not fun to play" refers to design or implementation failures that negatively impact player enjoyment and engagement. This encompasses several measurable failure modes:
+\begin{itemize}
+\item{Excessive progression time: The game takes too long to transition between screens or load levels, causing player frustration and breaking immersion.}
+\item{Poor visual design: The game's art style, color schemes, or visual presentation does not appeal to the target audience or lacks coherence with the game's theme.}
+\item{Inappropriate difficulty balancing: Puzzles are either too difficult (causing frustration) or too easy (causing boredom), without adequate difficulty progression or player guidance.}
+\item{Lack of save points: Absence of checkpoints or autosave functionality forces players to restart from the beginning of long puzzle sequences, leading to frustration when they need to exit the game.}
+\item{Unclear game mechanics: Puzzle mechanics or controls are not intuitive or properly explained, preventing players from understanding how to progress.}
+\item{Softlocks and dead-ends: Players can enter game states where progression becomes impossible without restarting the level.}
+\end{itemize}
+
+These failure modes are mitigated through playtesting, iterative design reviews, accessibility features (such as puzzle reset options), autosave functionality, and clear tutorial/onboarding systems. Each of these concrete issues can be measured and addressed through user feedback and testing protocols.
+
+\subsection{FMEA Table}
+
 \begin{figure}[H]
 	\includegraphics[width=\linewidth]{FMEA.png}
 \end{figure}
+
+\subsection{Recommended Actions for Visual Appeal}
+
+For the "not visually appealing" failure mode identified in the FMEA, the recommended action involves a comprehensive visual design review and iterative improvement process:
+
+\begin{enumerate}
+\item{\textbf{User feedback collection:} Conduct playtesting sessions and surveys to gather specific feedback on visual elements (e.g., color palette, art style, UI layout, environmental design).}
+\item{\textbf{Asset review and redesign:} Based on feedback, the designated team member (art lead) will identify problematic visual elements and create alternative designs or refinements. This may include:
+\begin{itemize}
+\item{Revising color schemes to improve contrast and thematic coherence}
+\item{Updating texture quality or art style to better align with player expectations}
+\item{Redesigning UI elements for better readability and aesthetic appeal}
+\item{Adjusting lighting, particle effects, or environmental details to enhance visual quality}
+\end{itemize}}
+\item{\textbf{Team review:} Present redesigned assets to the full development team for feedback and approval to ensure consistency with the game's overall vision.}
+\item{\textbf{Implementation and iteration:} Integrate approved changes into the game build and conduct follow-up testing to validate improvements. Repeat the process if issues persist.}
+\item{\textbf{Performance consideration:} Ensure visual improvements do not negatively impact game performance or exceed minimum system specifications.}
+\end{enumerate}
+
+This structured approach ensures that visual appeal issues are addressed systematically with measurable improvements based on player feedback, rather than relying solely on subjective judgment.
 
 \section{Safety and Security Requirements}
 
 \begin{itemize}
 \item{\textbf{Auto-save:} Each time the player completes a puzzle and progresses to the next scene, the game will automatically save their progress, updating the save file. (F213).}
 \item{\textbf{Reset Puzzle:} The player has the option to reset a puzzle room to start over, in case they got lost or softlocked. (F214).}
+\item{\textbf{Health and Safety Warning:} The game shall display a warning screen at startup informing players about potential photosensitivity triggers (e.g., flashing lights, rapid visual changes) and sudden loud audio. Players shall have the option to acknowledge the warning before proceeding. (NF235).}
+\item{\textbf{Audio Safety:} The system shall prevent sudden audio spikes by implementing audio normalization and volume limiting. Maximum audio output shall not exceed safe listening levels, and players shall have accessible volume controls. (NF236).}
+\item{\textbf{Accessibility Options:} The game shall provide options to reduce or disable potentially triggering visual effects (e.g., screen shake, particle effects, flashing lights) to accommodate players with photosensitivity or motion sensitivity. (NF237).}
 \item{\textbf{Stability:} The system shall experience crashes no more frequently than once every two hours on average. (NF231).}
 \item{\textbf{Crash logs:} Should a crash occur, the system shall display as much detail about the crash as possible in a pop-up window, for diagnostic purposes. Developer contact information will be provided for the purpose of bug reporting. (NF232).}
 \item{\textbf{Privileges:} The system shall be able to run without requiring administrator privileges. (NF233).}
