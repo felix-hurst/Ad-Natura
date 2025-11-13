@@ -1,10 +1,14 @@
-# Project Name
+# Ad-Natura - Wardens of the Wild
 
 Developer Names:
+- Felix Hurst
+- Marcos Hernandez-Rivero
+- BoWen Liu
+- Andy Liang
 
-Date of project start:
+Date of project start: September 2024
 
-This project is ...
+This project is a capstone design project for SFWRENG 4G06.
 
 The folders and files for this project are as follows:
 

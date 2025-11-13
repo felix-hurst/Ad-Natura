@@ -49,5 +49,5 @@ jobs:
         uses: stefanzweifel/git-auto-commit-action@v4
         with:
           commit_message: 'Add/Update PDF${{ env.PLURAL_S }} for changed LaTeX file${{ env.PLURAL_S }}: ${{ env.CHANGED_FILENAMES }}'
-          file_pattern: 'docs/*.pdf'
+          file_pattern: 'docs/**/*.pdf'
           branch: main

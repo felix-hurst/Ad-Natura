@@ -9,14 +9,15 @@ Precondition:: Player has access to a reachable destructible game object.
 Trigger:: Player strikes the object with their tool, causing damage above a certain threshold.
 
 ==== Main Success Scenario
-* Player aims the tool at a game object or terrain.
-* Objects in the aim path are highlighted to show the chunk that will be broken off.
-* Player clicks the left mouse button to execute the strike.
-* The chunk is broken off and breaks down further into smaller debris that can be manipulated and/or traversed by the player.
+1. Player aims the tool at a game object or terrain.
+2. Objects in the aim path are highlighted to show the chunk that will be broken off.
+3. Player clicks the left mouse button to execute the strike.
+4. The chunk is broken off and breaks down further into smaller debris that can be manipulated and/or traversed by the player.
 
 ==== Secondary Scenario
-* The object or terrain the player carves off contains water, which is released.
-* Water accumulates at a point that can be utilized by the slime mold as a destination to traverse toward.
+4.1. The object or terrain the player carves off contains water, which is released.
+
+4.2. Water accumulates at a point that can be utilized by the slime mold as a destination to traverse toward.
 
 ==== Success Postcondition
 The player can traverse obstacles by breaking up game objects and debris, and/or by guiding water flow to unlock pathways and guide slime mold.
@@ -31,9 +32,9 @@ Precondition:: Slime mold sources exist in the game.
 Trigger:: Flowing water is released or guided by the player.
 
 ==== Main Success Scenario
-* The player releases a water source at the correct location by striking an object or solving a puzzle.
-* The slime mold finds a path from its original location to the water source.
-* The player walks over the organic pathway to traverse previously unreachable areas.
+1. The player releases a water source at the correct location by striking an object or solving a puzzle.
+2. The slime mold finds a path from its original location to the water source.
+3. The player walks over the organic pathway to traverse previously unreachable areas.
 
 ==== Secondary Scenario
 _No alternate scenario applies._

@@ -31,5 +31,6 @@ Controller API:: If a controller is used, it follows standard XInput mappings (n
 
 CI test host:: A Windows runner with a DX11-class <<gl-gpu,GPU>> can execute automated scenes (<<gl-ci,CI>>); seeded runs are reproducible on the same machine using a <<gl-prng,PRNG>>.
 
+Player:: The human player does not require accessibility modifications (for example, for colour blindness).
 
 

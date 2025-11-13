@@ -3,7 +3,7 @@
 
 ==== (G.7.1) Direct Stakeholders
 ===== Casual Gamers
-Gamers who play games in a non-competitive capacity and as such value the experience rather than solely a challenge. Being familiar with similar games, basic game controls should be intuitive to them. These players may enjoy the game just for its puzzles, or may also spread our message after playing the game.
+Gamers who play games in a non-competitive capacity and as such value the experience rather than solely a challenge. Being familiar with similar games, basic game controls should be intuitive to them. These players may enjoy the game just for its puzzles, or may also spread our message after playing the game. This can also include new gamers or people who only play games very rarely; they will be familiarized with how to play through a tutorial level.
 
 ===== Environmentalists
 Activists whose main purpose is to spread awareness of the importance of protecting our natural environment, habitats and wildlife. They would be interested in the success of our game.
