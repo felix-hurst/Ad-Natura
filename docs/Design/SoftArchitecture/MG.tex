@@ -8,6 +8,9 @@
 \usepackage{graphicx}
 \usepackage{float}
 \usepackage{hyperref}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
 \hypersetup{
     colorlinks,
     citecolor=blue,
@@ -46,8 +49,7 @@
 \begin{tabularx}{\textwidth}{p{3cm}p{2cm}X}
 \toprule {\bf Date} & {\bf Version} & {\bf Notes}\\
 \midrule
-Date 1 & 1.0 & Notes\\
-Date 2 & 1.1 & Notes\\
+Nov 13 & 1.0 & Initial doc\\
 \bottomrule
 \end{tabularx}
 
@@ -59,24 +61,6 @@ This section records information for easy reference.
 
 \subsection{Abbreviations and Acronyms}
 
-\renewcommand{\arraystretch}{1.2}
-\begin{tabular}{l l} 
-  \toprule		
-  \textbf{symbol} & \textbf{description}\\
-  \midrule 
-  AC & Anticipated Change\\
-  DAG & Directed Acyclic Graph \\
-  M & Module \\
-  MG & Module Guide \\
-  OS & Operating System \\
-  R & Requirement\\
-  SC & Scientific Computing \\
-  SRS & Software Requirements Specification\\
-  \progname & Explanation of program name\\
-  UC & Unlikely Change \\
-  \wss{etc.} & \wss{...}\\
-  \bottomrule
-\end{tabular}\\
 
 \newpage
 
@@ -94,14 +78,14 @@ This section records information for easy reference.
 
 Decomposing a system into modules is a commonly accepted approach to developing
 software.  A module is a work assignment for a programmer or programming
-team~\citep{ParnasEtAl1984}.  We advocate a decomposition
-based on the principle of information hiding~\citep{Parnas1972a}.  This
+team~\cite{ParnasEtAl1984}.  We advocate a decomposition
+based on the principle of information hiding~\cite{Parnas1972a}.  This
 principle supports design for change, because the ``secrets'' that each module
 hides represent likely future changes.  Design for change is valuable in SC,
 where modifications are frequent, especially during initial development as the
 solution space is explored.  
 
-Our design follows the rules layed out by \citet{ParnasEtAl1984}, as follows:
+Our design follows the rules layed out by \cite{ParnasEtAl1984}, as follows:
 \begin{itemize}
 \item System details that are likely to change independently should be the
   secrets of separate modules.
@@ -111,7 +95,7 @@ Our design follows the rules layed out by \citet{ParnasEtAl1984}, as follows:
 \end{itemize}
 
 After completing the first stage of the design, the Software Requirements
-Specification (SRS), the Module Guide (MG) is developed~\citep{ParnasEtAl1984}. The MG
+Specification (SRS), the Module Guide (MG) is developed~\cite{ParnasEtAl1984}. The MG
 specifies the modular structure of the system and is intended to allow both
 designers and maintainers to easily identify the parts of the software.  The
 potential readers of this document are as follows:
@@ -157,16 +141,23 @@ adapted here is called design for
 change.
 
 \begin{description}
-\item[\refstepcounter{acnum} \actheacnum \label{acHardware}:] The specific
-  hardware on which the software is running.
-\item[\refstepcounter{acnum} \actheacnum \label{acInput}:] The format of the
-  initial input data.
-\item ...
+\item[\refstepcounter{acnum} \actheacnum \label{AC1}:] Hardware that the game is made available in (Windows, Android, Apple, Desktop, Mobile, etc).
+\item[\refstepcounter{acnum} \actheacnum \label{AC2}:] Input Device being used (Mouse and Keyboard, touchscreen)
+\item[\refstepcounter{acnum} \actheacnum \label{AC3}:] Rendering resolution and pixel density for different display types
+\item[\refstepcounter{acnum} \actheacnum \label{AC4}:] Material properties for different destructible objects (softness, strength, friction, texture patterns, etc).
+\item[\refstepcounter{acnum} \actheacnum \label{AC5}:] Number and behaviour of debris objects generated from cuts.
+\item[\refstepcounter{acnum} \actheacnum \label{AC6}:] Pixel size used for pixelated cut edge rendering
+\item[\refstepcounter{acnum} \actheacnum \label{AC7}:] Algorithm used for irregular edge generation.
+\item[\refstepcounter{acnum} \actheacnum \label{AC8}:] Debug and production visualization style of the cutting line and intersection points (colors, sizes, styles).
+\item[\refstepcounter{acnum} \actheacnum \label{AC9}:] The physics properties of objects (mass calculation, gravity scale).
+\item[\refstepcounter{acnum} \actheacnum \label{AC10}:] Methodology for cut object selection (top, bottom, closest to player).
+\item[\refstepcounter{acnum} \actheacnum \label{AC11}:] Mesh triangulation algorithm (Bresenhan algorithm vs Alternatives).
+\item[\refstepcounter{acnum} \actheacnum \label{AC12}:] Format and storage location of cut profile configuration data (JSON, databases, etc.)
+\item[\refstepcounter{acnum} \actheacnum \label{AC13}:] Force range and patterns for destructive environment.
+\item[\refstepcounter{acnum} \actheacnum \label{AC14}:] the lifetime and cleanup behaviour of debris fragments.
+\item[\refstepcounter{acnum} \actheacnum \label{AC15}:] The collision detection layers and filtering rules/parameters for raycasting.
 \end{description}
 
-\wss{Anticipated changes relate to changes that would be made in requirements,
-design or implementation choices.  They are not related to changes that are made
-at run-time, like the values of parameters.}
 
 \subsection{Unlikely Changes} \label{SecUchange}
 
@@ -178,9 +169,15 @@ will potentially need to be modified. Hence, it is not intended that these
 decisions will be changed.
 
 \begin{description}
-\item[\refstepcounter{ucnum} \uctheucnum \label{ucIO}:] Input/Output devices
-  (Input: File and/or Keyboard, Output: File, Memory, and/or Screen).
-\item ...
+\item[\refstepcounter{ucnum} \uctheucnum \label{ucIO}:] Game engine (Unity)
+\item[\refstepcounter{ucnum} \uctheucnum \label{ucIO}:] Dimensionality (2D)
+\item[\refstepcounter{ucnum} \uctheucnum \label{ucIO}:]  Focus and use of physics simulation for object behaviour and world simulation.
+\item[\refstepcounter{ucnum} \uctheucnum \label{ucIO}:]  Requirement for real-time object destruction physics
+\item[\refstepcounter{ucnum} \uctheucnum \label{ucIO}:] The fundamental geometric representation of objects as pixel-based polygons
+\item[\refstepcounter{ucnum} \uctheucnum \label{ucIO}:] Use of entry and exit points as a basis of destructive tools
+\item[\refstepcounter{ucnum} \uctheucnum \label{ucIO}:] The partitioning of objects into two entities (original object, cut off object) per tool use.
+\item[\refstepcounter{ucnum} \uctheucnum \label{ucIO}:] The coordinate system (right-handed 2D cartesian coordinates)
+\item[\refstepcounter{ucnum} \uctheucnum \label{ucIO}:] Use of mesh rendering techniques for displaying cut objects.
 \end{description}
 
 \section{Module Hierarchy} \label{SecMH}
@@ -196,30 +193,41 @@ actually be implemented.
 \end{description}
 
 
-\begin{table}[h!]
+\begin{table}[H]
 \centering
-\begin{tabular}{p{0.3\textwidth} p{0.6\textwidth}}
+\begin{tabular}{|p{0.3\textwidth}| p{0.6\textwidth}|}
 \toprule
 \textbf{Level 1} & \textbf{Level 2}\\
 \midrule
-
-{Hardware-Hiding Module} & ~ \\
+Hardware-Hiding & Unity Input System\\
 \midrule
-
-\multirow{7}{0.3\textwidth}{Behaviour-Hiding Module} & ?\\
-& ?\\
-& ?\\
-& ?\\
-& ?\\
-& ?\\
-& ?\\ 
-& ?\\
+ & Unity Physics 2D\\
 \midrule
-
-\multirow{3}{0.3\textwidth}{Software Decision Module} & {?}\\
-& ?\\
-& ?\\
-\bottomrule
+& Unity Rendering\\
+\midrule
+& Unity collider system\\
+\midrule
+Behaviour-Hiding & Player Control module\\
+\midrule
+& Raycast visualization module\\
+\midrule
+& Cut execution module\\
+\midrule
+& Debris generation module\\
+\midrule
+Cut profile manager module\\
+\midrule
+Software Decision & Geometric operations module\\
+\midrule
+& Polygon partitioning module\\
+\midrule
+& Mesh generation module\\
+\midrule
+& Pixelation module\\
+\midrule
+& Physics update module\\
+\midrule
+& Material properties module\\
 
 \end{tabular}
 \caption{Module Hierarchy}
@@ -228,84 +236,690 @@ actually be implemented.
 
 \section{Connection Between Requirements and Design} \label{SecConnection}
 
-The design of the system is intended to satisfy the requirements developed in
-the SRS. In this stage, the system is decomposed into modules. The connection
-between requirements and modules is listed in Table~\ref{TblRT}.
+The design of the system is intended to satisfy the requirements developed in the SRS. In this stage, the system is decomposed into modules. The connection between requirements and modules is listed in Table 2.\\
 
-\wss{The intention of this section is to document decisions that are made
-  ``between'' the requirements and the design.  To satisfy some requirements,
-  design decisions need to be made.  Rather than make these decisions implicit,
-  they are explicitly recorded here.  For instance, if a program has security
-  requirements, a specific design decision may be made to satisfy those
-  requirements with a password.}
+\textbf{Design Decisions}\\
+
+The following design decisions are made to bridge the gap between requirements and implementation:\\
+
+\textbf{DD1: Dual Representation} - All cut objects have a pixelated mesh texture using Bresenham algorithm applied to them in contrast with the smooth collision mesh even if the cut was irregular and/or diagonal in order to ensure adherence to the visual style(R6).\\
+
+\textbf{DD2: Material Profile System} - In order to meet the requirement for different cutting behavior on different materials (R5) a JSON-based configuration system maps material names/tags to extendable cutting parameters (softness and strength).\\
+
+\textbf{DD3: Modular Cutting Pipeline} - Cutting object flow can be broken into the following key phases of visualization, partitioning, mesh generation, and debris spawning thereby allowing each phase to be optimized independently and meeting the requirement for real-time interactive cutting (R3) in an extendable and maintainable way.\\
+
+\textbf{DD4: Entry-Exit Point Model} - In order for players to have a clear understanding of what the tool destroys (R2), cuts are defined by exactly two intersection points for each object (entry and exit) which simplifies the logic and provides clear visualization and working feedback to the player\\
+
+\textbf{DD5: Area-Proportional Mass} - For realistic physics behavior after cutting (R4), object mass is updated proportionally to the change in area, maintaining consistent density. \\
+
 
 \section{Module Decomposition} \label{SecMD}
 
-Modules are decomposed according to the principle of ``information hiding''
-proposed by \citet{ParnasEtAl1984}. The \emph{Secrets} field in a module
-decomposition is a brief statement of the design decision hidden by the
-module. The \emph{Services} field specifies \emph{what} the module will do
-without documenting \emph{how} to do it. For each module, a suggestion for the
-implementing software is given under the \emph{Implemented By} title. If the
-entry is \emph{OS}, this means that the module is provided by the operating
-system or by standard programming language libraries.  \emph{\progname{}} means the
-module will be implemented by the \progname{} software.
+Modules are decomposed according to the principle of “information hiding” proposed by Parnas et al. (1984). The Secrets field in a module decomposition is a brief statement of the design decision hidden by the module. The Services field specifies what the module will do without documenting how to do it. For each module, a suggestion for the implementing software is given under the Implemented By title. If the entry is OS, this means that the module is provided by the operating system or by standard programming language libraries. ProgName means the module will be implemented by the ProgName software. \\
 
-Only the leaf modules in the hierarchy have to be implemented. If a dash
-(\emph{--}) is shown, this means that the module is not a leaf and will not have
-to be implemented.
+Only the leaf modules in the hierarchy have to be implemented. If a dash (-) is shown, this means that the module is not a leaf and will not have to be implemented. 
+
 
 \subsection{Hardware Hiding Modules (\mref{mHH})}
 
-\begin{description}
-\item[Secrets:]The data structure and algorithm used to implement the virtual
-  hardware.
-\item[Services:]Serves as a virtual hardware used by the rest of the
-  system. This module provides the interface between the hardware and the
-  software. So, the system can use it to display outputs or to accept inputs.
-\item[Implemented By:] OS
-\end{description}
+\subsubsection{Unity Input System (M1)} \label{M1}
 
-\subsection{Behaviour-Hiding Module}
+\paragraph{Secrets}
+The data structure and algorithm used to detect and process user input events (mouse position, button presses, keyboard input).
 
-\begin{description}
-\item[Secrets:]The contents of the required behaviours.
-\item[Services:]Includes programs that provide externally visible behaviour of
-  the system as specified in the software requirements specification (SRS)
-  documents. This module serves as a communication layer between the
-  hardware-hiding module and the software decision module. The programs in this
-  module will need to change if there are changes in the SRS.
-\item[Implemented By:] --
-\end{description}
+\paragraph{State Variables}
+\begin{itemize}
+\item $mousePosition : \mathbb{R}^2$ --- Current mouse position in screen coordinates
+\item $mouseButtonDown : \mathbb{B}$ --- Whether left mouse button is pressed
+\item $keyboardInput : \text{seq of char}$ --- Currently pressed keyboard keys
+\end{itemize}
 
-\subsubsection{Input Format Module (\mref{mInput})}
+\paragraph{Environment Variables}
+\begin{itemize}
+\item Physical mouse device
+\item Physical keyboard device
+\item Screen resolution and DPI
+\end{itemize}
 
-\begin{description}
-\item[Secrets:]The format and structure of the input data.
-\item[Services:]Converts the input data into the data structure used by the
-  input parameters module.
-\item[Implemented By:] [Your Program Name Here]
-\item[Type of Module:] [Record, Library, Abstract Object, or Abstract Data Type]
-  [Information to include for leaf modules in the decomposition by secrets tree.]
-\end{description}
+\paragraph{Access Programs}
 
-\subsubsection{Etc.}
+\begin{center}
+\begin{tabular}{p{4cm}p{3cm}p{3cm}p{4cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+GetMousePosition & - & Vector2 & - \\
+GetMouseButton & int & $\mathbb{B}$ & - \\
+GetKey & KeyCode & $\mathbb{B}$ & - \\
+ScreenToWorldPoint & Vector2 & Vector2 & - \\
+\bottomrule
+\end{tabular}
+\end{center}
 
+\paragraph{Services}
+Detects mouse movement and clicks for aiming and tool use, detects keyboard input for player movement and jumping and translates screen coordinates to world coordinates.
 
-\subsection{Software Decision Module}
+\paragraph{Implemented By}
+Unity (UnityEngine.InputSystem)
 
-\begin{description}
-\item[Secrets:] The design decision based on mathematical theorems, physical
-  facts, or programming considerations. The secrets of this module are
-  \emph{not} described in the SRS.
-\item[Services:] Includes data structure and algorithms used in the system that
-  do not provide direct interaction with the user. 
-  % Changes in these modules are more likely to be motivated by a desire to
-  % improve performance than by externally imposed changes.
-\item[Implemented By:] --
-\end{description}
+\paragraph{Type of Module}
+Library
 
-\subsubsection{Etc.}
+\subsubsection{Unity Physics2D (M2)} \label{M2}
+
+\paragraph{Secrets}
+Library used for rigid bodies, physics, and collisions.
+
+\paragraph{State Variables}
+\begin{itemize}
+\item $gravity : \mathbb{R}^2$ --- Global gravity vector
+\item $physicsTimeStep : \mathbb{R}^+$ --- Fixed time step for physics updates
+\end{itemize}
+
+\paragraph{Environment Variables}
+\begin{itemize}
+\item System time
+\item CPU processing capabilities
+\end{itemize}
+
+\paragraph{Access Programs}
+
+\begin{center}
+\begin{tabular}{p{4cm}p{4cm}p{2cm}p{3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+Raycast & Vector2, Vector2, $\mathbb{R}$, LayerMask & RaycastHit2D & - \\
+AddForce & Rigidbody2D, Vector2 & - & - \\
+OverlapPoint & Vector2 & Collider2D & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Services}
+Performs 2D raycasting with filtering, manages Rigidbody2D components, detects collisions between 2D colliders, applies forces and velocities to objects, simulates gravity and momentum.
+
+\paragraph{Implemented By}
+Unity (UnityEngine.Physics2D)
+
+\paragraph{Type of Module}
+Library
+
+\subsubsection{Unity Rendering (M3)} \label{M3}
+
+\paragraph{Secrets}
+The algorithm for rendering 2D sprites, meshes, and line renderers to the screen with proper depth sorting.
+
+\paragraph{State Variables}
+\begin{itemize}
+\item $renderQueue : \text{seq of RenderObject}$ --- Queue of objects to render
+\item $sortingLayers : \text{seq of Layer}$ --- Defined sorting layers
+\end{itemize}
+
+\paragraph{Environment Variables}
+\begin{itemize}
+\item Graphics card capabilities
+\item Display output device
+\item Screen resolution
+\end{itemize}
+
+\paragraph{Access Programs}
+
+\begin{center}
+\begin{tabular}{p{4cm}p{3cm}p{2cm}p{4cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+DrawMesh & Mesh, Material & - & - \\
+DrawSprite & Sprite, Vector2 & - & - \\
+DrawLine & Vector2, Vector2, Color & - & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Services}
+Renders sprites, renders dynamically generated meshes with textures, renders LineRenderer components for visualization, manages render order and sorting layers, applies materials and shaders.
+
+\paragraph{Implemented By}
+Unity (UnityEngine.Rendering, UnityEngine.SpriteRenderer, UnityEngine.LineRenderer)
+
+\paragraph{Type of Module}
+Library
+
+\subsubsection{Unity Collider System (M4)} \label{M4}
+
+\paragraph{Secrets}
+The data structure and algorithm for storing and querying 2D collider shapes, including dynamic collider modification.
+
+\paragraph{State Variables}
+\begin{itemize}
+\item $colliders : \text{seq of Collider2D}$ --- All active colliders in scene
+\item $collisionMatrix : \text{LayerMask} \times \text{LayerMask} \rightarrow \mathbb{B}$ --- Layer collision matrix
+\end{itemize}
+
+\paragraph{Environment Variables}
+None
+
+\paragraph{Access Programs}
+
+\begin{center}
+\begin{tabular}{p{5cm}p{3cm}p{2cm}p{3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+CreatePolygonCollider & seq of Vector2 & PolygonCollider2D & - \\
+UpdateColliderPoints & PolygonCollider2D, seq of Vector2 & - & - \\
+GetColliderBounds & Collider2D & Bounds & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Services}
+Provides BoxCollider2D and PolygonCollider2D components also used to update collider shapes dynamically at runtime for objects and manages collider events.
+
+\paragraph{Implemented By}
+Unity (UnityEngine.Collider2D, UnityEngine.PolygonCollider2D, UnityEngine.BoxCollider2D)
+
+\paragraph{Type of Module}
+Library
+
+\subsection{Behaviour-Hiding Modules}
+
+\subsubsection*{Secrets}
+The contents of the required behaviours.
+
+\subsubsection*{Services}
+Includes programs that provide externally visible behaviour of the system as specified in the software requirements specification (SRS) documents. This module serves as a communication layer between the hardware-hiding module and the software decision module. The programs in this module will need to change if there are changes in the SRS.
+
+\subsubsection*{Implemented By}
+--
+
+\subsubsection{Player Controller (M5)} \label{M5}
+
+\paragraph{Secrets}
+Controls behaviour of the player character such as movement speed, jump height, ground detection, etc.
+
+\paragraph{State Variables}
+\begin{itemize}
+\item $playerPosition : \mathbb{R}^2$ --- Current position of player
+\item $playerVelocity : \mathbb{R}^2$ --- Current velocity vector
+\item $isGrounded : \mathbb{B}$ --- Whether player is touching ground
+\item $moveSpeed : \mathbb{R}^+$ --- Movement speed in units/second
+\item $jumpForce : \mathbb{R}^+$ --- Upward force applied when jumping
+\end{itemize}
+
+\paragraph{Environment Variables}
+\begin{itemize}
+\item User input from M1
+\item Physics simulation from M2
+\end{itemize}
+
+\paragraph{Exported Constants}
+\begin{itemize}
+\item $DEFAULT\_MOVE\_SPEED = 5.0$
+\item $DEFAULT\_JUMP\_FORCE = 10.0$
+\item $GROUND\_CHECK\_RADIUS = 0.2$
+\end{itemize}
+
+\paragraph{Access Programs}
+
+\begin{center}
+\begin{tabular}{p{3cm}p{3cm}p{2cm}p{5cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+Move & $\mathbb{R}$ & - & - \\
+Jump & - & - & exc := $\neg isGrounded$ \\
+UpdateGroundCheck & - & $\mathbb{B}$ & - \\
+InitializeRaycast & - & - & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Services}
+Based on input from Unity's Input system, moves player character based on input, handles jumping when grounded, initializes and manages the raycast cutting system, visualizes ground check radius in editor.
+
+\paragraph{Implemented By}
+PlayerController.cs
+
+\paragraph{Type of Module}
+Abstract Object
+
+\subsubsection{Raycast Visualization Module (M6)} \label{M6}
+
+\paragraph{Secrets}
+How the cutting line and intersection points are visualized to the user, including colors, sizes, and rendering properties.
+
+\paragraph{State Variables}
+\begin{itemize}
+\item $lineStartPoint : \mathbb{R}^2$ --- Start position of cutting line
+\item $lineEndPoint : \mathbb{R}^2$ --- End position of cutting line
+\item $entryPoint : \mathbb{R}^2$ --- Entry intersection point
+\item $exitPoint : \mathbb{R}^2$ --- Exit intersection point
+\item $targetObject : \text{GameObject}$ --- Currently targeted object
+\item $lineColor : \text{Color}$ --- Color of visualization line
+\end{itemize}
+
+\paragraph{Environment Variables}
+\begin{itemize}
+\item Mouse position from M1
+\item Raycast results from M2
+\item Rendering system from M3
+\end{itemize}
+
+\paragraph{Exported Constants}
+\begin{itemize}
+\item $ENTRY\_POINT\_COLOR = \text{Green}$
+\item $EXIT\_POINT\_COLOR = \text{Orange}$
+\item $LINE\_WIDTH = 0.05$
+\item $POINT\_RADIUS = 0.1$
+\end{itemize}
+
+\paragraph{Access Programs}
+
+\begin{center}
+\begin{tabular}{p{4cm}p{3cm}p{2cm}p{4cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+DrawCuttingLine & Vector2, Vector2 & - & - \\
+DrawIntersectionPoints & Vector2, Vector2 & - & - \\
+HighlightCutRegion & seq of Vector2 & - & - \\
+DetectMouseClick & - & $\mathbb{B}$ & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Services}
+Draws a line from player to mouse cursor, displays entry point (green dot) and exit point (orange dot) on target object, highlights the portion of object that will be cut off, filters out invalid raycast targets (player, debris), detects mouse clicks to execute cuts.
+
+\paragraph{Implemented By}
+Raycast.cs
+
+\paragraph{Type of Module}
+Abstract Object
+
+\subsubsection{Tool Raycast (M7)} \label{M7}
+
+\paragraph{Secrets}
+Coordinates between controller and reshape and debris systems as the executor and manager of the tool use.
+
+\paragraph{State Variables}
+\begin{itemize}
+\item $currentCutTarget : \text{GameObject}$ --- Object being cut
+\item $entryPoint : \mathbb{R}^2$ --- Cut entry point
+\item $exitPoint : \mathbb{R}^2$ --- Cut exit point
+\item $cutLineDirection : \mathbb{R}^2$ --- Direction of cut
+\end{itemize}
+
+\paragraph{Environment Variables}
+\begin{itemize}
+\item Visualization state from M6
+\item Material profiles from M9
+\end{itemize}
+
+\paragraph{Access Programs}
+
+\begin{center}
+\begin{tabular}{p{4cm}p{4cm}p{2cm}p{3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+ExecuteCut & GameObject, Vector2, Vector2 & - & exc := $target = null$ \\
+ApplyCutBehavior & GameObject, CutProfile & - & - \\
+HighlightEdge & seq of Vector2 & - & - \\
+SelectCutPortion & GameObject & seq of Vector2 & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Services}
+Responsible for applying the appropriate cut behavior and edge highlighting and cut selection coordinating between ObjectReshape and DebrisSpawner.
+
+\paragraph{Implemented By}
+RaycastReceiver.cs
+
+\paragraph{Type of Module}
+Abstract Object
+
+\subsubsection{Debris Generation (M8)} \label{M8}
+
+\paragraph{Secrets}
+Generating and distributing debris fragments within the cut-off area, including fragment sizing and positioning.
+
+\paragraph{State Variables}
+\begin{itemize}
+\item $activeDebris : \text{seq of GameObject}$ --- Currently active debris objects
+\item $debrisLifetime : \mathbb{R}^+$ --- Time before debris cleanup
+\item $explosionForce : \mathbb{R}^+$ --- Force applied to debris
+\end{itemize}
+
+\paragraph{Environment Variables}
+\begin{itemize}
+\item Physics system from M2
+\item Rendering system from M3
+\item Collider system from M4
+\end{itemize}
+
+\paragraph{Exported Constants}
+\begin{itemize}
+\item $DEFAULT\_DEBRIS\_COUNT = 5$
+\item $DEFAULT\_LIFETIME = 10.0$
+\item $MASS\_MULTIPLIER = 0.1$
+\end{itemize}
+
+\paragraph{Access Programs}
+
+\begin{center}
+\begin{tabular}{p{5cm}p{3cm}p{2cm}p{3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+SpawnDebris & seq of Vector2, int, Material & seq of GameObject & - \\
+PositionFragment & Vector2, seq of Vector2 & Vector2 & - \\
+ApplyExplosionForce & GameObject, Vector2, $\mathbb{R}$ & - & - \\
+CleanupDebris & GameObject & - & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Services}
+Creates specified number of debris fragments based on object config and cut size, positions fragments within cut-off polygon using point-in-polygon testing, applies physics properties (mass, velocity, angular velocity) and applies explosion force radiating from cut centroid as well as managing debris lifetime and cleanup.
+
+\paragraph{Implemented By}
+DebrisSpawner.cs
+
+\paragraph{Type of Module}
+Abstract Object
+
+\subsubsection{Cut Profile Manager (M9)} \label{M9}
+
+\paragraph{Secrets}
+Manager cut profiles and retrieval for material specific cutting profiles.
+
+\paragraph{State Variables}
+\begin{itemize}
+\item $cutProfiles : \text{Tag} \rightarrow \text{CutProfile}$ --- Mapping of tags to profiles
+\item $defaultProfile : \text{CutProfile}$ --- Default cutting parameters
+\end{itemize}
+
+\paragraph{Environment Variables}
+\begin{itemize}
+\item JSON configuration file
+\end{itemize}
+
+\paragraph{Exported Constants}
+\begin{itemize}
+\item $DEFAULT\_SOFTNESS = 0.5$
+\item $DEFAULT\_STRENGTH = 0.5$
+\item $DEFAULT\_DEBRIS\_COUNT = 5$
+\end{itemize}
+
+\paragraph{Access Programs}
+
+\begin{center}
+\begin{tabular}{p{5cm}p{3cm}p{2cm}p{3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+LoadProfiles & string & - & exc := invalid JSON \\
+GetProfileForObject & GameObject & CutProfile & - \\
+ApplyIrregularCut & seq of Vector2, CutProfile & seq of Vector2 & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Services}
+Loads cut profiles from JSON configuration and applies them based on object tag (otherwise supplies default profile when specific profile not found) and applies irregular cutting based on material properties (softness and strength parameters).
+
+\paragraph{Implemented By}
+CutProfileManager.cs
+
+\paragraph{Type of Module}
+Abstract Object
+
+\subsection{Software Decision Modules}
+
+\subsubsection*{Secrets}
+The design decision based on mathematical theorems, physical facts, or programming considerations. The secrets of this module are not described in the SRS.
+
+\subsubsection*{Services}
+Includes data structure and algorithms used in the system that do not provide direct interaction with the user.
+
+\subsubsection*{Implemented By}
+--
+
+\subsubsection{Geometric Operations (M10)} \label{M10}
+
+\paragraph{Secrets}
+Algorithms for fundamental geometric calculations on 2D shapes including the shoelace formula, cross products, distance calculations.
+
+\paragraph{State Variables}
+None (stateless module)
+
+\paragraph{Environment Variables}
+None
+
+\paragraph{Exported Constants}
+\begin{itemize}
+\item $EPSILON = 10^{-6}$ --- Floating point comparison tolerance
+\end{itemize}
+
+\paragraph{Access Programs}
+
+\begin{center}
+\begin{tabular}{p{4cm}p{3cm}p{3cm}p{3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+CalculateArea & seq of Vector2 & $\mathbb{R}^+$ & - \\
+CalculateCentroid & seq of Vector2 & Vector2 & - \\
+CrossProduct & Vector2, Vector2 & $\mathbb{R}$ & - \\
+Distance & Vector2, Vector2 & $\mathbb{R}^+$ & - \\
+Normalize & Vector2 & Vector2 & exc := $\|v\| = 0$ \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Services}
+Calculates polygon areas for object reshaping after a cut is applied from the raycast for both colliders and mesh renders.
+
+\paragraph{Implemented By}
+ObjectReshape.cs (geometric utility functions), PixelatedCutRenderer.cs (grid operations)
+
+\paragraph{Type of Module}
+Library
+
+\subsubsection{Polygon Partitioning (M11)} \label{M11}
+
+\paragraph{Secrets}
+The algorithm for splitting a polygon into two parts, the original piece and the cutoff piece along a cut line using cross product side determination.
+
+\paragraph{State Variables}
+None (stateless module)
+
+\paragraph{Environment Variables}
+None
+
+\paragraph{Access Programs}
+
+\begin{center}
+\begin{tabular}{p{5cm}p{4cm}p{2cm}p{2cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+PartitionPolygon & seq of Vector2, Vector2, Vector2 & (seq of Vector2) $\times$ (seq of Vector2) & - \\
+DetermineKeepSide & seq of Vector2, seq of Vector2, Vector2 & seq of Vector2 & - \\
+AddIntersectionPoints & seq of Vector2, Vector2, Vector2 & seq of Vector2 & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Services}
+Partitions polygon vertices based on which side of cut line they fall on, adds entry and exit points to both resulting polygons and determines which partition matches highlighted shape using centroid comparison while preserving vertex ordering.
+
+\paragraph{Implemented By}
+ObjectReshape.cs (CutOffPortion method)
+
+\paragraph{Type of Module}
+Library
+
+\subsubsection{Mesh Generation Module (M12)} \label{M12}
+
+\paragraph{Secrets}
+Converting polygon vertices into renderable mesh data using ear clipping triangulation.
+
+\paragraph{State Variables}
+None (stateless module)
+
+\paragraph{Environment Variables}
+\begin{itemize}
+\item Rendering system from M3
+\end{itemize}
+
+\paragraph{Access Programs}
+
+\begin{center}
+\begin{tabular}{p{4cm}p{3cm}p{2cm}p{4cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+TriangulatePolygon & seq of Vector2 & seq of int & exc := $|V| < 3$ \\
+GenerateUVs & seq of Vector2 & seq of Vector2 & - \\
+CreateMesh & seq of Vector2, seq of int & Mesh & - \\
+IsEar & Vector2, Vector2, Vector2, seq of Vector2 & $\mathbb{B}$ & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Services}
+Implements ear-clipping algorithm to triangulate arbitrary polygons, automatically generates UV coordinates based on the polygon's bounding box, constructs Unity Mesh objects given the vertex data, supports both convex and concave shapes.
+
+\paragraph{Implemented By}
+ObjectReshape.cs (UpdateVisualMesh, TriangulatePolygon methods)
+
+\paragraph{Type of Module}
+Library
+
+\subsubsection{Pixelation Module (M13)} \label{M13}
+
+\paragraph{Secrets}
+For visual uniformity, converting smooth diagonal cut lines into pixel-aligned staircase patterns using a modified Bresenham approach.
+
+\paragraph{State Variables}
+None (stateless module)
+
+\paragraph{Environment Variables}
+None
+
+\paragraph{Exported Constants}
+\begin{itemize}
+\item $DEFAULT\_PIXEL\_SIZE = 0.0625$
+\end{itemize}
+
+\paragraph{Access Programs}
+
+\begin{center}
+\begin{tabular}{p{4cm}p{3cm}p{3cm}p{3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+PixelateCutEdges & seq of Vector2, $\mathbb{R}^+$ & seq of Vector2 & - \\
+SnapToGrid & Vector2, $\mathbb{R}^+$ & Vector2 & - \\
+IdentifyCutEdges & seq of Vector2, Vector2, Vector2 & seq of (int $\times$ int) & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Services}
+Pixelates only cut edges while keeping original edges intact, snaps points to a pixel grid with floor-based rounding, creates staircase patterns with horizontal and vertical segments only.
+
+\paragraph{Implemented By}
+PixelatedCutRenderer.cs
+
+\paragraph{Type of Module}
+Library
+
+\subsubsection{Physics Update Module (M14)} \label{M14}
+
+\paragraph{Secrets}
+The algorithm for updating physics properties after shape modification including the area-based mass calculation method.
+
+\paragraph{State Variables}
+None (stateless module)
+
+\paragraph{Environment Variables}
+\begin{itemize}
+\item Physics system from M2
+\item Collider system from M4
+\end{itemize}
+
+\paragraph{Access Programs}
+
+\begin{center}
+\begin{tabular}{p{5cm}p{3cm}p{2cm}p{3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+UpdateCollider & GameObject, seq of Vector2 & - & - \\
+UpdateRigidbodyMass & Rigidbody2D, $\mathbb{R}^+$, $\mathbb{R}^+$ & - & - \\
+ConvertToPolygonCollider & GameObject & PolygonCollider2D & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Services}
+Converts from BoxCollider2D to PolygonCollider2D to match new object shape and adjusts proportionally the RigidBody 2D mass to match the new area change using the shoelace area calculation, creates smooth collider for physics and pixelated visual mesh for visual consistency.
+
+\paragraph{Implemented By}
+ObjectReshape.cs (UpdateCollider, UpdateRigidbodyMass methods)
+
+\paragraph{Type of Module}
+Library
+
+\subsubsection{Material Properties Module (M15)} \label{M15}
+
+\paragraph{Secrets}
+The data structure for storing material cutting characteristics and the algorithm for applying irregular edge offsets.
+
+\paragraph{State Variables}
+None (stateless module)
+
+\paragraph{Environment Variables}
+None
+
+\paragraph{Exported Constants}
+\begin{itemize}
+\item $MIN\_SEGMENTS = 3$
+\item $MAX\_SEGMENTS = 15$
+\item $SMOOTH\_THRESHOLD = 0.33$
+\item $JAGGED\_THRESHOLD = 0.67$
+\end{itemize}
+
+\paragraph{Access Programs}
+
+\begin{center}
+\begin{tabular}{p{5cm}p{3cm}p{2cm}p{3cm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+GenerateIrregularEdge & Vector2, Vector2, $\mathbb{R}$, $\mathbb{R}$ & seq of Vector2 & - \\
+CalculateSegmentCount & $\mathbb{R}$ & $\mathbb{N}$ & - \\
+CalculateMaxOffset & $\mathbb{R}$, $\mathbb{R}$ & $\mathbb{R}^+$ & - \\
+ApplySineWave & Vector2, Vector2, int, $\mathbb{R}$ & seq of Vector2 & - \\
+ApplyRandomOffset & Vector2, Vector2, int, $\mathbb{R}$ & seq of Vector2 & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Services}
+Defines softness parameter ($0 =$ jagged and $1 =$ smooth) which affects segment count, defines strength parameter ($0 =$ clean cut and $1 =$ maximum irregularity) affecting offset magnitude, generates irregular cut edges using different functions based on softness (sine waves for smooth, random for jagged and hybrid for medium).
+
+\paragraph{Implemented By}
+CutProfileManager.cs (ApplyIrregularCut, GenerateIrregularEdge methods)
+
+\paragraph{Type of Module}
+Library
 
 \section{Traceability Matrix} \label{SecTM}
 
@@ -316,21 +930,21 @@ requirements and between the modules and the anticipated changes.
 % like fref
 \begin{table}[H]
 \centering
-\begin{tabular}{p{0.2\textwidth} p{0.6\textwidth}}
+\caption{Trace Between Requirements and Modules}
+\begin{tabular}{|p{0.2\textwidth}| p{0.6\textwidth}|}
 \toprule
 \textbf{Req.} & \textbf{Modules}\\
 \midrule
-R1 & \mref{mHH}, \mref{mInput}, \mref{mParams}, \mref{mControl}\\
-R2 & \mref{mInput}, \mref{mParams}\\
-R3 & \mref{mVerify}\\
-R4 & \mref{mOutput}, \mref{mControl}\\
-R5 & \mref{mOutput}, \mref{mODEs}, \mref{mControl}, \mref{mSeqDS}, \mref{mSolver}, \mref{mPlot}\\
-R6 & \mref{mOutput}, \mref{mODEs}, \mref{mControl}, \mref{mSeqDS}, \mref{mSolver}, \mref{mPlot}\\
-R7 & \mref{mOutput}, \mref{mEnergy}, \mref{mControl}, \mref{mSeqDS}, \mref{mPlot}\\
-R8 & \mref{mOutput}, \mref{mEnergy}, \mref{mControl}, \mref{mSeqDS}, \mref{mPlot}\\
-R9 & \mref{mVerifyOut}\\
-R10 & \mref{mOutput}, \mref{mODEs}, \mref{mControl}\\
-R11 & \mref{mOutput}, \mref{mODEs}, \mref{mEnergy}, \mref{mControl}\\
+R1: Player Movement and Control & \mref{M1}, \mref{M2}, \mref{M5}\\
+R2: Cutting Line Visualization & \mref{M1}, \mref{M2}, \mref{M3}, \mref{M6}\\
+R3: Real-time Object Cutting & \mref{M2}, \mref{M3}, \mref{M4}, \mref{M7}, \mref{M10}, \mref{M11}, \mref{M12}\mref{M14}\\
+R4: Debris Generation & \mref{M2}, \mref{M3}, \mref{M4}, \mref{M8}, \mref{M10}\\
+R5: Material Specific Cutting & \mref{M7}, \mref{M9}, \mref{M15}\\
+R6: Pixelated Rendering & \mref{M3}, \mref{M10}, \mref{M12}, \mref{M13}\\
+R7: Physics Simulation & \mref{M2}, \mref{M4}, \mref{M14}\\
+R8: Collision Detection & \mref{M2}, \mref{M4}, \mref{M6}\\
+R9: Visual Feedback & \mref{M3}, \mref{M6}, \mref{M7}\\
+R10: Multiple Cuts on Same Object & \mref{M7}, \mref{M11}, \mref{M12}, \mref{M14}\\
 \bottomrule
 \end{tabular}
 \caption{Trace Between Requirements and Modules}
@@ -339,22 +953,26 @@ R11 & \mref{mOutput}, \mref{mODEs}, \mref{mEnergy}, \mref{mControl}\\
 
 \begin{table}[H]
 \centering
+\caption{Trace between Anticipated Changes and Modules}
 \begin{tabular}{p{0.2\textwidth} p{0.6\textwidth}}
 \toprule
 \textbf{AC} & \textbf{Modules}\\
 \midrule
-\acref{acHardware} & \mref{mHH}\\
-\acref{acInput} & \mref{mInput}\\
-\acref{acParams} & \mref{mParams}\\
-\acref{acVerify} & \mref{mVerify}\\
-\acref{acOutput} & \mref{mOutput}\\
-\acref{acVerifyOut} & \mref{mVerifyOut}\\
-\acref{acODEs} & \mref{mODEs}\\
-\acref{acEnergy} & \mref{mEnergy}\\
-\acref{acControl} & \mref{mControl}\\
-\acref{acSeqDS} & \mref{mSeqDS}\\
-\acref{acSolver} & \mref{mSolver}\\
-\acref{acPlot} & \mref{mPlot}\\
+\acref{AC1} &  \mref{M1},  \mref{M2},  \mref{M3},  \mref{M4}\\
+\acref{AC2} &  \mref{M1},  \mref{M5}\\
+\acref{AC3} &  \mref{M3}\\
+\acref{AC4} &  \mref{M9},  \mref{M15}\\
+\acref{AC5} &  \mref{M8}\\
+\acref{AC6} &  \mref{M13}\\
+\acref{AC7} &  \mref{M15}\\
+\acref{AC8} &  \mref{M6}\\
+\acref{AC9} &  \mref{M14}\\
+\acref{AC10} &  \mref{M7}\\
+\acref{AC11} &  \mref{M12}\\
+\acref{AC12} &  \mref{M9}\\
+\acref{AC13} &  \mref{M8}\\
+\acref{AC14} &  \mref{M8}\\
+\acref{AC15} &  \mref{M6}\\
 \bottomrule
 \end{tabular}
 \caption{Trace Between Anticipated Changes and Modules}
@@ -363,34 +981,59 @@ R11 & \mref{mOutput}, \mref{mODEs}, \mref{mEnergy}, \mref{mControl}\\
 
 \section{Use Hierarchy Between Modules} \label{SecUse}
 
-In this section, the uses hierarchy between modules is
-provided. \citet{Parnas1978} said of two programs A and B that A {\em uses} B if
-correct execution of B may be necessary for A to complete the task described in
-its specification. That is, A {\em uses} B if there exist situations in which
-the correct functioning of A depends upon the availability of a correct
-implementation of B.  Figure \ref{FigUH} illustrates the use relation between
-the modules. It can be seen that the graph is a directed acyclic graph
-(DAG). Each level of the hierarchy offers a testable and usable subset of the
-system, and modules in the higher level of the hierarchy are essentially simpler
-because they use modules from the lower levels.
+The following list describes the direct dependencies between modules (A $\rightarrow$ B means A uses B):\\
 
-\wss{The uses relation is not a data flow diagram.  In the code there will often
-be an import statement in module A when it directly uses module B.  Module B
-provides the services that module A needs.  The code for module A needs to be
-able to see these services (hence the import statement).  Since the uses
-relation is transitive, there is a use relation without an import, but the
-arrows in the diagram typically correspond to the presence of import statement.}
+\begin{itemize}
+\item \mref{M5} $\rightarrow$ \mref{M1}, \mref{M6}
+\item \mref{M6} $\rightarrow$ \mref{M1}, \mref{M2}, \mref{M3}, \mref{M7}, \mref{M10}
+\item \mref{M7} $\rightarrow$ \mref{M8}, \mref{M9}, \mref{M10}, \mref{M11}, \mref{M12}, \mref{M13}, \mref{M14}
+\item \mref{M8} $\rightarrow$ \mref{M2}, \mref{M3}, \mref{M4}, \mref{M10}
+\item \mref{M9} $\rightarrow$ \mref{M15}
+\item \mref{M10} $\rightarrow$ \mref{M2}
+\item \mref{M11} $\rightarrow$ \mref{M10}
+\item \mref{M12} $\rightarrow$ \mref{M3}, \mref{M10}
+\item \mref{M13} $\rightarrow$ \mref{M10}
+\item \mref{M14} $\rightarrow$ \mref{M2}, \mref{M4}, \mref{M10}
+\item \mref{M15} $\rightarrow$ \mref{M10}
 
-\wss{If module A uses module B, the arrow is directed from A to B.}
+\end{itemize}
 
-\begin{figure}[H]
-\centering
-%\includegraphics[width=0.7\textwidth]{UsesHierarchy.png}
-\caption{Use hierarchy among modules}
-\label{FigUH}
-\end{figure}
+\subsection{Use Hierarchy levels}
 
-%\section*{References}
+\textbf{Level 0 (Foundation - Hardware Hiding)}\\
+\begin{itemize}
+\item \mref{M1}
+\item \mref{M2}
+\item \mref{M3}
+\item \mref{M4}
+\end{itemize}
+\textbf{Level 1 (Utility - Basic Operations)}\\
+\begin{itemize}
+\item \mref{M10}
+\end{itemize}
+\textbf{Level 2 (Algorithm - Core computations)}\\
+\begin{itemize}
+\item \mref{M11}
+\item \mref{M12}
+\item \mref{M13}
+\item \mref{M14}
+\item \mref{M15}
+\end{itemize}
+\textbf{Level 3 (Services - System Coordination)}\\
+\begin{itemize}
+\item \mref{M8}
+\item \mref{M9}
+\end{itemize}
+\textbf{Level 4 (Coordination - Behaviour Management)}\\
+\begin{itemize}
+\item \mref{M6}
+\item \mref{M7}
+\end{itemize}
+\textbf{Level 5 (Application - User Interface)}\\
+\begin{itemize}
+\item \mref{M5}
+\end{itemize}
+
 
 \section{User Interfaces}
 

@@ -4,6 +4,8 @@
 \usepackage{hyperref}
 \usepackage{graphicx}
 \usepackage{float}
+\usepackage{multirow}
+\usepackage[margin=0.75in]{geometry}
 \hypersetup{
     colorlinks=true,       % false: boxed links; true: colored links
     linkcolor=red,          % color of internal links (change box color with linkbordercolor)
@@ -28,6 +30,7 @@
 \midrule
 2025-10-09 & All & Created Document\\
 2025-11-11 & Andy Liang & Addressed peer review feedback from Team 11: Added health/safety requirements (NF235-237) for photosensitivity and audio warnings; Added definition of "not fun to play" failure mode; Added detailed recommended actions for visual appeal issues\\
+2025-11-13 & Marcos Hernandez-Rivero & Addressed Feedback from Team 11\\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -35,10 +38,12 @@
 ~\newpage
 \tableofcontents
 ~\newpage
+\listoftables
+~\newpage
 
 \section{Introduction}
 
-The primary goal of this Hazard Analysis is to identify, categorize, and evaluate potential risks and flaws in the game system and its development process. This proactive approach ensures that we address potential issues before they translate into significant problems during development or post-launch. By maintaining a high standard of quality assurance, we aim to deliver a stable, secure, and enjoyable product. A hazard is a flaw in the system that could lead to the user not enjoying our game, inhibited usability, or security/privacy risks.This document will proceed by identifying various hazards across technical, design, and operational domains. It will then analyze the severity and likelihood of each hazard, assigning a resultant risk level. Finally, for all non-trivial risks, concrete mitigation and contingency plans will be proposed to ensure project integrity and the quality of the final product.\\
+The primary goal of this Hazard Analysis is to identify, categorize, and evaluate potential risks and flaws in the game system and its development process. This proactive approach ensures that potential issues are addressed before they translate into significant problems during development or post-launch. By maintaining a high standard of quality assurance, we aim to deliver a stable, secure, and enjoyable product. A hazard is a flaw in the system that could lead to the user not enjoying our game, inhibited usability, or security/privacy risks.This document will proceed by identifying various hazards across technical, design, and operational domains. It will then analyze the severity and likelihood of each hazard, assigning a resultant risk level. Finally, for all non-trivial risks, concrete mitigation and contingency plans will be proposed to ensure project integrity and the quality of the final product.\\
 
 \section{Scope and Purpose of Hazard Analysis}
 
@@ -77,13 +82,13 @@ Use a checklist + what-if sweep and a simple severity/likelihood matrix (Low/Med
 
 This section outlines the foundational assumptions made about the project's development environment, technical stability, and external dependencies. A failure in any of these assumptions must trigger an immediate re-evaluation of the project plan and hazard analysis.\\
 
-A core assumption is the technical feasibility of the core requirements. We assume the specialized systems, the destructible environment and the slime mold traversal system, can be implemented successfully using the chosen engine and tools within the timeframe established by Sprint 0. Discovering fundamental limitations after that initial sprint will necessitate a critical reduction in the project's overall scope.\\
+A core assumption is the technical feasibility of the core requirements. It is assumed the specialized systems, the destructible environment and the slime mold traversal system, can be implemented successfully using the chosen engine and tools within the timeframe established by Sprint 0. Discovering fundamental limitations after that initial sprint will necessitate a critical reduction in the project's overall scope.\\
 
-We also assume the stability of the development environment. This means the chosen game engine and all associated third-party components (such as physics libraries) will remain stable, compatible, and maintainable throughout the entire development cycle, from Sprint 0 through Sprint 3. We assume there won't be any major, unscheduled, or breaking changes to the engine or dependencies during this time.\\
+It is also assumed the development environment will be stable. This means the chosen game engine and all associated third-party components (such as physics libraries) will remain stable, compatible, and maintainable throughout the entire development cycle, from Sprint 0 through Sprint 3. It is assumed there won't be any major, unscheduled, or breaking changes to the engine or dependencies during this time.\\
 
-The project relies on the availability of human resources. We assume that all core development team members will be available and committed to the project according to the schedule in P.4 of the SRS document. The successful delivery of key sprint items would be compromised if any critical team member experienced a prolonged, unplanned absence.\\
+The project relies on the availability of human resources. It is assumed that all core development team members will be available and committed to the project according to the schedule in P.4 of the SRS document. The successful delivery of key sprint items would be compromised if any critical team member experienced a prolonged, unplanned absence.\\
 
-We make assumptions regarding user system specifications. We assume the final game will be run on hardware and operating systems that meet the minimum specifications to be defined in the Design Document (Revision 0). We manage performance hazards based on the expectation that end-users possess at least these minimum required specifications.\\
+Assumptions need to be made regarding user system specifications. This will be designed under the assumption that the final game will be run on hardware and operating systems that meet the minimum specifications to be defined in the Design Document (Revision 0). We manage performance hazards based on the expectation that end-users possess at least these minimum required specifications.\\
 
 \section{Failure Mode and Effect Analysis}
 
@@ -103,9 +108,101 @@ These failure modes are mitigated through playtesting, iterative design reviews,
 
 \subsection{FMEA Table}
 
-\begin{figure}[H]
-	\includegraphics[width=\linewidth]{FMEA.png}
-\end{figure}
+\begin{table}[H]
+\caption{Failure Mode Effect Analysis Table}
+\footnotesize 
+\begin{tabular}{|p{2.25cm}|p{1.25cm}|p{2.25cm}|p{1.25cm}|p{2.5cm}|p{1.65cm}|p{2.5cm}|p{0.75cm}|}
+\hline
+\multicolumn{1}{|l|}{\textbf{Component}} &
+  \textbf{Failure Modes} &
+  \textbf{Effect of Failure} &
+  \textbf{Severity} &
+  \textbf{Cause of Failure} &
+  \textbf{Likelihood} &
+  \textbf{Recommended Action} &
+  \textbf{Ref \#} \\ \hline
+\multirow{4}{1.25cm}{\centering Game design and implementation} &
+  \multirow{2}{1.25cm}{\centering Player is softlocked} &
+  \multirow{2}{2.5cm}{\centering Player cannot progress;  forced to restart the game} &
+  \multirow{2}{1cm}{8} &
+  Poor puzzle design &
+  2 &
+  Simple, linear puzzle design &
+  N/A \\ \cline{5-8} 
+ &
+   &
+   &
+   &
+  Unexpected game/object behaviour &
+  4 &
+  Include the ability to reset a puzzle room &
+  F214 \\ \cline{2-8} 
+ &
+  Game crashes &
+  Play session is interrupted,  unsaved progress is lost &
+  10 &
+  Fatal bug &
+  1 &
+  Thoroughly test each level, introduce auto-save for key checkpoints,  include contact information for bug reports in the crash window &
+  F213, NF232 \\ \cline{2-8} 
+ &
+  Not fun to play &
+ Player loses interest, stops playing, Low game review scores &
+  6 &
+  Clunky, unfair gameplay;  puzzle solutions that do not make sense realistically &
+  2 &
+  Playtesting with a variety of stakeholders &
+  N/A \\ \hline
+\multirow{3}{*}{Interfaces} &
+  Controller not supported &
+Player unable to play with the  controller of preference &
+  7 &
+  Controller device is not recognized &
+  5 &
+  Add support for a wide variety of controllers &
+  N/A \\ \cline{2-8} 
+ &
+  Player does not know how to play the game &
+  Player gets confused and frustrated &
+  7 &
+  Unintuitive controls and/or directions &
+  7 &
+  Introduce a tutorial level demonstrating the controls and objectives;  include a HUD &
+  N/A \\ \cline{2-8} 
+ &
+  Not visually appealing &
+  Product does not sell &
+  10 &
+  Poor art direction &
+  5 &
+  Art direction overseen by one or more team member(s) &
+  N/A \\ \hline
+\multicolumn{1}{|l|}{\multirow{2}{*}{Security}} &
+  Program is vulnerable to malware &
+  Player's device is vulnerable to malware &
+  9 &
+  Over time, cybercriminals find new  software vulnerabilities in all kinds of software &
+  3 &
+  Offer security updates post-launch to patch game and Unity vulnerabilities &
+  NF234 \\ \cline{2-8} 
+\multicolumn{1}{|l|}{} &
+  Program causes harm to the user's device &
+  Player's device is damaged &
+  10 &
+  Program causes memory leaks, bypasses  operating system security, etc. &
+  1 &
+  Test extensively on all supported operating systems, design game to run  without requiring administrator privileges &
+  NF233 \\ \hline
+\multicolumn{1}{|l|}{Message} &
+  Message is offensive &
+  Non-compliance of steam rules &
+  5 &
+  Messages in the game include  offensive/derogatory language &
+  2 &
+  Avoid offensive language &
+  N/A \\ \hline
+\end{tabular}%
+\end{table}
 
 \subsection{Recommended Actions for Visual Appeal}
 

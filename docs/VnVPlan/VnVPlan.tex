@@ -6,6 +6,7 @@
 \usepackage{hyperref}
 \usepackage{float}
 \usepackage{graphicx}
+\usepackage[margin=1in]{geometry}
 \hypersetup{
     colorlinks,
     citecolor=blue,
@@ -33,12 +34,16 @@
 \toprule {\bf Date} & {\bf Version}\\
 \midrule
 All & 1.0\\
+Marcos Hernandez-Rivero & 1.1\\
 \bottomrule
 \end{tabularx}
 
 \newpage
 
 \tableofcontents
+\newpage
+\listoftables
+\newpage
 
 \section{Symbols, Abbreviations, and Acronyms}
 
@@ -104,25 +109,85 @@ Module Interface Specification. This document describes specifications for the i
 
 \subsection{Verification and Validation Team}
 
-\includegraphics{P31.png}
+\begin{table}[H]
+\caption{Verification \& Validation Team}
+\begin{tabular}{|p{2cm}|p{2cm}|p{6cm}|p{2.5cm}|p{2cm}|}
+\hline
+\textbf{Name}           & \textbf{Role} & \textbf{Task}                                                                                                                                                                            & \textbf{Primary Section(s)}   & \textbf{Secondary Section(s)} \\ \hline
+Felix Hurst             & Author        & Team leader, focuses on keeping all data organized and spearheading meetings about testing with supervisor and other testers. Manages issue tracker. Secondary reviewer to all documents & N/A                           & All                           \\ \hline
+BoWen Liu               & Author        & Primary Reviewer for engine and tool system. Secondary reviewer for art direction and environment direction.                                                                             & Game Engine \& Physics        & Art \& Environment            \\ \hline
+Andy Liang              & Author        & Primary Reviewer for Art, Environment, and Music systems. Secondary reviewer for all documents.                                                                                          & Art,  Environment, Music      & All                           \\ \hline
+Marcos Hernandez-Rivero & Author        & Primary reviewer for Unit testing and static analysis system, ensuring the systems are functional and up to date. Secondary reviewer for all docs.                                       & Unit Testing, Static Analysis & All                           \\ \hline
+Stephen Kelley          & Supervisor    & Capstone Supervisor, ensuring we are on track with the theme of the project, and serving as a reviewer for document completeness and correctness.                                        & All                           & N/A                           \\ \hline
+Michelle Bunton         & Supervisor    & Aid to the capstone supervisor, ensuring verification and validation of specific elements, such as the slime mold algorithm, are properly done.                                          & All                           & N/A                           \\ \hline
+\end{tabular}
+\end{table}
+
 
 \subsection{SRS Verification}
 
 We intend to use a mix of ad hoc feedback from fellow team members and our supervisor, and a proper structured plan. This will be done via a structured inspection process involving both internal team reviews and external stakeholder feedback. Internally, team members will use an ad hoc feedback approach to log any issues concerning clarity or consistency in our central issue tracker. For our supervisor, we will conduct a formal meeting where we present the game concept and critical requirements, followed by a Task--Based Inspection. The supervisor will be asked to specifically review pre--selected, complex requirements related to environment manipulation, physics simulations, and various elements of our project, such as the slime mold algorithm that we are using, focusing on their feasibility and testability. This ensures a structured approach to leveraging our supervisor's expertise beyond a simple read--over.
 
-\includegraphics{P32.png}
+\begin{table}[H]
+\caption{SRS Verification Checklist}
+\begin{tabular}{|p{4cm}|p{11cm}|}
+\hline
+\textbf{Criteria} & \textbf{Description}                                                                                                                                                                \\ \hline
+Completeness      & Are all necessary functional and non-functional requirements (performance, usability, etc.) documented?                                                                             \\ \hline
+Correctness       & Does each requirement accurately reflect the intended system and stakeholder needs?                                                                                                 \\ \hline
+Clarity/Ambiguity & Is each requirement stated unambiguously, with a single interpretation? (e.g., avoid words like "good," "usually," "robust")                                                        \\ \hline
+Consistency       & Are all requirements consistent with each other, and are terms/definitions used uniformly throughout?                                                                               \\ \hline
+Verifiability     & Can a test procedure (inspection, test, demonstration) be designed to verify this requirement? (e.g., "The game must run at 60 FPS" is verifiable; "The game must be fast" is not). \\ \hline
+Feasibility       & Can the requirement be achieved with available technology, resources, and schedule?                                                                                                 \\ \hline
+Traceability      & Is each requirement uniquely identified to allow tracing to design and test cases?                                                                                                  \\ \hline
+\end{tabular}
+\end{table}
 
 \subsection{Design Verification}
 
 Our design verification plan focuses on ensuring the architectural and detailed design correctly implements the SRS and follows good software engineering principles like modularity. The core of this verification will be formal design inspections and walk--throughs. The Lead Developer will walk the team and classmates through critical design elements, such as the Tool--Effect System Architecture and the Level Data Structure, to scrutinize interface specifications and component interactions. Classmates will be leveraged as peer reviewers to ensure the design is robust and maintainable. The review process will focus on whether the design efficiently supports all functional requirements for traversing and manipulating the puzzle environments.
 
-\includegraphics{P33.png}
+\begin{table}[H]
+\caption{Design Verification Checklist}
+\begin{tabular}{|p{4cm}|p{11cm}|}
+\hline
+\textbf{Criteria} & \textbf{Description}                                                                                                                                                                \\ \hline
+Traceability to SRS      & Does the design cover every requirement in the SRS, and is all design justified by a requirement?
+ \\ \hline
+Modularity \& Coupling       & Are components (classes, modules) logically grouped, and is the dependency/communication between them minimal and clearly defined?
+\\ \hline
+Interface Specification &Are all internal and external component interfaces (APIs, data structures) fully and correctly defined?
+\\ \hline
+Error Handling       & Are potential error conditions (e.g., resource limit reached, invalid input) identified, and is a recovery/reporting mechanism defined in the design?
+\\ \hline
+Performance/Resource     & Does the design approach (e.g., algorithm choice, data structure) meet critical non-functional requirements like frame rate and memory usage? 
+\\ \hline
+Maintainability       & Is the design simple, consistent, and easy to modify or extend without causing unintended side effects?                                                                                                 \\ \hline
+\end{tabular}
+\end{table}
 
 \subsection{Verification and Validation Plan Verification}
 
 We will subject this document to a formal peer review by classmates, ensuring the plan adequately covers verification for all key project artifacts (SRS, Design, Implementation) and specifies a viable strategy for testing and validation. Additionally, we will employ conceptual mutation testing by deliberately considering how the plan would handle various types of software failures (e.g., unit test failure, non--functional requirement breach). We will also be subject to a review by Dr. Kelley and Michelle Bunton, to ensure that the core ideas and themes of the game, which may not be understood by classmates, are conveyed properly and free from errors in the document, as well as proper testing mechanisms for aspects which cannot be unit tested, like slime mold algorithm.
 
-\includegraphics{P34.png}
+
+\begin{table}[H]
+\caption{Verification and Validation Plan Checklist}
+\begin{tabular}{|p{4cm}|p{11cm}|}
+\hline
+\textbf{Criteria} & \textbf{Description}                                                                                                                                                                \\ \hline
+Scope Coverage      & Does the V\&V plan address verification for all major documents (such as SRS, design, code, etc) and all requirements (FR, NFR)?
+ \\ \hline
+Method Suitability       & Are the chosen methods appropriate for the documents being verified?
+\\ \hline
+Resource Allocation &Are the necessary tools, personnel (reviewers, testers), and time for each V\&V activity specified and feasible?
+\\ \hline
+SMA Testing       & Does the plan specifically address the unique challenges of testing non-deterministic behavior like the SMA?
+\\ \hline
+Acceptance Criteria     & Does the plan clearly define the Pass/Fail criteria for system validation (e.g., what metrics define acceptable frame rate, or successful puzzle completion)? 
+\\ \hline
+\end{tabular}
+\end{table}
 
 \subsection{Implementation Verification}
 
@@ -321,12 +386,20 @@ The definition of the test cases will call for SYMBOLIC CONSTANTS. Their values 
 
 The following symbolic constants are referenced by system and non--functional tests (Sec. 4). Centralizing them here keeps test cases consistent if values change.
 
-\begin{figure}[H]
-\centering
-\includegraphics[width=\linewidth, height=0.8\textheight, keepaspectratio]{table.png}
+\begin{table}[H]
 \caption{Symbolic Parameters}
-\label{tab:symbolic--parameters}
-\end{figure}
+\begin{tabular}{|p{6.5cm}|p{3.5cm}|p{4.5cm}|p{2cm}|}
+\hline
+\textbf{Symbol}              & \textbf{Definition}                                 & \textbf{Value/Domain}                                                                                   & \textbf{Referenced Tests} \\ \hline
+SAVE\_ON\_DESTROY\_COUNT     & Objects destroyed (precondition) before manual save & 2                                                                                                       & FRTO1                     \\ \hline
+AUTOSAVE\_PICKUP\_COUNT      & Objects picked up to trigger auto-save              & 2                                                                                                       & FRTO2                     \\ \hline
+SAVE\_RECORD\_FIELDS         & Fields persisted in a save snapshot                 & \{PLAYER\_COORDS, PLAYER\_INVENTORY, PLAYER\_ATTRIBUTES, WORLD\_STATE, GAME\_OBJECTS, LEVEL\_LOCATION\} & FRTO1, FRTO2              \\ \hline
+MATERIAL\_TYPES              & Object attribute classes for destruction tests      & \{SOFT, BRITTLE, HARD\}                                                                                 & FRTO3                     \\ \hline
+SLIME\_MOLD\_OBSTACLE\_COUNT & Rectangular obstacles in path-traversal level       & 5                                                                                                       & FRTO4                     \\ \hline
+TERRAIN\_GAP\_COUNT          & Terrain gaps in path-traversal level                & 1                                                                                                       & FRTO4                     \\ \hline
+SLIME\_MOLD\_ATTRACTANT      & Target resource guiding traversal                   & WATER\_DEBRIS                                                                                           & FRTO4                     \\ \hline
+\end{tabular}%
+\end{table}
 
 
 
