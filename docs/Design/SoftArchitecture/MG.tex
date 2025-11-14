@@ -1,7 +1,7 @@
 \documentclass[12pt, titlepage]{article}
 
 \usepackage{fullpage}
-\usepackage[round]{natbib}
+\usepackage[numbers]{natbib}
 \usepackage{multirow}
 \usepackage{booktabs}
 \usepackage{tabularx}
@@ -57,9 +57,18 @@ Nov 13 & 1.0 & Initial doc\\
 
 \section{Reference Material}
 
-This section records information for easy reference.
 
 \subsection{Abbreviations and Acronyms}
+
+AC Anticipated Change \\
+DAG Directed Acyclic Graph \\
+M Module \\
+MG Module Guide \\
+OS Operating System \\
+R Requirement \\
+SC Scientific Computing \\
+SRS Software Requirements Specification ProgName Explanation of program name \\
+UC Unlikely Change \\
 
 
 \newpage
@@ -68,7 +77,6 @@ This section records information for easy reference.
 
 \listoftables
 
-\listoffigures
 
 \newpage
 
@@ -78,14 +86,14 @@ This section records information for easy reference.
 
 Decomposing a system into modules is a commonly accepted approach to developing
 software.  A module is a work assignment for a programmer or programming
-team~\cite{ParnasEtAl1984}.  We advocate a decomposition
-based on the principle of information hiding~\cite{Parnas1972a}.  This
+team~\cite{Parnas1984}.  We advocate a decomposition
+based on the principle of information hiding~\cite{Parnas1972}.  This
 principle supports design for change, because the ``secrets'' that each module
 hides represent likely future changes.  Design for change is valuable in SC,
 where modifications are frequent, especially during initial development as the
 solution space is explored.  
 
-Our design follows the rules layed out by \cite{ParnasEtAl1984}, as follows:
+Our design follows the rules layed out by \cite{Parnas1984}, as follows:
 \begin{itemize}
 \item System details that are likely to change independently should be the
   secrets of separate modules.
@@ -95,7 +103,7 @@ Our design follows the rules layed out by \cite{ParnasEtAl1984}, as follows:
 \end{itemize}
 
 After completing the first stage of the design, the Software Requirements
-Specification (SRS), the Module Guide (MG) is developed~\cite{ParnasEtAl1984}. The MG
+Specification (SRS), the Module Guide (MG) is developed~\cite{Parnas1984}. The MG
 specifies the modular structure of the system and is intended to allow both
 designers and maintainers to easily identify the parts of the software.  The
 potential readers of this document are as follows:
@@ -169,15 +177,15 @@ will potentially need to be modified. Hence, it is not intended that these
 decisions will be changed.
 
 \begin{description}
-\item[\refstepcounter{ucnum} \uctheucnum \label{ucIO}:] Game engine (Unity)
-\item[\refstepcounter{ucnum} \uctheucnum \label{ucIO}:] Dimensionality (2D)
-\item[\refstepcounter{ucnum} \uctheucnum \label{ucIO}:]  Focus and use of physics simulation for object behaviour and world simulation.
-\item[\refstepcounter{ucnum} \uctheucnum \label{ucIO}:]  Requirement for real-time object destruction physics
-\item[\refstepcounter{ucnum} \uctheucnum \label{ucIO}:] The fundamental geometric representation of objects as pixel-based polygons
-\item[\refstepcounter{ucnum} \uctheucnum \label{ucIO}:] Use of entry and exit points as a basis of destructive tools
-\item[\refstepcounter{ucnum} \uctheucnum \label{ucIO}:] The partitioning of objects into two entities (original object, cut off object) per tool use.
-\item[\refstepcounter{ucnum} \uctheucnum \label{ucIO}:] The coordinate system (right-handed 2D cartesian coordinates)
-\item[\refstepcounter{ucnum} \uctheucnum \label{ucIO}:] Use of mesh rendering techniques for displaying cut objects.
+\item[\refstepcounter{ucnum} \uctheucnum \label{UC1}:] Game engine (Unity)
+\item[\refstepcounter{ucnum} \uctheucnum \label{UC2}:] Dimensionality (2D)
+\item[\refstepcounter{ucnum} \uctheucnum \label{UC3}:]  Focus and use of physics simulation for object behaviour and world simulation.
+\item[\refstepcounter{ucnum} \uctheucnum \label{UC4}:]  Requirement for real-time object destruction physics
+\item[\refstepcounter{ucnum} \uctheucnum \label{UC5}:] The fundamental geometric representation of objects as pixel-based polygons
+\item[\refstepcounter{ucnum} \uctheucnum \label{UC6}:] Use of entry and exit points as a basis of destructive tools
+\item[\refstepcounter{ucnum} \uctheucnum \label{UC7}:] The partitioning of objects into two entities (original object, cut off object) per tool use.
+\item[\refstepcounter{ucnum} \uctheucnum \label{UC8}:] The coordinate system (right-handed 2D cartesian coordinates)
+\item[\refstepcounter{ucnum} \uctheucnum \label{UC9}:] Use of mesh rendering techniques for displaying cut objects.
 \end{description}
 
 \section{Module Hierarchy} \label{SecMH}
@@ -186,11 +194,6 @@ This section provides an overview of the module design. Modules are summarized
 in a hierarchy decomposed by secrets in Table \ref{TblMH}. The modules listed
 below, which are leaves in the hierarchy tree, are the modules that will
 actually be implemented.
-
-\begin{description}
-\item [\refstepcounter{mnum} \mthemnum \label{mHH}:] Hardware-Hiding Module
-\item ...
-\end{description}
 
 
 \begin{table}[H]
@@ -260,7 +263,7 @@ Modules are decomposed according to the principle of “information hiding” pr
 Only the leaf modules in the hierarchy have to be implemented. If a dash (-) is shown, this means that the module is not a leaf and will not have to be implemented. 
 
 
-\subsection{Hardware Hiding Modules (\mref{mHH})}
+\subsection{Hardware Hiding Modules}
 
 \subsubsection{Unity Input System (M1)} \label{M1}
 
@@ -937,7 +940,7 @@ requirements and between the modules and the anticipated changes.
 \midrule
 R1: Player Movement and Control & \mref{M1}, \mref{M2}, \mref{M5}\\
 R2: Cutting Line Visualization & \mref{M1}, \mref{M2}, \mref{M3}, \mref{M6}\\
-R3: Real-time Object Cutting & \mref{M2}, \mref{M3}, \mref{M4}, \mref{M7}, \mref{M10}, \mref{M11}, \mref{M12}\mref{M14}\\
+R3: Real-time Object Cutting & \mref{M2}, \mref{M3}, \mref{M4}, \mref{M7}, \mref{M10}, \mref{M11}, \mref{M12}, \mref{M14}\\
 R4: Debris Generation & \mref{M2}, \mref{M3}, \mref{M4}, \mref{M8}, \mref{M10}\\
 R5: Material Specific Cutting & \mref{M7}, \mref{M9}, \mref{M15}\\
 R6: Pixelated Rendering & \mref{M3}, \mref{M10}, \mref{M12}, \mref{M13}\\
@@ -1037,22 +1040,305 @@ The following list describes the direct dependencies between modules (A $\righta
 
 \section{User Interfaces}
 
-\wss{Design of user interface for software and hardware.  Attach an appendix if
-needed. Drawings, Sketches, Figma}
+[Design of user interface for software and hardware. Attach an appendix if needed. Drawings, Sketches, Figma]
 
 \section{Design of Communication Protocols}
 
-\wss{If appropriate}
+\subsection{Inter-Module Communication}
+
+The system uses Unity's component-based architecture for module communication:
+
+\paragraph{Event-Based Communication:}
+\begin{itemize}
+\item \textbf{Input Events:} Unity's Input System generates events for mouse clicks, movement, and jumps
+\item \textbf{Collision Events:} Physics2D triggers \texttt{OnCollisionEnter2D} events when debris or cut pieces collide
+\item \textbf{Frame Events:} Unity's \texttt{Update()} and \texttt{FixedUpdate()} provide timing for continuous operations
+\end{itemize}
+
+\paragraph{Direct Method Calls:}
+\begin{itemize}
+\item M6 (Raycast Visualization) calls M7 (Cut Execution) via \texttt{ExecuteCut()}
+\item M7 calls M11 (Polygon Partitioning) via \texttt{PartitionPolygon()}
+\item M7 calls M8 (Debris Generation) via \texttt{SpawnDebris()}
+\item M9 (Cut Profile Manager) is accessed via static extension method \texttt{GetCutProfileForObject()}
+\end{itemize}
+
+\paragraph{Component References:}
+\begin{itemize}
+\item Modules get references using \texttt{GetComponent<T>()} for same-GameObject communication
+\item Modules use \texttt{FindObjectOfType<T>()} for singleton manager access
+\item Parent-child relationships use \texttt{GetComponentInChildren<T>()}
+\end{itemize}
+
+\subsection{Data Flow}
+
+\begin{enumerate}
+\item \textbf{Input Phase:} M1 $\rightarrow$ M5 $\rightarrow$ M6
+\item \textbf{Visualization Phase:} M6 $\rightarrow$ M2 $\rightarrow$ M10 $\rightarrow$ M7
+\item \textbf{Execution Phase:} M7 $\rightarrow$ M11 $\rightarrow$ M15 $\rightarrow$ M12 $\rightarrow$ M13 $\rightarrow$ M14 $\rightarrow$ M8
+\item \textbf{Physics Phase:} M8 $\rightarrow$ M2 $\rightarrow$ M4
+\end{enumerate}
+
+\subsection{State Management}
+
+\begin{itemize}
+\item Most modules are stateless (M10, M11, M12, M13, M14, M15)
+\item State-holding modules use private fields with controlled access (M6, M7, M8, M9)
+\item No global variables - all state is encapsulated in components
+\item State persists via Unity's serialization (inspector-editable fields marked with \texttt{[SerializeField]})
+\end{itemize}
 
 \section{Timeline}
 
-\wss{Schedule of tasks and who is responsible}
+[Schedule of tasks and who is responsible]
 
-\wss{You can point to GitHub if this information is included there}
+[You can point to GitHub if this information is included there]
 
-\bibliographystyle {plainnat}
-\bibliography{../../../refs/References}
+\subsection{Development Phases}
 
-\newpage{}
+\paragraph{Phase 1: Core Cutting System (Completed)}
+\begin{itemize}
+\item M10: Geometric Operations Module
+\item M11: Polygon Partitioning Module
+\item M12: Mesh Generation Module
+\item M14: Physics Update Module
+\end{itemize}
+
+\paragraph{Phase 2: User Interaction (Completed)}
+\begin{itemize}
+\item M5: Player Control Module
+\item M6: Raycast Visualization Module
+\item M7: Cut Execution Module
+\end{itemize}
+
+\paragraph{Phase 3: Enhanced Features (Completed)}
+\begin{itemize}
+\item M8: Debris Generation Module
+\item M9: Cut Profile Manager Module
+\item M15: Material Properties Module
+\end{itemize}
+
+\paragraph{Phase 4: Visual Polish (Not Complete)}
+\begin{itemize}
+\item M13: Pixelation Module
+\item Visual feedback refinements
+\item Debug visualization tools
+\end{itemize}
+
+\section{Notation}
+
+The structure of the Module Interface Specification (MIS) for modules follows Hoffman and Strooper (1995), with adaptations for Unity game engine components and 2D geometric operations. The mathematical notation comes from Chapter 3 of Hoffman and Strooper (1995) and standard computational geometry references. For instance, the symbol := is used for assignment statements and conditional rules follow the form $(c_1 \Rightarrow r_1 | c_2 \Rightarrow r_2 | ... | c_n \Rightarrow r_n)$.
+
+\subsection{Primitive Data Types}
+
+The following table summarizes the primitive data types used by the Destructible Environment System.
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lll}
+\toprule
+\textbf{Data Type} & \textbf{Notation} & \textbf{Description} \\
+\midrule
+character & char & A single symbol or digit \\
+integer & $\mathbb{Z}$ & A number without a fractional component in $(-\infty, \infty)$ \\
+natural number & $\mathbb{N}$ & A number without a fractional component in $[1, \infty)$ \\
+real & $\mathbb{R}$ & Any number in $(-\infty, \infty)$ \\
+boolean & $\mathbb{B}$ & A truth value: true or false \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Derived Data Types}
+
+The Destructible Environment System uses several derived data types: sequences, vectors, polygons, and tuples.
+
+\textbf{Sequences} are lists filled with elements of the same data type, denoted as seq of T where T is the element type (ex. seq of Vector2 represents a sequence of 2D points).
+
+\textbf{Vectors} represent 2D points or directions in space:
+\begin{itemize}
+\item Vector2 := $(x: \mathbb{R}, y: \mathbb{R})$
+\end{itemize}
+
+\textbf{Polygons} are sequences of vertices that form closed shapes:
+\begin{itemize}
+\item Polygon := seq of Vector2
+\end{itemize}
+
+\textbf{Tuples} contain a list of values and can be of different types. For example (Vector2, Vector2, $\mathbb{R}$) represents a tuple containing two 2D vectors and a real number.
+
+\textbf{Functions} are defined by the data types of their inputs and outputs. Local functions are described by giving their type signature followed by their specification. For example:
+\begin{itemize}
+\item distance: Vector2 $\times$ Vector2 $\rightarrow$ $\mathbb{R}$
+\end{itemize}
+
+\subsection{Geometric Notation}
+
+The following geometric primitives and operations are used throughout the system:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lll}
+\toprule
+\textbf{Symbol} & \textbf{Type} & \textbf{Description} \\
+\midrule
+$P_{entry}$ & Vector2 & Entry point where cutting ray intersects object surface \\
+$P_{exit}$ & Vector2 & Exit point where cutting ray leaves object surface \\
+V & seq of Vector2 & Ordered sequence of vertices defining a polygon \\
+C & Vector2 & Centroid (geometric center) of a polygon \\
+$\hat{d}$ & Vector2 & Normalized direction vector where $\|\hat{d}\| = 1$ \\
+$\hat{n}$ & Vector2 & Unit normal (perpendicular) vector to $\hat{d}$ \\
+$\theta(P, C)$ & $\mathbb{R}$ & Angle from centroid C to point P \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Cut Profile Parameters}
+
+Material cutting behavior is defined by the following parameters:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{llll}
+\toprule
+\textbf{Parameter} & \textbf{Type} & \textbf{Range} & \textbf{Description} \\
+\midrule
+$\sigma$ & $\mathbb{R}$ & $[0, 1]$ & Softness coefficient: $0 =$ jagged, $1 =$ smooth \\
+$\psi$ & $\mathbb{R}$ & $[0, 1]$ & Strength coefficient: $0 =$ clean cut, $1 =$ max irregularity \\
+$n_{seg}$ & $\mathbb{N}$ & $[3, 15]$ & Number of segments along cut edge \\
+$\delta_{max}$ & $\mathbb{R}$ & $\mathbb{R}^+$ & Maximum perpendicular offset from cut line \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Physics Parameters}
+
+The following parameters govern the physical behavior of objects and debris:
+
+\begin{table}[h]
+\centering
+\begin{tabular}{lll}
+\toprule
+\textbf{Parameter} & \textbf{Type} & \textbf{Description} \\
+\midrule
+$m$ & $\mathbb{R}^+$ & Mass of an object in kilograms \\
+$A$ & $\mathbb{R}^+$ & Area of a polygon in square units \\
+$v$ & Vector2 & Linear velocity vector \\
+$\omega$ & $\mathbb{R}$ & Angular velocity in degrees per second \\
+$F_{exp}$ & $\mathbb{R}^+$ & Explosion force magnitude \\
+$\kappa$ & $\mathbb{R}^+$ & Mass multiplier constant for debris fragments \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Operators and Functions}
+
+\subsubsection{Logical Operators}
+\begin{itemize}
+\item $\land$ : logical AND
+\item $\lor$ : logical OR
+\item $\neg$ : logical NOT
+\item $\Rightarrow$ : implies
+\end{itemize}
+
+\subsubsection{Set Operators}
+\begin{itemize}
+\item $\in$ : element of
+\item $\cup$ : union
+\item $\cap$ : intersection
+\item $\subseteq$ : subset of
+\item $|$ : such that (set builder notation)
+\end{itemize}
+
+\subsubsection{Geometric Functions}
+
+\textbf{Side(L, P):} Determines which side of line L a point P lies on
+\begin{itemize}
+\item Type: (Vector2 $\times$ Vector2) $\times$ Vector2 $\rightarrow$ $\mathbb{R}$
+\item Returns: positive (right), negative (left), or zero (on line)
+\item Definition: $(L_{end}.x - L_{start}.x) \times (P.y - L_{start}.y) - (L_{end}.y - L_{start}.y) \times (P.x - L_{start}.x)$
+\end{itemize}
+
+\textbf{Area(V):} Calculates the area of a polygon using the shoelace formula
+\begin{itemize}
+\item Type: seq of Vector2 $\rightarrow$ $\mathbb{R}^+$
+\item Definition: $\frac{1}{2}|\sum_{i=0}^{n-1}(v_i.x \times v_{i+1}.y - v_{i+1}.x \times v_i.y)|$
+\end{itemize}
+
+\textbf{Distance$(P_1, P_2)$:} Euclidean distance between two points
+\begin{itemize}
+\item Type: Vector2 $\times$ Vector2 $\rightarrow$ $\mathbb{R}^+$
+\item Definition: $\sqrt{(P_2.x - P_1.x)^2 + (P_2.y - P_1.y)^2}$
+\end{itemize}
+
+\textbf{Normalize(v):} Converts vector to unit length
+\begin{itemize}
+\item Type: Vector2 $\rightarrow$ Vector2
+\item Definition: $v/\|v\|$ where $\|v\| = \sqrt{v.x^2 + v.y^2}$
+\end{itemize}
+
+\textbf{Lerp(a, b, t):} Linear interpolation between values a and b
+\begin{itemize}
+\item Type: $\mathbb{R} \times \mathbb{R} \times \mathbb{R} \rightarrow \mathbb{R}$ where $t \in [0, 1]$
+\item Definition: $a + (b - a) \times t$
+\end{itemize}
+
+\textbf{Sort\_CW(V):} Sorts vertices in clockwise order around their centroid
+\begin{itemize}
+\item Type: seq of Vector2 $\rightarrow$ seq of Vector2
+\item Ordering based on increasing $\theta(v_i, C)$
+\end{itemize}
+
+\textbf{Snap$(P, p_{size})$:} Snaps point to nearest grid position
+\begin{itemize}
+\item Type: Vector2 $\times$ $\mathbb{R}^+ \rightarrow$ Vector2
+\item Definition: $(\lfloor P.x/p_{size} + 0.5 \rfloor \times p_{size}, \lfloor P.y/p_{size} + 0.5 \rfloor \times p_{size})$
+\end{itemize}
+
+\subsection{Conditional Notation}
+
+Conditional rules in specifications follow the format:
+
+$(c_1 \Rightarrow r_1 | c_2 \Rightarrow r_2 | ... | c_n \Rightarrow r_n)$
+
+where $c_i$ represents a condition and $r_i$ represents the corresponding result. The conditions are evaluated in order and the first true condition determines the result.
+
+\subsection{State Variables}
+
+State variables represent the mutable state of system components:
+\begin{itemize}
+\item $V_{visual}$ : seq of Vector2 - Current visual mesh vertices
+\item $V_{collider}$ : seq of Vector2 - Current physics collider vertices
+\item highlighted : $\mathbb{B}$ - Whether object is currently highlighted
+\item cultivated : $\mathbb{B}$ - Whether a valid cut is currently targeted
+\end{itemize}
+
+\subsection{Module Access Constants}
+
+The following constants define access restrictions for module operations:
+\begin{itemize}
+\item \textbf{exported:} Operation is accessible to external modules
+\item \textbf{local:} Operation is only accessible within the module
+\item \textbf{read-only:} State can be read but not modified externally
+\end{itemize}
+
+\bibliographystyle{plain}
+\begin{thebibliography}{9}
+
+\bibitem{Parnas1972}
+David L. Parnas.
+\textit{On the criteria to be used in decomposing systems into modules}.
+Comm. ACM, 15(2):1053--1058, December 1972.
+
+\bibitem{Parnas1978}
+David L. Parnas.
+\textit{Designing software for ease of extension and contraction}.
+In ICSE '78: Proceedings of the 3rd international conference on Software engineering, pages 264--277, Piscataway, NJ, USA, 1978. IEEE Press.
+
+\bibitem{Parnas1984}
+D.L. Parnas, P.C. Clement, and D.M. Weiss.
+\textit{The modular structure of complex systems}.
+In International Conference on Software Engineering, pages 408--419, 1984.
+
+\end{thebibliography}
 
 \end{document}
