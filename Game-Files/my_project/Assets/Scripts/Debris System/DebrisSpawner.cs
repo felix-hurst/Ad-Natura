@@ -92,10 +92,12 @@ public class DebrisSpawner : MonoBehaviour
             
             GameObject fragment = CreateFragment(fragmentArea, aspectRatio, cutProfile, debrisMaterialTag);
             
-            float fragmentSize = Mathf.Sqrt(fragmentArea);
-            Vector2 fragmentPosition = GeneratePositionInShape(cutOffShape, shapeBounds, centroid, fragmentSize);
-            fragment.transform.position = new Vector3(fragmentPosition.x, fragmentPosition.y, transform.position.z);
-            fragment.transform.rotation = Quaternion.Euler(0, 0, Random.Range(0f, 360f));
+float fragmentSize = Mathf.Sqrt(fragmentArea);
+Vector2 fragmentPosition = GeneratePositionInShape(cutOffShape, shapeBounds, centroid, fragmentSize);
+
+// 🎯 FIX: Set Z position to be in front of background
+fragment.transform.position = new Vector3(fragmentPosition.x, fragmentPosition.y, -5f); // Negative Z = closer to camera
+fragment.transform.rotation = Quaternion.Euler(0, 0, Random.Range(0f, 360f));
             
             SetupFragmentPhysics(fragment, fragmentArea, centroid, fragmentPosition);
             fragment.tag = debrisMaterialTag;

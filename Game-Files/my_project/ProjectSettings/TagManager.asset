@@ -6,10 +6,7 @@ TagManager:
   tags:
   - Stone
   - Glass
-  - Metal
-  - Cloth
   - Wood
-  - Water
   layers:
   - Default
   - TransparentFX
@@ -17,9 +14,9 @@ TagManager:
   - 
   - Water
   - UI
+  - Player
+  - Ignore
   - Ground
-  - Objecs
-  - 
   - 
   - 
   - 
