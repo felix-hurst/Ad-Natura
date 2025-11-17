@@ -1,10 +1,22 @@
 fileFormatVersion: 2
-guid: 31d3e4bd4ab567d4ea1f32515e3d4afe
+guid: 9452b028dc23aec40acb766fc01be6bd
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 7805099210470127136
-    second: AnimationJump_03_0
+      213: -1950830215354130308
+    second: Player_Legs_0
+  - first:
+      213: 2129784409213280368
+    second: Player_Legs_1
+  - first:
+      213: -6863222705721743015
+    second: Player_Legs_2
+  - first:
+      213: -223407151323287573
+    second: Player_Legs_3
+  - first:
+      213: 4502960950003852298
+    second: Player_Legs_4
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -51,7 +63,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 25
+  spritePixelsToUnits: 50
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -100,13 +112,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: AnimationJump_03_0
+      name: Player_Legs_0
       rect:
         serializedVersion: 2
-        x: 2
-        y: 1
-        width: 29
-        height: 59
+        x: 0
+        y: 18
+        width: 21
+        height: 26
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +127,96 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 026f0c4f068415c60800000000000000
-      internalID: 7805099210470127136
+      spriteID: c70e7bc41424de4e0800000000000000
+      internalID: -1950830215354130308
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Player_Legs_1
+      rect:
+        serializedVersion: 2
+        x: 3
+        y: 42
+        width: 20
+        height: 16
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 070a257d2a38e8d10800000000000000
+      internalID: 2129784409213280368
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Player_Legs_2
+      rect:
+        serializedVersion: 2
+        x: 19
+        y: 32
+        width: 36
+        height: 14
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 9596f03ef4fe0c0a0800000000000000
+      internalID: -6863222705721743015
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Player_Legs_3
+      rect:
+        serializedVersion: 2
+        x: 2
+        y: 0
+        width: 19
+        height: 24
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: befe719216c46ecf0800000000000000
+      internalID: -223407151323287573
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Player_Legs_4
+      rect:
+        serializedVersion: 2
+        x: 14
+        y: 0
+        width: 8
+        height: 15
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: a046f66502bbd7e30800000000000000
+      internalID: 4502960950003852298
       vertices: []
       indices: 
       edges: []
@@ -135,7 +235,11 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      AnimationJump_03_0: 7805099210470127136
+      Player_Legs_0: -1950830215354130308
+      Player_Legs_1: 2129784409213280368
+      Player_Legs_2: -6863222705721743015
+      Player_Legs_3: -223407151323287573
+      Player_Legs_4: 4502960950003852298
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
