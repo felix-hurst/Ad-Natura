@@ -13,10 +13,27 @@ public class ObjectReshape : MonoBehaviour
     private MeshRenderer meshRenderer;
     private PixelatedCutRenderer pixelatedCutRenderer;
     
+    // Store the original texture for the cut pieces
+    private Texture2D originalTexture;
+    private string materialTag;
+    
     void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         rb = GetComponent<Rigidbody2D>();
+        
+        // Store material tag
+        materialTag = gameObject.tag;
+        if (string.IsNullOrEmpty(materialTag) || materialTag == "Untagged")
+        {
+            materialTag = gameObject.name;
+        }
+        
+        // Store original texture if available
+        if (spriteRenderer != null && spriteRenderer.sprite != null)
+        {
+            originalTexture = spriteRenderer.sprite.texture;
+        }
         
         // Get or add PixelatedCutRenderer
         pixelatedCutRenderer = GetComponent<PixelatedCutRenderer>();
@@ -43,6 +60,12 @@ public class ObjectReshape : MonoBehaviour
             {
                 pixelatedCutRenderer = gameObject.AddComponent<PixelatedCutRenderer>();
             }
+        }
+        
+        // Update texture reference
+        if (spriteRenderer != null && spriteRenderer.sprite != null && originalTexture == null)
+        {
+            originalTexture = spriteRenderer.sprite.texture;
         }
     }
     
@@ -220,6 +243,13 @@ public class ObjectReshape : MonoBehaviour
         polygonCollider = gameObject.AddComponent<PolygonCollider2D>();
         polygonCollider.points = localVertices.ToArray();
         
+        // Re-apply physics material to the new collider
+        PhysicsMaterialManager physicsManager = FindObjectOfType<PhysicsMaterialManager>();
+        if (physicsManager != null)
+        {
+            physicsManager.ApplyPhysicsMaterial(gameObject);
+        }
+        
         Debug.Log($"Updated collider with {localVertices.Count} points (Smooth: {useSmoothCollider})");
     }
     
@@ -244,13 +274,32 @@ public class ObjectReshape : MonoBehaviour
         Color spriteColor = Color.white;
         string sortingLayer = "Default";
         int sortingOrder = 0;
+        Texture2D textureToUse = originalTexture;
         
         if (spriteRenderer != null)
         {
             spriteColor = spriteRenderer.color;
             sortingLayer = spriteRenderer.sortingLayerName;
             sortingOrder = spriteRenderer.sortingOrder;
+            
+            // Try to get texture from sprite
+            if (spriteRenderer.sprite != null && spriteRenderer.sprite.texture != null)
+            {
+                textureToUse = spriteRenderer.sprite.texture;
+            }
+            
             spriteRenderer.enabled = false;
+        }
+        
+        // If we still don't have a texture, try to generate one
+        if (textureToUse == null)
+        {
+            MaterialTextureGenerator textureGenerator = FindObjectOfType<MaterialTextureGenerator>();
+            if (textureGenerator != null)
+            {
+                textureToUse = textureGenerator.GetTexture(materialTag);
+                Debug.Log($"Generated procedural texture for cut mesh: {materialTag}");
+            }
         }
         
         // Find and destroy ALL existing mesh children from previous cuts
@@ -293,7 +342,7 @@ public class ObjectReshape : MonoBehaviour
         }
         if (shader == null)
         {
-            shader = Shader.Find("Unlit/Color");
+            shader = Shader.Find("Unlit/Texture");
         }
         
         if (shader == null)
@@ -305,7 +354,19 @@ public class ObjectReshape : MonoBehaviour
         
         // Create material with the shader we found
         Material newMaterial = new Material(shader);
-        newMaterial.color = spriteColor;
+        
+        // Apply texture if we have one
+        if (textureToUse != null)
+        {
+            newMaterial.mainTexture = textureToUse;
+            Debug.Log($"Applied texture to cut mesh: {textureToUse.name}");
+        }
+        else
+        {
+            // Fallback to color only
+            newMaterial.color = spriteColor;
+        }
+        
         newMeshRenderer.material = newMaterial;
         newMeshRenderer.sortingLayerName = sortingLayer;
         newMeshRenderer.sortingOrder = sortingOrder;
@@ -322,7 +383,7 @@ public class ObjectReshape : MonoBehaviour
                 meshFilter = newMeshFilter;
                 meshRenderer = newMeshRenderer;
                 
-                Debug.Log($"Successfully created visual mesh with {localVertices.Count} vertices, color: {spriteColor}");
+                Debug.Log($"Successfully created visual mesh with {localVertices.Count} vertices, has texture: {textureToUse != null}");
             }
             else
             {
