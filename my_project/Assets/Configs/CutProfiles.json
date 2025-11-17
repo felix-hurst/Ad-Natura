@@ -1,0 +1,39 @@
+{
+  "profiles": [
+    {
+      "materialName": "Stone",
+      "softness": 0.1,
+      "strength": 0.2
+    },
+    {
+      "materialName": "Metal",
+      "softness": 0.7,
+      "strength": 0.15
+    },
+    {
+      "materialName": "Glass",
+      "softness": 0.03,
+      "strength": 0.2
+    },
+    {
+      "materialName": "Cloth",
+      "softness": 0.8,
+      "strength": 0.6
+    },
+    {
+      "materialName": "Rubber",
+      "softness": 0.9,
+      "strength": 0.3
+    },
+    {
+      "materialName": "Ice",
+      "softness": 0.2,
+      "strength": 0.45
+    },
+    {
+      "materialName": "Default",
+      "softness": 0.5,
+      "strength": 0.3
+    }
+  ]
+}
