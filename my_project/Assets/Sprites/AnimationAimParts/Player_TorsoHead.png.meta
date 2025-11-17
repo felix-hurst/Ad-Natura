@@ -1,10 +1,16 @@
 fileFormatVersion: 2
-guid: 31d3e4bd4ab567d4ea1f32515e3d4afe
+guid: 8bfec9de737ba104b9285f2f4ca11eaa
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 7805099210470127136
-    second: AnimationJump_03_0
+      213: 2191801539425845793
+    second: Player_TorsoHead_0
+  - first:
+      213: -2677169192937384751
+    second: Player_TorsoHead_1
+  - first:
+      213: -469077389083611826
+    second: Player_TorsoHead_2
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -51,7 +57,7 @@ TextureImporter:
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 25
+  spritePixelsToUnits: 50
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -100,13 +106,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: AnimationJump_03_0
+      name: Player_TorsoHead_0
       rect:
         serializedVersion: 2
-        x: 2
-        y: 1
-        width: 29
-        height: 59
+        x: 0
+        y: 0
+        width: 27
+        height: 58
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +121,52 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 026f0c4f068415c60800000000000000
-      internalID: 7805099210470127136
+      spriteID: 122c1af23e7da6e10800000000000000
+      internalID: 2191801539425845793
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Player_TorsoHead_1
+      rect:
+        serializedVersion: 2
+        x: 23
+        y: 32
+        width: 32
+        height: 13
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 1d41953adc8c8dad0800000000000000
+      internalID: -2677169192937384751
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Player_TorsoHead_2
+      rect:
+        serializedVersion: 2
+        x: 15
+        y: 0
+        width: 7
+        height: 9
+      alignment: 0
+      pivot: {x: 0, y: 0}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: e4de08399908d79f0800000000000000
+      internalID: -469077389083611826
       vertices: []
       indices: 
       edges: []
@@ -135,7 +185,9 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      AnimationJump_03_0: 7805099210470127136
+      Player_TorsoHead_0: 2191801539425845793
+      Player_TorsoHead_1: -2677169192937384751
+      Player_TorsoHead_2: -469077389083611826
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

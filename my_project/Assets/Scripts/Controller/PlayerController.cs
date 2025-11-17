@@ -15,17 +15,21 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Vector2 groundCheckOffset = new Vector2(0f, 0f); // <-- ADD THIS
     [SerializeField] private LayerMask groundLayer;
 
+    [SerializeField] private Camera gameCamera;
+
     private Animator anim;
     
     private Rigidbody2D rb;
     private bool isGrounded;
     private bool isRunning;
+    private bool isAiming;
     private Vector2 moveInput = Vector2.zero;
     private Raycast raycast;
 
     private float runningBufferTime = 0.1f; // Time (in seconds) to keep running animation active
     private float currentRunningBuffer = 0f;
 
+    private float velocityX;
     //private float velocityY;
 
     void Start()
@@ -42,19 +46,17 @@ public class PlayerController : MonoBehaviour
     
     void Update()
     {
-        // Check for running
-        if (Mathf.Abs(moveInput.x) > 0.01f)
+        velocityX = Mathf.Abs(rb.linearVelocity.x);
+
+        if (velocityX > 0.1f) // Use 0.1f as a small threshold
         {
-            // 1. If input is active, the character is running, and the timer is reset.
             isRunning = true;
-            currentRunningBuffer = runningBufferTime;
+            currentRunningBuffer = runningBufferTime; // Retain buffer for direction changes
         }
         else
         {
-            // 2. If no input, start the buffer countdown.
             currentRunningBuffer -= Time.deltaTime;
-
-            // 3. Keep running animation active until the buffer runs out.
+            // isRunning remains true until buffer runs out IF the velocity is near zero.
             isRunning = currentRunningBuffer > 0f;
         }
 
@@ -63,14 +65,48 @@ public class PlayerController : MonoBehaviour
         isGrounded = Physics2D.OverlapBox(checkPosition, groundCheckSize, groundCheckAngle, groundLayer);
         //velocityY = rb.linearVelocity.y;
 
-        // Call raycast system
-        raycast.DrawLineAndCheckHits();
+        if (!isRunning)
+        {
+            // State 1: IDLE or AIMING (Mouse-based flip)
+            if (gameCamera != null)
+            {
+                Vector3 mousePosition = gameCamera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
 
+                if (mousePosition.x > transform.position.x)
+                {
+                    transform.localScale = new Vector3(1f, 1f, 1f); // Face Right
+                }
+                else
+                {
+                    transform.localScale = new Vector3(-1f, 1f, 1f); // Face Left
+                }
+            }
+        }
+        else // isRunning is true
+        {
+            // State 2: RUNNING (Movement-based flip)
+            if (moveInput.x > 0.01f) // Moving Right
+            {
+                transform.localScale = new Vector3(1f, 1f, 1f); // Face Right
+            }
+            else if (moveInput.x < -0.01f) // Moving Left
+            {
+                transform.localScale = new Vector3(-1f, 1f, 1f); // Face Left
+            }
+            // If moveInput.x is near zero (buffer active), it maintains the last direction.
+        }
+
+        // Call raycast system
+        if (raycast != null)
+        {
+            // Set the raycast component to enabled ONLY when isAiming is true
+            raycast.enabled = isAiming;
+        }
         if (anim != null)
         {
             anim.SetBool("isRunning", isRunning);
             anim.SetBool("isGrounded", isGrounded);
-            //anim.SetFloat("VelocityY", velocityY);
+            anim.SetBool("isAiming", isAiming);
         }
     }
     
@@ -79,18 +115,28 @@ public class PlayerController : MonoBehaviour
         // Move player
         rb.linearVelocity = new Vector2(moveInput.x * moveSpeed, rb.linearVelocity.y);
 
-        // Flip the sprite based on input direction
-        if (moveInput.x > 0.01f) // Moving Right
+
+        // PREVENT MOVEMENT WHILE AIMING
+        if (isAiming && isGrounded)
         {
-            // Set local scale X to 1 (facing right, assuming this is the default)
-            transform.localScale = new Vector3(1f, 1f, 1f);
+            // Stop all horizontal movement immediately
+            rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
         }
-        else if (moveInput.x < -0.01f) // Moving Left
+        else
         {
-            // Set local scale X to -1 (facing left)
-            transform.localScale = new Vector3(-1f, 1f, 1f);
+            // Normal move player logic
+            rb.linearVelocity = new Vector2(moveInput.x * moveSpeed, rb.linearVelocity.y);
         }
-        // If input is near zero (idle), the sprite maintains its last direction.
+    }
+
+    public void OnAim(InputValue value)
+    {
+        // Check if the input value is a button press/release
+        if (value.isPressed)
+        {
+            // Toggle the aiming state on press
+            isAiming = !isAiming;
+        }
     }
 
     // Called by Unity's Input System
@@ -108,9 +154,16 @@ public class PlayerController : MonoBehaviour
     // Called by Unity's Input System
     public void OnJump(InputValue value)
     {
+        // PREVENT JUMPING WHILE AIMING
+        if (isAiming)
+        {
+            return; // Exit the function immediately
+        }
+
         if (isGrounded && value.isPressed)
         {
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
+            isGrounded = false;
         }
     }
 
