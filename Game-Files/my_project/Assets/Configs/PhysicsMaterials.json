@@ -1,0 +1,59 @@
+{
+  "materials": [
+    {
+      "materialName": "Stone",
+      "friction": 0.6,
+      "bounciness": 0.0
+    },
+    {
+      "materialName": "Metal",
+      "friction": 0.2,
+      "bounciness": 0.1
+    },
+    {
+      "materialName": "Glass",
+      "friction": 0.1,
+      "bounciness": 0.3
+    },
+    {
+      "materialName": "Wood",
+      "friction": 0.5,
+      "bounciness": 0.0
+    },
+    {
+      "materialName": "Dirt",
+      "friction": 0.7,
+      "bounciness": 0.0
+    },
+    {
+      "materialName": "Granite",
+      "friction": 0.65,
+      "bounciness": 0.0
+    },
+    {
+      "materialName": "Ice",
+      "friction": 0.05,
+      "bounciness": 0.05
+    },
+    {
+      "materialName": "Rubber",
+      "friction": 0.8,
+      "bounciness": 0.6
+    },
+    {
+      "materialName": "Cloth",
+      "friction": 0.9,
+      "bounciness": 0.0
+    },
+    {
+      "materialName": "Water",
+      "friction": 0.3,
+      "bounciness": 0.0
+    },
+    {
+      "materialName": "Default",
+      "friction": 0.4,
+      "bounciness": 0.0
+    }
+  ]
+}

@@ -212,4 +212,48 @@ public class Raycast : MonoBehaviour
             currentlyHighlighted.ClearHighlight();
         }
     }
+    void Update()
+    {
+        // Call the main logic function here.
+        // This method only runs when Raycast.enabled is true.
+        DrawLineAndCheckHits();
+    }
+
+    private void OnDisable()
+    {   
+        // Hide the LineRenderer
+        if (lineRenderer != null)
+        {
+            lineRenderer.enabled = false;
+        }
+        
+        // Hide the visualization dots
+        if (entryDot != null)
+        {
+            entryDot.SetActive(false);
+        }
+        if (exitDot != null)
+        {
+           exitDot.SetActive(false);
+        }
+
+        // Crucial: Clear any existing highlights on terrain/objects
+        if (currentlyHighlighted != null)
+        {
+            currentlyHighlighted.ClearHighlight();
+            currentlyHighlighted = null;
+        }
+
+        // Reset cut data
+        hasValidCut = false;
+    }
+
+    // Ensure the dots and line are ENABLED when aiming starts (OnEnable)
+    private void OnEnable()
+    {
+        if (lineRenderer != null)
+        {
+            lineRenderer.enabled = true;
+        }
+    }
 }

@@ -6,7 +6,7 @@ public class CutProfile
 {
     public string materialName;
     [Range(0f, 1f)] public float softness = 0.5f;  // 0 = very jagged, 1 = smooth curves
-    [Range(0f, 1f)] public float strength = 0.3f;  // 0 = no extra cutting, 1 = maximum extra cutting
+    [Range(0f, 1f)] public float strength = 0.3f;  // 0 = no extra cutting, 1 = maxextra cutting
     
     public CutProfile(string name, float soft, float str)
     {
@@ -55,7 +55,7 @@ public class CutProfileManager : MonoBehaviour
             }
         }
         
-        // Add default profile if not already present
+        // in case default profile is not defined in JSON
         if (!profileDictionary.ContainsKey("Default"))
         {
             profileDictionary["Default"] = defaultProfile;
@@ -84,12 +84,10 @@ public class CutProfileManager : MonoBehaviour
         }
         
         List<Vector2> irregularShape = new List<Vector2>();
-        
-        // Find the cut line segment indices
+
         int entryIndex = FindClosestVertexIndex(originalShape, entryPoint);
         int exitIndex = FindClosestVertexIndex(originalShape, exitPoint);
-        
-        // Process each edge
+
         for (int i = 0; i < originalShape.Count; i++)
         {
             Vector2 currentVertex = originalShape[i];
@@ -111,7 +109,7 @@ public class CutProfileManager : MonoBehaviour
             }
             else
             {
-                // Keep original vertex
+                //keep original vertex
                 irregularShape.Add(currentVertex);
             }
         }
@@ -131,7 +129,7 @@ public class CutProfileManager : MonoBehaviour
         Vector2 direction = (end - start).normalized;
         Vector2 perpendicular = new Vector2(-direction.y, direction.x);
         
-        // Calculate number of segments based on softness
+        // Calculates number of segments based on softness
         // Lower softness = more segments = more jagged
         int minSegments = 3;
         int maxSegments = 15;
