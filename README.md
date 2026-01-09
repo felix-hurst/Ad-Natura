@@ -1,33 +1,63 @@
 # Ad-Natura - Wardens of the Wild
 
-Developer Names:
-- Felix Hurst
-- Marcos Hernandez-Rivero
-- BoWen Liu
-- Andy Liang
+Here is your text with **all typos fixed**, wording smoothed, and grammar corrected **without changing meaning or tone**.
 
-Date of project start: September 2025
-Project Demo: March 2026
+---
 
-Project Overview:
-This project is a capstone design project for SFWRENG 4G06 planned and developed by our team. Our project delivers an unique and exciting take on the classic 2D action adventure RPG genre by introducing smart, fully interactable and destructable environment. The story follows a young girl's journey in an apocalyptic world seperated from her tribe as she makes her way to the safe haven.
+**Developer Names:**
 
-Key Features:
-Interactable environmental life such as plants and slime mold which reshape terrain and helps players traverse levels and solve puzzles
-Physically simulated water flow, errosion, and destructable damage
+* Felix Hurst
+* Marcos Hernandez-Rivero
+* BoWen Liu
+* Andy Liang
 
+**Date of Project Start:** September 2025
+**Project Demo:** March 2026
 
-Game Directory Overview
-Assets: 
-    Scripts: Includes all the C# scripts used by our game, including controllers and managers
-    Animations: All animation files
-    Sprites: All sprite PNGs
-    Backgrounds: Background PNGs for each level
-    Music: All Music FLAC files
+---
 
-Library: Contains all library files used by Unity
+## Project Overview
 
+This project is a capstone design project for SFWRENG 4G06, planned and developed by our team. Our project delivers an unique and exciting take on the classic 2D action-adventure RPG genre by introducing smart, fully interactable environments, including slime mold life and destructible environments.
 
+The story follows a young girl's journey in an apocalyptic world, separated from her tribe, as she makes her way to a safe haven.
 
-Reports Directory Overview
-Docs: Reports directory, please review the readmes inside the folder
+---
+
+## Key Features
+
+* Interactable environmental life, such as plants and slime mold, which reshape terrain and help players traverse levels and solve puzzles
+* Physically simulated water flow, erosion, and destructible damage
+
+---
+
+## Game Directory Overview
+
+**Assets:**
+
+* **Scripts:** Includes all C# scripts used by the game, including controllers and managers
+* **Animations:** All animation files
+* **Sprites:** All sprite PNG files
+* **Backgrounds:** Background PNG files for each level
+* **Music:** All music FLAC files
+
+**Library:**
+
+* Contains all library files used by Unity
+
+---
+
+## Reports Directory Overview
+
+**Docs:**
+
+* Reports directory; please review the READMEs inside the folder
+
+---
+
+If you want, I can also:
+
+* Make the tone more academic or more marketing-oriented
+* Format this for LaTeX, Markdown, or a final report
+* Improve clarity further while keeping it concise
+

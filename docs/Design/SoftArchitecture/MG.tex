@@ -155,7 +155,7 @@ change.
 \item[\refstepcounter{acnum} \actheacnum \label{AC4}:] Material properties for different destructible objects (softness, strength, friction, texture patterns, etc).
 \item[\refstepcounter{acnum} \actheacnum \label{AC5}:] Number and behaviour of debris objects generated from cuts.
 \item[\refstepcounter{acnum} \actheacnum \label{AC6}:] Pixel size used for pixelated cut edge rendering
-\item[\refstepcounter{acnum} \actheacnum \label{AC7}:] Algorithm used for irregular edge generation.
+\item[\refstepcounter{acnum} \actheacnum \label{AC7}:] Algorithm used for edge generation (sine wave-straight angled straight line blend) with height, frequency, and blend factor parameters.
 \item[\refstepcounter{acnum} \actheacnum \label{AC8}:] Debug and production visualization style of the cutting line and intersection points (colors, sizes, styles).
 \item[\refstepcounter{acnum} \actheacnum \label{AC9}:] The physics properties of objects (mass calculation, gravity scale).
 \item[\refstepcounter{acnum} \actheacnum \label{AC10}:] Methodology for cut object selection (top, bottom, closest to player).
@@ -545,11 +545,12 @@ Abstract Object
 \subsubsection{Tool Raycast (M7)} \label{M7}
 
 \paragraph{Secrets}
-Coordinates between controller and reshape and debris systems as the executor and manager of the tool use.
+Coordinates between controller and reshape and debris systems as the executor and manager of the tool use. Player controller passes tool type and raycast data to this module which then applies the appropriate cut behavior based on material profiles.
 
 \paragraph{State Variables}
 \begin{itemize}
 \item $currentCutTarget : \text{GameObject}$ --- Object being cut
+\item $toolSelected : \texttt{string}$ --- Tool Selected
 \item $entryPoint : \mathbb{R}^2$ --- Cut entry point
 \item $exitPoint : \mathbb{R}^2$ --- Cut exit point
 \item $cutLineDirection : \mathbb{R}^2$ --- Direction of cut
@@ -1196,7 +1197,7 @@ $\theta(P, C)$ & $\mathbb{R}$ & Angle from centroid C to point P \\
 
 Material cutting behavior is defined by the following parameters:
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \begin{tabular}{llll}
 \toprule
