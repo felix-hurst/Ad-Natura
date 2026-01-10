@@ -6,4 +6,4 @@ Players mouse draws a line with it and the character symbolizing the path in whi
 
 .Tool Selection Interface
 image::images/tool_selection_diagram.PNG[alt="Tool selection interface diagram", width=1000]
-Player presses the CTRL button which will pause the game and can use the mousewheel to scroll to the correct tool in which will be equipped once they let go of the button.
+Player presses the CTRL button which will pause the game and can use the mousewheel to scroll to the correct tool in which will be equipped once they let go of the button. The highlighted tool will display its damage type (Cut,Explosion, or Excavating).
