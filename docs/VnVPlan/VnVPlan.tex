@@ -261,7 +261,7 @@ Unit tests will focus on verifying individual modules and functions in isolation
 \subsubsection{SaveLoadModule-UT01}
 \textbf{Type}: Functional, Dynamic, Automatic\
 \textbf{Initial State}: Empty save file system\
-\textbf{Input}: Player state object with coordinates (100, 200), inventory containing 3 items, and level ID "Level_2"\
+\textbf{Input}: Player state object with coordinates (100, 200), inventory containing 3 items, and level ID \texttt{Level\_2}\
 \textbf{Output}: Serialized save file containing all input data, successfully deserialized to match original state\
 \textbf{Test Case Derivation}: The save/load system must accurately preserve all player state data without loss or corruption. This test verifies serialization and deserialization correctness.\
 \textbf{How test will be performed}: Create a mock player state object, serialize it using the save module, deserialize it, and assert that all fields match the original values using NUnit assertions.\
@@ -344,19 +344,19 @@ Unit tests will focus on verifying individual modules and functions in isolation
 \caption{Unit Test to Module Traceability}
 \begin{tabular}{|p{5cm}|p{4cm}|p{6cm}|}
 \hline
-\textbf{Test ID} & \textbf{Module} & \textbf{Purpose} \ \hline
-SaveLoadModule-UT01 & Save/Load System & Verify serialization correctness \ \hline
-SaveLoadModule-UT02 & Save/Load System & Verify overwrite functionality \ \hline
-SaveLoadModule-UT03 & Save/Load System & Verify save performance \ \hline
-PhysicsModule-UT01 & Physics Engine & Verify force application \ \hline
-PhysicsModule-UT02 & Physics Engine & Verify collision detection \ \hline
-DestructionModule-UT01 & Destruction System & Verify SOFT material behavior \ \hline
-DestructionModule-UT02 & Destruction System & Verify BRITTLE material behavior \ \hline
-SlimeMoldModule-UT01 & Slime Mold Algorithm & Verify basic chemotaxis \ \hline
-SlimeMoldModule-UT02 & Slime Mold Algorithm & Verify obstacle avoidance \ \hline
-PerformanceModule-UT01 & Physics Engine & Verify physics performance \ \hline
-PerformanceModule-UT02 & Destruction System & Verify destruction performance \ \hline
-MemoryModule-UT01 & Object Management & Verify memory management \ \hline
+\textbf{Test ID} & \textbf{Module} & \textbf{Purpose} \\ \hline
+SaveLoadModule-UT01 & Save/Load System & Verify serialization correctness \\ \hline
+SaveLoadModule-UT02 & Save/Load System & Verify overwrite functionality \\ \hline
+SaveLoadModule-UT03 & Save/Load System & Verify save performance \\ \hline
+PhysicsModule-UT01 & Physics Engine & Verify force application \\ \hline
+PhysicsModule-UT02 & Physics Engine & Verify collision detection \\ \hline
+DestructionModule-UT01 & Destruction System & Verify SOFT material behavior \\ \hline
+DestructionModule-UT02 & Destruction System & Verify BRITTLE material behavior \\ \hline
+SlimeMoldModule-UT01 & Slime Mold Algorithm & Verify basic chemotaxis \\ \hline
+SlimeMoldModule-UT02 & Slime Mold Algorithm & Verify obstacle avoidance \\ \hline
+PerformanceModule-UT01 & Physics Engine & Verify physics performance \\ \hline
+PerformanceModule-UT02 & Destruction System & Verify destruction performance \\ \hline
+MemoryModule-UT01 & Object Management & Verify memory management \\ \hline
 \end{tabular}
 \end{table}
 \subsection{Traceability Between Test Cases and Modules [Provide evidence that all of the modules have been considered. —SS]}

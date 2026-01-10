@@ -1,7 +1,5 @@
 # Ad-Natura - Wardens of the Wild
 
-Here is your text with **all typos fixed**, wording smoothed, and grammar corrected **without changing meaning or tone**.
-
 ---
 
 **Developer Names:**
@@ -53,11 +51,4 @@ The story follows a young girl's journey in an apocalyptic world, separated from
 
 * Reports directory; please review the READMEs inside the folder
 
----
-
-If you want, I can also:
-
-* Make the tone more academic or more marketing-oriented
-* Format this for LaTeX, Markdown, or a final report
-* Improve clarity further while keeping it concise
 
