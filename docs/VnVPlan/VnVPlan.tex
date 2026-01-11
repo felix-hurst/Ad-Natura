@@ -205,140 +205,309 @@ System tests provide an effective and quantifiable way of evaluating success of 
 \subsection{Tests for Functional Requirements}
 The following are tests for the functional requirements outlined in the SRS. Testing for functional requirements will include the two key game mechanics of destructive environment and path traversal as well as the saving feature. Each feature and mechanics' specific functionalities will be tested to ensure it meets proper adherence to functionality.
 \subsubsection{SavingManualTest-FRT01}
+
 \textbf{Type}: Functional, Dynamic, Manual\
+
 \textbf{Initial State}: Character at beginning of level.\
+
 \textbf{Input}: Move character to designated save point, destroy 2 objects. clicks save option from menu.\
+
 \textbf{Output}: Character coordinates, inventory, attributes, world state and game objects, and location saved to file.\
+
 \textbf{Test Case Derivation}: The saved information represents a snapshot of the player character to be loaded again to continue where the player has been left off.\
+
 \textbf{How test will be performed}: The user will move the character from point A to point B and perform the intended environmental manipulation and then click save. The user loads the game save and checks if the current state is maintained.\
+
+
+
 \subsubsection{SavingAutoTest-FRT02}
+
 \textbf{Type}: Functional, Dynamic, Manual\
+
 \textbf{Initial State}: Character at beginning of level.\
+
 \textbf{Input}: Picks up 2 objects which will trigger a preprogrammed autosave save.\
+
 \textbf{Output}: Character coordinates, inventory, attributes, world state and game objects and location saved to file.\
+
 \textbf{Test Case Derivation}: The saved information represents a snapshot of the player character to be loaded again to continue where the player has been left off.\
+
 \textbf{How the test will be performed}: User will move the character from point A to point B and pick up the designated objects which will trigger save. The user loads the game save and checks if the current state is maintained.\
+
+
+
 \subsubsection{DestructibleEnvironmentTest-FRT03}
+
 \textbf{Type}: Functional, Dynamic, Manual\
+
 \textbf{Initial State}: Character at beginning of level\
+
 \textbf{Input}: Go to designated point and use tool to destroy object at marked entry point. Repeat process with each tool and 3 different object attributes(soft object, brittle object, and hard object).\
+
 \textbf{Output}: Deformed original game object and spawned debris objects\
+
 \textbf{Test Case Derivation}: The deformed original game objects as well as the spawned game objects display shape deformation characteristics of the tool used and object attributes.\
+
 \textbf{How the test will be performed}: User will move the character to designated point and use tool to destroy object at marked entry point. Repeat process with each tool and 3 different object attributes(soft object, brittle object, and hard object).\
+
+
+
 \subsubsection{SlimeMoldTraversalTest-FRT04}
+
 \textbf{Type}: Functional, Dynamic, Automatic\
+
 \textbf{Initial State}: Slime mold at spawned point, water debris at spawned point. 5 rectangular obstacles in the level each varying in size and dimensions, and one gap in terrain.\
+
 \textbf{Input}: Default slime mold entity spawn.\
+
 \textbf{Output}: Slime mold segments traverse to the water debris through the obstacles.\
+
 \textbf{Test Case Derivation}: Slime mold segments should travel from start to water debris objective in different and non deterministic ways each time such that the pathways traversed will be unique.\
+
 \textbf{How test will be performed}: Level will be set up with the game objects with the specified initial state and the slime mold will traverse to the water debris. Screenshot taken of each run of the experiment.\
+
+
+
 \subsection{Tests for Nonfunctional Requirements}
 The following are tests for the nonfunctional requirements outlined in the SRS.
+
+
+
 \subsubsection{SaveGameIntegrityTest-NFRT01}
+
 \textbf{Type}: Non--Functional, Static, Automatic\
+
 \textbf{Initial State}: Game Saved to file.\
+
 \textbf{Input/Condition}: Run save file through decompression and deserialization check.\
+
 \textbf{Output/Result}: Console logged logical checks for each aspect of save file(player location, inventory, state, world object locations, etc)\
+
 \textbf{How test will be performed}: At a given point midway through a level, player will save the game, the save file will be run through our decompression and deserialization check and be evaluated if it passes all the logical checks.\
+
+
+
 \subsubsection{DestructibleEnvironmentUsabilityTest-NFRT02}
+
 \textbf{Type}: Non--Functional, Dynamic, Manual\
+
 \textbf{Initial State}: Isolated Segments of levels, whole levels\
+
 \textbf{Input}: In the given test environment, the player will traverse from point A to B and is required to destroy certain terrain and objects between the traversal.\
+
 \textbf{Output}: Final game objects and terrain shape, generated debris, player traversal from point A to B\
+
 \textbf{How test will be performed}: In the given test environment setup to test critical sections of levels, the player will traverse from point A to B and is required to destroy certain terrain and objects between the traversal. Player actions are observed and are requested to fill out a survey (part of Section 6) with questions about traversability, issues with level design and destruction mechanics.\
+
+
+
 \subsubsection{SlimeMoldAlgorithmBehaviorTest-NFRT03}
+
 \textbf{Type}: Non--Functional, Dynamic, Automatic\
+
 \textbf{Initial State}: Slime mold at spawned point, water debris at spawned point. Obstacles in level 5 varying in size and width boxes, and one gap in terrain.\
+
 \textbf{Input}: N/A\
+
 \textbf{Output}: Slime mold traversal from spawned point to desired end point, Screenshot of final result.\
+
 \textbf{How test will be performed}: 3 Trials will be conducted with the same test level. Observations on traversability, randomness, and evaluation comments will be made in a survey(part of section 6) by the developer.\
+
+
+
 \subsection{Traceability Between Test Cases and Requirements}
+
 The following is a table for the test cases as they relate to the requirements.
+
+
+
 \section{Unit Test Description}
+
+
+
 \subsection{Unit Testing Scope}
+
 Unit tests will focus on verifying individual modules and functions in isolation. The scope includes testing core game mechanics, physics calculations, save/load functionality, and algorithm implementations. Unit tests will be automated using NUnit or xUnit framework and will be executed as part of our continuous integration pipeline.
+
+
+
 \subsection{Tests for Functional Requirements}
+
 \subsubsection{SaveLoadModule-UT01}
+
 \textbf{Type}: Functional, Dynamic, Automatic\
+
 \textbf{Initial State}: Empty save file system\
+
 \textbf{Input}: Player state object with coordinates (100, 200), inventory containing 3 items, and level ID \texttt{Level\_2}\
+
 \textbf{Output}: Serialized save file containing all input data, successfully deserialized to match original state\
+
 \textbf{Test Case Derivation}: The save/load system must accurately preserve all player state data without loss or corruption. This test verifies serialization and deserialization correctness.\
+
 \textbf{How test will be performed}: Create a mock player state object, serialize it using the save module, deserialize it, and assert that all fields match the original values using NUnit assertions.\
+
+
 \subsubsection{SaveLoadModule-UT02}
+
 \textbf{Type}: Functional, Dynamic, Automatic\
+
 \textbf{Initial State}: Existing save file with player at position (50, 75)\
+
 \textbf{Input}: Updated player state with new position (150, 225) and additional inventory item\
+
 \textbf{Output}: Updated save file that overwrites previous data correctly\
+
 \textbf{Test Case Derivation}: The save system must handle overwriting existing saves without data corruption or file system errors.\
+
 \textbf{How test will be performed}: Create initial save, modify player state, save again, then load and verify that only the new state is present and old data is properly overwritten.\
+
+
 \subsubsection{PhysicsModule-UT01}
+
 \textbf{Type}: Functional, Dynamic, Automatic\
+
 \textbf{Initial State}: Debris object with mass 10kg at rest\
+
 \textbf{Input}: Apply force vector (100N, 0N) for 1 second\
+
 \textbf{Output}: Object velocity of (10 m/s, 0 m/s) based on F=ma\
+
 \textbf{Test Case Derivation}: Physics calculations must follow Newton's laws. With F=100N, m=10kg, t=1s, expected velocity is v = (F/m)*t = 10 m/s.\
+
 \textbf{How test will be performed}: Create mock debris object, apply force through physics module, measure resulting velocity, and assert it matches calculated expected value within 0.01 m/s tolerance.\
+
+
 \subsubsection{PhysicsModule-UT02}
+
 \textbf{Type}: Functional, Dynamic, Automatic\
+
 \textbf{Initial State}: Two debris objects at positions (0, 0) and (5, 0) with collision detection enabled\
+
 \textbf{Input}: Move first object to position (5, 0)\
+
 \textbf{Output}: Collision event triggered, both objects have non-zero separation\
+
 \textbf{Test Case Derivation}: Collision detection must identify overlapping objects and trigger appropriate collision response.\
+
 \textbf{How test will be performed}: Position objects to overlap, call collision detection module, verify collision event is raised and objects are separated by physics resolution.\
+
+
 \subsubsection{DestructionModule-UT01}
+
 \textbf{Type}: Functional, Dynamic, Automatic\
+
 \textbf{Initial State}: Intact terrain object of type SOFT at position (100, 100)\
+
 \textbf{Input}: Tool impact at position (100, 100) with force 50N and tool type HAMMER\
+
 \textbf{Output}: Terrain object deformed, 10-15 debris objects spawned within radius of 20 units\
+
 \textbf{Test Case Derivation}: Destruction system must generate debris based on material type and impact force. SOFT material with HAMMER should produce 10-15 chunks.\
+
 \textbf{How test will be performed}: Apply tool impact to terrain object, count generated debris objects, verify count is within expected range and debris positions are within impact radius.\
+
+
 \subsubsection{DestructionModule-UT02}
+
 \textbf{Type}: Functional, Dynamic, Automatic\
+
 \textbf{Initial State}: Intact terrain object of type BRITTLE\
+
 \textbf{Input}: Tool impact with force 30N\
+
 \textbf{Output}: Complete object destruction, 20-30 small debris pieces spawned\
+
 \textbf{Test Case Derivation}: BRITTLE material should shatter more completely than SOFT material under similar force, producing more numerous smaller pieces.\
+
 \textbf{How test will be performed}: Apply impact to BRITTLE object, verify object is removed from scene, count debris (should be 20-30), and verify debris size is smaller than SOFT material debris.\
+
+
 \subsubsection{SlimeMoldModule-UT01}
+
 \textbf{Type}: Functional, Dynamic, Automatic\
+
 \textbf{Initial State}: Single slime mold segment at position (0, 0), attractant at position (100, 0)\
+
 \textbf{Input}: Run algorithm for 10 iterations\
+
 \textbf{Output}: Slime mold segment has moved closer to attractant (x-coordinate increased)\
+
 \textbf{Test Case Derivation}: Slime mold algorithm should exhibit chemotaxis toward attractant, resulting in net movement in the correct direction over multiple iterations.\
+
 \textbf{How test will be performed}: Initialize slime mold and attractant, run algorithm iterations, verify final x-position is greater than initial position, indicating movement toward target.\
+
+
 \subsubsection{SlimeMoldModule-UT02}
+
 \textbf{Type}: Functional, Dynamic, Automatic\
+
 \textbf{Initial State}: Slime mold at (0, 0), obstacle at (50, 0), attractant at (100, 0)\
+
 \textbf{Input}: Run algorithm for 50 iterations\
+
 \textbf{Output}: Slime mold reaches attractant without intersecting obstacle\
+
 \textbf{Test Case Derivation}: Algorithm must implement obstacle avoidance while maintaining progress toward target.\
+
 \textbf{How test will be performed}: Place obstacle between start and goal, run algorithm, verify slime mold path does not intersect obstacle collision bounds and eventually reaches target position.\
+
+
 \subsection{Tests for Nonfunctional Requirements}
+
 \subsubsection{PerformanceModule-UT01}
+
 \textbf{Type}: Non--Functional, Dynamic, Automatic\
+
 \textbf{Initial State}: Scene with 100 debris objects\
+
 \textbf{Input/Condition}: Execute one physics update cycle\
+
 \textbf{Output/Result}: Update completes in under 16ms (60 FPS target)\
+
 \textbf{How test will be performed}: Create scene with 100 debris objects, measure execution time of physics update using high-resolution timer, assert time is below 16ms threshold. Run 100 times and verify 95th percentile meets requirement.\
+
+
 \subsubsection{PerformanceModule-UT02}
+
 \textbf{Type}: Non--Functional, Dynamic, Automatic\
+
 \textbf{Initial State}: Terrain with 50 destructible objects\
+
 \textbf{Input/Condition}: Destroy 10 objects simultaneously\
+
 \textbf{Output/Result}: Frame time remains under 33ms (30 FPS minimum), no frame drops\
+
 \textbf{How test will be performed}: Trigger destruction of 10 objects in single frame, monitor frame time during destruction and subsequent 30 frames, verify no frame exceeds 33ms.\
+
+
 \subsubsection{MemoryModule-UT01}
+
 \textbf{Type}: Non--Functional, Dynamic, Automatic\
+
 \textbf{Initial State}: Game loaded with no debris\
+
 \textbf{Input/Condition}: Spawn 1000 debris objects then destroy all\
+
 \textbf{Output/Result}: Memory returns to within 10MB of initial state\
+
 \textbf{How test will be performed}: Measure baseline memory usage, spawn and destroy debris objects, force garbage collection, measure final memory usage, verify difference is within 10MB indicating no major memory leaks.\
+
+
 \subsubsection{SaveLoadModule-UT03}
+
 \textbf{Type}: Non--Functional, Dynamic, Automatic\
+
 \textbf{Initial State}: Complex game state with 50 objects and full inventory\
+
 \textbf{Input/Condition}: Execute save operation\
+
 \textbf{Output/Result}: Save completes in under 500ms\
+
 \textbf{How test will be performed}: Create complex game state, measure time for complete save operation using stopwatch, assert time is under 500ms to ensure responsive save system.\
+
+
+
 \subsection{Traceability Between Test Cases and Modules}
 \begin{table}[H]
 \caption{Unit Test to Module Traceability}
@@ -455,16 +624,16 @@ Q14. The Reset Level option helped me recover when I got lost or stuck.
 
 Q15. The game did not crash during my session.
 
-If a crash occurred, the crash dialog was informative and helpful.
+Q16If a crash occurred, the crash dialog was informative and helpful.
 
-Q16. The game ran without asking for administrator privileges.
+Q17. The game ran without asking for administrator privileges.
 \subsubsection{Open‑Ended Questions (Free Text)}
 
-Q17. What (if anything) was confusing about the organism’s reactions to water/heat/light?
+Q18. What (if anything) was confusing about the organism’s reactions to water/heat/light?
 
-Q18. Where did you get stuck, and what would have helped?
+Q19. Where did you get stuck, and what would have helped?
 
-Q19. Any places where text/UI felt too small or low‑contrast? (Include your resolution.)
+Q20. Any places where text/UI felt too small or low‑contrast? (Include your resolution.)
 What single change would most improve your first‑time experience?
 
 \subsubsection{Observer Metrics (Facilitator fills; not asked to the player)}
