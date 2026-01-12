@@ -149,21 +149,22 @@ adapted here is called design for
 change.
 
 \begin{description}
-\item[\refstepcounter{acnum} \actheacnum \label{AC1}:] Hardware that the game is made available in (Windows, Android, Apple, Desktop, Mobile, etc).
-\item[\refstepcounter{acnum} \actheacnum \label{AC2}:] Input Device being used (Mouse and Keyboard, touchscreen)
-\item[\refstepcounter{acnum} \actheacnum \label{AC3}:] Rendering resolution and pixel density for different display types
-\item[\refstepcounter{acnum} \actheacnum \label{AC4}:] Material properties for different destructible objects (softness, strength, friction, texture patterns, etc).
-\item[\refstepcounter{acnum} \actheacnum \label{AC5}:] Number and behaviour of debris objects generated from cuts.
-\item[\refstepcounter{acnum} \actheacnum \label{AC6}:] Pixel size used for pixelated cut edge rendering
-\item[\refstepcounter{acnum} \actheacnum \label{AC7}:] Algorithm used for irregular edge generation.
-\item[\refstepcounter{acnum} \actheacnum \label{AC8}:] Debug and production visualization style of the cutting line and intersection points (colors, sizes, styles).
-\item[\refstepcounter{acnum} \actheacnum \label{AC9}:] The physics properties of objects (mass calculation, gravity scale).
-\item[\refstepcounter{acnum} \actheacnum \label{AC10}:] Methodology for cut object selection (top, bottom, closest to player).
-\item[\refstepcounter{acnum} \actheacnum \label{AC11}:] Mesh triangulation algorithm (Bresenhan algorithm vs Alternatives).
-\item[\refstepcounter{acnum} \actheacnum \label{AC12}:] Format and storage location of cut profile configuration data (JSON, databases, etc.)
-\item[\refstepcounter{acnum} \actheacnum \label{AC13}:] Force range and patterns for destructive environment.
-\item[\refstepcounter{acnum} \actheacnum \label{AC14}:] the lifetime and cleanup behaviour of debris fragments.
-\item[\refstepcounter{acnum} \actheacnum \label{AC15}:] The collision detection layers and filtering rules/parameters for raycasting.
+\item[\refstepcounter{acnum} \actheacnum\label{AC1}:] Hardware that the game is made available in (Windows, Mac, Linux, Android, iOS, etc.).
+\item[\refstepcounter{acnum} \actheacnum\label{AC2}:] Input device being used (mouse and keyboard, touchscreen, etc.).
+\item[\refstepcounter{acnum} \actheacnum\label{AC3}:] Rendering resolution and pixel density for different display types.
+\item[\refstepcounter{acnum} \actheacnum\label{AC4}:] Material properties for different destructible objects (softness, strength, friction, texture patterns, etc.).
+\item[\refstepcounter{acnum} \actheacnum\label{AC5}:] Number, size, shape and behaviour of debris objects generated from cuts in destructible objects.
+\item[\refstepcounter{acnum} \actheacnum\label{AC6}:] Pixel size used for pixelated cut edge rendering.
+\item[\refstepcounter{acnum} \actheacnum\label{AC7}:] Algorithm used for irregular edge generation when destroying objects.
+\item[\refstepcounter{acnum} \actheacnum\label{AC8}:] Debug and production visualization style of the cutting line and intersection points (colors, sizes, styles).
+\item[\refstepcounter{acnum} \actheacnum\label{AC9}:] The physics properties of the environment (i.e. intensity of gravity).
+\item[\refstepcounter{acnum} \actheacnum\label{AC10}:] Methodology for cut object selection (top, bottom, closest to player).
+\item[\refstepcounter{acnum} \actheacnum\label{AC11}:] Mesh triangulation algorithm (Bresenhan algorithm versus alternatives).
+\item[\refstepcounter{acnum} \actheacnum\label{AC12}:] Format and storage location of cut profile configuration data (JSON, databases, etc.).
+\item[\refstepcounter{acnum} \actheacnum\label{AC13}:] Force range and patterns for destructible environment.
+\item[\refstepcounter{acnum} \actheacnum\label{AC14}:] The lifetime and cleanup behaviour of debris fragments after spawning from destroyed objects.
+\item[\refstepcounter{acnum} \actheacnum\label{AC15}:] The collision detection layers and filtering rules/parameters for raycasting.
+\item[\refstepcounter{acnum} \actheacnum\label{AC16}:] The availability of accessibility modes, such as contrast adjustments for colorblindness.
 \end{description}
 
 
@@ -177,15 +178,15 @@ will potentially need to be modified. Hence, it is not intended that these
 decisions will be changed.
 
 \begin{description}
-\item[\refstepcounter{ucnum} \uctheucnum \label{UC1}:] Game engine (Unity)
-\item[\refstepcounter{ucnum} \uctheucnum \label{UC2}:] Dimensionality (2D)
-\item[\refstepcounter{ucnum} \uctheucnum \label{UC3}:]  Focus and use of physics simulation for object behaviour and world simulation.
-\item[\refstepcounter{ucnum} \uctheucnum \label{UC4}:]  Requirement for real-time object destruction physics
-\item[\refstepcounter{ucnum} \uctheucnum \label{UC5}:] The fundamental geometric representation of objects as pixel-based polygons
-\item[\refstepcounter{ucnum} \uctheucnum \label{UC6}:] Use of entry and exit points as a basis of destructive tools
-\item[\refstepcounter{ucnum} \uctheucnum \label{UC7}:] The partitioning of objects into two entities (original object, cut off object) per tool use.
-\item[\refstepcounter{ucnum} \uctheucnum \label{UC8}:] The coordinate system (right-handed 2D cartesian coordinates)
-\item[\refstepcounter{ucnum} \uctheucnum \label{UC9}:] Use of mesh rendering techniques for displaying cut objects.
+\item[\refstepcounter{ucnum} \uctheucnum\label{UC1}:] Game engine (Unity).
+\item[\refstepcounter{ucnum} \uctheucnum\label{UC2}:] Dimensionality (2D).
+\item[\refstepcounter{ucnum} \uctheucnum\label{UC3}:] Focus and use of physics simulation for object behaviour and world simulation.
+\item[\refstepcounter{ucnum} \uctheucnum\label{UC4}:] Requirement for real-time object destruction physics.
+\item[\refstepcounter{ucnum} \uctheucnum\label{UC5}:] The fundamental geometric representation of objects as pixel-based polygons.
+\item[\refstepcounter{ucnum} \uctheucnum\label{UC6}:] Use of entry and exit points as a basis of destructive tools.
+\item[\refstepcounter{ucnum} \uctheucnum\label{UC7}:] The partitioning of objects into two entities (original object, cut off object) per tool use.
+\item[\refstepcounter{ucnum} \uctheucnum\label{UC8}:] The coordinate system (right-handed 2D cartesian coordinates).
+\item[\refstepcounter{ucnum} \uctheucnum\label{UC9}:] Use of mesh rendering techniques for displaying cut objects.
 \end{description}
 
 \section{Module Hierarchy} \label{SecMH}
@@ -1090,9 +1091,7 @@ The system uses Unity's component-based architecture for module communication:
 
 \section{Timeline}
 
-[Schedule of tasks and who is responsible]
-
-[You can point to GitHub if this information is included there]
+This section details the development timeline for each module, in organized phases.
 
 \subsection{Development Phases}
 
@@ -1127,7 +1126,7 @@ The system uses Unity's component-based architecture for module communication:
 
 \section{Notation}
 
-The structure of the Module Interface Specification (MIS) for modules follows Hoffman and Strooper (1995), with adaptations for Unity game engine components and 2D geometric operations. The mathematical notation comes from Chapter 3 of Hoffman and Strooper (1995) and standard computational geometry references. For instance, the symbol := is used for assignment statements and conditional rules follow the form $(c_1 \Rightarrow r_1 | c_2 \Rightarrow r_2 | ... | c_n \Rightarrow r_n)$.
+The structure of the Module Guide (MG) for modules follows Hoffman and Strooper (1995), with adaptations for Unity game engine components and 2D geometric operations. The mathematical notation comes from Chapter 3 of Hoffman and Strooper (1995) and standard computational geometry references. For instance, the symbol := is used for assignment statements and conditional rules follow the form $(c_1 \Rightarrow r_1 | c_2 \Rightarrow r_2 | ... | c_n \Rightarrow r_n)$.
 
 \subsection{Primitive Data Types}
 
