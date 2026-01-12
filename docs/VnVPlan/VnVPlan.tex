@@ -563,100 +563,118 @@ SLIME\_MOLD\_ATTRACTANT      & Target resource guiding traversal                
 
 
 Notes: SAVE\_RECORD\_FIELDS mirrors the save--snapshot contents described in the save tests; “LEVEL\_LOCATION” denotes the level/area identifier distinct from PLAYER\_COORDS.
+\subsection{Usability Survey}
 
-\subsection{Usability Survey Questions}
+\subsubsection{Survey Administration}
 
-\subsubsection{Operational Definitions}
+All players will submit their automatically generated game report outlining their hardware specifications, performance timeline, and necessary interactions history.
 
-• Fairness (puzzles): The reason for failure/success is understandable; rules/hints are telegraphed; no pixel--perfect timing is required; a recovery path exists.
+For scaling questions (to what extent, to what degree, etc.), a 5-point Likert scale will be used (1=Strongly disagree ... 5=Strongly agree).
 
-• Soft--lock: Progress cannot be made without a menu reset or hard restart. Recovering within $\leq$60 s using in--game options does not count as a soft--lock.
+\subsubsection{Preliminary Survey - Demographics}
 
-\subsubsection{Purpose}
+* Games that the user plays (by genre), how much of each genre they generally play (hours/week)
+* What themes do you enjoy in games that you have played?
+* Country of origin
+* Age
+* Gender
 
-This survey evaluates whether first‑time average players can successfully learn controls, read the UI at the display baseline, understand organism responses to environmental stimuli (water/heat/light), complete the intended experience within target playtime, and encounter minimal stability/friction issues. It also collects qualitative feedback to guide UX fixes.
+\subsubsection{Learnability Section}
 
-\subsubsection{Participant Screener \& Setup (Pre‑Play)}
+*Overall Completion Time*
 
-Target Demographic: Gamers with baseline familiarity of 2D platformers/puzzle‑platformers.
+* How long did it take to clear the game (or a specific level)? _(Note: Edit later based on how many levels we actually end up implementing.)_
 
-\begin{itemize}
-  \item Screener questions (check all that apply):
-\end{itemize}
+*Game Mechanic Learning Curves*
 
-Q1. In the past 12 months, how many hours have you played 2D platformers/puzzle‑platformers?
-  0, 1–9, 0–200, >200
+Group by game mechanic and ask about learning curve time with questions specific to that mechanic:
 
-Q2. Primary input used when playing today:  Keyboard+Mouse  Gamepad (XInput‑style)  Both
+* How long did it take before you felt comfortable with that mechanic?
+* Evaluate the destructible environment on learnability: Was it too unpredictable? Were you able to harness it to clear levels and solve puzzles?
+* How long did it take until you felt comfortable interacting with the slime mold?
+* How long did it take you to get used to the control scheme for this game?
 
-Q3. OS:  Windows 10 (64‑bit)  Windows 11  Other/Unknown
+*Puzzle Fairness*
 
-Q4. Display resolution used:  1280×720  Higher  Lower
+* When solving a puzzle, did you feel like the solution was fair and logical?
 
-Q5. Optional: Your PC specs if known (CPU / RAM / GPU)
+\subsubsection{Entertainment Value}
 
-Test setup notes. Provide players with either keyboard+mouse or gamepad input depending on their preference. Ensure display resolution is at least 1280×720.
+* What part(s) of the game did you enjoy the most?
+* What part(s) of the game did you find frustrating?
+* How would you rate each mechanic in contributing to the entertainment value of the game?
+** Erosion
+** Breakable objects
+** Debris generation / Landslides
+** Water simulation
+** Slime mold pathfinding
+** Slime mold as a traversable object
+* For each level, please leave comments on what is: A) Entertaining, and B) Tedious
 
-\subsubsection{Core Usability (5‑point Likert; 1=Strongly disagree … 5=Strongly agree)}
+\subsubsection{Game Business Requirements}
 
-Q6. The basic controls were easy to learn.
+*Controls & Intuitiveness*
 
-Q7. The UI text/HUD were readable at my resolution (especially at 1280×720).
+* Do you believe the control scheme was intuitive?
 
-Q8. The organism reacted to water/heat/light in ways I could anticipate.
-The game responded quickly to my actions (no noticeable delay after stimuli).
+*Performance Issues*
 
-Q9. I could play entirely with keyboard+mouse if needed (gamepad optional).
+* Did you experience any of the following performance issues? (Accompanied with report)
+** Frame drops
+** Input delay
+** Crashes
+** Screen freezes
+** Corrupted save data
 
-Q10.The overall first‑time session length felt right for a ~60–90 minute experience.
+*Feedback & Clarity*
 
-Q11. The game’s message about collaborating with nature came through clearly.
+* Did you feel that the visual effects, interfaces, and sound design were effective in giving cues and feedback for your performed actions, player state, as well as environmental events?
 
-\subsubsection{Difficulty \& Flow}
+*Value Proposition*
 
-Q12. The puzzles were challenging but fair (I knew why I failed/succeeded).
+* Did you feel like the game was worth the time you spent playing it?
 
-Q13. I rarely felt soft‑locked or irrecoverably stuck.
+\subsubsection{Story Review / Message}
 
-Q14. The Reset Level option helped me recover when I got lost or stuck.
+* What message did you believe this game was sending?
+* What led you to believe this?
+* Do you agree with the message you believe the game was sending? Why or why not?
+* Did you believe the game conveyed the message effectively?
+* Was messaging in the game too upfront, too subtle, or somewhere in the middle?
 
-\subsubsection{Stability \& System UX}
+\subsubsection{Emotions}
 
-Q15. The game did not crash during my session.
+* What were the most common emotions you felt while playing the game?
+* How did you generally feel at the beginning of the game / Level 1?
+* How did you generally feel at the end of the game / final level?
+* Were there any moments that evoked a strong emotion from you? If so, what moment was it, and how did you feel?
 
-Q16If a crash occurred, the crash dialog was informative and helpful.
+\subsubsection{Exploring Slime Mold Algorithm (SMA)}
 
-Q17. The game ran without asking for administrator privileges.
-\subsubsection{Open‑Ended Questions (Free Text)}
+Throughout the game, the player will encounter pop-up tutorial messages explaining various aspects of the Slime Mold Algorithm that are pertinent to game mechanics. For instance, "The slime mold will be attracted to water. Try uncovering a water source." Afterwards, they have the freedom to explore that game mechanic and interact with the slime mold.
 
-Q18. What (if anything) was confusing about the organism’s reactions to water/heat/light?
+NOTE: Some questions may be changed or added as we get further into level design and have a better understanding of what more specific things we are hoping our players will experience and learn.
 
-Q19. Where did you get stuck, and what would have helped?
+*SMA Learning & Understanding*
 
-Q20. Any places where text/UI felt too small or low‑contrast? (Include your resolution.)
-What single change would most improve your first‑time experience?
+* What did you learn about slime mold through the game?
+* How well does the tutorial make clear to you the core mechanics of the slime mold?
+* Did you feel like the slime mold traversal felt natural and unpredictable?
+* How do you feel about the balance of level design, triggerable objects, and destructible objects in terms of the interaction of the slime mold with those elements?
+* Do you consider the slime mold to be an ally, enemy, or neutral party?
+* What questions do you still have about slime mold?
+* Overall, what do you think is the most interesting thing about slime mold?
 
-\subsubsection{Observer Metrics (Facilitator fills; not asked to the player)}
+\subsubsection{Success Criteria Importance}
 
-• Total session time (min); compare to target 60–90 min (P90 $\leq$ 120).
- • Crashes (\#) and any crash dialog screenshots.
- • Resets used (\#) and soft‑lock observations.
- • Latency notes after stimuli (subjective: “felt instant/laggy”).
- • Environment: OS version, display resolution, input device(s), notable hardware.
+The team has ranked the importance of each success criterion as follows:
 
-\subsubsection{Administration \& Scale}
+* Sending a message about human's impact on the environment: 4.25 / 5
+* Making an entertaining game: 4.25 / 5
+* Exploring SMA, sufficiently demonstrating its complexity: 3.75 / 5
+* Making a game product that meets business requirements of conventional gamers: 3 / 5
+* Conveying the emotions we intend to convey: 4 / 5
 
-• Use a 5‑point Likert scale for Items 6–18.
- • Outline player background, choice of input device, and display resolution in screener.
- • Sample size for participants: minimum 10 for initial feedback; 20+ for statistical significance.
-
-\subsubsection{Traceability Examples (questions $\leftrightarrow$ requirement/goal)}
-
-• UI readability @1280×720 → Q7;
- • Input controls (Keyboard and mouse, and gamepad optional) → Q9. Maps to S6‑UI‑1.
- • Response Feedback → Q10; Maps to S6-IO-1
- • Reset Puzzle to avoid soft‑locks → Q14. Maps to S6-UNDO-1
- • Stability → Q15–17. Maps to S6-PERF-1, S6-MEM-1, and S6-LOAD-1
 
 \section{Appendix — Reflection}
 
