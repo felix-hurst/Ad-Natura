@@ -573,107 +573,137 @@ For scaling questions (to what extent, to what degree, etc.), a 5-point Likert s
 
 \subsubsection{Preliminary Survey - Demographics}
 
-* Games that the user plays (by genre), how much of each genre they generally play (hours/week)
-* What themes do you enjoy in games that you have played?
-* Country of origin
-* Age
-* Gender
+\begin{itemize}
+  \item Games that the user plays (by genre), how much of each genre they generally play (hours/week)
+  \item What themes do you enjoy in games that you have played?
+  \item Country of origin
+  \item Age
+  \item Gender
+\end{itemize}
 
 \subsubsection{Learnability Section}
 
-*Overall Completion Time*
+\textbf{Overall Completion Time}
 
-* How long did it take to clear the game (or a specific level)? _(Note: Edit later based on how many levels we actually end up implementing.)_
+\begin{itemize}
+  \item How long did it take to clear the game (or a specific level)? \textit{(Note: Edit later based on how many levels we actually end up implementing.)}
+\end{itemize}
 
-*Game Mechanic Learning Curves*
+\textbf{Game Mechanic Learning Curves}
 
 Group by game mechanic and ask about learning curve time with questions specific to that mechanic:
 
-* How long did it take before you felt comfortable with that mechanic?
-* Evaluate the destructible environment on learnability: Was it too unpredictable? Were you able to harness it to clear levels and solve puzzles?
-* How long did it take until you felt comfortable interacting with the slime mold?
-* How long did it take you to get used to the control scheme for this game?
+\begin{itemize}
+  \item How long did it take before you felt comfortable with that mechanic?
+  \item Evaluate the destructible environment on learnability: Was it too unpredictable? Were you able to harness it to clear levels and solve puzzles?
+  \item How long did it take until you felt comfortable interacting with the slime mold?
+  \item How long did it take you to get used to the control scheme for this game?
+\end{itemize}
 
-*Puzzle Fairness*
+\textbf{Puzzle Fairness}
 
-* When solving a puzzle, did you feel like the solution was fair and logical?
+\begin{itemize}
+  \item When solving a puzzle, did you feel like the solution was fair and logical?
+\end{itemize}
 
 \subsubsection{Entertainment Value}
 
-* What part(s) of the game did you enjoy the most?
-* What part(s) of the game did you find frustrating?
-* How would you rate each mechanic in contributing to the entertainment value of the game?
-** Erosion
-** Breakable objects
-** Debris generation / Landslides
-** Water simulation
-** Slime mold pathfinding
-** Slime mold as a traversable object
-* For each level, please leave comments on what is: A) Entertaining, and B) Tedious
+\begin{itemize}
+  \item What part(s) of the game did you enjoy the most?
+  \item What part(s) of the game did you find frustrating?
+  \item How would you rate each mechanic in contributing to the entertainment value of the game?
+  \begin{itemize}
+    \item Erosion
+    \item Breakable objects
+    \item Debris generation / Landslides
+    \item Water simulation
+    \item Slime mold pathfinding
+    \item Slime mold as a traversable object
+  \end{itemize}
+  \item For each level, please leave comments on what is: A) Entertaining, and B) Tedious
+\end{itemize}
 
 \subsubsection{Game Business Requirements}
 
-*Controls & Intuitiveness*
+\textbf{Controls \& Intuitiveness}
 
-* Do you believe the control scheme was intuitive?
+\begin{itemize}
+  \item Do you believe the control scheme was intuitive?
+\end{itemize}
 
-*Performance Issues*
+\textbf{Performance Issues}
 
-* Did you experience any of the following performance issues? (Accompanied with report)
-** Frame drops
-** Input delay
-** Crashes
-** Screen freezes
-** Corrupted save data
+\begin{itemize}
+  \item Did you experience any of the following performance issues? (Accompanied with report)
+  \begin{itemize}
+    \item Frame drops
+    \item Input delay
+    \item Crashes
+    \item Screen freezes
+    \item Corrupted save data
+  \end{itemize}
+\end{itemize}
 
-*Feedback & Clarity*
+\textbf{Feedback \& Clarity}
 
-* Did you feel that the visual effects, interfaces, and sound design were effective in giving cues and feedback for your performed actions, player state, as well as environmental events?
+\begin{itemize}
+  \item Did you feel that the visual effects, interfaces, and sound design were effective in giving cues and feedback for your performed actions, player state, as well as environmental events?
+\end{itemize}
 
-*Value Proposition*
+\textbf{Value Proposition}
 
-* Did you feel like the game was worth the time you spent playing it?
+\begin{itemize}
+  \item Did you feel like the game was worth the time you spent playing it?
+\end{itemize}
 
 \subsubsection{Story Review / Message}
 
-* What message did you believe this game was sending?
-* What led you to believe this?
-* Do you agree with the message you believe the game was sending? Why or why not?
-* Did you believe the game conveyed the message effectively?
-* Was messaging in the game too upfront, too subtle, or somewhere in the middle?
+\begin{itemize}
+  \item What message did you believe this game was sending?
+  \item What led you to believe this?
+  \item Do you agree with the message you believe the game was sending? Why or why not?
+  \item Did you believe the game conveyed the message effectively?
+  \item Was messaging in the game too upfront, too subtle, or somewhere in the middle?
+\end{itemize}
 
 \subsubsection{Emotions}
 
-* What were the most common emotions you felt while playing the game?
-* How did you generally feel at the beginning of the game / Level 1?
-* How did you generally feel at the end of the game / final level?
-* Were there any moments that evoked a strong emotion from you? If so, what moment was it, and how did you feel?
+\begin{itemize}
+  \item What were the most common emotions you felt while playing the game?
+  \item How did you generally feel at the beginning of the game / Level 1?
+  \item How did you generally feel at the end of the game / final level?
+  \item Were there any moments that evoked a strong emotion from you? If so, what moment was it, and how did you feel?
+\end{itemize}
 
 \subsubsection{Exploring Slime Mold Algorithm (SMA)}
 
-Throughout the game, the player will encounter pop-up tutorial messages explaining various aspects of the Slime Mold Algorithm that are pertinent to game mechanics. For instance, "The slime mold will be attracted to water. Try uncovering a water source." Afterwards, they have the freedom to explore that game mechanic and interact with the slime mold.
+Throughout the game, the player will encounter pop-up tutorial messages explaining various aspects of the Slime Mold Algorithm that are pertinent to game mechanics. For instance, ``The slime mold will be attracted to water. Try uncovering a water source.'' Afterwards, they have the freedom to explore that game mechanic and interact with the slime mold.
 
 NOTE: Some questions may be changed or added as we get further into level design and have a better understanding of what more specific things we are hoping our players will experience and learn.
 
-*SMA Learning & Understanding*
+\textbf{SMA Learning \& Understanding}
 
-* What did you learn about slime mold through the game?
-* How well does the tutorial make clear to you the core mechanics of the slime mold?
-* Did you feel like the slime mold traversal felt natural and unpredictable?
-* How do you feel about the balance of level design, triggerable objects, and destructible objects in terms of the interaction of the slime mold with those elements?
-* Do you consider the slime mold to be an ally, enemy, or neutral party?
-* What questions do you still have about slime mold?
-* Overall, what do you think is the most interesting thing about slime mold?
+\begin{itemize}
+  \item What did you learn about slime mold through the game?
+  \item How well does the tutorial make clear to you the core mechanics of the slime mold?
+  \item Did you feel like the slime mold traversal felt natural and unpredictable?
+  \item How do you feel about the balance of level design, triggerable objects, and destructible objects in terms of the interaction of the slime mold with those elements?
+  \item Do you consider the slime mold to be an ally, enemy, or neutral party?
+  \item What questions do you still have about slime mold?
+  \item Overall, what do you think is the most interesting thing about slime mold?
+\end{itemize}
 
 \subsubsection{Success Criteria Importance}
 
 The team has ranked the importance of each success criterion as follows:
 
-* Sending a message about human's impact on the environment: 4.25 / 5
-* Making an entertaining game: 4.25 / 5
-* Exploring SMA, sufficiently demonstrating its complexity: 3.75 / 5
-* Making a game product that meets business requirements of conventional gamers: 3 / 5
-* Conveying the emotions we intend to convey: 4 / 5
+\begin{itemize}
+  \item Sending a message about human's impact on the environment: 4.25 / 5
+  \item Making an entertaining game: 4.25 / 5
+  \item Exploring SMA, sufficiently demonstrating its complexity: 3.75 / 5
+  \item Making a game product that meets business requirements of conventional gamers: 3 / 5
+  \item Conveying the emotions we intend to convey: 4 / 5
+\end{itemize}
 
 
 \section{Appendix — Reflection}
