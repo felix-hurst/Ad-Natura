@@ -1,5 +1,3 @@
 # Hazard Analysis
 
-The folders and files for this folder are as follows:
-
-Describe ...
+The Hazard Analysis lists the potential risks to the project and the associated mitigation methods.
