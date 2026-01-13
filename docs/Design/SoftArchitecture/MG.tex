@@ -1042,7 +1042,27 @@ The following list describes the direct dependencies between modules (A $\righta
 
 \section{User Interfaces}
 
-[Design of user interface for software and hardware. Attach an appendix if needed. Drawings, Sketches, Figma]
+\subsection*{Aiming Interface}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{images/aiming_diagram.PNG}
+    \caption{Aiming interface diagram}
+\end{figure}
+
+The player's mouse draws a line symbolizing the path the strike will take from the character to the mouse position.
+Any objects that will be destroyed by the strike are highlighted with an outline.
+The player clicks to strike, which is always bound to the circular button.
+
+\subsection*{Tool Selection Interface}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{images/tool_selection_diagram.PNG}
+    \caption{Tool selection interface diagram}
+\end{figure}
+
+The player holds the CTRL key to pause the game and uses the mouse wheel to scroll through the available tools.
+When the key is released, the highlighted tool is equipped.
+The selected tool displays its damage type (Cut, Explosion, or Excavating).
 
 \section{Design of Communication Protocols}
 
