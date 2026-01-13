@@ -546,11 +546,12 @@ Abstract Object
 \subsubsection{Tool Raycast (M7)} \label{M7}
 
 \paragraph{Secrets}
-Coordinates between controller and reshape and debris systems as the executor and manager of the tool use.
+Coordinates between controller and reshape and debris systems as the executor and manager of the tool use. Player controller passes tool type and raycast data to this module which then applies the appropriate cut behavior based on material profiles.
 
 \paragraph{State Variables}
 \begin{itemize}
 \item $currentCutTarget : \text{GameObject}$ --- Object being cut
+\item $toolSelected : \texttt{string}$ --- Tool Selected
 \item $entryPoint : \mathbb{R}^2$ --- Cut entry point
 \item $exitPoint : \mathbb{R}^2$ --- Cut exit point
 \item $cutLineDirection : \mathbb{R}^2$ --- Direction of cut
@@ -1132,7 +1133,7 @@ The structure of the Module Guide (MG) for modules follows Hoffman and Strooper 
 
 The following table summarizes the primitive data types used by the Destructible Environment System.
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \begin{tabular}{lll}
 \toprule
@@ -1174,7 +1175,7 @@ The Destructible Environment System uses several derived data types: sequences, 
 
 The following geometric primitives and operations are used throughout the system:
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \begin{tabular}{lll}
 \toprule
@@ -1195,7 +1196,7 @@ $\theta(P, C)$ & $\mathbb{R}$ & Angle from centroid C to point P \\
 
 Material cutting behavior is defined by the following parameters:
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \begin{tabular}{llll}
 \toprule
@@ -1213,7 +1214,7 @@ $\delta_{max}$ & $\mathbb{R}$ & $\mathbb{R}^+$ & Maximum perpendicular offset fr
 
 The following parameters govern the physical behavior of objects and debris:
 
-\begin{table}[h]
+\begin{table}[H]
 \centering
 \begin{tabular}{lll}
 \toprule
