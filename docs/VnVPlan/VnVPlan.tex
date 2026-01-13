@@ -31,10 +31,11 @@
 \section*{Revision History}
 
 \begin{tabularx}{\textwidth}{p{3cm}p{2cm}X}
-\toprule {\bf Date} & {\bf Version}\\
+\toprule {\bf Author} & {\bf Version}& {\bf Date}\\
 \midrule
-All & 1.0\\
-Marcos Hernandez-Rivero & 1.1\\
+All & 1.0 & November\\
+Marcos Hernandez-Rivero & 1.1 & November\\
+Marcos Hernandez-Rivero & 1.2 & December 13\\
 \bottomrule
 \end{tabularx}
 
@@ -44,12 +45,6 @@ Marcos Hernandez-Rivero & 1.1\\
 \newpage
 \listoftables
 \newpage
-
-\section{Symbols, Abbreviations, and Acronyms}
-
-symbol description
-
-T Test
 
 This document will cover our team’s plan to ensure our project will do what we intend it to do, and will meet our stakeholders’ needs. This will cover background information regarding our software project and team, high--level plans for verifying all of the important artifacts of our project, detailed descriptions of system and unit tests, and lastly, a list of usability survey questions.
 
@@ -63,25 +58,22 @@ The software being tested is our game, Ad Natura. This 2D pixel art styled puzzl
 
 \subsection{Objectives}
 
-\begin{itemize}
-  \item This project’s key objectives include:
-\end{itemize}
-
-Establish confidence in software correctness for the primary two functions: Terrain decomposition and the slime mold organism.
-
-Establish confidence in software safety and security.
-
-Demonstrate our message of cooperation between humans and nature, through the use of aesthetics and environmental storytelling.
-
-Demonstrate satisfactory usability for both gamers and non--gamers, to expand to a wide audience.
+This project’s key objectives include:
 
 \begin{itemize}
-  \item Objectives that are out of scope for this project include:
+\item Establish confidence in software correctness for the primary two functions: Terrain decomposition and the slime mold organism.
+\item Establish confidence in software safety and security by ensuring the application maintains system integrity, mitigates vulnerabilities against external exploits, and operates within resource constraints to prevent system instability.
+\item Demonstrate our message of cooperation between humans and nature, through the use of aesthetics and environmental storytelling.
+\item Demonstrate satisfactory usability for both gamers and non--gamers, to expand to a wide audience.
 \end{itemize}
 
-Establishing confidence in software correctness for fundamental Unity engine code and functions. This is not necessary as we can assume that Unity’s engine has been thoroughly verified.
+\noindent Objectives that are out of scope for this project include:
 
-Demonstrating eye--catching, memorable visuals and music. These aspects are only important for marketing purposes, which is a very late--stage concern, and therefore not within the scope of this project at this stage.
+\begin{itemize}
+\item Establishing confidence in software correctness for fundamental Unity engine code and functions. This is not necessary as we can assume that Unity’s engine has been thoroughly verified.
+
+\item Demonstrating eye--catching, memorable visuals and music. These aspects are only important for marketing purposes, which is a very late--stage concern, and therefore not within the scope of this project at this stage.
+\end{itemize}
 
 \subsection{Extras}
 
@@ -93,17 +85,17 @@ The extras include a Design Thinking Report and a Usability Report. The Design T
   \item Relevant documents include:
 \end{itemize}
 
-Problem Statement and Goals. This document includes information about our goals, which is what the Verification and Validation Plan’s objectives are based on. It also lists stakeholders, which are relevant to our testing efforts.
+\href{https://github.com/felix-hurst/Ad-Natura/blob/main/docs/ProblemStatementAndGoals/ProblemStatement.pdf}{\bf{Problem Statement and Goals}}. This document includes information about our goals, which is what the Verification and Validation Plan’s objectives are based on. It also lists stakeholders, which are relevant to our testing efforts.
 
-Development Plan. This document describes our plan for our Proof of Concept Demonstration, which again highlights our most important objectives.
+\href{https://github.com/felix-hurst/Ad-Natura/blob/main/docs/DevelopmentPlan/DevelopmentPlan.pdf}{\bf{Development Plan.}} This document describes our plan for our Proof of Concept Demonstration, which again highlights our most important objectives.
 
-Software Requirements Specification. This document details all of the requirements, most of which will be subject to verification.
+\href{https://github.com/felix-hurst/Ad-Natura/blob/main/docs/SRS/SRS.pdf}{\bf{Software Requirements Specification.}} This document details all of the requirements, most of which will be subject to verification.
 
-Hazard Analysis. This document includes some safety and security focused software requirements, which will be subject to verification.
+\href{https://github.com/felix-hurst/Ad-Natura/blob/main/docs/HazardAnalysis/HazardAnalysis.pdf}{\bf{Hazard Analysis.}} This document includes some safety and security focused software requirements, which will be subject to verification.
 
-Module Guide. This document describes all of the modules of our system. This is important for organizing our System and Unit Tests.
+\href{https://github.com/felix-hurst/Ad-Natura/blob/main/docs/Design/SoftArchitecture/MG.pdf}{\bf{Module Guide.}} This document describes all of the modules of our system. This is important for organizing our System and Unit Tests.
 
-Module Interface Specification. This document describes specifications for the interfaces. This is also important for organizing our System and Unit Tests.
+\href{https://github.com/felix-hurst/Ad-Natura/blob/main/docs/Design/SoftDetailedDes/MIS.pdf}{\bf{Module Interface Specification.}} This document describes specifications for the interfaces. This is also important for organizing our System and Unit Tests.
 
 \section{Plan}
 
@@ -299,6 +291,18 @@ Outlined here are the required tests for the saving mechanic.
 \subsection{Traceability Between Test Cases and Requirements}
 
 The following is a table for the test cases as the relate to the requirements
+
+\begin{table}[H]
+\resizebox{\textwidth}{!}{%
+\begin{tabular}{|l|l|}
+\hline
+\textbf{Requirement Name} & \textbf{Test Cases}  \\ \hline
+Game Save File            & NFRT01, FRT01, FRT02 \\ \hline
+Destructible Environment  & NFRT02, FRT03        \\ \hline
+Slime Mold Traversal      & NFRT03, FRT04        \\ \hline
+\end{tabular}%
+}
+\end{table}
 
 \section{Unit Test Description}
 
