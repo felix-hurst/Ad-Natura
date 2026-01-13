@@ -1,5 +1,3 @@
-# Problem Statement
+# Problem Statement and Goals
 
-The folders and files for this folder are as follows:
-
-Describe ...
+The Problem Statement and Goals describe the overall purpose of the project, why it should exist, who it benefits, and how. It defines our key success criteria.

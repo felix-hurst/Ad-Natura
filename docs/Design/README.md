@@ -1,5 +1,5 @@
 # Design Documentation
 
-The folders and files for this folder are as follows:
-
-Describe ...
+The folders for this directory are as follows:
+- **SoftArchitecture:** Contains the Module Guide (MG).
+- **SoftDetailedDes:** Contains the Module Interface Specification (MIS).
