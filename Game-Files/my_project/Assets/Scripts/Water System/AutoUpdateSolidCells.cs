@@ -1,9 +1,5 @@
 using UnityEngine;
 
-/// <summary>
-/// Automatically updates the water simulation's solid cells when objects move
-/// Attach this to your CellularLiquidSimulation GameObject
-/// </summary>
 public class AutoUpdateSolidCells : MonoBehaviour
 {
     [Header("Update Settings")]
@@ -35,20 +31,17 @@ public class AutoUpdateSolidCells : MonoBehaviour
             Debug.LogError("AutoUpdateSolidCells needs to be on the same GameObject as CellularLiquidSimulation!");
             enabled = false;
         }
-        
-        // Initial count
+
         lastColliderCount = FindObjectsOfType<Collider2D>().Length;
     }
     
     void Update()
     {
-        // Manual update with key
         if (Input.GetKeyDown(manualUpdateKey))
         {
             ForceUpdate();
         }
-        
-        // Automatic periodic update
+
         updateTimer += Time.deltaTime;
         if (updateTimer >= updateInterval)
         {
@@ -56,7 +49,6 @@ public class AutoUpdateSolidCells : MonoBehaviour
             
             if (onlyUpdateOnChange)
             {
-                // Only update if collider count changed (something was added/destroyed)
                 int currentCount = FindObjectsOfType<Collider2D>().Length;
                 if (currentCount != lastColliderCount)
                 {
@@ -67,15 +59,10 @@ public class AutoUpdateSolidCells : MonoBehaviour
             }
             else
             {
-                // Always update (less efficient but catches moved objects)
                 ForceUpdate();
             }
         }
     }
-    
-    /// <summary>
-    /// Forces an immediate update of solid cells
-    /// </summary>
     [ContextMenu("Force Update Solid Cells")]
     public void ForceUpdate()
     {

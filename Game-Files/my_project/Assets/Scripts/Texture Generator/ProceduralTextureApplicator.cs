@@ -1,18 +1,15 @@
 using UnityEngine;
 
-/// <summary>
-/// Attach this to any GameObject that should have a procedural texture applied based on its tag
-/// </summary>
 [RequireComponent(typeof(SpriteRenderer))]
 public class ProceduralTextureApplicator : MonoBehaviour
 {
     [Header("Texture Settings")]
     [SerializeField] private bool applyOnStart = true;
-    [SerializeField] private bool useMaterialTag = true; // Use object's tag, otherwise use object name
-    [SerializeField] private string overrideMaterialName = ""; // Override the automatic material detection
+    [SerializeField] private bool useMaterialTag = true;
+    [SerializeField] private string overrideMaterialName = "";
     
     [Header("Sprite Settings")]
-    [SerializeField] private int pixelsPerUnit = 64; // How many pixels = 1 Unity unit
+    [SerializeField] private int pixelsPerUnit = 64;
     
     private SpriteRenderer spriteRenderer;
     private MaterialTextureGenerator textureGenerator;
@@ -33,10 +30,7 @@ public class ProceduralTextureApplicator : MonoBehaviour
             ApplyTexture();
         }
     }
-    
-    /// <summary>
-    /// Applies the procedural texture to this object
-    /// </summary>
+
     public void ApplyTexture()
     {
         if (spriteRenderer == null || textureGenerator == null)
@@ -44,11 +38,8 @@ public class ProceduralTextureApplicator : MonoBehaviour
             Debug.LogWarning($"Cannot apply texture to {gameObject.name} - missing components");
             return;
         }
-        
-        // Determine material name
+
         string materialName = GetMaterialName();
-        
-        // Generate texture
         Texture2D texture = textureGenerator.GetTexture(materialName);
         
         if (texture == null)
@@ -56,33 +47,23 @@ public class ProceduralTextureApplicator : MonoBehaviour
             Debug.LogError($"Failed to generate texture for material: {materialName}");
             return;
         }
-        
-        // Create sprite from texture
+
         Sprite sprite = Sprite.Create(
             texture,
             new Rect(0, 0, texture.width, texture.height),
             new Vector2(0.5f, 0.5f),
             pixelsPerUnit
         );
-        
-        // Apply to renderer
+
         spriteRenderer.sprite = sprite;
-        
-        Debug.Log($"Applied procedural texture to {gameObject.name} using material: {materialName}");
     }
-    
-    /// <summary>
-    /// Gets the material name to use for texture generation
-    /// </summary>
+
     string GetMaterialName()
     {
-        // Check for override first
         if (!string.IsNullOrEmpty(overrideMaterialName))
         {
             return overrideMaterialName;
         }
-        
-        // Use tag or name
         if (useMaterialTag)
         {
             string tag = gameObject.tag;
@@ -91,14 +72,9 @@ public class ProceduralTextureApplicator : MonoBehaviour
                 return tag;
             }
         }
-        
-        // Fallback to object name
         return gameObject.name;
     }
-    
-    /// <summary>
-    /// Regenerates the texture (useful for testing different materials)
-    /// </summary>
+
     [ContextMenu("Regenerate Texture")]
     public void RegenerateTexture()
     {
