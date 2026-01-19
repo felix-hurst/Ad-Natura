@@ -1,6 +1,6 @@
 using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
-
 public class RaycastReceiver : MonoBehaviour
 {
     [Header("Highlight Settings")]
@@ -9,10 +9,13 @@ public class RaycastReceiver : MonoBehaviour
     
     public enum HighlightMode
     {
-        Default,              // Always highlights the top piece
-        ClosestToGround,      // Highlights the lower piece
-        FarthestFromGround    // Highlights the upper piece
+        Default,
+        ClosestToGround,
+        FarthestFromGround
     }
+
+    public delegate void OnLargePieceSpawned(GameObject piece);
+    public event OnLargePieceSpawned LargePieceSpawned;
     
     [Header("Large Piece Settings")]
     [Tooltip("Base ratio for large piece. Material strength modulates this. (0.4 = 40% large piece, 60% debris at strength 1.0)")]
@@ -29,7 +32,6 @@ public class RaycastReceiver : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private List<Vector2> currentHighlightedShape;
     
-    // References to the other components
     private ObjectReshape objectReshape;
     private DebrisSpawner debrisSpawner;
     
@@ -37,14 +39,12 @@ public class RaycastReceiver : MonoBehaviour
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         
-        // Get or add ObjectReshape component
         objectReshape = GetComponent<ObjectReshape>();
         if (objectReshape == null)
         {
             objectReshape = gameObject.AddComponent<ObjectReshape>();
         }
         
-        // Get or add DebrisSpawner component
         debrisSpawner = GetComponent<DebrisSpawner>();
         if (debrisSpawner == null)
         {
@@ -52,65 +52,210 @@ public class RaycastReceiver : MonoBehaviour
         }
     }
     
-    public void HighlightCutEdges(Vector2 entryPoint, Vector2 exitPoint)
+    
+public void HighlightCutEdges(Vector2 entryPoint, Vector2 exitPoint)
+{
+    ClearHighlight();
+    
+    Vector2[] corners = GetCurrentShapeVertices();
+    
+    List<Vector2> shape1, shape2;
+    SplitPolygonByLine(corners, entryPoint, exitPoint, out shape1, out shape2);
+    
+    if (shape1.Count < 3 || shape2.Count < 3)
     {
-        // Clear previous highlights
-        ClearHighlight();
+        return;
+    }
+    
+    currentHighlightedShape = ChooseShapeToHighlight(shape1, shape2);
+    
+    DrawShapeOutline(currentHighlightedShape);
+}
+
+void SplitPolygonByLine(Vector2[] vertices, Vector2 lineStart, Vector2 lineEnd, 
+                        out List<Vector2> shape1, out List<Vector2> shape2)
+{
+    shape1 = new List<Vector2>();
+    shape2 = new List<Vector2>();
+    
+    if (vertices.Length < 3)
+    {
+        return;
+    }
+    
+    List<Vector2> intersections = new List<Vector2>();
+    List<int> intersectionEdges = new List<int>();
+    
+    for (int i = 0; i < vertices.Length; i++)
+    {
+        int nextI = (i + 1) % vertices.Length;
+        Vector2 v1 = vertices[i];
+        Vector2 v2 = vertices[nextI];
         
-        // Get the current shape vertices (could be polygon from previous cuts)
-        Vector2[] corners = GetCurrentShapeVertices();
-        
-        // Find which edges are intersected by the cut line
-        List<Vector2> newShape1 = new List<Vector2>();
-        List<Vector2> newShape2 = new List<Vector2>();
-        
-        // Add entry and exit points
-        newShape1.Add(entryPoint);
-        newShape1.Add(exitPoint);
-        newShape2.Add(entryPoint);
-        newShape2.Add(exitPoint);
-        
-        // Check each vertex of the current shape
-        for (int i = 0; i < corners.Length; i++)
+        Vector2 intersection;
+        if (LineIntersection(lineStart, lineEnd, v1, v2, out intersection))
         {
-            Vector2 corner = corners[i];
-            
-            // Determine which side of the cut line this corner is on
-            float side = GetSideOfLine(entryPoint, exitPoint, corner);
-            
-            if (side > 0)
+            intersections.Add(intersection);
+            intersectionEdges.Add(i);
+        }
+    }
+    
+    if (intersections.Count != 2)
+    {
+        FallbackSplit(vertices, lineStart, lineEnd, out shape1, out shape2);
+        return;
+    }
+    
+    Vector2 int1 = intersections[0];
+    Vector2 int2 = intersections[1];
+    int edge1 = intersectionEdges[0];
+    int edge2 = intersectionEdges[1];
+    
+    if (edge1 > edge2)
+    {
+        Vector2 tempV = int1;
+        int1 = int2;
+        int2 = tempV;
+        
+        int tempI = edge1;
+        edge1 = edge2;
+        edge2 = tempI;
+    }
+    
+    shape1.Add(int1);
+    for (int i = edge1 + 1; i <= edge2; i++)
+    {
+        shape1.Add(vertices[i]);
+    }
+    shape1.Add(int2);
+    
+    shape2.Add(int1);
+    
+    for (int i = edge2 + 1; i < vertices.Length; i++)
+    {
+        shape2.Add(vertices[i]);
+    }
+    
+    for (int i = 0; i <= edge1; i++)
+    {
+        shape2.Add(vertices[i]);
+    }
+    
+    shape2.Add(int2);
+    
+    shape1 = CleanupPolygon(shape1);
+    shape2 = CleanupPolygon(shape2);
+}
+
+bool LineIntersection(Vector2 p1, Vector2 p2, Vector2 p3, Vector2 p4, out Vector2 intersection)
+{
+    intersection = Vector2.zero;
+    
+    float x1 = p1.x, y1 = p1.y;
+    float x2 = p2.x, y2 = p2.y;
+    float x3 = p3.x, y3 = p3.y;
+    float x4 = p4.x, y4 = p4.y;
+    
+    float denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+    
+    if (Mathf.Abs(denom) < 0.0001f)
+    {
+        return false;
+    }
+    
+    float t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / denom;
+    float u = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3)) / denom;
+    
+    if (u >= 0f && u <= 1f)
+    {
+        intersection.x = x1 + t * (x2 - x1);
+        intersection.y = y1 + t * (y2 - y1);
+        return true;
+    }
+    
+    return false;
+}
+
+void FallbackSplit(Vector2[] vertices, Vector2 lineStart, Vector2 lineEnd,
+                   out List<Vector2> shape1, out List<Vector2> shape2)
+{
+    shape1 = new List<Vector2>();
+    shape2 = new List<Vector2>();
+    
+    shape1.Add(lineStart);
+    shape1.Add(lineEnd);
+    shape2.Add(lineStart);
+    shape2.Add(lineEnd);
+    
+    for (int i = 0; i < vertices.Length; i++)
+    {
+        Vector2 vertex = vertices[i];
+        float side = GetSideOfLine(lineStart, lineEnd, vertex);
+        
+        if (side > 0)
+        {
+            shape1.Add(vertex);
+        }
+        else
+        {
+            shape2.Add(vertex);
+        }
+    }
+    
+    shape1 = SortVerticesClockwise(shape1);
+    shape2 = SortVerticesClockwise(shape2);
+}
+
+List<Vector2> CleanupPolygon(List<Vector2> vertices)
+{
+    if (vertices.Count < 3) return vertices;
+    
+    List<Vector2> cleaned = new List<Vector2>();
+    float minDistance = 0.01f;
+    
+    for (int i = 0; i < vertices.Count; i++)
+    {
+        Vector2 vertex = vertices[i];
+        bool isDuplicate = false;
+        
+        foreach (Vector2 existing in cleaned)
+        {
+            if (Vector2.Distance(vertex, existing) < minDistance)
             {
-                newShape1.Add(corner);
-            }
-            else
-            {
-                newShape2.Add(corner);
+                isDuplicate = true;
+                break;
             }
         }
         
-        // Sort vertices to form proper polygons
-        newShape1 = SortVerticesClockwise(newShape1);
-        newShape2 = SortVerticesClockwise(newShape2);
-        
-        // Determine which shape to highlight based on mode
-        currentHighlightedShape = ChooseShapeToHighlight(newShape1, newShape2);
-        
-        // Draw the outline for the chosen shape
-        DrawShapeOutline(currentHighlightedShape);
-        
-        Debug.Log($"Cut {gameObject.name} - Highlighting piece with {currentHighlightedShape.Count} vertices (Mode: {highlightMode})");
+        if (!isDuplicate)
+        {
+            cleaned.Add(vertex);
+        }
     }
     
-    /// <summary>
-    /// Gets the current shape vertices - either from polygon collider or sprite bounds
-    /// </summary>
+    if (cleaned.Count > 2)
+    {
+        if (Vector2.Distance(cleaned[0], cleaned[cleaned.Count - 1]) < minDistance)
+        {
+            cleaned.RemoveAt(cleaned.Count - 1);
+        }
+    }
+    
+    return cleaned;
+}
+
+private class IntersectionPoint
+{
+    public Vector2 point;
+    public int edgeIndex;
+    public float distanceAlongCutLine;
+}
+    
     Vector2[] GetCurrentShapeVertices()
     {
-        // First, try to get vertices from the polygon collider (if object was already cut)
         PolygonCollider2D polyCol = GetComponent<PolygonCollider2D>();
         if (polyCol != null && polyCol.points.Length > 0)
         {
-            // Convert local points to world space
             Vector2[] worldVertices = new Vector2[polyCol.points.Length];
             for (int i = 0; i < polyCol.points.Length; i++)
             {
@@ -119,7 +264,6 @@ public class RaycastReceiver : MonoBehaviour
             return worldVertices;
         }
         
-        // Otherwise, fall back to the rectangular bounds
         return GetWorldCorners();
     }
     
@@ -127,201 +271,263 @@ public class RaycastReceiver : MonoBehaviour
     {
         if (currentHighlightedShape == null || currentHighlightedShape.Count < 3)
         {
-            Debug.LogWarning("No valid highlighted shape to cut!");
             return;
         }
         
-        // Calculate the area of the highlighted shape (TOTAL cut-off area)
         float totalCutOffArea = ObjectReshape.CalculatePolygonArea(currentHighlightedShape);
         
-        Debug.Log($"Executing cut - Total cut-off area: {totalCutOffArea:F2}");
-        
-        // Get the material tag for this object
         string materialTag = gameObject.tag;
         if (string.IsNullOrEmpty(materialTag) || materialTag == "Untagged")
         {
             materialTag = gameObject.name;
         }
         
-        Debug.Log($"Using material tag: {materialTag}");
-        
-        // Get the cut profile to determine the split ratio
         CutProfile cutProfile = CutProfileExtensions.GetCutProfileForObject(gameObject);
         
-        // Calculate the actual large piece ratio based on material strength
-        // strength = 0: large piece gets baseLargePieceRatio (e.g., 40%)
-        // strength = 1: large piece gets baseLargePieceRatio (e.g., 40%)
-        // The strength affects how irregular the cut is, but the base ratio determines the split
-        // We'll make materials with higher strength lean more towards debris
-        
-        // More aggressive formula: higher strength = less large piece
-        // strength 0.0: largePieceRatio = 0.8 (80% large, 20% debris)
-        // strength 0.5: largePieceRatio = 0.6 (60% large, 40% debris)
-        // strength 1.0: largePieceRatio = 0.4 (40% large, 60% debris)
-        float strengthInfluence = 1.0f - (cutProfile.strength * 0.4f); // Range: 1.0 to 0.6
+        float strengthInfluence = 1.0f - (cutProfile.strength * 0.4f);
         float largePieceRatio = baseLargePieceRatio + (strengthInfluence - 0.6f) * (0.8f - baseLargePieceRatio) / 0.4f;
         largePieceRatio = Mathf.Clamp(largePieceRatio, 0.3f, 0.8f);
         
-        // Calculate areas - THESE MUST SUM TO totalCutOffArea
         float largePieceArea = totalCutOffArea * largePieceRatio;
-        float debrisArea = totalCutOffArea - largePieceArea; // This ensures they sum correctly!
+        float debrisArea = totalCutOffArea - largePieceArea;
         
-        Debug.Log($"Cut profile strength: {cutProfile.strength:F2} | Large piece ratio: {largePieceRatio:F2} | Large piece area: {largePieceArea:F2} | Debris area: {debrisArea:F2} | Sum: {(largePieceArea + debrisArea):F2}");
-        
-        // Use ObjectReshape to cut off the portion and get the cut shape
         List<Vector2> cutOffShape = objectReshape.CutOffPortion(entryPoint, exitPoint, currentHighlightedShape);
         
         if (cutOffShape != null && cutOffShape.Count >= 3)
         {
-            // ==================== WATER INTEGRATION ====================
-            // Check if this object contains water and spawn it (Noita-style cellular)
-            CellularWaterContainer cellularWaterContainer = GetComponent<CellularWaterContainer>();
-            if (cellularWaterContainer != null)
-            {
-                cellularWaterContainer.OnObjectCut(entryPoint, exitPoint, cutOffShape, totalCutOffArea);
-            }
-            // ===========================================================
-            
-            // Spawn debris fragments (only if there's meaningful debris area)
             if (debrisArea > 0.01f)
             {
                 debrisSpawner.SpawnDebris(cutOffShape, debrisArea, materialTag);
             }
             
-            // Spawn the larger remaining piece (only if there's meaningful large piece area)
             if (largePieceArea > 0.01f)
             {
                 SpawnLargeCutPiece(cutOffShape, largePieceArea, entryPoint, exitPoint, materialTag, cutProfile);
             }
         }
-        else
-        {
-            Debug.LogWarning("Failed to get valid cut-off shape from ObjectReshape");
-        }
     }
-    
-    /// <summary>
-    /// Spawns a larger piece representing the non-debris portion of the cut
-    /// </summary>
-    void SpawnLargeCutPiece(List<Vector2> cutOffShape, float targetArea, Vector2 entryPoint, Vector2 exitPoint, string materialTag, CutProfile cutProfile)
+
+    public void ExecuteCutDirect(Vector2 entryPoint, Vector2 exitPoint, OnLargePieceSpawned onPieceSpawned = null)
     {
-        // Create a new GameObject for the large piece
-        GameObject largePiece = new GameObject($"{gameObject.name}_CutPiece");
-        largePiece.tag = materialTag;
-        
-        // Calculate centroid for positioning
-        Vector2 centroid = Vector2.zero;
-        foreach (Vector2 v in cutOffShape)
+        if (objectReshape == null)
         {
-            centroid += v;
-        }
-        centroid /= cutOffShape.Count;
-        largePiece.transform.position = new Vector3(centroid.x, centroid.y, transform.position.z);
-        
-        // Add required components
-        SpriteRenderer originalSpriteRenderer = GetComponent<SpriteRenderer>();
-        SpriteRenderer pieceSpriteRenderer = largePiece.AddComponent<SpriteRenderer>();
-        
-        // Copy sprite renderer settings
-        if (originalSpriteRenderer != null)
-        {
-            pieceSpriteRenderer.sortingLayerName = originalSpriteRenderer.sortingLayerName;
-            pieceSpriteRenderer.sortingOrder = originalSpriteRenderer.sortingOrder;
-            pieceSpriteRenderer.color = originalSpriteRenderer.color;
+            objectReshape = GetComponent<ObjectReshape>();
+            if (objectReshape == null)
+            {
+                return;
+            }
         }
         
-        // Add ObjectReshape component to handle the shape
-        ObjectReshape pieceReshape = largePiece.AddComponent<ObjectReshape>();
-        
-        // Add PixelatedCutRenderer
-        PixelatedCutRenderer piecePixelRenderer = largePiece.AddComponent<PixelatedCutRenderer>();
-        
-        // Convert world space vertices to local space for the new object
-        List<Vector2> localVertices = new List<Vector2>();
-        foreach (Vector2 worldVertex in cutOffShape)
+        if (debrisSpawner == null)
         {
-            Vector2 localVertex = (Vector2)largePiece.transform.InverseTransformPoint(worldVertex);
-            localVertices.Add(localVertex);
+            debrisSpawner = GetComponent<DebrisSpawner>();
+            if (debrisSpawner == null)
+            {
+                return;
+            }
         }
         
-        // Apply the shape (this will create the mesh and collider)
-        CutProfileManager profileManager = FindObjectOfType<CutProfileManager>();
-        List<Vector2> irregularShape = localVertices;
-        if (profileManager != null && cutProfile.strength > 0.01f)
+        Vector2[] corners = GetCurrentShapeVertices();
+        
+        List<Vector2> shape1, shape2;
+        SplitPolygonByLine(corners, entryPoint, exitPoint, out shape1, out shape2);
+        
+        if (shape1.Count < 3 || shape2.Count < 3)
         {
-            // Convert entry/exit points to local space
-            Vector2 localEntry = largePiece.transform.InverseTransformPoint(entryPoint);
-            Vector2 localExit = largePiece.transform.InverseTransformPoint(exitPoint);
-            irregularShape = profileManager.ApplyIrregularCut(localVertices, localEntry, localExit, cutProfile);
+            return;
         }
         
-        // Apply pixelation to the shape
-        List<Vector2> pixelatedShape = irregularShape;
-        if (piecePixelRenderer != null)
+        List<Vector2> cutOffShape = ChooseShapeToHighlight(shape1, shape2);
+        
+        float totalCutOffArea = ObjectReshape.CalculatePolygonArea(cutOffShape);
+        
+        string materialTag = gameObject.tag;
+        if (string.IsNullOrEmpty(materialTag) || materialTag == "Untagged")
         {
-            Vector2 localEntry = largePiece.transform.InverseTransformPoint(entryPoint);
-            Vector2 localExit = largePiece.transform.InverseTransformPoint(exitPoint);
-            pixelatedShape = piecePixelRenderer.PixelatePolygonWithCutLine(irregularShape, localEntry, localExit);
+            materialTag = gameObject.name;
         }
         
-        // Create collider
-        PolygonCollider2D polyCollider = largePiece.AddComponent<PolygonCollider2D>();
-        polyCollider.points = irregularShape.ToArray();
+        CutProfile cutProfile = CutProfileExtensions.GetCutProfileForObject(gameObject);
         
-        // Create visual mesh
-        CreateLargePieceMesh(largePiece, pixelatedShape, materialTag);
+        float strengthInfluence = 1.0f - (cutProfile.strength * 0.4f);
+        float largePieceRatio = baseLargePieceRatio + (strengthInfluence - 0.6f) * (0.8f - baseLargePieceRatio) / 0.4f;
+        largePieceRatio = Mathf.Clamp(largePieceRatio, 0.3f, 0.8f);
         
-        // Add physics
-        Rigidbody2D rb = largePiece.AddComponent<Rigidbody2D>();
-        rb.mass = targetArea * largePieceMassMultiplier;
-        rb.gravityScale = 1f;
+        float largePieceArea = totalCutOffArea * largePieceRatio;
+        float debrisArea = totalCutOffArea - largePieceArea;
         
-        // Apply a small impulse away from the parent object
-        Vector2 cutDirection = (exitPoint - entryPoint).normalized;
-        Vector2 perpendicular = new Vector2(-cutDirection.y, cutDirection.x);
-        rb.linearVelocity = perpendicular * Random.Range(largePieceForceRange.x, largePieceForceRange.y);
-        rb.angularVelocity = Random.Range(-90f, 90f);
+        List<Vector2> actualCutShape = objectReshape.CutOffPortion(entryPoint, exitPoint, cutOffShape);
         
-        // Add RaycastReceiver so it can be cut again
-        RaycastReceiver pieceReceiver = largePiece.AddComponent<RaycastReceiver>();
-        pieceReceiver.highlightMode = this.highlightMode;
-        pieceReceiver.baseLargePieceRatio = this.baseLargePieceRatio;
-        pieceReceiver.largePieceMassMultiplier = this.largePieceMassMultiplier;
-        pieceReceiver.largePieceForceRange = this.largePieceForceRange;
-        
-        // Add DebrisSpawner for future cuts
-        DebrisSpawner pieceDebrisSpawner = largePiece.AddComponent<DebrisSpawner>();
-        
-        // Copy CellularWaterContainer if parent has one (so cut pieces also contain water!)
-        CellularWaterContainer parentCellularWaterContainer = GetComponent<CellularWaterContainer>();
-        if (parentCellularWaterContainer != null)
+        if (actualCutShape != null && actualCutShape.Count >= 3)
         {
-            CellularWaterContainer pieceCellularWaterContainer = largePiece.AddComponent<CellularWaterContainer>();
-            // Water container will use its default settings
+            if (debrisArea > 0.01f && debrisSpawner != null)
+            {
+                debrisSpawner.SpawnDebris(actualCutShape, debrisArea, materialTag);
+            }
+            
+            if (largePieceArea > 0.01f)
+            {
+                GameObject largePiece = SpawnLargeCutPiece(actualCutShape, largePieceArea, entryPoint, exitPoint, materialTag, cutProfile);
+                
+                if (largePiece != null && onPieceSpawned != null)
+                {
+                    onPieceSpawned.Invoke(largePiece);
+                }
+            }
         }
-        
-        // Apply physics material based on material tag
-        PhysicsMaterialManager physicsManager = FindObjectOfType<PhysicsMaterialManager>();
-        if (physicsManager != null)
-        {
-            physicsManager.ApplyPhysicsMaterial(largePiece);
-        }
-        
-        Debug.Log($"Spawned large cut piece with area {targetArea:F2} at position {centroid}");
+    }
+
+GameObject SpawnLargeCutPiece(List<Vector2> cutOffShape, float targetArea, Vector2 entryPoint, Vector2 exitPoint, string materialTag, CutProfile cutProfile)
+{
+    GameObject largePiece = new GameObject($"{gameObject.name}_CutPiece");
+
+    try
+    {
+        largePiece.tag = gameObject.tag;
+    }
+    catch (UnityException e)
+    {
     }
     
-    /// <summary>
-    /// Creates a visual mesh for the large cut piece
-    /// </summary>
+    StructuralCollapseManager.ExplosionFragment parentMarker = GetComponent<StructuralCollapseManager.ExplosionFragment>();
+    if (parentMarker != null)
+    {
+        StructuralCollapseManager.ExplosionFragment childMarker = largePiece.AddComponent<StructuralCollapseManager.ExplosionFragment>();
+        childMarker.Initialize(parentMarker.materialType);
+    }
+    
+    Vector2 centroid = Vector2.zero;
+    foreach (Vector2 v in cutOffShape)
+    {
+        centroid += v;
+    }
+    centroid /= cutOffShape.Count;
+    
+    Vector2 cutDirection = (exitPoint - entryPoint).normalized;
+    Vector2 perpendicular = new Vector2(-cutDirection.y, cutDirection.x);
+    
+    Vector2 separationOffset = perpendicular * 0.1f * (Random.value > 0.5f ? 1f : -1f);
+    Vector2 randomJitter = Random.insideUnitCircle * 0.03f;
+    centroid += separationOffset + randomJitter;
+    
+    largePiece.transform.position = new Vector3(centroid.x, centroid.y, transform.position.z);
+    
+    SpriteRenderer originalSpriteRenderer = GetComponent<SpriteRenderer>();
+    SpriteRenderer pieceSpriteRenderer = largePiece.AddComponent<SpriteRenderer>();
+    
+    if (originalSpriteRenderer != null)
+    {
+        pieceSpriteRenderer.sortingLayerName = originalSpriteRenderer.sortingLayerName;
+        pieceSpriteRenderer.sortingOrder = originalSpriteRenderer.sortingOrder;
+        pieceSpriteRenderer.color = originalSpriteRenderer.color;
+    }
+    
+    ObjectReshape pieceReshape = largePiece.AddComponent<ObjectReshape>();
+    
+    PixelatedCutRenderer piecePixelRenderer = largePiece.AddComponent<PixelatedCutRenderer>();
+    
+    List<Vector2> localVertices = new List<Vector2>();
+    foreach (Vector2 worldVertex in cutOffShape)
+    {
+        Vector2 localVertex = (Vector2)largePiece.transform.InverseTransformPoint(worldVertex);
+        localVertices.Add(localVertex);
+    }
+    
+    CutProfileManager profileManager = FindObjectOfType<CutProfileManager>();
+    List<Vector2> irregularShape = localVertices;
+    if (profileManager != null && cutProfile.strength > 0.01f)
+    {
+        Vector2 localEntry = largePiece.transform.InverseTransformPoint(entryPoint);
+        Vector2 localExit = largePiece.transform.InverseTransformPoint(exitPoint);
+        irregularShape = profileManager.ApplyIrregularCut(localVertices, localEntry, localExit, cutProfile);
+    }
+    
+    List<Vector2> pixelatedShape = irregularShape;
+    if (piecePixelRenderer != null)
+    {
+        Vector2 localEntry = largePiece.transform.InverseTransformPoint(entryPoint);
+        Vector2 localExit = largePiece.transform.InverseTransformPoint(exitPoint);
+        pixelatedShape = piecePixelRenderer.PixelatePolygonWithCutLine(irregularShape, localEntry, localExit);
+    }
+    
+    PolygonCollider2D polyCollider = largePiece.AddComponent<PolygonCollider2D>();
+    polyCollider.points = irregularShape.ToArray();
+    polyCollider.enabled = false;
+    
+    CreateLargePieceMesh(largePiece, pixelatedShape, materialTag);
+    
+    Rigidbody2D rb = largePiece.AddComponent<Rigidbody2D>();
+    rb.bodyType = RigidbodyType2D.Kinematic;
+    rb.mass = targetArea * largePieceMassMultiplier;
+    rb.gravityScale = 1f;
+    
+    rb.linearVelocity = Vector2.zero;
+    rb.angularVelocity = 0f;
+    
+    rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+    rb.sleepMode = RigidbodySleepMode2D.StartAwake;
+    
+    RaycastReceiver pieceReceiver = largePiece.AddComponent<RaycastReceiver>();
+    pieceReceiver.highlightMode = this.highlightMode;
+    pieceReceiver.baseLargePieceRatio = this.baseLargePieceRatio;
+    pieceReceiver.largePieceMassMultiplier = this.largePieceMassMultiplier;
+    pieceReceiver.largePieceForceRange = this.largePieceForceRange;
+    
+    DebrisSpawner pieceDebrisSpawner = largePiece.AddComponent<DebrisSpawner>();
+    
+    PhysicsMaterialManager physicsManager = FindObjectOfType<PhysicsMaterialManager>();
+    if (physicsManager != null)
+    {
+        physicsManager.ApplyPhysicsMaterial(largePiece);
+    }
+    
+    if (FindObjectOfType<RealisticWindManager>() != null)
+    {
+        WindAffected windAffected = largePiece.AddComponent<WindAffected>();
+        
+        windAffected.SetWindMultiplier(0.6f);
+        windAffected.scaleWithMass = true;
+        windAffected.massScalingFactor = 1.0f;
+        windAffected.referenceMass = 1.0f;
+        
+        windAffected.applyWindTorque = true;
+        windAffected.torqueMultiplier = 0.5f;
+        
+        windAffected.limitVelocity = true;
+        windAffected.maxWindVelocity = 10f;
+        
+        if (cutProfile != null)
+        {
+            windAffected.dragCoefficient = Mathf.Lerp(0.8f, 1.5f, cutProfile.strength);
+        }
+    }
+    
+    StartCoroutine(EnablePhysicsAfterDelay(largePiece, rb, polyCollider, 0.1f));
+    
+    return largePiece;
+}
+
+IEnumerator EnablePhysicsAfterDelay(GameObject piece, Rigidbody2D rb, PolygonCollider2D collider, float delay)
+{
+    yield return new WaitForSeconds(delay);
+    
+    if (piece != null && rb != null && collider != null)
+    {
+        collider.enabled = true;
+        
+        yield return new WaitForFixedUpdate();
+        
+        rb.bodyType = RigidbodyType2D.Dynamic;
+    }
+}
+    
     void CreateLargePieceMesh(GameObject piece, List<Vector2> localVertices, string materialTag)
     {
         if (localVertices == null || localVertices.Count < 3)
         {
-            Debug.LogError("Invalid vertices for large piece mesh creation");
             return;
         }
         
-        // Create mesh child object
         GameObject meshObject = new GameObject($"{piece.name}_Mesh");
         meshObject.transform.SetParent(piece.transform);
         meshObject.transform.localPosition = Vector3.zero;
@@ -331,7 +537,6 @@ public class RaycastReceiver : MonoBehaviour
         MeshFilter meshFilter = meshObject.AddComponent<MeshFilter>();
         MeshRenderer meshRenderer = meshObject.AddComponent<MeshRenderer>();
         
-        // Get texture
         MaterialTextureGenerator textureGenerator = FindObjectOfType<MaterialTextureGenerator>();
         Texture2D texture = null;
         
@@ -340,7 +545,6 @@ public class RaycastReceiver : MonoBehaviour
             texture = textureGenerator.GetTexture(materialTag);
         }
         
-        // Create material
         Shader shader = Shader.Find("Sprites/Default");
         if (shader == null) shader = Shader.Find("Unlit/Texture");
         
@@ -350,7 +554,6 @@ public class RaycastReceiver : MonoBehaviour
             material.mainTexture = texture;
         }
         
-        // Copy renderer settings from parent
         SpriteRenderer parentSpriteRenderer = GetComponent<SpriteRenderer>();
         if (parentSpriteRenderer != null)
         {
@@ -364,42 +567,33 @@ public class RaycastReceiver : MonoBehaviour
         
         meshRenderer.material = material;
         
-        // Create mesh
         Mesh mesh = CreateMeshFromPolygon(localVertices);
         if (mesh != null)
         {
             meshFilter.mesh = mesh;
-            Debug.Log($"Created mesh for large piece with {localVertices.Count} vertices");
         }
         else
         {
-            Debug.LogError("Failed to create mesh for large piece");
             Destroy(meshObject);
         }
     }
     
-    /// <summary>
-    /// Creates a mesh from polygon vertices using triangulation
-    /// </summary>
     Mesh CreateMeshFromPolygon(List<Vector2> vertices)
     {
         if (vertices == null || vertices.Count < 3)
         {
-            Debug.LogError("Not enough vertices to create mesh");
             return null;
         }
         
         Mesh mesh = new Mesh();
         mesh.name = "LargePieceMesh";
         
-        // Convert 2D vertices to 3D
         Vector3[] vertices3D = new Vector3[vertices.Count];
         for (int i = 0; i < vertices.Count; i++)
         {
             vertices3D[i] = new Vector3(vertices[i].x, vertices[i].y, 0);
         }
         
-        // Simple fan triangulation
         List<int> triangles = new List<int>();
         for (int i = 1; i < vertices.Count - 1; i++)
         {
@@ -408,7 +602,6 @@ public class RaycastReceiver : MonoBehaviour
             triangles.Add(i + 1);
         }
         
-        // Create UVs
         Vector2[] uvs = new Vector2[vertices.Count];
         Bounds bounds = GetLocalBoundsFromVertices(vertices);
         
@@ -439,9 +632,6 @@ public class RaycastReceiver : MonoBehaviour
         return mesh;
     }
     
-    /// <summary>
-    /// Gets local bounds of vertices
-    /// </summary>
     Bounds GetLocalBoundsFromVertices(List<Vector2> vertices)
     {
         if (vertices.Count == 0) return new Bounds();
@@ -465,7 +655,6 @@ public class RaycastReceiver : MonoBehaviour
     
     List<Vector2> ChooseShapeToHighlight(List<Vector2> shape1, List<Vector2> shape2)
     {
-        // Calculate average Y position (height) of each shape
         float avgY1 = 0;
         foreach (Vector2 v in shape1)
         {
@@ -480,16 +669,13 @@ public class RaycastReceiver : MonoBehaviour
         }
         avgY2 /= shape2.Count;
         
-        // Choose based on highlight mode
         switch (highlightMode)
         {
             case HighlightMode.Default:
             case HighlightMode.FarthestFromGround:
-                // Return the shape with higher average Y (top piece)
                 return avgY1 > avgY2 ? shape1 : shape2;
                 
             case HighlightMode.ClosestToGround:
-                // Return the shape with lower average Y (bottom piece)
                 return avgY1 < avgY2 ? shape1 : shape2;
                 
             default:
@@ -501,17 +687,14 @@ public class RaycastReceiver : MonoBehaviour
     {
         Bounds bounds;
         
-        // First check if we have an ObjectReshape component with a mesh renderer
         ObjectReshape objectReshape = GetComponent<ObjectReshape>();
         MeshRenderer meshRenderer = GetComponent<MeshRenderer>();
         
-        // Check for mesh renderer on child (from previous cuts)
         if (meshRenderer == null)
         {
             meshRenderer = GetComponentInChildren<MeshRenderer>();
         }
         
-        // Check if we have a mesh from a previous cut
         if (meshRenderer != null && meshRenderer.enabled)
         {
             bounds = meshRenderer.bounds;
@@ -522,11 +705,9 @@ public class RaycastReceiver : MonoBehaviour
         }
         else
         {
-            // If we have a polygon collider, use that
             PolygonCollider2D polyCol = GetComponent<PolygonCollider2D>();
             if (polyCol != null && polyCol.points.Length > 0)
             {
-                // Get bounds from the polygon collider
                 Vector2 minPoint = transform.TransformPoint(polyCol.points[0]);
                 Vector2 maxPoint = minPoint;
                 
@@ -545,7 +726,6 @@ public class RaycastReceiver : MonoBehaviour
             }
             else
             {
-                // Fallback to transform-based bounds
                 bounds = new Bounds(transform.position, Vector3.one);
             }
         }
@@ -555,23 +735,21 @@ public class RaycastReceiver : MonoBehaviour
         
         return new Vector2[]
         {
-            new Vector2(center.x - extents.x, center.y - extents.y), // Bottom-left
-            new Vector2(center.x + extents.x, center.y - extents.y), // Bottom-right
-            new Vector2(center.x + extents.x, center.y + extents.y), // Top-right
-            new Vector2(center.x - extents.x, center.y + extents.y)  // Top-left
+            new Vector2(center.x - extents.x, center.y - extents.y),
+            new Vector2(center.x + extents.x, center.y - extents.y),
+            new Vector2(center.x + extents.x, center.y + extents.y),
+            new Vector2(center.x - extents.x, center.y + extents.y)
         };
     }
     
     float GetSideOfLine(Vector2 lineStart, Vector2 lineEnd, Vector2 point)
     {
-        // Cross product to determine which side of the line the point is on
         return (lineEnd.x - lineStart.x) * (point.y - lineStart.y) - 
                (lineEnd.y - lineStart.y) * (point.x - lineStart.x);
     }
     
     List<Vector2> SortVerticesClockwise(List<Vector2> vertices)
     {
-        // Find centroid
         Vector2 centroid = Vector2.zero;
         foreach (Vector2 v in vertices)
         {
@@ -579,7 +757,6 @@ public class RaycastReceiver : MonoBehaviour
         }
         centroid /= vertices.Count;
         
-        // Sort by angle from centroid
         vertices.Sort((a, b) =>
         {
             float angleA = Mathf.Atan2(a.y - centroid.y, a.x - centroid.x);
@@ -594,7 +771,6 @@ public class RaycastReceiver : MonoBehaviour
     {
         if (vertices.Count < 2) return;
         
-        // Create a new LineRenderer if needed
         if (edgeLineRenderer == null)
         {
             GameObject lineObj = new GameObject($"{gameObject.name}_Outline");
@@ -604,15 +780,14 @@ public class RaycastReceiver : MonoBehaviour
             edgeLineRenderer.startWidth = 0.08f;
             edgeLineRenderer.endWidth = 0.08f;
             edgeLineRenderer.material = new Material(Shader.Find("Unlit/Color"));
-            edgeLineRenderer.material.color = Color.red;
-            edgeLineRenderer.startColor = Color.red;
-            edgeLineRenderer.endColor = Color.red;
+            edgeLineRenderer.material.color = Color.white;
+            edgeLineRenderer.startColor = Color.white;
+            edgeLineRenderer.endColor = Color.white;
             edgeLineRenderer.sortingOrder = 15;
             edgeLineRenderer.useWorldSpace = true;
-            edgeLineRenderer.loop = true; // Make it a closed loop
+            edgeLineRenderer.loop = true;
         }
         
-        // Set positions
         edgeLineRenderer.positionCount = vertices.Count;
         for (int i = 0; i < vertices.Count; i++)
         {

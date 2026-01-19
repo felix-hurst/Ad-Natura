@@ -30,13 +30,9 @@ public class MaterialTextureProfile
 {
     public string materialName;
     public int textureSize = 64;
-    
-    // Base material colors
     public ColorData baseColor = new ColorData();
     public ColorData lightColor = new ColorData();
     public ColorData darkColor = new ColorData();
-    
-    // Pixel clusters (like different minerals/grains)
     public List<ClusterDefinition> clusters = new List<ClusterDefinition>();
     
     [Range(1f, 64f)] public float noiseScale = 12f;
@@ -80,7 +76,6 @@ public class MaterialTextureGenerator : MonoBehaviour
                 foreach (MaterialTextureProfile profile in profileList.materials)
                 {
                     profileDictionary[profile.materialName] = profile;
-                    Debug.Log($"Loaded material texture profile: {profile.materialName} with {profile.clusters.Count} cluster types");
                 }
             }
             catch (System.Exception e)
@@ -118,14 +113,8 @@ public class MaterialTextureGenerator : MonoBehaviour
         
         generatedTextures[materialName] = texture;
         
-        Debug.Log($"Generated Minecraft-style texture for: {materialName} ({profile.textureSize}x{profile.textureSize})");
-        
         return texture;
     }
-    
-    /// <summary>
-    /// Generates a Minecraft-style texture with pixel clusters
-    /// </summary>
     Texture2D GenerateMinecraftTexture(MaterialTextureProfile profile)
     {
         int size = profile.textureSize;
@@ -136,27 +125,22 @@ public class MaterialTextureGenerator : MonoBehaviour
         Color baseColor = profile.baseColor.ToColor();
         Color lightColor = profile.lightColor.ToColor();
         Color darkColor = profile.darkColor.ToColor();
-        
-        // Generate base noise
+
         float[,] noiseMap = GenerateNoiseMap(size, profile.noiseScale);
-        
-        // Generate lighting map
+
         float[,] lightingMap = GenerateMinecraftLighting(size, profile.shadingStrength);
-        
-        // Generate pixel clusters
+
         List<PixelCluster> clusters = GeneratePixelClusters(size, profile.clusters);
-        
-        // Create cluster lookup map for fast pixel checking
-        int[,] clusterMap = new int[size, size]; // -1 = base, 0+ = cluster index
+
+        int[,] clusterMap = new int[size, size];
         for (int i = 0; i < size; i++)
         {
             for (int j = 0; j < size; j++)
             {
-                clusterMap[i, j] = -1; // Initialize to base
+                clusterMap[i, j] = -1;
             }
         }
-        
-        // Fill cluster map
+
         for (int clusterIndex = 0; clusterIndex < clusters.Count; clusterIndex++)
         {
             PixelCluster cluster = clusters[clusterIndex];
@@ -168,8 +152,7 @@ public class MaterialTextureGenerator : MonoBehaviour
                 }
             }
         }
-        
-        // Composite texture
+
         for (int y = 0; y < size; y++)
         {
             for (int x = 0; x < size; x++)
@@ -181,12 +164,10 @@ public class MaterialTextureGenerator : MonoBehaviour
                 
                 if (clusterIndex >= 0)
                 {
-                    // Pixel is part of a cluster
                     PixelCluster cluster = clusters[clusterIndex];
                     pixelColor = cluster.color;
                     applyShading = cluster.hasShading;
-                    
-                    // Add slight variation within cluster
+
                     float noise = noiseMap[x, y];
                     float variation = (noise - 0.5f) * 0.1f;
                     pixelColor.r = Mathf.Clamp01(pixelColor.r + variation);
@@ -195,23 +176,19 @@ public class MaterialTextureGenerator : MonoBehaviour
                 }
                 else
                 {
-                    // Base material
                     pixelColor = baseColor;
                     applyShading = profile.enableShading;
-                    
-                    // Apply noise to base
+
                     float noise = noiseMap[x, y];
                     pixelColor = Color.Lerp(pixelColor, baseColor * 1.1f, noise * profile.noiseStrength);
                 }
-                
-                // Apply Minecraft-style lighting/shading
+
                 if (applyShading)
                 {
                     float lighting = lightingMap[x, y];
                     
                     if (clusterIndex >= 0)
                     {
-                        // Clusters use their own shading
                         Color clusterLight = pixelColor * 1.3f;
                         clusterLight.a = pixelColor.a;
                         Color clusterDark = pixelColor * 0.7f;
@@ -230,7 +207,6 @@ public class MaterialTextureGenerator : MonoBehaviour
                     }
                     else
                     {
-                        // Base material uses defined light/dark colors
                         if (lighting > 0.5f)
                         {
                             float lightAmount = (lighting - 0.5f) * 2f;
@@ -251,10 +227,7 @@ public class MaterialTextureGenerator : MonoBehaviour
         texture.Apply();
         return texture;
     }
-    
-    /// <summary>
-    /// Generates pixel clusters (groups of connected pixels with same color)
-    /// </summary>
+
     List<PixelCluster> GeneratePixelClusters(int size, List<ClusterDefinition> definitions)
     {
         List<PixelCluster> clusters = new List<PixelCluster>();
@@ -267,15 +240,12 @@ public class MaterialTextureGenerator : MonoBehaviour
                 cluster.color = def.color.ToColor();
                 cluster.hasShading = def.hasShading;
                 cluster.pixels = new List<Vector2Int>();
-                
-                // Random starting position
+
                 int startX = Random.Range(0, size);
                 int startY = Random.Range(0, size);
-                
-                // Random cluster size
+
                 int clusterSize = Random.Range(def.minSize, def.maxSize + 1);
-                
-                // Generate cluster using flood-fill-like algorithm
+
                 Queue<Vector2Int> toProcess = new Queue<Vector2Int>();
                 HashSet<Vector2Int> processed = new HashSet<Vector2Int>();
                 
@@ -290,8 +260,7 @@ public class MaterialTextureGenerator : MonoBehaviour
                     
                     processed.Add(current);
                     cluster.pixels.Add(current);
-                    
-                    // Randomly add neighbors to create organic shape
+
                     if (cluster.pixels.Count < clusterSize * clusterSize)
                     {
                         Vector2Int[] neighbors = new Vector2Int[]
@@ -318,10 +287,7 @@ public class MaterialTextureGenerator : MonoBehaviour
         
         return clusters;
     }
-    
-    /// <summary>
-    /// Generates Minecraft-style lighting
-    /// </summary>
+
     float[,] GenerateMinecraftLighting(int size, float strength)
     {
         float[,] lightingMap = new float[size, size];
@@ -349,10 +315,7 @@ public class MaterialTextureGenerator : MonoBehaviour
         
         return lightingMap;
     }
-    
-    /// <summary>
-    /// Generates Perlin noise map
-    /// </summary>
+
     float[,] GenerateNoiseMap(int size, float scale)
     {
         float[,] noiseMap = new float[size, size];
@@ -389,17 +352,12 @@ public class MaterialTextureGenerator : MonoBehaviour
     }
 }
 
-/// <summary>
-/// Represents a cluster of pixels with the same base color
-/// </summary>
 public class PixelCluster
 {
     public Color color;
     public bool hasShading;
     public List<Vector2Int> pixels;
 }
-
-// Extension methods
 public static class MaterialTextureExtensions
 {
     public static void ApplyProceduralTexture(GameObject obj)
@@ -437,7 +395,6 @@ public static class MaterialTextureExtensions
             );
             
             spriteRenderer.sprite = sprite;
-            Debug.Log($"Applied Minecraft-style texture to {obj.name} using material: {materialName}");
         }
         else
         {
