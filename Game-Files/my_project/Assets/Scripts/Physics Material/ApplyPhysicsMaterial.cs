@@ -1,16 +1,12 @@
 using UnityEngine;
 
-/// <summary>
-/// Attach this to any GameObject that should have material-specific physics properties applied
-/// based on its tag. Works in conjunction with PhysicsMaterialManager.
-/// </summary>
 [RequireComponent(typeof(Collider2D))]
 public class ApplyPhysicsMaterial : MonoBehaviour
 {
     [Header("Physics Material Settings")]
     [SerializeField] private bool applyOnStart = true;
-    [SerializeField] private bool useMaterialTag = true; // Use object's tag, otherwise use object name
-    [SerializeField] private string overrideMaterialName = ""; // Override the automatic material detection
+    [SerializeField] private bool useMaterialTag = true; 
+    [SerializeField] private string overrideMaterialName = "";
     
     [Header("Debug")]
     [SerializeField] private bool showDebugInfo = false;
@@ -32,10 +28,7 @@ public class ApplyPhysicsMaterial : MonoBehaviour
             ApplyMaterial();
         }
     }
-    
-    /// <summary>
-    /// Applies the physics material to this object's colliders
-    /// </summary>
+
     public void ApplyMaterial()
     {
         if (physicsManager == null)
@@ -48,11 +41,8 @@ public class ApplyPhysicsMaterial : MonoBehaviour
                 return;
             }
         }
-        
-        // Determine material name
         string materialName = GetMaterialName();
-        
-        // Get the physics material
+
         PhysicsMaterial2D physicsMaterial = physicsManager.GetPhysicsMaterial(materialName);
         
         if (physicsMaterial == null)
@@ -60,8 +50,7 @@ public class ApplyPhysicsMaterial : MonoBehaviour
             Debug.LogError($"Failed to get physics material for: {materialName}");
             return;
         }
-        
-        // Apply to all 2D colliders
+
         Collider2D[] colliders = GetComponents<Collider2D>();
         foreach (Collider2D collider in colliders)
         {
@@ -75,19 +64,13 @@ public class ApplyPhysicsMaterial : MonoBehaviour
                      $"(Friction: {data.friction}, Bounciness: {data.bounciness})");
         }
     }
-    
-    /// <summary>
-    /// Gets the material name to use for physics material
-    /// </summary>
+
     string GetMaterialName()
     {
-        // Check for override first
         if (!string.IsNullOrEmpty(overrideMaterialName))
         {
             return overrideMaterialName;
         }
-        
-        // Use tag or name
         if (useMaterialTag)
         {
             string tag = gameObject.tag;
@@ -96,23 +79,15 @@ public class ApplyPhysicsMaterial : MonoBehaviour
                 return tag;
             }
         }
-        
-        // Fallback to object name
         return gameObject.name;
     }
-    
-    /// <summary>
-    /// Reapplies the physics material (useful after collider changes)
-    /// </summary>
+
     [ContextMenu("Reapply Physics Material")]
     public void ReapplyMaterial()
     {
         ApplyMaterial();
     }
-    
-    /// <summary>
-    /// Gets the current friction value for this object
-    /// </summary>
+
     public float GetCurrentFriction()
     {
         if (physicsManager == null)
@@ -127,12 +102,9 @@ public class ApplyPhysicsMaterial : MonoBehaviour
             return data.friction;
         }
         
-        return 0.4f; // Default
+        return 0.4f;
     }
-    
-    /// <summary>
-    /// Gets the current bounciness value for this object
-    /// </summary>
+
     public float GetCurrentBounciness()
     {
         if (physicsManager == null)
@@ -147,6 +119,6 @@ public class ApplyPhysicsMaterial : MonoBehaviour
             return data.bounciness;
         }
         
-        return 0f; // Default
+        return 0f;
     }
 }

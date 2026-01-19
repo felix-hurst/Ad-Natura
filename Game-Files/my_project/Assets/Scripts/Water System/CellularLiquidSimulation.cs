@@ -1,10 +1,6 @@
 using UnityEngine;
 using System.Collections.Generic;
 
-/// <summary>
-/// Cellular automata-based liquid simulation like Noita
-/// Water flows through a grid and reacts to solid obstacles
-/// </summary>
 public class CellularLiquidSimulation : MonoBehaviour
 {
     [Header("Grid Settings")]
@@ -23,8 +19,30 @@ public class CellularLiquidSimulation : MonoBehaviour
     [SerializeField] private float waterFlowSpeed = 0.7f;
     [SerializeField] private float waterSpreadRate = 0.5f;
     
-    [Header("Visual Settings")]
-    [SerializeField] private Color waterColor = new Color(0.2f, 0.5f, 1f, 0.7f);
+    [Header("Advanced Simulation")]
+    [Tooltip("Enable pressure-based water (water pushes up when compressed)")]
+    [SerializeField] private bool enablePressure = true;
+    [Tooltip("How much extra water a cell can hold under pressure")]
+    [SerializeField] private float maxCompression = 0.5f;
+    [Tooltip("How strongly pressure pushes water up")]
+    [SerializeField] private float pressureStrength = 0.25f;
+    [Tooltip("Enable diagonal water flow")]
+    [SerializeField] private bool enableDiagonalFlow = true;
+    [Tooltip("Speed of diagonal flow (relative to vertical)")]
+    [Range(0f, 1f)]
+    [SerializeField] private float diagonalFlowRate = 0.3f;
+    
+    [Header("Visual Settings - Colors")]
+    [SerializeField] private Color waterColorDeep = new Color(0.08f, 0.22f, 0.55f, 0.95f);
+    [SerializeField] private Color waterColorMid = new Color(0.18f, 0.4f, 0.8f, 0.9f);
+    [SerializeField] private Color waterColorShallow = new Color(0.3f, 0.55f, 0.9f, 0.85f);
+    [SerializeField] private Color surfaceHighlightColor = new Color(0.6f, 0.8f, 1f, 0.9f);
+    
+    [Header("Visual Settings - Shading")]
+    [SerializeField] private bool enableDepthShading = true;
+    [SerializeField] private bool enableSurfaceHighlight = true;
+    [Tooltip("How many cells deep before reaching darkest color")]
+    [SerializeField] private int maxShadingDepth = 8;
     [SerializeField] private Material waterMaterial;
     [Tooltip("Should match 1/cellSize for pixel-perfect rendering. If cellSize=0.1, this should be 10")]
     [SerializeField] private int pixelsPerUnit = 10;
@@ -52,24 +70,19 @@ public class CellularLiquidSimulation : MonoBehaviour
     [SerializeField] private float minDisplacementVelocity = 0.5f;
     [Tooltip("How often to update displacement (seconds)")]
     [SerializeField] private float displacementUpdateInterval = 0.05f;
-    
-    // Grid data
-    private float[,] water;           // Current water amounts
-    private float[,] newWater;        // Next frame water amounts
-    private bool[,] solid;            // Solid cells (walls, objects)
-    private bool[,] settled;          // Is water settled (optimization)
-    
-    // Rendering
+
+    private float[,] water;
+    private float[,] newWater;
+    private bool[,] solid;
+    private bool[,] settled;
+    private int[,] waterDepth;
+    private bool[,] isSurfaceCell;
     private Texture2D waterTexture;
     private SpriteRenderer waterRenderer;
     private GameObject waterVisualObject;
-    
-    // Performance tracking
     private HashSet<Vector2Int> activeCells = new HashSet<Vector2Int>();
     private Queue<Vector2Int> cellsToCheck = new Queue<Vector2Int>();
     private float solidUpdateTimer = 0f;
-    
-    // Displacement tracking
     private Dictionary<Rigidbody2D, Vector2> trackedRigidbodies = new Dictionary<Rigidbody2D, Vector2>();
     private float displacementUpdateTimer = 0f;
     
@@ -85,8 +98,9 @@ public class CellularLiquidSimulation : MonoBehaviour
         newWater = new float[gridWidth, gridHeight];
         solid = new bool[gridWidth, gridHeight];
         settled = new bool[gridWidth, gridHeight];
-        
-        // Mark solid cells based on colliders in scene
+        waterDepth = new int[gridWidth, gridHeight];
+        isSurfaceCell = new bool[gridWidth, gridHeight];
+
         UpdateSolidCells();
         
         Debug.Log($"Liquid simulation initialized: {gridWidth}x{gridHeight} cells ({gridWidth * gridHeight} total)");
@@ -94,20 +108,17 @@ public class CellularLiquidSimulation : MonoBehaviour
     
     void InitializeRendering()
     {
-        // Create texture for water visualization
         waterTexture = new Texture2D(gridWidth, gridHeight, TextureFormat.RGBA32, false);
-        waterTexture.filterMode = FilterMode.Point; // Pixel-perfect - NO BLUR
+        waterTexture.filterMode = FilterMode.Point; 
         waterTexture.wrapMode = TextureWrapMode.Clamp;
-        
-        // Create sprite from texture
+
         Sprite waterSprite = Sprite.Create(
             waterTexture,
             new Rect(0, 0, gridWidth, gridHeight),
-            new Vector2(0f, 0f), // Pivot at bottom-left
+            new Vector2(0f, 0f), 
             pixelsPerUnit
         );
-        
-        // Create visual object
+
         waterVisualObject = new GameObject("WaterVisualization");
         waterVisualObject.transform.SetParent(transform);
         waterVisualObject.transform.position = new Vector3(gridOrigin.x, gridOrigin.y, 0);
@@ -115,8 +126,7 @@ public class CellularLiquidSimulation : MonoBehaviour
         waterRenderer = waterVisualObject.AddComponent<SpriteRenderer>();
         waterRenderer.sprite = waterSprite;
         waterRenderer.sortingOrder = 5;
-        
-        // CRITICAL: Ensure sprite texture also uses Point filtering
+
         if (waterRenderer.sprite != null && waterRenderer.sprite.texture != null)
         {
             waterRenderer.sprite.texture.filterMode = FilterMode.Point;
@@ -126,16 +136,14 @@ public class CellularLiquidSimulation : MonoBehaviour
         {
             waterRenderer.material = waterMaterial;
         }
-        
-        // Initial render
+
         UpdateWaterTexture();
     }
     
     void Update()
     {
         if (!enableSimulation) return;
-        
-        // Periodically update solid cells if dynamic update is enabled
+
         if (dynamicSolidUpdate)
         {
             solidUpdateTimer += Time.deltaTime;
@@ -145,8 +153,7 @@ public class CellularLiquidSimulation : MonoBehaviour
                 UpdateSolidCells();
             }
         }
-        
-        // Update water displacement for moving objects
+
         if (enableDisplacement)
         {
             displacementUpdateTimer += Time.deltaTime;
@@ -156,26 +163,26 @@ public class CellularLiquidSimulation : MonoBehaviour
                 UpdateDisplacement();
             }
         }
-        
-        // Run multiple simulation steps per frame for smoother flow
+
         for (int i = 0; i < simulationStepsPerFrame; i++)
         {
             SimulationStep();
         }
-        
-        // Update visuals
+
+        if (enableDepthShading || enableSurfaceHighlight)
+        {
+            CalculateWaterDepthAndSurface();
+        }
+
         UpdateWaterTexture();
     }
     
     void SimulationStep()
     {
-        // Copy current water to newWater
         System.Array.Copy(water, newWater, water.Length);
-        
-        // Process active cells (cells with water or near water)
+
         HashSet<Vector2Int> nextActiveCells = new HashSet<Vector2Int>();
-        
-        // If no active cells, scan for any water
+
         if (activeCells.Count == 0)
         {
             FindAllWaterCells();
@@ -191,17 +198,26 @@ public class CellularLiquidSimulation : MonoBehaviour
             
             float currentWater = water[x, y];
             if (currentWater < minWaterTransfer) continue;
-            
-            // Mark this cell and neighbors as active for next frame
+
             nextActiveCells.Add(cell);
-            
-            // Water flows down first
+
+            float pressure = 0f;
+            if (enablePressure)
+            {
+                pressure = CalculatePressure(x, y);
+            }
+
+            float effectiveMaxWater = maxWaterPerCell + (pressure * maxCompression);
+
             if (y > 0 && !solid[x, y - 1])
             {
                 float below = water[x, y - 1];
-                if (below < maxWaterPerCell)
+                float belowPressure = enablePressure ? CalculatePressure(x, y - 1) : 0f;
+                float belowEffectiveMax = maxWaterPerCell + (belowPressure * maxCompression);
+                
+                if (below < belowEffectiveMax)
                 {
-                    float flow = Mathf.Min(currentWater * waterFlowSpeed, maxWaterPerCell - below);
+                    float flow = Mathf.Min(currentWater * waterFlowSpeed, belowEffectiveMax - below);
                     flow = Mathf.Max(flow, 0f);
                     
                     newWater[x, y] -= flow;
@@ -213,11 +229,75 @@ public class CellularLiquidSimulation : MonoBehaviour
                     settled[x, y - 1] = false;
                 }
             }
-            
-            // If still has water, spread horizontally
+
+            if (enableDiagonalFlow && currentWater > minWaterTransfer && y > 0)
+            {
+                bool blockedBelow = solid[x, y - 1] || water[x, y - 1] >= maxWaterPerCell * 0.95f;
+                
+                if (blockedBelow)
+                {
+                    bool canFlowDiagLeft = x > 0 && !solid[x - 1, y - 1] && !solid[x - 1, y];
+                    bool canFlowDiagRight = x < gridWidth - 1 && !solid[x + 1, y - 1] && !solid[x + 1, y];
+                    
+                    float flowAmount = currentWater * diagonalFlowRate;
+                    
+                    if (canFlowDiagLeft && canFlowDiagRight)
+                    {
+                        float leftWater = water[x - 1, y - 1];
+                        float rightWater = water[x + 1, y - 1];
+                        float halfFlow = flowAmount * 0.5f;
+                        
+                        if (leftWater < maxWaterPerCell)
+                        {
+                            float flowLeft = Mathf.Min(halfFlow, maxWaterPerCell - leftWater);
+                            newWater[x, y] -= flowLeft;
+                            newWater[x - 1, y - 1] += flowLeft;
+                            currentWater -= flowLeft;
+                            nextActiveCells.Add(new Vector2Int(x - 1, y - 1));
+                            settled[x - 1, y - 1] = false;
+                        }
+                        
+                        if (rightWater < maxWaterPerCell)
+                        {
+                            float flowRight = Mathf.Min(halfFlow, maxWaterPerCell - rightWater);
+                            newWater[x, y] -= flowRight;
+                            newWater[x + 1, y - 1] += flowRight;
+                            currentWater -= flowRight;
+                            nextActiveCells.Add(new Vector2Int(x + 1, y - 1));
+                            settled[x + 1, y - 1] = false;
+                        }
+                    }
+                    else if (canFlowDiagLeft)
+                    {
+                        float leftWater = water[x - 1, y - 1];
+                        if (leftWater < maxWaterPerCell)
+                        {
+                            float flowLeft = Mathf.Min(flowAmount, maxWaterPerCell - leftWater);
+                            newWater[x, y] -= flowLeft;
+                            newWater[x - 1, y - 1] += flowLeft;
+                            currentWater -= flowLeft;
+                            nextActiveCells.Add(new Vector2Int(x - 1, y - 1));
+                            settled[x - 1, y - 1] = false;
+                        }
+                    }
+                    else if (canFlowDiagRight)
+                    {
+                        float rightWater = water[x + 1, y - 1];
+                        if (rightWater < maxWaterPerCell)
+                        {
+                            float flowRight = Mathf.Min(flowAmount, maxWaterPerCell - rightWater);
+                            newWater[x, y] -= flowRight;
+                            newWater[x + 1, y - 1] += flowRight;
+                            currentWater -= flowRight;
+                            nextActiveCells.Add(new Vector2Int(x + 1, y - 1));
+                            settled[x + 1, y - 1] = false;
+                        }
+                    }
+                }
+            }
+
             if (currentWater > minWaterTransfer)
             {
-                // Check if water can spread left or right
                 bool canSpreadLeft = x > 0 && !solid[x - 1, y];
                 bool canSpreadRight = x < gridWidth - 1 && !solid[x + 1, y];
                 
@@ -225,8 +305,7 @@ public class CellularLiquidSimulation : MonoBehaviour
                 {
                     float leftWater = canSpreadLeft ? water[x - 1, y] : maxWaterPerCell;
                     float rightWater = canSpreadRight ? water[x + 1, y] : maxWaterPerCell;
-                    
-                    // Spread to lower side first
+
                     if (canSpreadLeft && leftWater < currentWater)
                     {
                         float flow = (currentWater - leftWater) * waterSpreadRate * 0.5f;
@@ -260,14 +339,123 @@ public class CellularLiquidSimulation : MonoBehaviour
                     }
                 }
             }
+
+            if (enablePressure && pressure > 0.2f && currentWater > minWaterTransfer)
+            {
+                if (y < gridHeight - 1 && !solid[x, y + 1])
+                {
+                    float above = water[x, y + 1];
+                    float abovePressure = CalculatePressure(x, y + 1);
+
+                    if (pressure > abovePressure + 0.3f && above < maxWaterPerCell)
+                    {
+                        float pushUp = (pressure - abovePressure) * pressureStrength * currentWater;
+                        pushUp = Mathf.Min(pushUp, maxWaterPerCell - above, currentWater * 0.25f);
+                        
+                        if (pushUp > minWaterTransfer)
+                        {
+                            newWater[x, y] -= pushUp;
+                            newWater[x, y + 1] += pushUp;
+                            nextActiveCells.Add(new Vector2Int(x, y + 1));
+                            settled[x, y] = false;
+                            settled[x, y + 1] = false;
+                        }
+                    }
+                }
+            }
         }
-        
-        // Swap buffers
+
         float[,] temp = water;
         water = newWater;
         newWater = temp;
         
         activeCells = nextActiveCells;
+    }
+
+    float CalculatePressure(int x, int y)
+    {
+        float pressure = 0f;
+        int checkY = y + 1;
+        int maxCheck = Mathf.Min(y + 15, gridHeight);
+        
+        while (checkY < maxCheck)
+        {
+            if (solid[x, checkY]) break;
+            
+            float waterAbove = water[x, checkY];
+            if (waterAbove < minWaterTransfer) break;
+            
+            pressure += waterAbove;
+            checkY++;
+        }
+        
+        return pressure;
+    }
+
+    void CalculateWaterDepthAndSurface()
+    {
+        System.Array.Clear(waterDepth, 0, waterDepth.Length);
+        System.Array.Clear(isSurfaceCell, 0, isSurfaceCell.Length);
+
+        for (int x = 0; x < gridWidth; x++)
+        {
+            int currentDepth = 0;
+            bool inWater = false;
+
+            for (int y = gridHeight - 1; y >= 0; y--)
+            {
+                if (solid[x, y])
+                {
+                    currentDepth = 0;
+                    inWater = false;
+                    continue;
+                }
+                
+                float waterAmount = water[x, y];
+                bool hasWater = waterAmount > minWaterTransfer;
+                
+                if (hasWater)
+                {
+                    if (!inWater)
+                    {
+                        isSurfaceCell[x, y] = true;
+                        currentDepth = 0;
+                    }
+                    else
+                    {
+                        currentDepth++;
+                    }
+                    
+                    waterDepth[x, y] = currentDepth;
+                    inWater = true;
+                }
+                else
+                {
+                    currentDepth = 0;
+                    inWater = false;
+                }
+            }
+        }
+
+        for (int x = 0; x < gridWidth; x++)
+        {
+            for (int y = 0; y < gridHeight; y++)
+            {
+                if (water[x, y] <= minWaterTransfer) continue;
+
+                bool exposedAbove = (y >= gridHeight - 1) || 
+                                   (water[x, y + 1] <= minWaterTransfer && !solid[x, y + 1]);
+                bool exposedLeft = (x <= 0) || 
+                                  (water[x - 1, y] <= minWaterTransfer && !solid[x - 1, y]);
+                bool exposedRight = (x >= gridWidth - 1) || 
+                                   (water[x + 1, y] <= minWaterTransfer && !solid[x + 1, y]);
+                
+                if (exposedAbove || exposedLeft || exposedRight)
+                {
+                    isSurfaceCell[x, y] = true;
+                }
+            }
+        }
     }
     
     void FindAllWaterCells()
@@ -297,8 +485,6 @@ public class CellularLiquidSimulation : MonoBehaviour
                 
                 if (solid[x, y])
                 {
-                    // Debug: show solid cells (optional)
-                    // pixels[index] = new Color(0.3f, 0.3f, 0.3f, 0.5f);
                     pixels[index] = Color.clear;
                 }
                 else
@@ -306,9 +492,7 @@ public class CellularLiquidSimulation : MonoBehaviour
                     float amount = water[x, y];
                     if (amount > minWaterTransfer)
                     {
-                        // Water color with alpha based on amount
-                        float alpha = Mathf.Clamp01(amount / maxWaterPerCell) * waterColor.a;
-                        pixels[index] = new Color(waterColor.r, waterColor.g, waterColor.b, alpha);
+                        pixels[index] = GetWaterColor(x, y, amount);
                     }
                     else
                     {
@@ -320,40 +504,57 @@ public class CellularLiquidSimulation : MonoBehaviour
         
         waterTexture.SetPixels(pixels);
         waterTexture.Apply();
-        
-        // Ensure filter mode stays Point (no blur) - Unity sometimes resets this
+
         waterTexture.filterMode = FilterMode.Point;
     }
-    
-    /// <summary>
-    /// Call this if water appears blurry - forces pixel-perfect rendering
-    /// </summary>
-    [ContextMenu("Fix Blurry Water")]
-    public void FixBlurryWater()
+
+    Color GetWaterColor(int x, int y, float amount)
     {
-        if (waterTexture != null)
+        Color baseColor;
+
+        if (enableDepthShading)
         {
-            waterTexture.filterMode = FilterMode.Point;
-            waterTexture.anisoLevel = 0;
-            Debug.Log("✅ Fixed water texture filtering - set to Point (pixel-perfect)");
+            int depth = waterDepth[x, y];
+            float depthRatio = Mathf.Clamp01((float)depth / maxShadingDepth);
+
+            if (depthRatio < 0.4f)
+            {
+                float t = depthRatio / 0.4f;
+                baseColor = Color.Lerp(waterColorShallow, waterColorMid, t);
+            }
+            else
+            {
+                float t = (depthRatio - 0.4f) / 0.6f;
+                baseColor = Color.Lerp(waterColorMid, waterColorDeep, t);
+            }
         }
-        
-        if (waterRenderer != null && waterRenderer.sprite != null && waterRenderer.sprite.texture != null)
+        else
         {
-            waterRenderer.sprite.texture.filterMode = FilterMode.Point;
-            waterRenderer.sprite.texture.anisoLevel = 0;
-            Debug.Log("✅ Fixed sprite texture filtering - set to Point (pixel-perfect)");
+            baseColor = waterColorMid;
         }
+
+        if (enableSurfaceHighlight && isSurfaceCell[x, y])
+        {
+            bool isTopSurface = (y >= gridHeight - 1) || 
+                               (water[x, y + 1] <= minWaterTransfer && !solid[x, y + 1]);
+            
+            if (isTopSurface)
+            {
+                baseColor = Color.Lerp(baseColor, surfaceHighlightColor, 0.5f);
+            }
+            else
+            {
+                baseColor = Color.Lerp(baseColor, surfaceHighlightColor, 0.2f);
+            }
+        }
+        float alphaRatio = Mathf.Clamp01(amount / maxWaterPerCell);
+        float minAlpha = 0.2f;
+        float alpha = Mathf.Lerp(minAlpha, 1f, alphaRatio) * baseColor.a;
         
-        Debug.Log("Water should now be crisp and pixel-perfect!");
+        return new Color(baseColor.r, baseColor.g, baseColor.b, alpha);
     }
-    
-    /// <summary>
-    /// Updates which cells are solid based on physics colliders
-    /// </summary>
     public void UpdateSolidCells()
     {
-        // Track which cells changed from solid to empty
         bool[,] oldSolid = new bool[gridWidth, gridHeight];
         System.Array.Copy(solid, oldSolid, solid.Length);
         
@@ -364,11 +565,9 @@ public class CellularLiquidSimulation : MonoBehaviour
                 Vector2 worldPos = GridToWorld(x, y);
                 Collider2D hit = Physics2D.OverlapCircle(worldPos, physicsCheckRadius, solidLayer);
                 solid[x, y] = (hit != null);
-                
-                // If this cell was solid but is now empty, activate water in it
+
                 if (oldSolid[x, y] && !solid[x, y])
                 {
-                    // If there's trapped water here, mark it as active so it flows out
                     if (water[x, y] > 0f)
                     {
                         activeCells.Add(new Vector2Int(x, y));
@@ -377,13 +576,8 @@ public class CellularLiquidSimulation : MonoBehaviour
                 }
             }
         }
-        
-        Debug.Log("Updated solid cells from physics colliders");
     }
-    
-    /// <summary>
-    /// Removes all water cells with very little water (cleanup stuck/dark water)
-    /// </summary>
+
     [ContextMenu("Clean Up Stuck Water")]
     public void CleanUpStuckWater()
     {
@@ -393,7 +587,6 @@ public class CellularLiquidSimulation : MonoBehaviour
         {
             for (int y = 0; y < gridHeight; y++)
             {
-                // Remove water below minimum threshold
                 if (water[x, y] > 0f && water[x, y] < minWaterTransfer * 2f)
                 {
                     water[x, y] = 0f;
@@ -404,10 +597,7 @@ public class CellularLiquidSimulation : MonoBehaviour
         
         Debug.Log($"Cleaned up {cleanedCells} stuck water cells");
     }
-    
-    /// <summary>
-    /// Spawns water at a world position
-    /// </summary>
+
     public void SpawnWater(Vector2 worldPosition, float amount)
     {
         Vector2Int gridPos = WorldToGrid(worldPosition);
@@ -418,15 +608,10 @@ public class CellularLiquidSimulation : MonoBehaviour
             settled[gridPos.x, gridPos.y] = false;
         }
     }
-    
-    /// <summary>
-    /// Spawns water in a region (for cuts)
-    /// </summary>
+
     public void SpawnWaterInRegion(List<Vector2> worldVertices, float totalAmount)
     {
         if (worldVertices == null || worldVertices.Count < 3) return;
-        
-        // Get bounding box
         Vector2 min = worldVertices[0];
         Vector2 max = worldVertices[0];
         
@@ -437,13 +622,11 @@ public class CellularLiquidSimulation : MonoBehaviour
             max.x = Mathf.Max(max.x, v.x);
             max.y = Mathf.Max(max.y, v.y);
         }
-        
-        // Convert to grid coordinates
+
         Vector2Int gridMin = WorldToGrid(min);
         Vector2Int gridMax = WorldToGrid(max);
-        
-        // Count valid cells in region
         int validCells = 0;
+
         for (int x = gridMin.x; x <= gridMax.x; x++)
         {
             for (int y = gridMin.y; y <= gridMax.y; y++)
@@ -460,8 +643,6 @@ public class CellularLiquidSimulation : MonoBehaviour
         }
         
         if (validCells == 0) return;
-        
-        // Distribute water across cells
         float waterPerCell = totalAmount / validCells;
         
         for (int x = gridMin.x; x <= gridMax.x; x++)
@@ -480,13 +661,9 @@ public class CellularLiquidSimulation : MonoBehaviour
                 }
             }
         }
-        
-        Debug.Log($"Spawned water in region: {validCells} cells, {waterPerCell:F3} per cell");
+
     }
-    
-    /// <summary>
-    /// Removes water at a world position (for displacement)
-    /// </summary>
+
     public void RemoveWater(Vector2 worldPosition, float amount)
     {
         Vector2Int gridPos = WorldToGrid(worldPosition);
@@ -496,10 +673,7 @@ public class CellularLiquidSimulation : MonoBehaviour
             activeCells.Add(gridPos);
         }
     }
-    
-    /// <summary>
-    /// Removes all water
-    /// </summary>
+
     public void ClearAllWater()
     {
         System.Array.Clear(water, 0, water.Length);
@@ -507,7 +681,6 @@ public class CellularLiquidSimulation : MonoBehaviour
         System.Array.Clear(settled, 0, settled.Length);
         activeCells.Clear();
         UpdateWaterTexture();
-        Debug.Log("All water cleared");
     }
     
     bool IsPointInPolygon(Vector2 point, List<Vector2> polygon)
@@ -527,8 +700,7 @@ public class CellularLiquidSimulation : MonoBehaviour
         
         return inside;
     }
-    
-    // Public getters
+
     public int ActiveCellCount => activeCells.Count;
     public int TotalWaterCells
     {
@@ -545,10 +717,7 @@ public class CellularLiquidSimulation : MonoBehaviour
             return count;
         }
     }
-    
-    /// <summary>
-    /// Gets the amount of water in a specific cell
-    /// </summary>
+
     public float GetWater(int x, int y)
     {
         if (IsValidCell(x, y))
@@ -557,10 +726,7 @@ public class CellularLiquidSimulation : MonoBehaviour
         }
         return 0f;
     }
-    
-    /// <summary>
-    /// Sets the amount of water in a specific cell (careful - use SpawnWater/RemoveWater instead usually)
-    /// </summary>
+
     public void SetWater(int x, int y, float amount)
     {
         if (IsValidCell(x, y) && !solid[x, y])
@@ -573,10 +739,7 @@ public class CellularLiquidSimulation : MonoBehaviour
             }
         }
     }
-    
-    /// <summary>
-    /// Converts world position to grid coordinates (public for external use)
-    /// </summary>
+
     public Vector2Int WorldToGrid(Vector2 worldPos)
     {
         Vector2 localPos = worldPos - gridOrigin;
@@ -584,18 +747,12 @@ public class CellularLiquidSimulation : MonoBehaviour
         int y = Mathf.FloorToInt(localPos.y / cellSize);
         return new Vector2Int(x, y);
     }
-    
-    /// <summary>
-    /// Converts grid coordinates to world position (public for external use)
-    /// </summary>
+
     public Vector2 GridToWorld(int x, int y)
     {
         return gridOrigin + new Vector2((x + 0.5f) * cellSize, (y + 0.5f) * cellSize);
     }
-    
-    /// <summary>
-    /// Checks if grid coordinates are valid (public for external use)
-    /// </summary>
+
     public bool IsValidCell(int x, int y)
     {
         return x >= 0 && x < gridWidth && y >= 0 && y < gridHeight;
@@ -604,265 +761,175 @@ public class CellularLiquidSimulation : MonoBehaviour
     void OnDrawGizmos()
     {
         if (!Application.isPlaying) return;
-        
-        // Draw grid bounds
         Gizmos.color = Color.cyan;
         Vector2 gridSize = new Vector2(gridWidth * cellSize, gridHeight * cellSize);
         Gizmos.DrawWireCube(gridOrigin + gridSize * 0.5f, gridSize);
     }
-    
-    // ==================== WATER DISPLACEMENT SYSTEM ====================
-    
-    /// <summary>
-    /// Updates water displacement for all moving rigidbodies
-    /// </summary>
-void UpdateDisplacement()
-{
-    // Find all rigidbodies in the scene
-    Rigidbody2D[] allRigidbodies = FindObjectsOfType<Rigidbody2D>();
-    
-    int rigidbodiesToCheck = 0;
-    int rigidbodiesTooSlow = 0;
-    int rigidbodiesTooDisplaced = 0;
-    
-    // Update tracked rigidbodies
-    Dictionary<Rigidbody2D, Vector2> currentRigidbodies = new Dictionary<Rigidbody2D, Vector2>();
-    
-    foreach (Rigidbody2D rb in allRigidbodies)
-    {
-        rigidbodiesToCheck++;
-        
-        // Skip if not on displacement layer
-        int layerMask = 1 << rb.gameObject.layer;
-        if ((layerMask & displacementLayers) == 0)
-        {
-            continue;
-        }
-        
-        // Skip static rigidbodies
-        if (rb.bodyType == RigidbodyType2D.Static)
-        {
-            continue;
-        }
-        
-        Vector2 currentPos = rb.position;
-        Vector2 velocity = rb.linearVelocity;
-        float speed = velocity.magnitude;
-        
-        // Check if moving fast enough
-        if (speed < minDisplacementVelocity)
-        {
-            rigidbodiesTooSlow++;
-            continue;
-        }
-        
-        // Get previous position
-        Vector2 previousPos = currentPos;
-        if (trackedRigidbodies.ContainsKey(rb))
-        {
-            previousPos = trackedRigidbodies[rb];
-        }
-        
-        // Displace water if object is in water
-        bool displaced = DisplaceWaterForRigidbody(rb, currentPos, previousPos, velocity, speed);
-        
-        if (displaced)
-        {
-            rigidbodiesTooDisplaced++;
-        }
-        
-        // Track this rigidbody
-        currentRigidbodies[rb] = currentPos;
-    }
-    
-    // Debug info (only log if something happened)
-    if (rigidbodiesTooDisplaced > 0)
-    {
-        Debug.Log($"[Displacement] Checked {rigidbodiesToCheck} RBs, {rigidbodiesTooDisplaced} displaced water, {rigidbodiesTooSlow} too slow");
-    }
-    
-    // Update tracking dictionary
-    trackedRigidbodies = currentRigidbodies;
-}
 
     
-bool DisplaceWaterForRigidbody(Rigidbody2D rb, Vector2 currentPos, Vector2 previousPos, Vector2 velocity, float speed)
-{
-    Collider2D col = rb.GetComponent<Collider2D>();
-    if (col == null) return false;
-    
-    Bounds bounds = col.bounds;
-    
-    // Calculate displacement amount based on object size
-    float objectArea = bounds.size.x * bounds.size.y;
-    float baseDisplacement = objectArea * displacementStrength;
-    
-    // Velocity multiplier (faster = more splash)
-    float velocityMultiplier = 1f + (speed / 10f) * pushForce;
-    velocityMultiplier = Mathf.Clamp(velocityMultiplier, 1f, 5f);
-    
-    float totalDisplacement = baseDisplacement * velocityMultiplier;
-    
-    // Find all water cells that overlap with this object
-    List<Vector2Int> overlappingCells = new List<Vector2Int>();
-    float totalWaterInCells = 0f;
-    
-    Vector2 min = bounds.min;
-    Vector2 max = bounds.max;
-    
-    // Sample points within the object's bounds
-    // INCREASED sampling for better detection
-    int samplesX = Mathf.Max(3, Mathf.CeilToInt(bounds.size.x / (cellSize * 1.5f)));
-    int samplesY = Mathf.Max(3, Mathf.CeilToInt(bounds.size.y / (cellSize * 1.5f)));
-    
-    for (int ix = 0; ix < samplesX; ix++)
+    void UpdateDisplacement()
     {
-        for (int iy = 0; iy < samplesY; iy++)
+        Rigidbody2D[] allRigidbodies = FindObjectsOfType<Rigidbody2D>();
+        
+        Dictionary<Rigidbody2D, Vector2> currentRigidbodies = new Dictionary<Rigidbody2D, Vector2>();
+        
+        foreach (Rigidbody2D rb in allRigidbodies)
         {
-            float t_x = ix / (float)(samplesX - 1);
-            float t_y = iy / (float)(samplesY - 1);
+            int layerMask = 1 << rb.gameObject.layer;
+            if ((layerMask & displacementLayers) == 0) continue;
+            if (rb.bodyType == RigidbodyType2D.Static) continue;
             
-            Vector2 samplePoint = new Vector2(
-                Mathf.Lerp(min.x, max.x, t_x),
-                Mathf.Lerp(min.y, max.y, t_y)
-            );
+            Vector2 currentPos = rb.position;
+            Vector2 velocity = rb.linearVelocity;
+            float speed = velocity.magnitude;
             
-            // Check if this point is actually inside the collider
-            if (col.OverlapPoint(samplePoint))
+            if (speed < minDisplacementVelocity) continue;
+            
+            Vector2 previousPos = currentPos;
+            if (trackedRigidbodies.ContainsKey(rb))
             {
-                Vector2Int gridPos = WorldToGrid(samplePoint);
+                previousPos = trackedRigidbodies[rb];
+            }
+            
+            DisplaceWaterForRigidbody(rb, currentPos, previousPos, velocity, speed);
+            currentRigidbodies[rb] = currentPos;
+        }
+        
+        trackedRigidbodies = currentRigidbodies;
+    }
+    
+    bool DisplaceWaterForRigidbody(Rigidbody2D rb, Vector2 currentPos, Vector2 previousPos, Vector2 velocity, float speed)
+    {
+        Collider2D col = rb.GetComponent<Collider2D>();
+        if (col == null) return false;
+        
+        Bounds bounds = col.bounds;
+        float objectArea = bounds.size.x * bounds.size.y;
+        float baseDisplacement = objectArea * displacementStrength;
+        
+        float velocityMultiplier = 1f + (speed / 10f) * pushForce;
+        velocityMultiplier = Mathf.Clamp(velocityMultiplier, 1f, 5f);
+        
+        List<Vector2Int> overlappingCells = new List<Vector2Int>();
+        float totalWaterInCells = 0f;
+        
+        Vector2 min = bounds.min;
+        Vector2 max = bounds.max;
+        
+        int samplesX = Mathf.Max(3, Mathf.CeilToInt(bounds.size.x / (cellSize * 1.5f)));
+        int samplesY = Mathf.Max(3, Mathf.CeilToInt(bounds.size.y / (cellSize * 1.5f)));
+        
+        for (int ix = 0; ix < samplesX; ix++)
+        {
+            for (int iy = 0; iy < samplesY; iy++)
+            {
+                float t_x = ix / (float)(samplesX - 1);
+                float t_y = iy / (float)(samplesY - 1);
                 
-                if (IsValidCell(gridPos.x, gridPos.y) && !solid[gridPos.x, gridPos.y])
+                Vector2 samplePoint = new Vector2(
+                    Mathf.Lerp(min.x, max.x, t_x),
+                    Mathf.Lerp(min.y, max.y, t_y)
+                );
+                
+                if (col.OverlapPoint(samplePoint))
                 {
-                    float waterHere = water[gridPos.x, gridPos.y];
-                    if (waterHere > minWaterTransfer)
+                    Vector2Int gridPos = WorldToGrid(samplePoint);
+                    
+                    if (IsValidCell(gridPos.x, gridPos.y) && !solid[gridPos.x, gridPos.y])
                     {
-                        if (!overlappingCells.Contains(gridPos))
+                        float waterHere = water[gridPos.x, gridPos.y];
+                        if (waterHere > minWaterTransfer)
                         {
-                            overlappingCells.Add(gridPos);
-                            totalWaterInCells += waterHere;
+                            if (!overlappingCells.Contains(gridPos))
+                            {
+                                overlappingCells.Add(gridPos);
+                                totalWaterInCells += waterHere;
+                            }
                         }
                     }
                 }
             }
         }
-    }
-    
-    if (overlappingCells.Count == 0)
-    {
-        return false; // No water to displace
-    }
-    
-    Debug.Log($"[Displacement] {rb.name} displacing {overlappingCells.Count} cells, velocity: {velocity.magnitude:F2}, speed mult: {velocityMultiplier:F2}");
-    
-    // Remove water from overlapping cells (displacement)
-    float waterPerCell = totalWaterInCells / overlappingCells.Count;
-    float waterToDisplace = 0f;
-    
-    foreach (Vector2Int cell in overlappingCells)
-    {
-        // Remove MORE water for better effect (85% instead of 70%)
-        float waterToRemove = Mathf.Min(waterPerCell * 0.85f, water[cell.x, cell.y]);
-        water[cell.x, cell.y] -= waterToRemove;
-        waterToDisplace += waterToRemove;
         
-        if (water[cell.x, cell.y] < minWaterTransfer)
+        if (overlappingCells.Count == 0) return false;
+        
+        float waterPerCell = totalWaterInCells / overlappingCells.Count;
+        float waterToDisplace = 0f;
+        
+        foreach (Vector2Int cell in overlappingCells)
         {
-            water[cell.x, cell.y] = 0f;
-        }
-    }
-    
-    // Push water to surrounding cells (upward and sideways)
-    if (waterToDisplace > minWaterTransfer)
-    {
-        PushWaterAround(overlappingCells, waterToDisplace, velocity);
-    }
-    
-    return true;
-}
-
-/// <summary>
-/// Pushes displaced water to surrounding cells
-/// </summary>
-void PushWaterAround(List<Vector2Int> sourceCells, float waterAmount, Vector2 velocity)
-{
-    // Calculate push direction (upward + velocity direction)
-    // INCREASED upward bias for more dramatic splash
-    Vector2 pushDirection = Vector2.up * 3f + velocity.normalized;
-    pushDirection.Normalize();
-    
-    // Find cells to push water into
-    HashSet<Vector2Int> targetCells = new HashSet<Vector2Int>();
-    
-    foreach (Vector2Int sourceCell in sourceCells)
-    {
-        // Add cells above (water splashes up) - INCREASED range
-        for (int dy = 1; dy <= 5; dy++) // Push up to 5 cells up (was 3)
-        {
-            Vector2Int above = new Vector2Int(sourceCell.x, sourceCell.y + dy);
-            if (IsValidCell(above.x, above.y) && !solid[above.x, above.y])
+            float waterToRemove = Mathf.Min(waterPerCell * 0.85f, water[cell.x, cell.y]);
+            water[cell.x, cell.y] -= waterToRemove;
+            waterToDisplace += waterToRemove;
+            
+            if (water[cell.x, cell.y] < minWaterTransfer)
             {
-                targetCells.Add(above);
+                water[cell.x, cell.y] = 0f;
             }
         }
         
-        // Push sideways based on velocity direction - INCREASED range
-        int sidewaysDir = velocity.x > 0.1f ? 1 : (velocity.x < -0.1f ? -1 : 0);
-        if (sidewaysDir != 0)
+        if (waterToDisplace > minWaterTransfer)
         {
-            for (int dx = 0; dx <= 3; dx++) // Was 2
+            PushWaterAround(overlappingCells, waterToDisplace, velocity);
+        }
+        
+        return true;
+    }
+    
+    void PushWaterAround(List<Vector2Int> sourceCells, float waterAmount, Vector2 velocity)
+    {
+        HashSet<Vector2Int> targetCells = new HashSet<Vector2Int>();
+        
+        foreach (Vector2Int sourceCell in sourceCells)
+        {
+            for (int dy = 1; dy <= 5; dy++)
             {
-                for (int dy = 0; dy <= 2; dy++) // Was 1
+                Vector2Int above = new Vector2Int(sourceCell.x, sourceCell.y + dy);
+                if (IsValidCell(above.x, above.y) && !solid[above.x, above.y])
                 {
-                    Vector2Int side = new Vector2Int(
-                        sourceCell.x + sidewaysDir * dx, 
-                        sourceCell.y + dy
-                    );
-                    if (IsValidCell(side.x, side.y) && !solid[side.x, side.y])
+                    targetCells.Add(above);
+                }
+            }
+            
+            int sidewaysDir = velocity.x > 0.1f ? 1 : (velocity.x < -0.1f ? -1 : 0);
+            if (sidewaysDir != 0)
+            {
+                for (int dx = 0; dx <= 3; dx++)
+                {
+                    for (int dy = 0; dy <= 2; dy++)
                     {
-                        targetCells.Add(side);
+                        Vector2Int side = new Vector2Int(sourceCell.x + sidewaysDir * dx, sourceCell.y + dy);
+                        if (IsValidCell(side.x, side.y) && !solid[side.x, side.y])
+                        {
+                            targetCells.Add(side);
+                        }
+                    }
+                }
+                
+                for (int dx = 0; dx <= 2; dx++)
+                {
+                    Vector2Int opposite = new Vector2Int(sourceCell.x - sidewaysDir * dx, sourceCell.y);
+                    if (IsValidCell(opposite.x, opposite.y) && !solid[opposite.x, opposite.y])
+                    {
+                        targetCells.Add(opposite);
                     }
                 }
             }
         }
         
-        // Also push in opposite direction for splash effect
-        if (sidewaysDir != 0)
+        if (targetCells.Count == 0) return;
+        
+        float waterPerTarget = waterAmount / targetCells.Count;
+        
+        foreach (Vector2Int targetCell in targetCells)
         {
-            for (int dx = 0; dx <= 2; dx++)
-            {
-                Vector2Int opposite = new Vector2Int(
-                    sourceCell.x - sidewaysDir * dx,
-                    sourceCell.y
-                );
-                if (IsValidCell(opposite.x, opposite.y) && !solid[opposite.x, opposite.y])
-                {
-                    targetCells.Add(opposite);
-                }
-            }
+            water[targetCell.x, targetCell.y] = Mathf.Min(
+                water[targetCell.x, targetCell.y] + waterPerTarget, 
+                maxWaterPerCell
+            );
+            
+            activeCells.Add(targetCell);
+            settled[targetCell.x, targetCell.y] = false;
         }
     }
-    
-    if (targetCells.Count == 0) return;
-    
-    Debug.Log($"[Displacement] Pushing {waterAmount:F2} water to {targetCells.Count} cells");
-    
-    // Distribute water to target cells
-    float waterPerTarget = waterAmount / targetCells.Count;
-    
-    foreach (Vector2Int targetCell in targetCells)
-    {
-        water[targetCell.x, targetCell.y] = Mathf.Min(
-            water[targetCell.x, targetCell.y] + waterPerTarget, 
-            maxWaterPerCell
-        );
-        
-        // Mark as active for simulation
-        activeCells.Add(targetCell);
-        settled[targetCell.x, targetCell.y] = false;
-    }
-}
-
-    
-    // ==================== END WATER DISPLACEMENT SYSTEM ====================
 }
