@@ -136,5 +136,6 @@ public static class Pixelation
                 current_segment.Clear();
             }
         }
+        return segments;
     }
 }
