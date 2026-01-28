@@ -107,42 +107,13 @@ public class WaterSpawner : MonoBehaviour
         
         switch (spawnPattern)
         {
-            case SpawnPattern.Single:
-                SpawnSingle(centerCell);
-                break;
-            case SpawnPattern.Line:
-                SpawnLine(centerCell);
-                break;
+
             case SpawnPattern.Circle:
                 SpawnCircle(centerCell);
                 break;
-            case SpawnPattern.Stream:
-                SpawnStream(centerCell);
-                break;
         }
     }
-    
-    private void SpawnSingle(Vector2Int centerCell)
-    {
-        if (liquidSimulation.IsValidCell(centerCell.x, centerCell.y))
-        {
-            float currentWater = liquidSimulation.GetWater(centerCell.x, centerCell.y);
-            liquidSimulation.SetWater(centerCell.x, centerCell.y, currentWater + waterAmount);
-        }
-    }
-    
-    private void SpawnLine(Vector2Int centerCell)
-    {
-        for (int y = 0; y < spawnRadius; y++)
-        {
-            int cellY = centerCell.y + y;
-            if (liquidSimulation.IsValidCell(centerCell.x, cellY))
-            {
-                float currentWater = liquidSimulation.GetWater(centerCell.x, cellY);
-                liquidSimulation.SetWater(centerCell.x, cellY, currentWater + waterAmount);
-            }
-        }
-    }
+
     
     private void SpawnCircle(Vector2Int centerCell)
     {
@@ -164,35 +135,7 @@ public class WaterSpawner : MonoBehaviour
             }
         }
     }
-    
-    private void SpawnStream(Vector2Int centerCell)
-    {
-        if (liquidSimulation.IsValidCell(centerCell.x, centerCell.y))
-        {
-            float currentWater = liquidSimulation.GetWater(centerCell.x, centerCell.y);
-            liquidSimulation.SetWater(centerCell.x, centerCell.y, currentWater + waterAmount);
-        }
 
-        if (spawnRadius > 1)
-        {
-            float sideAmount = waterAmount * 0.3f;
-            
-            for (int x = 1; x <= Mathf.Min(2, spawnRadius - 1); x++)
-            {
-                if (liquidSimulation.IsValidCell(centerCell.x - x, centerCell.y))
-                {
-                    float currentWater = liquidSimulation.GetWater(centerCell.x - x, centerCell.y);
-                    liquidSimulation.SetWater(centerCell.x - x, centerCell.y, currentWater + sideAmount / x);
-                }
-
-                if (liquidSimulation.IsValidCell(centerCell.x + x, centerCell.y))
-                {
-                    float currentWater = liquidSimulation.GetWater(centerCell.x + x, centerCell.y);
-                    liquidSimulation.SetWater(centerCell.x + x, centerCell.y, currentWater + sideAmount / x);
-                }
-            }
-        }
-    }
 
     [ContextMenu("Start Spawning")]
     public void StartSpawning()
@@ -282,16 +225,7 @@ public class WaterSpawner : MonoBehaviour
         
         switch (spawnPattern)
         {
-            case SpawnPattern.Single:
-                DrawCellGizmo(centerCell, estimatedCellSize, useSimulation);
-                break;
-                
-            case SpawnPattern.Line:
-                for (int y = 0; y < spawnRadius; y++)
-                {
-                    DrawCellGizmo(new Vector2Int(centerCell.x, centerCell.y + y), estimatedCellSize, useSimulation);
-                }
-                break;
+
                 
             case SpawnPattern.Circle:
                 for (int x = -spawnRadius; x <= spawnRadius; x++)
@@ -302,21 +236,6 @@ public class WaterSpawner : MonoBehaviour
                         {
                             DrawCellGizmo(new Vector2Int(centerCell.x + x, centerCell.y + y), estimatedCellSize, useSimulation);
                         }
-                    }
-                }
-                break;
-                
-            case SpawnPattern.Stream:
-                Gizmos.color = Color.cyan;
-                DrawCellGizmo(centerCell, estimatedCellSize, useSimulation);
-
-                Gizmos.color = new Color(0, 1f, 1f, 0.5f);
-                if (spawnRadius > 1)
-                {
-                    for (int x = 1; x <= Mathf.Min(2, spawnRadius - 1); x++)
-                    {
-                        DrawCellGizmo(new Vector2Int(centerCell.x - x, centerCell.y), estimatedCellSize, useSimulation);
-                        DrawCellGizmo(new Vector2Int(centerCell.x + x, centerCell.y), estimatedCellSize, useSimulation);
                     }
                 }
                 break;

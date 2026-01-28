@@ -481,7 +481,7 @@ GameObject SpawnLargeCutPiece(List<Vector2> cutOffShape, float targetArea, Vecto
         physicsManager.ApplyPhysicsMaterial(largePiece);
     }
     
-    if (FindObjectOfType<RealisticWindManager>() != null)
+/*     if (FindObjectOfType<RealisticWindManager>() != null)
     {
         WindAffected windAffected = largePiece.AddComponent<WindAffected>();
         
@@ -500,7 +500,7 @@ GameObject SpawnLargeCutPiece(List<Vector2> cutOffShape, float targetArea, Vecto
         {
             windAffected.dragCoefficient = Mathf.Lerp(0.8f, 1.5f, cutProfile.strength);
         }
-    }
+    } */
     
     StartCoroutine(EnablePhysicsAfterDelay(largePiece, rb, polyCollider, 0.1f));
     
