@@ -16,8 +16,6 @@ public class PixelatedCutRenderer : MonoBehaviour
         }
         
         List<Vector2> pixelatedVertices = new List<Vector2>();
-        int entryIndex = FindClosestVertexIndex(vertices, entryPoint);
-        int exitIndex = FindClosestVertexIndex(vertices, exitPoint);
 
         for (int i = 0; i < vertices.Count; i++)
         {
@@ -33,7 +31,10 @@ public class PixelatedCutRenderer : MonoBehaviour
             if (isCutEdge)
             {
                 List<Vector2> pixelatedEdge = PixelateCutLine(start, next);
-                pixelatedVertices.AddRange(pixelatedEdge);
+                for (int j = 0; j < pixelatedEdge.Count - 1; j++)
+                {
+                    pixelatedVertices.Add(pixelatedEdge[j]);
+                }
             }
             else
             {
@@ -44,98 +45,76 @@ public class PixelatedCutRenderer : MonoBehaviour
         return pixelatedVertices;
     }
 
-    int FindClosestVertexIndex(List<Vector2> vertices, Vector2 point)
-    {
-        int closestIndex = 0;
-        float closestDistance = Vector2.Distance(vertices[0], point);
-        
-        for (int i = 1; i < vertices.Count; i++)
-        {
-            float distance = Vector2.Distance(vertices[i], point);
-            if (distance < closestDistance)
-            {
-                closestDistance = distance;
-                closestIndex = i;
-            }
-        }
-        
-        return closestIndex;
-    }
-
     List<Vector2> PixelateCutLine(Vector2 start, Vector2 end)
     {
         List<Vector2> pixels = new List<Vector2>();
 
-        Vector2 current = SnapToPixelGrid(start);
-        Vector2 target = SnapToPixelGrid(end);
+        Vector2 gridStart = SnapToPixelGrid(start);
+        Vector2 gridEnd = SnapToPixelGrid(end);
 
-        pixels.Add(current);
+        pixels.Add(gridStart);
+        float deltaX = gridEnd.x - gridStart.x;
+        float deltaY = gridEnd.y - gridStart.y;
+        float xDirection = deltaX >= 0 ? pixelSize : -pixelSize;
+        float yDirection = deltaY >= 0 ? pixelSize : -pixelSize;
 
-        int stepsX = Mathf.RoundToInt(Mathf.Abs(target.x - current.x) / pixelSize);
-        int stepsY = Mathf.RoundToInt(Mathf.Abs(target.y - current.y) / pixelSize);
+        bool xDominant = Mathf.Abs(deltaX) >= Mathf.Abs(deltaY);
 
-        if (stepsX == 0 && stepsY == 0)
+        if (xDominant)
         {
-            return pixels;
-        }
+            int steps = Mathf.FloorToInt(Mathf.Abs(deltaX) / pixelSize);
+            float x = gridStart.x;
+            float y = gridStart.y;
+            float param = 2 * Mathf.Abs(deltaY) - Mathf.Abs(deltaX);
 
-        int dirX = target.x > current.x ? 1 : -1;
-        int dirY = target.y > current.y ? 1 : -1;
-
-        float x = current.x;
-        float y = current.y;
-
-        float dx = Mathf.Abs(target.x - current.x);
-        float dy = Mathf.Abs(target.y - current.y);
-
-        bool xDominant = dx >= dy;
-        float error = (xDominant ? dx : dy) / 2f;
-
-        int steps = Mathf.Max(stepsX, stepsY);
-
-        Vector2 previousPoint = current;
-
-        for (int i = 0; i < steps; i++)
-        {
-            Vector2 beforeMove = new Vector2(x, y);
-            
-            if (xDominant)
+            for (int i = 0; i < steps; i++)
             {
-                x += dirX * pixelSize;
-                error -= dy;
-                if (error < 0)
+                if (param < 0)
                 {
-                    Vector2 cornerPoint = new Vector2(x, y);
-                    pixels.Add(cornerPoint);
-                    previousPoint = cornerPoint;
-                    
-                    y += dirY * pixelSize;
-                    error += dx;
+                    x += xDirection;
+                    pixels.Add(new Vector2(x, y));
+                    param += 2 * Mathf.Abs(deltaY);
+                }
+                else
+                {
+                    x += xDirection;
+                    pixels.Add(new Vector2(x, y));
+                    y += yDirection;
+                    pixels.Add(new Vector2(x, y));
+                    param += 2 * Mathf.Abs(deltaY) - 2 * Mathf.Abs(deltaX);
                 }
             }
-            else
+        }
+        else
+        {
+            int steps = Mathf.FloorToInt(Mathf.Abs(deltaY) / pixelSize);
+            float x = gridStart.x;
+            float y = gridStart.y;
+            float param = 2 * Mathf.Abs(deltaX) - Mathf.Abs(deltaY);
+
+            for (int i = 0; i < steps; i++)
             {
-                y += dirY * pixelSize;
-                error -= dx;
-                if (error < 0)
+                if (param < 0)
                 {
-                    Vector2 cornerPoint = new Vector2(x, y);
-                    pixels.Add(cornerPoint);
-                    previousPoint = cornerPoint;
-                    
-                    x += dirX * pixelSize;
-                    error += dy;
+                    y += yDirection;
+                    pixels.Add(new Vector2(x, y));
+                    param += 2 * Mathf.Abs(deltaX);
+                }
+                else
+                {
+                    y += yDirection;
+                    pixels.Add(new Vector2(x, y));
+                    x += xDirection;
+                    pixels.Add(new Vector2(x, y));
+                    param += 2 * Mathf.Abs(deltaX) - 2 * Mathf.Abs(deltaY);
                 }
             }
-
-            Vector2 newPoint = new Vector2(x, y);
-            pixels.Add(newPoint);
-
-            // Check if this creates a diagonal line
-            Vector2 diff = newPoint - previousPoint;
-            bool isDiagonal = Mathf.Abs(diff.x) > 0.001f && Mathf.Abs(diff.y) > 0.001f;
-            previousPoint = newPoint;
         }
+        if (pixels[pixels.Count - 1] != gridEnd)
+        {
+            pixels.Add(gridEnd);
+        }
+
         if (showDebugPixels)
             DebugDrawPixels(pixels);
 
@@ -145,8 +124,8 @@ public class PixelatedCutRenderer : MonoBehaviour
     Vector2 SnapToPixelGrid(Vector2 point)
     {
         return new Vector2(
-            Mathf.Round(point.x / pixelSize) * pixelSize,
-            Mathf.Round(point.y / pixelSize) * pixelSize
+            Mathf.Floor(point.x / pixelSize) * pixelSize,
+            Mathf.Floor(point.y / pixelSize) * pixelSize
         );
     }
 

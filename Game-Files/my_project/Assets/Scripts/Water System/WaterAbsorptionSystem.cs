@@ -15,10 +15,8 @@ public class WaterAbsorptionSystem : MonoBehaviour
     [Tooltip("Water cells absorbed per second for each tag")]
     [SerializeField] private List<MaterialAbsorption> materialAbsorptions = new List<MaterialAbsorption>()
     {
-        new MaterialAbsorption("Sponge", 5.0f),
-        new MaterialAbsorption("Cloth", 3.0f),
+
         new MaterialAbsorption("Wood", 1.0f),
-        new MaterialAbsorption("Paper", 4.0f),
         new MaterialAbsorption("Dirt", 2.0f),
         new MaterialAbsorption("Sand", 1.5f),
     };
