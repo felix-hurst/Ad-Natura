@@ -1,5 +1,8 @@
+using NUnit.Framework;
+using UnityEditor.ShaderGraph;
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.UIElements;
 
 public class PlayerController : MonoBehaviour
 {
@@ -29,6 +32,11 @@ public enum ToolType
 [SerializeField] private GameObject explosiveBallPrefab;
 [SerializeField] private float throwForce = 10f;
 [SerializeField] private float ballSpawnOffset = 1.0f;
+
+    [Header("Wall Climb")]
+    [SerializeField] private float slowFall = 1f;
+
+
     private Animator anim;
     
     private Rigidbody2D rb;
@@ -42,6 +50,8 @@ public enum ToolType
     private float currentRunningBuffer = 0f;
 
     private float velocityX;
+
+    private bool canClimb = false;
 
     void Start()
     {
@@ -67,7 +77,7 @@ public enum ToolType
         }
 
         Vector2 checkPosition = (Vector2)groundCheck.position + groundCheckOffset;
-        isGrounded = Physics2D.OverlapBox(checkPosition, groundCheckSize, groundCheckAngle, groundLayer);
+        //isGrounded = Physics2D.OverlapBox(checkPosition, groundCheckSize, groundCheckAngle, groundLayer);
         //velocityY = rb.linearVelocity.y;
 
         if (!isRunning)
@@ -143,8 +153,10 @@ public enum ToolType
             return;
         }
 
-        if (isGrounded && value.isPressed)
+        if ((isGrounded || canClimb) && value.isPressed)
         {
+            if (canClimb)
+                Debug.Log("Wall Jump");
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
             isGrounded = false;
         }
@@ -167,5 +179,49 @@ public enum ToolType
         {
             raycast.Cleanup();
         }
+    }
+
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        // Check if player is grounded based on collision normals
+        // If at least one collision normal is within a certain range of
+        // upward angles, the player must be standing on top of something
+        isGrounded = false;
+        ContactPoint2D[] contacts = new ContactPoint2D[collision.contactCount];
+        collision.GetContacts(contacts);
+        foreach (ContactPoint2D contact in contacts)
+        {
+            Vector3 norm = contact.normal;
+            if (norm.y > 0)
+            {
+                float angle = Mathf.Atan(norm.y / Mathf.Abs(norm.x)) * Mathf.Rad2Deg;
+                if (angle >= 80 && angle <= 90)
+                {
+                    isGrounded = true;
+                }
+            }
+        }
+
+        // Colliding with ground, walls, etc.
+        // Check if overlapping with slime mold
+        // If so, enable wall climbing
+        if (collision.gameObject.name == "SlimeDisplay")
+        {
+            // Bool to allow jumping while on wall
+            // Slow fall
+            canClimb = true;
+            if (rb.linearVelocityY < slowFall)
+                rb.linearVelocityY = slowFall;
+        }
+        else
+        {
+            canClimb = false;
+        }
+    }
+
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        isGrounded = false;
+        canClimb = false;
     }
 }
