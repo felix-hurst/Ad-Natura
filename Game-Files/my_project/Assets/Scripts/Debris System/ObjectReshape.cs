@@ -68,6 +68,7 @@ public class ObjectReshape : MonoBehaviour
     {
         if (highlightedShape == null || highlightedShape.Count < 3)
         {
+            Debug.LogWarning("[ObjectReshape] Invalid highlighted shape");
             return null;
         }
 
@@ -86,39 +87,30 @@ public class ObjectReshape : MonoBehaviour
 
         Vector2[] corners = GetCurrentShapeVertices();
 
-        List<Vector2> shape1 = new List<Vector2>();
-        List<Vector2> shape2 = new List<Vector2>();
-
-        shape1.Add(entryPoint);
-        shape1.Add(exitPoint);
-        shape2.Add(entryPoint);
-        shape2.Add(exitPoint);
-
-        for (int i = 0; i < corners.Length; i++)
+        if (corners.Length < 3)
         {
-            Vector2 corner = corners[i];
-            float side = GetSideOfLine(entryPoint, exitPoint, corner);
-
-            if (side > 0)
-            {
-                shape1.Add(corner);
-            }
-            else
-            {
-                shape2.Add(corner);
-            }
+            Debug.LogWarning("[ObjectReshape] Invalid polygon shape");
+            return null;
         }
 
-        shape1 = SortVerticesClockwise(shape1);
-        shape2 = SortVerticesClockwise(shape2);
+        List<Vector2> shape1, shape2;
+        SplitPolygonByLine(corners, entryPoint, exitPoint, out shape1, out shape2);
+
+        if (shape1.Count < 3 || shape2.Count < 3)
+        {
+            Debug.LogWarning("[ObjectReshape] Split resulted in invalid shapes");
+            return null;
+        }
 
         bool shape1IsHighlighted = ShapesMatch(shape1, highlightedShape);
         List<Vector2> remainingShape = shape1IsHighlighted ? shape2 : shape1;
         List<Vector2> cutOffShape = shape1IsHighlighted ? shape1 : shape2;
 
-        CutProfile cutProfile = CutProfileExtensions.GetCutProfileForObject(gameObject);
+        Debug.Log($"[ObjectReshape] Cut off shape has {cutOffShape.Count} vertices, remaining has {remainingShape.Count} vertices");
 
+        CutProfile cutProfile = CutProfileExtensions.GetCutProfileForObject(gameObject);
         CutProfileManager profileManager = FindObjectOfType<CutProfileManager>();
+        
         if (profileManager != null && cutProfile.strength > 0.01f)
         {
             remainingShape = profileManager.ApplyIrregularCut(remainingShape, entryPoint, exitPoint, cutProfile);
@@ -143,6 +135,224 @@ public class ObjectReshape : MonoBehaviour
         return cutOffShapePixelated;
     }
 
+
+    void SplitPolygonByLine(Vector2[] vertices, Vector2 lineStart, Vector2 lineEnd,
+                            out List<Vector2> shape1, out List<Vector2> shape2)
+    {
+        shape1 = new List<Vector2>();
+        shape2 = new List<Vector2>();
+
+        if (vertices.Length < 3)
+        {
+            return;
+        }
+
+        List<IntersectionData> intersections = new List<IntersectionData>();
+
+        for (int i = 0; i < vertices.Length; i++)
+        {
+            int nextI = (i + 1) % vertices.Length;
+            Vector2 v1 = vertices[i];
+            Vector2 v2 = vertices[nextI];
+
+            Vector2 intersection;
+            float tValue;
+            if (LineIntersectionWithT(lineStart, lineEnd, v1, v2, out intersection, out tValue))
+            {
+                IntersectionData data = new IntersectionData
+                {
+                    point = intersection,
+                    edgeIndex = i,
+                    tValue = tValue
+                };
+                intersections.Add(data);
+            }
+        }
+
+        if (intersections.Count != 2)
+        {
+            Debug.LogWarning($"[ObjectReshape] Found {intersections.Count} intersections, expected 2");
+            FallbackSplit(vertices, lineStart, lineEnd, out shape1, out shape2);
+            return;
+        }
+
+        intersections.Sort((a, b) => a.tValue.CompareTo(b.tValue));
+
+        IntersectionData int1 = intersections[0];
+        IntersectionData int2 = intersections[1];
+
+        BuildSplitShapes(vertices, int1, int2, out shape1, out shape2);
+
+        shape1 = CleanupPolygon(shape1);
+        shape2 = CleanupPolygon(shape2);
+        
+        shape1 = EnsureClockwiseWinding(shape1);
+        shape2 = EnsureClockwiseWinding(shape2);
+    }
+
+    void BuildSplitShapes(Vector2[] vertices, IntersectionData int1, IntersectionData int2,
+                        out List<Vector2> shape1, out List<Vector2> shape2)
+    {
+        shape1 = new List<Vector2>();
+        shape2 = new List<Vector2>();
+
+        int edge1 = int1.edgeIndex;
+        int edge2 = int2.edgeIndex;
+
+        shape1.Add(int1.point);
+
+        int current = (edge1 + 1) % vertices.Length;
+        while (current != (edge2 + 1) % vertices.Length)
+        {
+            shape1.Add(vertices[current]);
+            current = (current + 1) % vertices.Length;
+        }
+
+        shape1.Add(int2.point);
+
+        shape2.Add(int2.point);
+
+        current = (edge2 + 1) % vertices.Length;
+        while (current != (edge1 + 1) % vertices.Length)
+        {
+            shape2.Add(vertices[current]);
+            current = (current + 1) % vertices.Length;
+        }
+
+        shape2.Add(int1.point);
+    }
+
+    bool LineIntersectionWithT(Vector2 p1, Vector2 p2, Vector2 p3, Vector2 p4,
+                            out Vector2 intersection, out float tValue)
+    {
+        intersection = Vector2.zero;
+        tValue = 0f;
+
+        float x1 = p1.x, y1 = p1.y;
+        float x2 = p2.x, y2 = p2.y;
+        float x3 = p3.x, y3 = p3.y;
+        float x4 = p4.x, y4 = p4.y;
+
+        float denom = (x1 - x2) * (y3 - y4) - (y1 - y2) * (x3 - x4);
+
+        if (Mathf.Abs(denom) < 0.0001f)
+        {
+            return false;
+        }
+
+        float t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / denom;
+        float u = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3)) / denom;
+
+        if (u >= 0f && u <= 1f)
+        {
+            intersection.x = x1 + t * (x2 - x1);
+            intersection.y = y1 + t * (y2 - y1);
+            tValue = t;
+            return true;
+        }
+
+        return false;
+    }
+
+    void FallbackSplit(Vector2[] vertices, Vector2 lineStart, Vector2 lineEnd,
+                    out List<Vector2> shape1, out List<Vector2> shape2)
+    {
+        shape1 = new List<Vector2>();
+        shape2 = new List<Vector2>();
+
+        shape1.Add(lineStart);
+        shape1.Add(lineEnd);
+        shape2.Add(lineStart);
+        shape2.Add(lineEnd);
+
+        for (int i = 0; i < vertices.Length; i++)
+        {
+            Vector2 vertex = vertices[i];
+            float side = GetSideOfLine(lineStart, lineEnd, vertex);
+
+            if (side > 0)
+            {
+                shape1.Add(vertex);
+            }
+            else
+            {
+                shape2.Add(vertex);
+            }
+        }
+
+        shape1 = SortVerticesClockwise(shape1);
+        shape2 = SortVerticesClockwise(shape2);
+    }
+
+    List<Vector2> CleanupPolygon(List<Vector2> vertices)
+    {
+        if (vertices.Count < 3) return vertices;
+
+        List<Vector2> cleaned = new List<Vector2>();
+        float minDistance = 0.05f;
+
+        for (int i = 0; i < vertices.Count; i++)
+        {
+            Vector2 vertex = vertices[i];
+            bool isDuplicate = false;
+
+            foreach (Vector2 existing in cleaned)
+            {
+                if (Vector2.Distance(vertex, existing) < minDistance)
+                {
+                    isDuplicate = true;
+                    break;
+                }
+            }
+
+            if (!isDuplicate)
+            {
+                cleaned.Add(vertex);
+            }
+        }
+
+        if (cleaned.Count > 2)
+        {
+            if (Vector2.Distance(cleaned[0], cleaned[cleaned.Count - 1]) < minDistance)
+            {
+                cleaned.RemoveAt(cleaned.Count - 1);
+            }
+        }
+
+        if (cleaned.Count < 3)
+        {
+            return vertices;
+        }
+
+        return cleaned;
+    }
+
+    List<Vector2> EnsureClockwiseWinding(List<Vector2> vertices)
+    {
+        if (vertices.Count < 3) return vertices;
+
+        float signedArea = 0f;
+        for (int i = 0; i < vertices.Count; i++)
+        {
+            int j = (i + 1) % vertices.Count;
+            signedArea += (vertices[j].x - vertices[i].x) * (vertices[j].y + vertices[i].y);
+        }
+
+        if (signedArea < 0)
+        {
+            vertices.Reverse();
+        }
+
+        return vertices;
+    }
+
+    private class IntersectionData
+    {
+        public Vector2 point;
+        public int edgeIndex;
+        public float tValue;
+    }
+
     Vector2[] GetCurrentShapeVertices()
     {
         PolygonCollider2D polyCol = GetComponent<PolygonCollider2D>();
@@ -159,27 +369,39 @@ public class ObjectReshape : MonoBehaviour
         return GetWorldCorners();
     }
 
-    void ApplyNewShape(List<Vector2> visualShape, List<Vector2> colliderShape)
+public void ApplyNewShape(List<Vector2> visualShape, List<Vector2> colliderShape)
+{
+    if (visualShape.Count < 3 || colliderShape.Count < 3)
     {
-        if (visualShape.Count < 3 || colliderShape.Count < 3) return;
-
-        List<Vector2> localVisualVertices = new List<Vector2>();
-        foreach (Vector2 worldVertex in visualShape)
-        {
-            Vector2 localVertex = transform.InverseTransformPoint(worldVertex);
-            localVisualVertices.Add(localVertex);
-        }
-
-        List<Vector2> localColliderVertices = new List<Vector2>();
-        foreach (Vector2 worldVertex in colliderShape)
-        {
-            Vector2 localVertex = transform.InverseTransformPoint(worldVertex);
-            localColliderVertices.Add(localVertex);
-        }
-
-        UpdateCollider(useSmoothCollider ? localColliderVertices : localVisualVertices);
-        UpdateVisualMesh(localVisualVertices);
+        Debug.LogWarning($"[ObjectReshape] Invalid shapes - Visual: {visualShape.Count}, Collider: {colliderShape.Count}");
+        return;
     }
+
+    List<Vector2> localVisualVertices = new List<Vector2>();
+    foreach (Vector2 worldVertex in visualShape)
+    {
+        Vector2 localVertex = transform.InverseTransformPoint(worldVertex);
+        localVisualVertices.Add(localVertex);
+    }
+
+    List<Vector2> localColliderVertices = new List<Vector2>();
+    foreach (Vector2 worldVertex in colliderShape)
+    {
+        Vector2 localVertex = transform.InverseTransformPoint(worldVertex);
+        localColliderVertices.Add(localVertex);
+    }
+
+    Debug.Log($"[ObjectReshape] Applying new shape to {gameObject.name} - Visual: {localVisualVertices.Count} verts, Collider: {localColliderVertices.Count} verts");
+
+    UpdateCollider(useSmoothCollider ? localColliderVertices : localVisualVertices);
+
+    UpdateVisualMesh(localVisualVertices);
+}
+
+public void ApplyNewShape(List<Vector2> worldShape)
+{
+    ApplyNewShape(worldShape, worldShape);
+}
 
     void UpdateCollider(List<Vector2> localVertices)
     {
@@ -203,6 +425,7 @@ public class ObjectReshape : MonoBehaviour
     {
         if (localVertices == null || localVertices.Count < 3)
         {
+            Debug.LogWarning($"[ObjectReshape] Invalid vertices for visual mesh on {gameObject.name}");
             return;
         }
 
@@ -226,8 +449,6 @@ public class ObjectReshape : MonoBehaviour
             {
                 textureToUse = spriteRenderer.sprite.texture;
             }
-
-            spriteRenderer.enabled = false;
         }
 
         if (textureToUse == null)
@@ -239,12 +460,26 @@ public class ObjectReshape : MonoBehaviour
             }
         }
 
+        MeshRenderer[] oldMeshRenderers = GetComponentsInChildren<MeshRenderer>();
+        foreach (MeshRenderer mr in oldMeshRenderers)
+        {
+            if (mr.gameObject != gameObject)
+            {
+                Destroy(mr.gameObject);
+            }
+        }
+
         foreach (Transform child in transform)
         {
-            if (child.name.Contains("_CutMesh"))
+            if (child.name.Contains("_CutMesh") || child.name.Contains("_Mesh"))
             {
                 Destroy(child.gameObject);
             }
+        }
+
+        if (spriteRenderer != null)
+        {
+            spriteRenderer.enabled = false;
         }
 
         GameObject meshObject = new GameObject($"{gameObject.name}_CutMesh");
@@ -277,7 +512,12 @@ public class ObjectReshape : MonoBehaviour
 
         if (shader == null)
         {
+            Debug.LogError($"[ObjectReshape] Could not find shader for {gameObject.name}");
             Destroy(meshObject);
+            if (spriteRenderer != null)
+            {
+                spriteRenderer.enabled = true;
+            }
             return;
         }
 
@@ -299,20 +539,33 @@ public class ObjectReshape : MonoBehaviour
         try
         {
             Mesh mesh = CreateMeshFromPolygon(localVertices);
-            if (mesh != null && newMeshFilter != null)
+            if (mesh != null && mesh.vertexCount > 0)
             {
                 newMeshFilter.mesh = mesh;
                 meshFilter = newMeshFilter;
                 meshRenderer = newMeshRenderer;
+                
+                Debug.Log($"[ObjectReshape] Successfully created visual mesh for {gameObject.name} with {localVertices.Count} vertices");
             }
             else
             {
+                Debug.LogError($"[ObjectReshape] Mesh creation failed for {gameObject.name}");
                 Destroy(meshObject);
+                // Re-enable sprite renderer as fallback
+                if (spriteRenderer != null)
+                {
+                    spriteRenderer.enabled = true;
+                }
             }
         }
         catch (System.Exception e)
         {
+            Debug.LogError($"[ObjectReshape] Exception creating mesh for {gameObject.name}: {e.Message}");
             Destroy(meshObject);
+            if (spriteRenderer != null)
+            {
+                spriteRenderer.enabled = true;
+            }
         }
     }
 
@@ -320,6 +573,7 @@ public class ObjectReshape : MonoBehaviour
     {
         if (vertices == null || vertices.Count < 3)
         {
+            Debug.LogWarning($"[ObjectReshape] Invalid vertex count: {(vertices == null ? "null" : vertices.Count.ToString())}");
             return null;
         }
 
@@ -333,6 +587,12 @@ public class ObjectReshape : MonoBehaviour
         }
 
         int[] triangles = TriangulatePolygon(vertices);
+
+        if (triangles == null || triangles.Length < 3)
+        {
+            Debug.LogError($"[ObjectReshape] Triangulation failed - got {(triangles == null ? 0 : triangles.Length)} triangle indices");
+            return null;
+        }
 
         Vector2[] uvs = new Vector2[vertices.Count];
         Bounds bounds = GetLocalBounds(vertices);
@@ -360,6 +620,8 @@ public class ObjectReshape : MonoBehaviour
         mesh.uv = uvs;
         mesh.RecalculateNormals();
         mesh.RecalculateBounds();
+
+        Debug.Log($"[ObjectReshape] Created mesh with {vertices3D.Length} vertices and {triangles.Length / 3} triangles");
 
         return mesh;
     }
