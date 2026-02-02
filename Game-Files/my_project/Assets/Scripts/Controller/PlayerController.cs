@@ -98,7 +98,7 @@ public class PlayerController : MonoBehaviour
         }
 
         Vector2 checkPosition = (Vector2)groundCheck.position + groundCheckOffset;
-        isGrounded = Physics2D.OverlapBox(checkPosition, groundCheckSize, groundCheckAngle, groundLayer);
+        //isGrounded = Physics2D.OverlapBox(checkPosition, groundCheckSize, groundCheckAngle, groundLayer);
 
         // Check for slime surface interaction
         CheckSlimeSurface();
@@ -263,4 +263,32 @@ public class PlayerController : MonoBehaviour
             raycast.Cleanup();
         }
     }
+
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        // Check if player is grounded based on collision normals
+        // If at least one collision normal is within a certain range of
+        // upward angles, the player must be standing on top of something
+        isGrounded = false;
+        ContactPoint2D[] contacts = new ContactPoint2D[collision.contactCount];
+        collision.GetContacts(contacts);
+        foreach (ContactPoint2D contact in contacts)
+        {
+            Vector3 norm = contact.normal;
+            if (norm.y > 0)
+            {
+                float angle = Mathf.Atan(norm.y / Mathf.Abs(norm.x)) * Mathf.Rad2Deg;
+                if (angle >= 80 && angle <= 90)
+                {
+                    isGrounded = true;
+                }
+            }
+        }
+    }
+
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        isGrounded = false;
+    }
+
 }
