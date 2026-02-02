@@ -25,6 +25,9 @@ public enum ToolType
 [Header("Tool Selection")]
 [SerializeField] private ToolType currentTool = ToolType.CuttingTool;
 
+[Header("Cutting Tool Settings")]
+[SerializeField] private float maxCuttingRange = 10f; 
+
 [Header("Explosive Ball Settings")]
 [SerializeField] private GameObject explosiveBallPrefab;
 [SerializeField] private float throwForce = 10f;
@@ -104,7 +107,7 @@ public enum ToolType
 
             if (isAiming)
             {
-                raycast.SetCurrentTool(currentTool, explosiveBallPrefab, throwForce, ballSpawnOffset);
+                raycast.SetCurrentTool(currentTool, explosiveBallPrefab, throwForce, ballSpawnOffset, maxCuttingRange);
             }
         }
     }
