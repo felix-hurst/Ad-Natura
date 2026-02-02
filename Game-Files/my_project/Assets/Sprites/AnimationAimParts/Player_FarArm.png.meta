@@ -1,10 +1,13 @@
 fileFormatVersion: 2
-guid: 41dbd3fc6da7ce142b113cdc9694e99c
+guid: 4c57edb6920a4eb4bb6a6584de844435
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 2015654205072063566
-    second: Background_Level1_0
+      213: -5184143935963818828
+    second: Player_FarArm_0
+  - first:
+      213: 7954666301590100087
+    second: Player_FarArm_1
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -37,7 +40,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -46,12 +49,12 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 2
+  spriteMode: 1
   spriteExtrude: 1
   spriteMeshType: 1
-  alignment: 0
-  spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  alignment: 9
+  spritePivot: {x: 0.3320413, y: 0.6745855}
+  spritePixelsToUnits: 25
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -100,23 +103,45 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Background_Level1_0
+      name: Player_FarArm_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 0
-        width: 775
-        height: 336
+        y: 30
+        width: 18
+        height: 16
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: e4cb753f1da09fb10800000000000000
-      internalID: 2015654205072063566
+      spriteID: 4b491689e883e08b0800000000000000
+      internalID: -5184143935963818828
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Player_FarArm_1
+      rect:
+        serializedVersion: 2
+        x: 15
+        y: 32
+        width: 40
+        height: 15
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 7785c0d0bd6a46e60800000000000000
+      internalID: 7954666301590100087
       vertices: []
       indices: 
       edges: []
@@ -125,8 +150,8 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
-    internalID: 0
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 1537655665
     vertices: []
     indices: 
     edges: []
@@ -135,7 +160,8 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Background_Level1_0: 2015654205072063566
+      Player_FarArm_0: -5184143935963818828
+      Player_FarArm_1: 7954666301590100087
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -1,10 +1,19 @@
 fileFormatVersion: 2
-guid: 41dbd3fc6da7ce142b113cdc9694e99c
+guid: 46b0977f86ba1594096f1c6fc97c3a8f
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 2015654205072063566
-    second: Background_Level1_0
+      213: 934423386287884896
+    second: Player_ArmGun_0
+  - first:
+      213: 239609688553400141
+    second: Player_ArmGun_1
+  - first:
+      213: 5941654360473569250
+    second: Player_ArmGun_2
+  - first:
+      213: 8184842659819636614
+    second: Player_ArmGun_3
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -37,7 +46,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 1
+    filterMode: 0
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -46,12 +55,12 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 2
+  spriteMode: 1
   spriteExtrude: 1
   spriteMeshType: 1
-  alignment: 0
-  spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 100
+  alignment: 9
+  spritePivot: {x: 0.11886304, y: 0.72052914}
+  spritePixelsToUnits: 25
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -100,23 +109,89 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Background_Level1_0
+      name: Player_ArmGun_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 0
-        width: 775
-        height: 336
+        y: 20
+        width: 55
+        height: 37
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: e4cb753f1da09fb10800000000000000
-      internalID: 2015654205072063566
+      spriteID: 06ac1897e1db7fc00800000000000000
+      internalID: 934423386287884896
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Player_ArmGun_1
+      rect:
+        serializedVersion: 2
+        x: 1
+        y: 9
+        width: 20
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: d47a7f20eb3435300800000000000000
+      internalID: 239609688553400141
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Player_ArmGun_2
+      rect:
+        serializedVersion: 2
+        x: 4
+        y: 0
+        width: 8
+        height: 12
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 2e78d2e192ff47250800000000000000
+      internalID: 5941654360473569250
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: Player_ArmGun_3
+      rect:
+        serializedVersion: 2
+        x: 15
+        y: 0
+        width: 7
+        height: 10
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: -1
+      bones: []
+      spriteID: 6874301b807669170800000000000000
+      internalID: 8184842659819636614
       vertices: []
       indices: 
       edges: []
@@ -125,8 +200,8 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
-    internalID: 0
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 1537655665
     vertices: []
     indices: 
     edges: []
@@ -135,7 +210,10 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Background_Level1_0: 2015654205072063566
+      Player_ArmGun_0: 934423386287884896
+      Player_ArmGun_1: 239609688553400141
+      Player_ArmGun_2: 5941654360473569250
+      Player_ArmGun_3: 8184842659819636614
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
