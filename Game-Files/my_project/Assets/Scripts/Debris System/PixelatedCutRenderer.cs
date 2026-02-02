@@ -4,7 +4,7 @@ using System.Collections.Generic;
 public class PixelatedCutRenderer : MonoBehaviour
 {
     [Header("Pixel Settings")]
-    [SerializeField] private float pixelSize = 0.05f;
+    [SerializeField] private float pixelSize = 0.1f;
     [SerializeField] private bool enablePixelation = true;
     [SerializeField] private bool showDebugPixels = true;
 

@@ -49,6 +49,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float throwForce = 10f;
     [SerializeField] private float ballSpawnOffset = 1.0f;
 
+    [Header("Cutting Tool Settings")]
+    [SerializeField] private float maxCuttingRange = 10f;
+
     private Animator anim;
     private Rigidbody2D rb;
     private bool isGrounded;
@@ -134,7 +137,7 @@ public class PlayerController : MonoBehaviour
 
             if (isAiming)
             {
-                raycast.SetCurrentTool(currentTool, explosiveBallPrefab, throwForce, ballSpawnOffset);
+                raycast.SetCurrentTool(currentTool, explosiveBallPrefab, throwForce, ballSpawnOffset, maxCuttingRange);
             }
         }
     }
