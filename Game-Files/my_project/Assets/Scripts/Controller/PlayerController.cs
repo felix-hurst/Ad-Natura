@@ -16,8 +16,8 @@ public class PlayerController : MonoBehaviour
 
     [Header("References")]
     [SerializeField] private Camera gameCamera;
-    [SerializeField] private GameObject classicModel;
-    [SerializeField] private GameObject aimingModel;
+    [SerializeField] private GameObject classicModel; //classic model uses the animators, and is all non-aiming behaviour
+    [SerializeField] private GameObject aimingModel; //aiming model is the model that the aiming section manipulates
     [SerializeField] private Transform nearArmGun;
     [SerializeField] private Transform farArm;
 
@@ -39,7 +39,7 @@ public class PlayerController : MonoBehaviour
 
     public enum ToolType { CuttingTool, ExplosiveBall }
     private ToolType currentTool = ToolType.CuttingTool;
-    private int currentToolIndex = -1;
+    private int currentToolIndex = -1; //-1 = unequipped, 0 = shovel, 1 = shooter, 2 unassigned yet.
 
     void Start()
     {
@@ -59,7 +59,8 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
-        // Physics-based Running Logic
+        // Physics-based Running Logic. The player must stop running for a very short time to be idle again
+        // This is to prevent going left -> right -> left -> right and being idle between them
         velocityX = Mathf.Abs(rb.linearVelocity.x);
         if (velocityX > 0.1f)
         {
@@ -76,7 +77,7 @@ public class PlayerController : MonoBehaviour
         Vector2 checkPosition = (Vector2)groundCheck.position + groundCheckOffset;
         isGrounded = Physics2D.OverlapBox(checkPosition, groundCheckSize, groundCheckAngle, groundLayer);
 
-        // --- NEW: Force Aiming Off if not Grounded ---
+        //If the player is not grounded, force them to stop aiming
         if (isAiming && !isGrounded)
         {
             isAiming = false;
@@ -91,6 +92,7 @@ public class PlayerController : MonoBehaviour
 
         if (anim != null)
         {
+            //Set all necessary variables for animator
             anim.SetBool("isRunning", isRunning);
             anim.SetBool("isGrounded", isGrounded);
             anim.SetBool("isAiming", isAiming);
@@ -128,6 +130,7 @@ public class PlayerController : MonoBehaviour
         Debug.Log("Player switched to: " + currentTool.ToString());
     }
 
+    //When player looks left, flip the entire sprite
     private void HandleSpriteFlipping()
     {
         if (!isRunning)
@@ -153,12 +156,14 @@ public class PlayerController : MonoBehaviour
 
         if (isAiming)
         {
+            //Takes the mouse position and calculates the angle towards it for the near Arm (and Gun)
             Vector3 mousePos = gameCamera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
             Vector2 lookDir = (Vector2)mousePos - (Vector2)nearArmGun.position;
             float angle = Mathf.Atan2(lookDir.y, lookDir.x) * Mathf.Rad2Deg;
             float finalAngle = (transform.localScale.x < 0) ? angle + 180f : angle;
             nearArmGun.rotation = Quaternion.Euler(0, 0, finalAngle);
 
+            //Does the same as above but for the far arm
             if (farHandGrip != null)
             {
                 Vector2 shoulderToGrip = (Vector2)farHandGrip.position - (Vector2)farArm.position;
@@ -166,18 +171,21 @@ public class PlayerController : MonoBehaviour
                 float farAngle = Mathf.Atan2(shoulderToGrip.y, shoulderToGrip.x) * Mathf.Rad2Deg;
                 float finalFarAngle = (transform.localScale.x < 0) ? farAngle + 180f : farAngle;
                 farArm.rotation = Quaternion.Euler(0, 0, finalFarAngle);
+                //When not aiming perfectly left or right, gun will be closer/shorter to far arm, need to scale up/down
                 float stretchFactor = distance / armLength;
                 farArm.localScale = new Vector3(stretchFactor, 1f, 1f);
             }
         }
         else
         {
+            //Rotate both arms, and scale the far one so its always holding the gun
             nearArmGun.localRotation = Quaternion.identity;
             farArm.localRotation = Quaternion.identity;
             farArm.localScale = Vector3.one;
         }
     }
 
+    //Switch between classic model and aiming model based on if player is aiming
     private void HandleVisualSwitch()
     {
         if (classicModel == null || aimingModel == null) return;

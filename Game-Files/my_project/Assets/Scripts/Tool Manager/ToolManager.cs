@@ -13,14 +13,14 @@ public class ToolManager : MonoBehaviour
 
     [Header("Slot UI References")]
     [SerializeField] private Image[] slots;
-    [SerializeField] private CanvasGroup hudGroup; // Add a CanvasGroup for fading
+    [SerializeField] private CanvasGroup hudGroup;
 
     [Header("Visibility Settings")]
     [SerializeField] private float displayDuration = 2.0f;
     private float visibilityTimer;
     [SerializeField] private float activeScale = 1.2f;
 
-    private int currentToolIndex = -1; // -1 means nothing is selected
+    private int currentToolIndex = -1; // -1 means nothing is selected on initialization
 
     void Start()
     {
