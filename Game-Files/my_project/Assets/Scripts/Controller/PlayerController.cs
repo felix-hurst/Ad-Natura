@@ -1,6 +1,19 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+/// <summary>
+/// Properties for player movement when on slime surfaces.
+/// </summary>
+public struct SlimeMovementProperties
+{
+    public bool isOnSlime;
+    public float density;
+    public float speedMultiplier;
+    public float gravityMultiplier;
+    public bool canClimb;
+    public bool canWallStick;
+}
+
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement")]
@@ -190,24 +203,16 @@ public class PlayerController : MonoBehaviour
         bool pressingIntoRightWall = rightWall.collider != null && moveInput.x > 0.1f;
         isClimbingSlime = (pressingIntoLeftWall || pressingIntoRightWall) && !isGrounded;
 
-        // Get slime properties from SlimeTrailSurface if available
-        if (isOnSlimeSurface && SlimeTrailSurface.Instance != null)
+        // Default slime surface movement properties
+        currentSlimeProps = new SlimeMovementProperties
         {
-            currentSlimeProps = SlimeTrailSurface.Instance.GetMovementProperties(transform.position);
-        }
-        else
-        {
-            // Default properties when on slime trigger but no SlimeTrailSurface
-            currentSlimeProps = new SlimeMovementProperties
-            {
-                isOnSlime = isOnSlimeSurface,
-                density = 0.5f,
-                speedMultiplier = 0.7f,
-                gravityMultiplier = 0.3f,
-                canClimb = true,
-                canWallStick = true
-            };
-        }
+            isOnSlime = isOnSlimeSurface,
+            density = 0.5f,
+            speedMultiplier = 0.7f,
+            gravityMultiplier = 0.3f,
+            canClimb = true,
+            canWallStick = true
+        };
     }
 
     public void OnAim(InputValue value)

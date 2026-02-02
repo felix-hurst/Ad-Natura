@@ -245,6 +245,20 @@ public class Slime : MonoBehaviour
     }
 
     public Rect GetWorldBounds() => worldBounds;
+
+    public void SetWorldBounds(Rect bounds)
+    {
+        worldBounds = bounds;
+        // Update display transform if already initialized
+        if (targetRenderer != null)
+        {
+            float scaleX = worldBounds.width / (width / 100f);
+            float scaleY = worldBounds.height / (height / 100f);
+            targetRenderer.transform.localScale = new Vector3(scaleX, scaleY, 1f);
+            targetRenderer.transform.position = new Vector3(worldBounds.center.x, worldBounds.center.y, 0f);
+        }
+    }
+
     public Vector2Int GetSimulationResolution() => new Vector2Int(width, height);
 
     void OnDrawGizmos()

@@ -28,6 +28,20 @@ public class SlimeMoldManager : MonoBehaviour
     [Range(0.016f, 0.5f)]
     public float mapUpdateInterval = 0.066f; // ~15 updates/sec
 
+    [Header("Liquid Simulation Integration")]
+    [Tooltip("Reference to CellularLiquidSimulation (auto-finds if not set)")]
+    public CellularLiquidSimulation liquidSimulation;
+    [Tooltip("Enable attraction from liquid simulation water")]
+    public bool useLiquidSimulation = true;
+    [Tooltip("Auto-sync slime bounds to match liquid simulation area")]
+    public bool autoSyncBounds = true;
+    [Tooltip("Strength multiplier for liquid simulation water attraction")]
+    [Range(0f, 2f)]
+    public float liquidAttractionMultiplier = 1f;
+    [Tooltip("Minimum water amount to create attraction (filters noise)")]
+    [Range(0f, 0.5f)]
+    public float minWaterThreshold = 0.1f;
+
     private Slime slimeSimulation;
     private RenderTexture waterAttractionMap;
     private Texture2D waterAttractionTextureCPU;
@@ -42,6 +56,26 @@ public class SlimeMoldManager : MonoBehaviour
     {
         slimeSimulation = GetComponent<Slime>();
         worldBounds = slimeSimulation.GetWorldBounds();
+        resolution = slimeSimulation.GetSimulationResolution();
+
+        // Auto-find liquid simulation if not assigned
+        if (liquidSimulation == null && useLiquidSimulation)
+        {
+            liquidSimulation = FindObjectOfType<CellularLiquidSimulation>();
+        }
+
+        // Auto-sync bounds to match liquid simulation area
+        if (autoSyncBounds && liquidSimulation != null)
+        {
+            Rect liquidBounds = liquidSimulation.GetWorldBounds();
+            slimeSimulation.SetWorldBounds(liquidBounds);
+            worldBounds = liquidBounds;
+            #if UNITY_EDITOR
+            Debug.Log($"[SlimeMoldManager] Auto-synced bounds to liquid simulation: {liquidBounds}");
+            #endif
+        }
+
+        // Refresh resolution in case bounds changed
         resolution = slimeSimulation.GetSimulationResolution();
 
         CreateAttractionMap();
@@ -251,9 +285,61 @@ public class SlimeMoldManager : MonoBehaviour
             }
         }
 
+        // Sample from CellularLiquidSimulation if enabled
+        if (useLiquidSimulation && liquidSimulation != null)
+        {
+            SampleLiquidSimulation(w, h);
+        }
+
         waterAttractionTextureCPU.SetPixels(pixelBuffer);
         waterAttractionTextureCPU.Apply();
         Graphics.Blit(waterAttractionTextureCPU, waterAttractionMap);
+    }
+
+    private void SampleLiquidSimulation(int w, int h)
+    {
+        // Early exit if no water in simulation
+        if (liquidSimulation.TotalWaterCells == 0) return;
+
+        // Get liquid sim bounds and find overlapping region
+        Rect liquidBounds = liquidSimulation.GetWorldBounds();
+
+        // Calculate overlap in texture space
+        float overlapMinX = Mathf.Max(worldBounds.xMin, liquidBounds.xMin);
+        float overlapMaxX = Mathf.Min(worldBounds.xMax, liquidBounds.xMax);
+        float overlapMinY = Mathf.Max(worldBounds.yMin, liquidBounds.yMin);
+        float overlapMaxY = Mathf.Min(worldBounds.yMax, liquidBounds.yMax);
+
+        // No overlap - skip
+        if (overlapMinX >= overlapMaxX || overlapMinY >= overlapMaxY) return;
+
+        // Convert overlap to pixel coordinates
+        int startX = Mathf.Max(0, Mathf.FloorToInt((overlapMinX - worldBounds.x) / worldBounds.width * w));
+        int endX = Mathf.Min(w, Mathf.CeilToInt((overlapMaxX - worldBounds.x) / worldBounds.width * w));
+        int startY = Mathf.Max(0, Mathf.FloorToInt((overlapMinY - worldBounds.y) / worldBounds.height * h));
+        int endY = Mathf.Min(h, Mathf.CeilToInt((overlapMaxY - worldBounds.y) / worldBounds.height * h));
+
+        // Sample only the overlapping region
+        for (int y = startY; y < endY; y++)
+        {
+            for (int x = startX; x < endX; x++)
+            {
+                Vector2 worldPos = TextureToWorld(x, y);
+                Vector2Int gridPos = liquidSimulation.WorldToGrid(worldPos);
+
+                if (liquidSimulation.IsValidCell(gridPos.x, gridPos.y))
+                {
+                    float waterAmount = liquidSimulation.GetWater(gridPos.x, gridPos.y);
+
+                    if (waterAmount > minWaterThreshold)
+                    {
+                        float attraction = Mathf.Clamp01(waterAmount) * liquidAttractionMultiplier;
+                        int idx = y * w + x;
+                        pixelBuffer[idx].r = Mathf.Min(1f, pixelBuffer[idx].r + attraction);
+                    }
+                }
+            }
+        }
     }
 
     private Vector2 TextureToWorld(int x, int y)
