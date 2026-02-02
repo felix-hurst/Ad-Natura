@@ -7,6 +7,9 @@ public class RaycastReceiver : MonoBehaviour
     [Tooltip("Choose which piece to highlight after the cut")]
     public HighlightMode highlightMode = HighlightMode.Default;
     
+    [Tooltip("Enable/disable the shape outline when aiming with the cut tool")]
+    public bool showCutOutline = true;
+    
     public enum HighlightMode
     {
         Default,
@@ -27,6 +30,24 @@ public class RaycastReceiver : MonoBehaviour
     
     [Tooltip("Force range applied to large cut pieces")]
     public Vector2 largePieceForceRange = new Vector2(1f, 3f);
+    
+    [Header("Delayed Explosion Settings")]
+    [Tooltip("Enable automatic delayed explosions on cut pieces")]
+    public bool enableDelayedExplosions = true;
+    public float explosionDelay = 0.01f;
+    public int minRayCount = 4;
+    public int maxRayCount = 9;
+    public float explosionRayDistance = 5f;
+    public float minAngle = 0f;
+    public float maxAngle = 360f;
+    
+    [Header("Visual Feedback")]
+    public bool showExplosionRays = true;
+    public float rayVisualizationDuration = 0.5f;
+    public Color explosionRayColor = Color.yellow;
+    public bool showExplosionWarning = true;
+    public float warningDuration = 0.5f;
+    public Color warningColor = Color.red;
     
     private LineRenderer edgeLineRenderer;
     private SpriteRenderer spriteRenderer;
@@ -52,12 +73,16 @@ public class RaycastReceiver : MonoBehaviour
         }
     }
     
-    
 public void HighlightCutEdges(Vector2 entryPoint, Vector2 exitPoint)
 {
     ClearHighlight();
     
     Vector2[] corners = GetCurrentShapeVertices();
+    
+    if (corners.Length < 3)
+    {
+        return;
+    }
     
     List<Vector2> shape1, shape2;
     SplitPolygonByLine(corners, entryPoint, exitPoint, out shape1, out shape2);
@@ -66,10 +91,16 @@ public void HighlightCutEdges(Vector2 entryPoint, Vector2 exitPoint)
     {
         return;
     }
+
+    shape1 = EnsureClockwiseWinding(shape1);
+    shape2 = EnsureClockwiseWinding(shape2);
     
     currentHighlightedShape = ChooseShapeToHighlight(shape1, shape2);
-    
-    DrawShapeOutline(currentHighlightedShape);
+
+    if (showCutOutline)
+    {
+        DrawShapeOutline(currentHighlightedShape);
+    }
 }
 
 void SplitPolygonByLine(Vector2[] vertices, Vector2 lineStart, Vector2 lineEnd, 
@@ -82,9 +113,8 @@ void SplitPolygonByLine(Vector2[] vertices, Vector2 lineStart, Vector2 lineEnd,
     {
         return;
     }
-    
-    List<Vector2> intersections = new List<Vector2>();
-    List<int> intersectionEdges = new List<int>();
+
+    List<IntersectionData> intersections = new List<IntersectionData>();
     
     for (int i = 0; i < vertices.Length; i++)
     {
@@ -93,63 +123,73 @@ void SplitPolygonByLine(Vector2[] vertices, Vector2 lineStart, Vector2 lineEnd,
         Vector2 v2 = vertices[nextI];
         
         Vector2 intersection;
-        if (LineIntersection(lineStart, lineEnd, v1, v2, out intersection))
+        float tValue;
+        if (LineIntersectionWithT(lineStart, lineEnd, v1, v2, out intersection, out tValue))
         {
-            intersections.Add(intersection);
-            intersectionEdges.Add(i);
+            IntersectionData data = new IntersectionData
+            {
+                point = intersection,
+                edgeIndex = i,
+                tValue = tValue
+            };
+            intersections.Add(data);
         }
     }
-    
+
     if (intersections.Count != 2)
     {
         FallbackSplit(vertices, lineStart, lineEnd, out shape1, out shape2);
         return;
     }
+
+    intersections.Sort((a, b) => a.tValue.CompareTo(b.tValue));
     
-    Vector2 int1 = intersections[0];
-    Vector2 int2 = intersections[1];
-    int edge1 = intersectionEdges[0];
-    int edge2 = intersectionEdges[1];
-    
-    if (edge1 > edge2)
-    {
-        Vector2 tempV = int1;
-        int1 = int2;
-        int2 = tempV;
-        
-        int tempI = edge1;
-        edge1 = edge2;
-        edge2 = tempI;
-    }
-    
-    shape1.Add(int1);
-    for (int i = edge1 + 1; i <= edge2; i++)
-    {
-        shape1.Add(vertices[i]);
-    }
-    shape1.Add(int2);
-    
-    shape2.Add(int1);
-    
-    for (int i = edge2 + 1; i < vertices.Length; i++)
-    {
-        shape2.Add(vertices[i]);
-    }
-    
-    for (int i = 0; i <= edge1; i++)
-    {
-        shape2.Add(vertices[i]);
-    }
-    
-    shape2.Add(int2);
-    
+    IntersectionData int1 = intersections[0];
+    IntersectionData int2 = intersections[1];
+
+    BuildSplitShapes(vertices, int1, int2, out shape1, out shape2);
+
     shape1 = CleanupPolygon(shape1);
     shape2 = CleanupPolygon(shape2);
 }
 
-bool LineIntersection(Vector2 p1, Vector2 p2, Vector2 p3, Vector2 p4, out Vector2 intersection)
+void BuildSplitShapes(Vector2[] vertices, IntersectionData int1, IntersectionData int2,
+                      out List<Vector2> shape1, out List<Vector2> shape2)
+{
+    shape1 = new List<Vector2>();
+    shape2 = new List<Vector2>();
+    
+    int edge1 = int1.edgeIndex;
+    int edge2 = int2.edgeIndex;
+
+    shape1.Add(int1.point);
+    
+    int current = (edge1 + 1) % vertices.Length;
+    while (current != (edge2 + 1) % vertices.Length)
+    {
+        shape1.Add(vertices[current]);
+        current = (current + 1) % vertices.Length;
+    }
+    
+    shape1.Add(int2.point);
+
+    shape2.Add(int2.point);
+    
+    current = (edge2 + 1) % vertices.Length;
+    while (current != (edge1 + 1) % vertices.Length)
+    {
+        shape2.Add(vertices[current]);
+        current = (current + 1) % vertices.Length;
+    }
+    
+    shape2.Add(int1.point);
+}
+
+bool LineIntersectionWithT(Vector2 p1, Vector2 p2, Vector2 p3, Vector2 p4, 
+                           out Vector2 intersection, out float tValue)
 {
     intersection = Vector2.zero;
+    tValue = 0f;
     
     float x1 = p1.x, y1 = p1.y;
     float x2 = p2.x, y2 = p2.y;
@@ -165,15 +205,42 @@ bool LineIntersection(Vector2 p1, Vector2 p2, Vector2 p3, Vector2 p4, out Vector
     
     float t = ((x1 - x3) * (y3 - y4) - (y1 - y3) * (x3 - x4)) / denom;
     float u = -((x1 - x2) * (y1 - y3) - (y1 - y2) * (x1 - x3)) / denom;
-    
+
     if (u >= 0f && u <= 1f)
     {
         intersection.x = x1 + t * (x2 - x1);
         intersection.y = y1 + t * (y2 - y1);
+        tValue = t;
         return true;
     }
     
     return false;
+}
+
+List<Vector2> EnsureClockwiseWinding(List<Vector2> vertices)
+{
+    if (vertices.Count < 3) return vertices;
+
+    float signedArea = 0f;
+    for (int i = 0; i < vertices.Count; i++)
+    {
+        int j = (i + 1) % vertices.Count;
+        signedArea += (vertices[j].x - vertices[i].x) * (vertices[j].y + vertices[i].y);
+    }
+
+    if (signedArea < 0)
+    {
+        vertices.Reverse();
+    }
+    
+    return vertices;
+}
+
+private class IntersectionData
+{
+    public Vector2 point;
+    public int edgeIndex;
+    public float tValue;
 }
 
 void FallbackSplit(Vector2[] vertices, Vector2 lineStart, Vector2 lineEnd,
@@ -211,13 +278,13 @@ List<Vector2> CleanupPolygon(List<Vector2> vertices)
     if (vertices.Count < 3) return vertices;
     
     List<Vector2> cleaned = new List<Vector2>();
-    float minDistance = 0.01f;
+    float minDistance = 0.05f;
     
     for (int i = 0; i < vertices.Count; i++)
     {
         Vector2 vertex = vertices[i];
         bool isDuplicate = false;
-        
+
         foreach (Vector2 existing in cleaned)
         {
             if (Vector2.Distance(vertex, existing) < minDistance)
@@ -232,13 +299,18 @@ List<Vector2> CleanupPolygon(List<Vector2> vertices)
             cleaned.Add(vertex);
         }
     }
-    
+
     if (cleaned.Count > 2)
     {
         if (Vector2.Distance(cleaned[0], cleaned[cleaned.Count - 1]) < minDistance)
         {
             cleaned.RemoveAt(cleaned.Count - 1);
         }
+    }
+
+    if (cleaned.Count < 3)
+    {
+        return vertices; 
     }
     
     return cleaned;
@@ -306,6 +378,8 @@ private class IntersectionPoint
             }
         }
     }
+
+    
 
     public void ExecuteCutDirect(Vector2 entryPoint, Vector2 exitPoint, OnLargePieceSpawned onPieceSpawned = null)
     {
@@ -376,6 +450,8 @@ private class IntersectionPoint
             }
         }
     }
+
+    
 
 GameObject SpawnLargeCutPiece(List<Vector2> cutOffShape, float targetArea, Vector2 entryPoint, Vector2 exitPoint, string materialTag, CutProfile cutProfile)
 {
@@ -469,9 +545,24 @@ GameObject SpawnLargeCutPiece(List<Vector2> cutOffShape, float targetArea, Vecto
     
     RaycastReceiver pieceReceiver = largePiece.AddComponent<RaycastReceiver>();
     pieceReceiver.highlightMode = this.highlightMode;
+    pieceReceiver.showCutOutline = this.showCutOutline; 
     pieceReceiver.baseLargePieceRatio = this.baseLargePieceRatio;
     pieceReceiver.largePieceMassMultiplier = this.largePieceMassMultiplier;
     pieceReceiver.largePieceForceRange = this.largePieceForceRange;
+
+    pieceReceiver.enableDelayedExplosions = this.enableDelayedExplosions;
+    pieceReceiver.explosionDelay = this.explosionDelay;
+    pieceReceiver.minRayCount = this.minRayCount;
+    pieceReceiver.maxRayCount = this.maxRayCount;
+    pieceReceiver.explosionRayDistance = this.explosionRayDistance;
+    pieceReceiver.minAngle = this.minAngle;
+    pieceReceiver.maxAngle = this.maxAngle;
+    pieceReceiver.showExplosionRays = this.showExplosionRays;
+    pieceReceiver.rayVisualizationDuration = this.rayVisualizationDuration;
+    pieceReceiver.explosionRayColor = this.explosionRayColor;
+    pieceReceiver.showExplosionWarning = this.showExplosionWarning;
+    pieceReceiver.warningDuration = this.warningDuration;
+    pieceReceiver.warningColor = this.warningColor;
     
     DebrisSpawner pieceDebrisSpawner = largePiece.AddComponent<DebrisSpawner>();
     
@@ -481,28 +572,45 @@ GameObject SpawnLargeCutPiece(List<Vector2> cutOffShape, float targetArea, Vecto
         physicsManager.ApplyPhysicsMaterial(largePiece);
     }
     
-/*     if (FindObjectOfType<RealisticWindManager>() != null)
-    {
-        WindAffected windAffected = largePiece.AddComponent<WindAffected>();
-        
-        windAffected.SetWindMultiplier(0.6f);
-        windAffected.scaleWithMass = true;
-        windAffected.massScalingFactor = 1.0f;
-        windAffected.referenceMass = 1.0f;
-        
-        windAffected.applyWindTorque = true;
-        windAffected.torqueMultiplier = 0.5f;
-        
-        windAffected.limitVelocity = true;
-        windAffected.maxWindVelocity = 10f;
-        
-        if (cutProfile != null)
-        {
-            windAffected.dragCoefficient = Mathf.Lerp(0.8f, 1.5f, cutProfile.strength);
-        }
-    } */
+    // TODO: Uncomment when RealisticWindManager and WindAffected are implemented
+    // if (FindObjectOfType<RealisticWindManager>() != null)
+    // {
+    //     WindAffected windAffected = largePiece.AddComponent<WindAffected>();
+    //     windAffected.SetWindMultiplier(0.6f);
+    //     windAffected.scaleWithMass = true;
+    //     windAffected.massScalingFactor = 1.0f;
+    //     windAffected.referenceMass = 1.0f;
+    //     windAffected.applyWindTorque = true;
+    //     windAffected.torqueMultiplier = 0.5f;
+    //     windAffected.limitVelocity = true;
+    //     windAffected.maxWindVelocity = 10f;
+    //     if (cutProfile != null)
+    //     {
+    //         windAffected.dragCoefficient = Mathf.Lerp(0.8f, 1.5f, cutProfile.strength);
+    //     }
+    // }
     
     StartCoroutine(EnablePhysicsAfterDelay(largePiece, rb, polyCollider, 0.1f));
+
+    if (enableDelayedExplosions)
+    {
+        Vector2 pieceCenter = largePiece.transform.position;
+        StructuralCollapseManager.Instance.ScheduleSingleRoundExplosion(
+            largePiece,
+            pieceCenter,
+            explosionDelay,
+            minRayCount,
+            maxRayCount,
+            explosionRayDistance,
+            minAngle,
+            maxAngle,
+            showExplosionRays,
+            rayVisualizationDuration,
+            explosionRayColor,
+            showExplosionWarning,
+            warningDuration,
+            warningColor);
+    }
     
     return largePiece;
 }

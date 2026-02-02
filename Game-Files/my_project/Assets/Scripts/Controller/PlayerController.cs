@@ -1,11 +1,24 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 
+/// <summary>
+/// Properties for player movement when on slime surfaces.
+/// </summary>
+public struct SlimeMovementProperties
+{
+    public bool isOnSlime;
+    public float density;
+    public float speedMultiplier;
+    public float gravityMultiplier;
+    public bool canClimb;
+    public bool canWallStick;
+}
+
 public class PlayerController : MonoBehaviour
 {
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 5f;
-    [SerializeField] private float jumpForce = 10f;
+    [SerializeField] private float jumpForce = 3f;
 
     [Header("Ground Check")]
     [SerializeField] private Transform groundCheck;
@@ -13,6 +26,33 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float groundCheckAngle = 0f;
     [SerializeField] private Vector2 groundCheckOffset = new Vector2(0f, 0f);
     [SerializeField] private LayerMask groundLayer;
+
+    [Header("Slime Surface Interaction")]
+    [SerializeField] private bool enableSlimeClimbing = true;
+    [SerializeField] private float slimeClimbSpeed = 3f;
+    [SerializeField] private float slimeWallCheckDistance = 0.3f;
+    [SerializeField] private LayerMask slimeSurfaceLayer;
+
+    [SerializeField] private Camera gameCamera;
+
+    public enum ToolType
+    {
+        CuttingTool,
+        ExplosiveBall
+    }
+
+    [Header("Tool Selection")]
+    [SerializeField] private ToolType currentTool = ToolType.CuttingTool;
+
+    [Header("Explosive Ball Settings")]
+    [SerializeField] private GameObject explosiveBallPrefab;
+    [SerializeField] private float throwForce = 10f;
+    [SerializeField] private float ballSpawnOffset = 1.0f;
+
+    [Header("Cutting Tool Settings")]
+    [SerializeField] private float maxCuttingRange = 10f;
+
+    [SerializeField] private float jumpForce = 10f;
 
     [Header("References")]
     [SerializeField] private Camera gameCamera;
@@ -33,6 +73,12 @@ public class PlayerController : MonoBehaviour
     private Vector2 moveInput = Vector2.zero;
     private Raycast raycast;
 
+    // Slime surface state
+    private bool isOnSlimeSurface = false;
+    private bool isClimbingSlime = false;
+    private SlimeMovementProperties currentSlimeProps;
+    private float originalGravityScale;
+
     private float runningBufferTime = 0.1f;
     private float currentRunningBuffer = 0f;
     private float velocityX;
@@ -44,8 +90,9 @@ public class PlayerController : MonoBehaviour
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
+        originalGravityScale = rb.gravityScale;
 
-        // Setup Raycast component
+        // Create and initialize raycast system
         raycast = gameObject.AddComponent<Raycast>();
         raycast.Initialize(transform);
         raycast.SetCurrentTool(currentTool); // Set initial tool
@@ -75,7 +122,10 @@ public class PlayerController : MonoBehaviour
 
         // Ground Check
         Vector2 checkPosition = (Vector2)groundCheck.position + groundCheckOffset;
-        isGrounded = Physics2D.OverlapBox(checkPosition, groundCheckSize, groundCheckAngle, groundLayer);
+        //isGrounded = Physics2D.OverlapBox(checkPosition, groundCheckSize, groundCheckAngle, groundLayer);
+
+        // Check for slime surface interaction
+        CheckSlimeSurface();
 
         //If the player is not grounded, force them to stop aiming
         if (isAiming && !isGrounded)
@@ -166,6 +216,7 @@ public class PlayerController : MonoBehaviour
             //Does the same as above but for the far arm
             if (farHandGrip != null)
             {
+                raycast.SetCurrentTool(currentTool, explosiveBallPrefab, throwForce, ballSpawnOffset, maxCuttingRange);
                 Vector2 shoulderToGrip = (Vector2)farHandGrip.position - (Vector2)farArm.position;
                 float distance = shoulderToGrip.magnitude;
                 float farAngle = Mathf.Atan2(shoulderToGrip.y, shoulderToGrip.x) * Mathf.Rad2Deg;
@@ -185,6 +236,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+        // PREVENT MOVEMENT WHILE AIMING
     //Switch between classic model and aiming model based on if player is aiming
     private void HandleVisualSwitch()
     {
@@ -195,8 +247,76 @@ public class PlayerController : MonoBehaviour
 
     void FixedUpdate()
     {
+        // Calculate effective move speed (modified by slime if applicable)
+        float effectiveMoveSpeed = moveSpeed;
+        if (isOnSlimeSurface && currentSlimeProps.isOnSlime)
+        {
+            effectiveMoveSpeed *= currentSlimeProps.speedMultiplier;
+        }
+    
         if (isAiming && isGrounded)
             rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
+        }
+        else if (isClimbingSlime && enableSlimeClimbing)
+        {
+            // Climbing on slime wall - use vertical input for climbing
+            rb.linearVelocity = new Vector2(moveInput.x * effectiveMoveSpeed * 0.5f, moveInput.y * slimeClimbSpeed);
+        }
+        else
+        {
+            // Normal move player logic
+            rb.linearVelocity = new Vector2(moveInput.x * effectiveMoveSpeed, rb.linearVelocity.y);
+        }
+
+        // Apply gravity modification when on slime
+        if (isOnSlimeSurface && currentSlimeProps.isOnSlime)
+        {
+            rb.gravityScale = originalGravityScale * currentSlimeProps.gravityMultiplier;
+        }
+        else
+        {
+            rb.gravityScale = originalGravityScale;
+        }
+    }
+
+    /// <summary>
+    /// Checks if the player is on or near a slime surface.
+    /// </summary>
+    void CheckSlimeSurface()
+    {
+        if (!enableSlimeClimbing)
+        {
+            isOnSlimeSurface = false;
+            isClimbingSlime = false;
+            return;
+        }
+
+        // Check for slime surface below (ground)
+        Vector2 checkPosition = (Vector2)groundCheck.position + groundCheckOffset;
+        Collider2D slimeGround = Physics2D.OverlapBox(checkPosition, groundCheckSize, groundCheckAngle, slimeSurfaceLayer);
+
+        // Check for slime surface on walls (left and right)
+        Vector2 playerCenter = transform.position;
+        RaycastHit2D leftWall = Physics2D.Raycast(playerCenter, Vector2.left, slimeWallCheckDistance, slimeSurfaceLayer);
+        RaycastHit2D rightWall = Physics2D.Raycast(playerCenter, Vector2.right, slimeWallCheckDistance, slimeSurfaceLayer);
+
+        isOnSlimeSurface = (slimeGround != null) || (leftWall.collider != null) || (rightWall.collider != null);
+
+        // Check if climbing (on wall slime and pressing into the wall)
+        bool pressingIntoLeftWall = leftWall.collider != null && moveInput.x < -0.1f;
+        bool pressingIntoRightWall = rightWall.collider != null && moveInput.x > 0.1f;
+        isClimbingSlime = (pressingIntoLeftWall || pressingIntoRightWall) && !isGrounded;
+
+        // Default slime surface movement properties
+        currentSlimeProps = new SlimeMovementProperties
+        {
+            isOnSlime = isOnSlimeSurface,
+            density = 0.5f,
+            speedMultiplier = 0.7f,
+            gravityMultiplier = 0.3f,
+            canClimb = true,
+            canWallStick = true
+        };
         else
             rb.linearVelocity = new Vector2(moveInput.x * moveSpeed, rb.linearVelocity.y);
     }
@@ -220,5 +340,52 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    private void OnDrawGizmosSelected()
+    {
+        if (groundCheck != null)
+        {
+            Gizmos.color = Color.red;
+            Vector2 checkPosition = (Vector2)groundCheck.position + groundCheckOffset;
+
+            Gizmos.DrawWireCube(checkPosition, groundCheckSize);
+        }
+    }
+
+    void OnDestroy()
+    {
+        if (raycast != null)
+        {
+            raycast.Cleanup();
+        }
+    }
+
+    private void OnCollisionStay2D(Collision2D collision)
+    {
+        // Check if player is grounded based on collision normals
+        // If at least one collision normal is within a certain range of
+        // upward angles, the player must be standing on top of something
+        isGrounded = false;
+        ContactPoint2D[] contacts = new ContactPoint2D[collision.contactCount];
+        collision.GetContacts(contacts);
+        foreach (ContactPoint2D contact in contacts)
+        {
+            Vector3 norm = contact.normal;
+            if (norm.y > 0)
+            {
+                float angle = Mathf.Atan(norm.y / Mathf.Abs(norm.x)) * Mathf.Rad2Deg;
+                if (angle >= 80 && angle <= 90)
+                {
+                    isGrounded = true;
+                }
+            }
+        }
+    }
+
+    private void OnCollisionExit2D(Collision2D collision)
+    {
+        isGrounded = false;
+    }
+
+}
     void OnDestroy() { if (raycast != null) raycast.Cleanup(); }
 }

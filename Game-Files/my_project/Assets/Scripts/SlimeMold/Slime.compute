@@ -1,0 +1,203 @@
+#pragma kernel Update
+#pragma kernel Postprocess
+
+#define PI 3.141592
+
+int width;
+int height;
+uint numAgents;
+float moveSpeed;
+float deltaTime;
+float gameTime;
+
+float sensorLength;
+float sensorAngleSpacing;
+float turnSpeed;
+float trailWeight;
+float idleSpeed;
+float attractedSpeedMultiplier;
+
+RWTexture2D<float> WaterAttractionMap;
+float waterAttractionStrength;
+
+float4 slimeColor;
+
+struct Agent {
+    float2 pos;
+    float angle;
+    float4 type;
+};
+
+RWTexture2D<float4> TrailMap;
+RWStructuredBuffer<Agent> agents;
+
+uint hash(uint state)
+{
+    state ^= 2747636419u;
+    state *= 2654435769u;
+    state ^= state >> 16;
+    state *= 2654435769u;
+    state ^= state >> 16;
+    state *= 2654435769u;
+    return state;
+}
+
+float randomValue(uint seed)
+{
+    return hash(seed) / 4294967295.0;
+}
+
+float sense(Agent agent, float angle)
+{
+    float2 sensorDir = float2(cos(agent.angle + angle), sin(agent.angle + angle));
+    float2 sensorPos = agent.pos + sensorDir * sensorLength;
+
+    float sum = 0;
+    for (int oy = -1; oy <= 1; oy++)
+    {
+        for (int ox = -1; ox <= 1; ox++)
+        {
+            int2 pos = int2(sensorPos) + int2(ox, oy);
+            if (pos.x >= 0 && pos.x < width && pos.y >= 0 && pos.y < height)
+            {
+                sum += length(TrailMap[pos].rgb);
+            }
+        }
+    }
+    return sum;
+}
+
+[numthreads(16, 1, 1)]
+void Update(uint3 id : SV_DispatchThreadID)
+{
+    if (id.x >= numAgents) return;
+
+    Agent agent = agents[id.x];
+    uint seed = uint(agent.pos.y * width + agent.pos.x) + id.x + uint(gameTime * 1000);
+    float random01 = randomValue(seed);
+
+    // Sense water attraction in three directions
+    float2 fwdDir = float2(cos(agent.angle), sin(agent.angle));
+    float2 leftDir = float2(cos(agent.angle + sensorAngleSpacing), sin(agent.angle + sensorAngleSpacing));
+    float2 rightDir = float2(cos(agent.angle - sensorAngleSpacing), sin(agent.angle - sensorAngleSpacing));
+
+    // Clamp sensor positions to bounds (so agents can sense water at edges)
+    int2 fwdPos = int2(clamp(agent.pos + fwdDir * sensorLength, float2(0,0), float2(width-1, height-1)));
+    int2 leftPos = int2(clamp(agent.pos + leftDir * sensorLength, float2(0,0), float2(width-1, height-1)));
+    int2 rightPos = int2(clamp(agent.pos + rightDir * sensorLength, float2(0,0), float2(width-1, height-1)));
+
+    float waterFwd = WaterAttractionMap[fwdPos];
+    float waterLeft = WaterAttractionMap[leftPos];
+    float waterRight = WaterAttractionMap[rightPos];
+
+    // Sense trails
+    float trailFwd = sense(agent, 0);
+    float trailLeft = sense(agent, sensorAngleSpacing);
+    float trailRight = sense(agent, -sensorAngleSpacing);
+
+    // Combined weights
+    float totalFwd = waterFwd * waterAttractionStrength + trailFwd * trailWeight;
+    float totalLeft = waterLeft * waterAttractionStrength + trailLeft * trailWeight;
+    float totalRight = waterRight * waterAttractionStrength + trailRight * trailWeight;
+
+    // Turning decision
+    float turnAmount = turnSpeed * deltaTime;
+
+    // Standard physarum turning logic
+    float randomTurn = (random01 - 0.5) * turnAmount * 0.5;
+
+    if (totalFwd >= totalLeft && totalFwd >= totalRight)
+    {
+        // Forward is best - small random adjustment
+        agents[id.x].angle += randomTurn * 0.3;
+    }
+    else if (totalLeft > totalRight)
+    {
+        agents[id.x].angle += turnAmount + randomTurn;
+    }
+    else
+    {
+        agents[id.x].angle -= turnAmount + randomTurn;
+    }
+
+    // Speed: idle when no attraction, fast when sensing water/trails
+    float maxWater = max(max(waterFwd, waterLeft), waterRight);
+    float attractionLevel = saturate(maxWater * waterAttractionStrength * 0.5);
+    float speed = lerp(idleSpeed, moveSpeed * attractedSpeedMultiplier, attractionLevel);
+
+    // Movement
+    float2 dir = float2(cos(agents[id.x].angle), sin(agents[id.x].angle));
+    float2 newPos = agent.pos + dir * speed * deltaTime;
+
+    // Boundary handling - spread along edge if water nearby, otherwise bounce
+    bool hitLeft = newPos.x < 0;
+    bool hitRight = newPos.x >= width;
+    bool hitBottom = newPos.y < 0;
+    bool hitTop = newPos.y >= height;
+
+    if (hitLeft || hitRight || hitBottom || hitTop)
+    {
+        newPos.x = clamp(newPos.x, 0, width - 1);
+        newPos.y = clamp(newPos.y, 0, height - 1);
+
+        // Check if there's water attraction at this edge
+        bool hasWaterAtEdge = maxWater > 0.01;
+
+        if (hasWaterAtEdge)
+        {
+            // Water at edge - spread ALONG the edge instead of bouncing back
+            float random02 = randomValue(seed + 7919u);
+            if (hitTop || hitBottom)
+            {
+                // Deflect to horizontal (left or right randomly)
+                agents[id.x].angle = (random01 > 0.5) ? 0.0 : PI;
+            }
+            else
+            {
+                // Deflect to vertical (up or down randomly)
+                agents[id.x].angle = (random01 > 0.5) ? PI * 0.5 : -PI * 0.5;
+            }
+            // Add some randomness for natural spread
+            agents[id.x].angle += (random02 - 0.5) * 0.8;
+        }
+        else
+        {
+            // No water - normal bounce back
+            agents[id.x].angle += PI + (random01 - 0.5) * 0.5;
+        }
+    }
+
+    agents[id.x].pos = newPos;
+
+    // Deposit trail - stronger when near water (creates highways)
+    float trailStrength = 1.0 + attractionLevel * 2.0;
+    TrailMap[int2(newPos.x, newPos.y)] = slimeColor * trailStrength;
+}
+
+RWTexture2D<float4> TrailMapProcessed;
+float evaporateSpeed;
+float diffuseSpeed;
+
+[numthreads(8, 8, 1)]
+void Postprocess(uint3 id : SV_DispatchThreadID)
+{
+    float4 original = TrailMap[id.xy];
+
+    // Simple blur
+    float4 sum = 0;
+    for (int oy = -1; oy <= 1; oy++)
+    {
+        for (int ox = -1; ox <= 1; ox++)
+        {
+            int2 pos = int2(id.x + ox, id.y + oy);
+            if (pos.x >= 0 && pos.x < width && pos.y >= 0 && pos.y < height)
+                sum += TrailMap[pos];
+        }
+    }
+    float4 blurred = sum / 9.0;
+
+    float4 diffused = lerp(original, blurred, diffuseSpeed * deltaTime);
+    float4 evaporated = max(0, diffused - evaporateSpeed * deltaTime);
+
+    TrailMapProcessed[id.xy] = evaporated;
+}

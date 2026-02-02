@@ -757,7 +757,15 @@ public class CellularLiquidSimulation : MonoBehaviour
     {
         return x >= 0 && x < gridWidth && y >= 0 && y < gridHeight;
     }
-    
+
+    /// <summary>
+    /// Returns the world-space bounds covered by this liquid simulation.
+    /// </summary>
+    public Rect GetWorldBounds()
+    {
+        return new Rect(gridOrigin.x, gridOrigin.y, gridWidth * cellSize, gridHeight * cellSize);
+    }
+
     void OnDrawGizmos()
     {
         if (!Application.isPlaying) return;
