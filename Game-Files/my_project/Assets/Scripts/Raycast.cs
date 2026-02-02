@@ -17,10 +17,6 @@ public class Raycast : MonoBehaviour
     private GameObject exitDot;
     private RaycastReceiver currentlyHighlighted;
     private Transform playerTransform;
-    private PlayerController.ToolType currentTool;
-    private GameObject explosiveBallPrefab;
-    private float throwForce;
-    private float ballSpawnOffset;
     private float maxCuttingRange = 10f; 
 
     // Tool State Management
@@ -118,8 +114,6 @@ public class Raycast : MonoBehaviour
         Collider2D targetCollider = null;
         bool foundValidTarget = false;
         float closestDistance = float.MaxValue;
-        RaycastHit2D firstHit = default;
-        bool foundValidHit = false;
 
         foreach (RaycastHit2D hit in hits)
         {
@@ -142,11 +136,11 @@ public class Raycast : MonoBehaviour
 
         if (foundValidTarget && targetCollider != null)
         {
-            Vector2 entryPoint = firstHit.point;
+            Vector2 entryPoint = targetHit.point;
             entryDot.SetActive(true);
             entryDot.transform.position = new Vector3(entryPoint.x, entryPoint.y, 0);
 
-            Collider2D hitCollider = firstHit.collider;
+            Collider2D hitCollider = targetHit.collider;
             Bounds bounds = hitCollider.bounds;
             Vector2 farPoint = (Vector2)playerTransform.position + direction * (distance + bounds.size.magnitude);
 
@@ -154,6 +148,8 @@ public class Raycast : MonoBehaviour
             Vector2 exitPoint = Vector2.zero;
             bool foundEntry = false;
             bool foundExit = false;
+
+            RaycastReceiver receiver = targetCollider.GetComponent<RaycastReceiver>();
 
             foreach (RaycastHit2D hit in hits)
             {
@@ -167,10 +163,10 @@ public class Raycast : MonoBehaviour
 
             if (foundEntry)
             {
-                Bounds bounds = targetCollider.bounds;
-                Vector2 farPoint = (Vector2)playerTransform.position + direction * (distance + bounds.size.magnitude * 2f);
+                //Bounds bounds = targetCollider.bounds;
+                //Vector2 farPoint = (Vector2)playerTransform.position + direction * (distance + bounds.size.magnitude * 2f);
                 
-                RaycastHit2D[] reverseHits = Physics2D.RaycastAll(farPoint, -direction, distance + bounds.size.magnitude * 2f);
+                //RaycastHit2D[] reverseHits = Physics2D.RaycastAll(farPoint, -direction, distance + bounds.size.magnitude * 2f);
 
                 exitDot.SetActive(true);
                 exitDot.transform.position = new Vector3(exitPoint.x, exitPoint.y, 0);
@@ -206,7 +202,7 @@ public class Raycast : MonoBehaviour
                     currentExitPoint = exitPoint;
                     hasValidCut = true;
 
-                    RaycastReceiver receiver = targetCollider.GetComponent<RaycastReceiver>();
+                    
                     if (receiver != null)
                     {
                         if (currentlyHighlighted != null && currentlyHighlighted != receiver)
@@ -256,7 +252,6 @@ public class Raycast : MonoBehaviour
             }
             else { HideDots(); }
         }
-        else { ClearAllHighlights(); }
 
         // Execute Cut
         if (Mouse.current.leftButton.wasPressedThisFrame && hasValidCut && currentlyHighlighted != null)

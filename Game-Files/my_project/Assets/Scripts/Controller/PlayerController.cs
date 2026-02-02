@@ -33,17 +33,6 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float slimeWallCheckDistance = 0.3f;
     [SerializeField] private LayerMask slimeSurfaceLayer;
 
-    [SerializeField] private Camera gameCamera;
-
-    public enum ToolType
-    {
-        CuttingTool,
-        ExplosiveBall
-    }
-
-    [Header("Tool Selection")]
-    [SerializeField] private ToolType currentTool = ToolType.CuttingTool;
-
     [Header("Explosive Ball Settings")]
     [SerializeField] private GameObject explosiveBallPrefab;
     [SerializeField] private float throwForce = 10f;
@@ -52,7 +41,6 @@ public class PlayerController : MonoBehaviour
     [Header("Cutting Tool Settings")]
     [SerializeField] private float maxCuttingRange = 10f;
 
-    [SerializeField] private float jumpForce = 10f;
 
     [Header("References")]
     [SerializeField] private Camera gameCamera;
@@ -154,7 +142,7 @@ public class PlayerController : MonoBehaviour
     {
         Debug.Log("SwitchTool called with: " + toolIndex);
 
-        currentToolIndex = toolIndex; 
+        currentToolIndex = toolIndex;
 
         if (anim != null)
         {
@@ -255,6 +243,7 @@ public class PlayerController : MonoBehaviour
         }
     
         if (isAiming && isGrounded)
+        {
             rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
         }
         else if (isClimbingSlime && enableSlimeClimbing)
@@ -317,8 +306,6 @@ public class PlayerController : MonoBehaviour
             canClimb = true,
             canWallStick = true
         };
-        else
-            rb.linearVelocity = new Vector2(moveInput.x * moveSpeed, rb.linearVelocity.y);
     }
 
     public void OnAim(InputValue value)
@@ -386,6 +373,4 @@ public class PlayerController : MonoBehaviour
         isGrounded = false;
     }
 
-}
-    void OnDestroy() { if (raycast != null) raycast.Cleanup(); }
 }
