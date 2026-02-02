@@ -572,26 +572,23 @@ GameObject SpawnLargeCutPiece(List<Vector2> cutOffShape, float targetArea, Vecto
         physicsManager.ApplyPhysicsMaterial(largePiece);
     }
     
-/*     if (FindObjectOfType<RealisticWindManager>() != null)
-    {
-        WindAffected windAffected = largePiece.AddComponent<WindAffected>();
-        
-        windAffected.SetWindMultiplier(0.6f);
-        windAffected.scaleWithMass = true;
-        windAffected.massScalingFactor = 1.0f;
-        windAffected.referenceMass = 1.0f;
-        
-        windAffected.applyWindTorque = true;
-        windAffected.torqueMultiplier = 0.5f;
-        
-        windAffected.limitVelocity = true;
-        windAffected.maxWindVelocity = 10f;
-        
-        if (cutProfile != null)
-        {
-            windAffected.dragCoefficient = Mathf.Lerp(0.8f, 1.5f, cutProfile.strength);
-        }
-    } */
+    // TODO: Uncomment when RealisticWindManager and WindAffected are implemented
+    // if (FindObjectOfType<RealisticWindManager>() != null)
+    // {
+    //     WindAffected windAffected = largePiece.AddComponent<WindAffected>();
+    //     windAffected.SetWindMultiplier(0.6f);
+    //     windAffected.scaleWithMass = true;
+    //     windAffected.massScalingFactor = 1.0f;
+    //     windAffected.referenceMass = 1.0f;
+    //     windAffected.applyWindTorque = true;
+    //     windAffected.torqueMultiplier = 0.5f;
+    //     windAffected.limitVelocity = true;
+    //     windAffected.maxWindVelocity = 10f;
+    //     if (cutProfile != null)
+    //     {
+    //         windAffected.dragCoefficient = Mathf.Lerp(0.8f, 1.5f, cutProfile.strength);
+    //     }
+    // }
     
     StartCoroutine(EnablePhysicsAfterDelay(largePiece, rb, polyCollider, 0.1f));
 
