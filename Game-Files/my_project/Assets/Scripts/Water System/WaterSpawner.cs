@@ -34,6 +34,16 @@ public class WaterSpawner : MonoBehaviour
     [Tooltip("Radius of water spawn area (in cells)")]
     [SerializeField] [Range(1, 10)] private int spawnRadius = 1;
     
+    [Header("Spawn Duration")]
+    [Tooltip("How long to spawn water for (in seconds). Set 0 for infinite spawning")]
+    [SerializeField] private float spawnDuration = 0f;
+    
+    [Tooltip("Should spawning automatically restart after duration ends?")]
+    [SerializeField] private bool loopSpawning = false;
+    
+    [Tooltip("Delay before restarting spawn loop (seconds)")]
+    [SerializeField] private float loopDelay = 1f;
+    
     [Header("Manual Spawn")]
     [Tooltip("Press this key to manually spawn water")]
     [SerializeField] private Key manualSpawnKey = Key.Space;
@@ -50,7 +60,14 @@ public class WaterSpawner : MonoBehaviour
     [SerializeField] private CellularLiquidSimulation liquidSimulation;
     
     private float spawnTimer;
+    private float durationTimer;
+    private float loopDelayTimer;
     private bool isSpawning;
+    private bool isInLoopDelay;
+
+    public bool IsSpawning => isSpawning;
+    public float RemainingDuration => spawnDuration > 0 ? Mathf.Max(0, spawnDuration - durationTimer) : -1f;
+    public float SpawnProgress => spawnDuration > 0 ? Mathf.Clamp01(durationTimer / spawnDuration) : 0f;
     
     void Start()
     {
@@ -81,9 +98,43 @@ public class WaterSpawner : MonoBehaviour
         {
             SpawnWater();
         }
+        if (isInLoopDelay)
+        {
+            loopDelayTimer += Time.deltaTime;
+            if (loopDelayTimer >= loopDelay)
+            {
+                isInLoopDelay = false;
+                loopDelayTimer = 0f;
+                StartSpawning();
+            }
+            return;
+        }
 
         if (isSpawning && continuousSpawning)
         {
+            if (spawnDuration > 0)
+            {
+                durationTimer += Time.deltaTime;
+
+                if (durationTimer >= spawnDuration)
+                {
+                    if (loopSpawning)
+                    {
+                        Debug.Log($"WaterSpawner: Spawn duration completed. Waiting {loopDelay}s before restart...");
+                        isSpawning = false;
+                        isInLoopDelay = true;
+                        loopDelayTimer = 0f;
+                        durationTimer = 0f;
+                    }
+                    else
+                    {
+                        Debug.Log("WaterSpawner: Spawn duration completed. Stopping.");
+                        StopSpawning();
+                    }
+                    return;
+                }
+            }
+
             spawnTimer += Time.deltaTime;
             if (spawnTimer >= spawnInterval)
             {
@@ -147,15 +198,37 @@ public class WaterSpawner : MonoBehaviour
         }
         
         isSpawning = true;
+        isInLoopDelay = false;
         spawnTimer = 0f;
-        Debug.Log($"WaterSpawner: Started continuous spawning at {GetSpawnPosition()}");
+        durationTimer = 0f;
+        loopDelayTimer = 0f;
+        
+        if (spawnDuration > 0)
+        {
+            Debug.Log($"WaterSpawner: Started spawning at {GetSpawnPosition()} for {spawnDuration} seconds");
+        }
+        else
+        {
+            Debug.Log($"WaterSpawner: Started infinite spawning at {GetSpawnPosition()}");
+        }
+    }
+
+    public void StartSpawning(float customDuration)
+    {
+        float originalDuration = spawnDuration;
+        spawnDuration = customDuration;
+        StartSpawning();
+        spawnDuration = originalDuration; 
     }
 
     [ContextMenu("Stop Spawning")]
     public void StopSpawning()
     {
         isSpawning = false;
-        Debug.Log("WaterSpawner: Stopped continuous spawning");
+        isInLoopDelay = false;
+        durationTimer = 0f;
+        loopDelayTimer = 0f;
+        Debug.Log("WaterSpawner: Stopped spawning");
     }
 
     [ContextMenu("Toggle Spawning")]
@@ -165,6 +238,15 @@ public class WaterSpawner : MonoBehaviour
             StopSpawning();
         else
             StartSpawning();
+    }
+
+    public void ExtendDuration(float additionalSeconds)
+    {
+        if (spawnDuration > 0 && isSpawning)
+        {
+            spawnDuration += additionalSeconds;
+            Debug.Log($"WaterSpawner: Extended duration by {additionalSeconds}s. New total: {spawnDuration}s");
+        }
     }
 
     public Vector2 GetSpawnPosition()
@@ -194,6 +276,19 @@ public class WaterSpawner : MonoBehaviour
         {
             Gizmos.color = Color.green;
             Gizmos.DrawLine(spawnPos, spawnPos + Vector2.down * 0.5f);
+
+            if (spawnDuration > 0)
+            {
+                float progress = durationTimer / spawnDuration;
+                Gizmos.color = Color.Lerp(Color.green, Color.red, progress);
+                Gizmos.DrawWireSphere(spawnPos + Vector2.up * 0.3f, 0.1f * (1f - progress));
+            }
+        }
+
+        if (Application.isPlaying && isInLoopDelay)
+        {
+            Gizmos.color = Color.yellow;
+            Gizmos.DrawWireSphere(spawnPos, 0.15f);
         }
     }
     
