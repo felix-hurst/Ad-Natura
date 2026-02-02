@@ -222,6 +222,149 @@ public class StructuralCollapseManager : MonoBehaviour
         }
     }
 
+    public void ScheduleSingleRoundExplosion(
+        GameObject target,
+        Vector2 explosionOrigin,
+        float delay,
+        int minRayCount,
+        int maxRayCount,
+        float rayDistance,
+        float minAngle,
+        float maxAngle,
+        bool showRays,
+        float rayVisualizationDuration,
+        Color rayColor,
+        bool showWarning,
+        float warningDuration,
+        Color warningColor)
+    {
+        StartCoroutine(SingleRoundExplosionCoroutine(
+            target,
+            explosionOrigin,
+            delay,
+            minRayCount,
+            maxRayCount,
+            rayDistance,
+            minAngle,
+            maxAngle,
+            showRays,
+            rayVisualizationDuration,
+            rayColor,
+            showWarning,
+            warningDuration,
+            warningColor));
+    }
+
+    IEnumerator SingleRoundExplosionCoroutine(
+        GameObject target,
+        Vector2 explosionOrigin,
+        float delay,
+        int minRayCount,
+        int maxRayCount,
+        float rayDistance,
+        float minAngle,
+        float maxAngle,
+        bool showRays,
+        float rayVisualizationDuration,
+        Color rayColor,
+        bool showWarning,
+        float warningDuration,
+        Color warningColor)
+    {
+        string materialTag = target.tag;
+        
+        if (string.IsNullOrEmpty(materialTag) || materialTag == "Untagged")
+        {
+            materialTag = target.name;
+        }
+
+        ExplosionFragment marker = target.GetComponent<ExplosionFragment>();
+        if (marker == null)
+        {
+            marker = target.AddComponent<ExplosionFragment>();
+        }
+        marker.Initialize(materialTag);
+
+        GameObject warningVis = null;
+        if (showWarning && warningDuration > 0)
+        {
+            float warningStart = delay - warningDuration;
+            if (warningStart > 0)
+            {
+                yield return new WaitForSeconds(warningStart);
+
+                if (target != null)
+                {
+                    warningVis = CreateWarningVisualization(target, warningColor, warningDuration);
+                }
+                yield return new WaitForSeconds(warningDuration);
+            }
+            else
+            {
+                yield return new WaitForSeconds(delay);
+            }
+        }
+        else
+        {
+            yield return new WaitForSeconds(delay);
+        }
+
+        if (warningVis != null)
+        {
+            Destroy(warningVis);
+        }
+
+        if (target == null)
+        {
+            yield break;
+        }
+
+        ExplosionFragment[] fragments = FindObjectsOfType<ExplosionFragment>();
+        List<GameObject> allFragments = new List<GameObject>();
+
+        foreach (ExplosionFragment fragment in fragments)
+        {
+            if (fragment == null || fragment.gameObject == null) continue;
+
+            GameObject fragmentObj = fragment.gameObject;
+            Bounds fragmentBounds = GetObjectBounds(fragmentObj);
+            Vector2 fragmentCenter = fragmentBounds.center;
+
+            int rayCount = Random.Range(minRayCount, maxRayCount + 1);
+            List<float> angles = GenerateRandomAngles(rayCount, minAngle, maxAngle);
+
+            foreach (float angle in angles)
+            {
+                Vector2 direction = new Vector2(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad));
+
+                bool cutMade = PerformExplosionRaycast(fragmentObj, fragmentCenter, direction, rayDistance,
+                                                    showRays, rayVisualizationDuration, rayColor);
+                if (cutMade)
+                {
+                    yield return new WaitForFixedUpdate();
+                    yield return new WaitForFixedUpdate();
+                }
+            }
+
+            yield return new WaitForFixedUpdate();
+        }
+
+        yield return new WaitForFixedUpdate();
+        
+        ExplosionFragment[] allFragmentsAfterCut = FindObjectsOfType<ExplosionFragment>();
+        allFragments.Clear();
+        
+        foreach (ExplosionFragment fragment in allFragmentsAfterCut)
+        {
+            if (fragment != null && fragment.gameObject != null)
+            {
+                allFragments.Add(fragment.gameObject);
+            }
+        }
+
+        ConvertFragmentsToDebris(allFragments, materialTag);
+    }
+
     void ConvertFragmentsToDebris(List<GameObject> fragments, string materialTag)
     {
         CellularDebrisSimulation debrisSystem = FindObjectOfType<CellularDebrisSimulation>();

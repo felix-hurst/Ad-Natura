@@ -7,6 +7,9 @@ public class RaycastReceiver : MonoBehaviour
     [Tooltip("Choose which piece to highlight after the cut")]
     public HighlightMode highlightMode = HighlightMode.Default;
     
+    [Tooltip("Enable/disable the shape outline when aiming with the cut tool")]
+    public bool showCutOutline = true;
+    
     public enum HighlightMode
     {
         Default,
@@ -27,6 +30,24 @@ public class RaycastReceiver : MonoBehaviour
     
     [Tooltip("Force range applied to large cut pieces")]
     public Vector2 largePieceForceRange = new Vector2(1f, 3f);
+    
+    [Header("Delayed Explosion Settings")]
+    [Tooltip("Enable automatic delayed explosions on cut pieces")]
+    public bool enableDelayedExplosions = true;
+    public float explosionDelay = 0.01f;
+    public int minRayCount = 4;
+    public int maxRayCount = 9;
+    public float explosionRayDistance = 5f;
+    public float minAngle = 0f;
+    public float maxAngle = 360f;
+    
+    [Header("Visual Feedback")]
+    public bool showExplosionRays = true;
+    public float rayVisualizationDuration = 0.5f;
+    public Color explosionRayColor = Color.yellow;
+    public bool showExplosionWarning = true;
+    public float warningDuration = 0.5f;
+    public Color warningColor = Color.red;
     
     private LineRenderer edgeLineRenderer;
     private SpriteRenderer spriteRenderer;
@@ -75,8 +96,11 @@ public void HighlightCutEdges(Vector2 entryPoint, Vector2 exitPoint)
     shape2 = EnsureClockwiseWinding(shape2);
     
     currentHighlightedShape = ChooseShapeToHighlight(shape1, shape2);
-    
-    DrawShapeOutline(currentHighlightedShape);
+
+    if (showCutOutline)
+    {
+        DrawShapeOutline(currentHighlightedShape);
+    }
 }
 
 void SplitPolygonByLine(Vector2[] vertices, Vector2 lineStart, Vector2 lineEnd, 
@@ -521,9 +545,24 @@ GameObject SpawnLargeCutPiece(List<Vector2> cutOffShape, float targetArea, Vecto
     
     RaycastReceiver pieceReceiver = largePiece.AddComponent<RaycastReceiver>();
     pieceReceiver.highlightMode = this.highlightMode;
+    pieceReceiver.showCutOutline = this.showCutOutline; 
     pieceReceiver.baseLargePieceRatio = this.baseLargePieceRatio;
     pieceReceiver.largePieceMassMultiplier = this.largePieceMassMultiplier;
     pieceReceiver.largePieceForceRange = this.largePieceForceRange;
+
+    pieceReceiver.enableDelayedExplosions = this.enableDelayedExplosions;
+    pieceReceiver.explosionDelay = this.explosionDelay;
+    pieceReceiver.minRayCount = this.minRayCount;
+    pieceReceiver.maxRayCount = this.maxRayCount;
+    pieceReceiver.explosionRayDistance = this.explosionRayDistance;
+    pieceReceiver.minAngle = this.minAngle;
+    pieceReceiver.maxAngle = this.maxAngle;
+    pieceReceiver.showExplosionRays = this.showExplosionRays;
+    pieceReceiver.rayVisualizationDuration = this.rayVisualizationDuration;
+    pieceReceiver.explosionRayColor = this.explosionRayColor;
+    pieceReceiver.showExplosionWarning = this.showExplosionWarning;
+    pieceReceiver.warningDuration = this.warningDuration;
+    pieceReceiver.warningColor = this.warningColor;
     
     DebrisSpawner pieceDebrisSpawner = largePiece.AddComponent<DebrisSpawner>();
     
@@ -555,6 +594,26 @@ GameObject SpawnLargeCutPiece(List<Vector2> cutOffShape, float targetArea, Vecto
     } */
     
     StartCoroutine(EnablePhysicsAfterDelay(largePiece, rb, polyCollider, 0.1f));
+
+    if (enableDelayedExplosions)
+    {
+        Vector2 pieceCenter = largePiece.transform.position;
+        StructuralCollapseManager.Instance.ScheduleSingleRoundExplosion(
+            largePiece,
+            pieceCenter,
+            explosionDelay,
+            minRayCount,
+            maxRayCount,
+            explosionRayDistance,
+            minAngle,
+            maxAngle,
+            showExplosionRays,
+            rayVisualizationDuration,
+            explosionRayColor,
+            showExplosionWarning,
+            warningDuration,
+            warningColor);
+    }
     
     return largePiece;
 }

@@ -16,6 +16,7 @@ public class Raycast : MonoBehaviour
     private GameObject explosiveBallPrefab;
     private float throwForce;
     private float ballSpawnOffset;
+    private float maxCuttingRange = 10f; 
 
     private Vector2 currentEntryPoint;
     private Vector2 currentExitPoint;
@@ -100,6 +101,10 @@ public class Raycast : MonoBehaviour
 
             if (hit.collider.gameObject.name.Contains("Debris") ||
                 hit.collider.gameObject.name.Contains("Fragment"))
+                continue;
+
+            float hitDistance = Vector2.Distance(playerTransform.position, hit.point);
+            if (hitDistance > maxCuttingRange)
                 continue;
 
             float distToMouse = Vector2.Distance(hit.point, mousePosition);
@@ -223,12 +228,13 @@ public class Raycast : MonoBehaviour
         }
     }
 
-    public void SetCurrentTool(PlayerController.ToolType tool, GameObject ballPrefab, float force, float spawnOffset = 1.0f)
+    public void SetCurrentTool(PlayerController.ToolType tool, GameObject ballPrefab, float force, float spawnOffset = 1.0f, float cuttingRange = 10f)
     {
         currentTool = tool;
         explosiveBallPrefab = ballPrefab;
         throwForce = force;
         ballSpawnOffset = spawnOffset;
+        maxCuttingRange = cuttingRange;
     }
 
     void ThrowExplosiveBall(Vector2 direction)
