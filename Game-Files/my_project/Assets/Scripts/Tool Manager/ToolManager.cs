@@ -4,6 +4,9 @@ using UnityEngine.InputSystem;
 
 public class ToolManager : MonoBehaviour
 {
+    [Header("Player")]
+    [SerializeField] private PlayerController player;
+
     [Header("Frame Sprites")]
     [SerializeField] private Sprite inactiveFrame;
     [SerializeField] private Sprite activeFrame;
@@ -15,15 +18,14 @@ public class ToolManager : MonoBehaviour
     [Header("Visibility Settings")]
     [SerializeField] private float displayDuration = 2.0f;
     private float visibilityTimer;
+    [SerializeField] private float activeScale = 1.2f;
 
     private int currentToolIndex = -1; // -1 means nothing is selected
 
     void Start()
     {
-        // 1. Ensure the UI starts completely invisible/unselected
+        //Ensure the UI starts completely invisible/unselected
         DeselectAll();
-
-        // 2. If you added a CanvasGroup, hide it immediately
         if (hudGroup != null) hudGroup.alpha = 0;
     }
 
@@ -67,14 +69,35 @@ public class ToolManager : MonoBehaviour
 
     public void SelectTool(int index)
     {
-        if (index < 0 || index >= slots.Length) return;
-        currentToolIndex = index;
+        // If we click the tool that is already active, unselect it
+        if (currentToolIndex == index)
+        {
+            currentToolIndex = -1; // -1 means no tool
+        }
+        else
+        {
+            currentToolIndex = index;
+        }
 
+        // Update the UI visual frames
         for (int i = 0; i < slots.Length; i++)
         {
-            bool isSelected = (i == index);
-            slots[i].sprite = isSelected ? activeFrame : inactiveFrame;
-            slots[i].rectTransform.localScale = isSelected ? new Vector3(1.15f, 1.15f, 1f) : Vector3.one;
+            if (i == currentToolIndex)
+            {
+                slots[i].sprite = activeFrame;
+                slots[i].transform.localScale = Vector3.one * activeScale;
+            }
+            else
+            {
+                slots[i].sprite = inactiveFrame;
+                slots[i].transform.localScale = Vector3.one;
+            }
+        }
+
+        // Tell the PlayerController what happened
+        if (player != null)
+        {
+            player.SwitchTool(currentToolIndex);
         }
     }
 }

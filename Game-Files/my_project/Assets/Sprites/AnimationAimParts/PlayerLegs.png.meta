@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 3ad12f2315142004091ff80415aa118d
+guid: 70458f88884c38a45ac0071e2d7b13bb
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -1822118779403730218
-    second: "AnimationJump\uFF3FMoving 1_0002_0"
+      213: 3249311905100755010
+    second: PlayerLegs_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: "AnimationJump\uFF3FMoving 1_0002_0"
+      name: PlayerLegs_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 1
-        width: 29
-        height: 59
+        y: 0
+        width: 48
+        height: 57
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 6d28217cf9886b6e0800000000000000
-      internalID: -1822118779403730218
+      spriteID: 2407afb46ffd71d20800000000000000
+      internalID: 3249311905100755010
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      "AnimationJump\uFF3FMoving 1_0002_0": -1822118779403730218
+      PlayerLegs_0: 3249311905100755010
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

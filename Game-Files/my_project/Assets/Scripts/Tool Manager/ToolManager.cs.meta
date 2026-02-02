@@ -4,8 +4,10 @@ MonoImporter:
   externalObjects: {}
   serializedVersion: 2
   defaultReferences:
+  - player: {fileID: 7271968282080112861, guid: 81dd48242af209d4daaae9eb3e68241c, type: 3}
   - inactiveFrame: {fileID: -9164237535307741847, guid: 1c732738daaee064ebbfa686ee712304, type: 3}
   - activeFrame: {fileID: -222533726709260364, guid: 5782be762709d0045ba5ddbd0b5d6394, type: 3}
+  - hudGroup: {instanceID: 0}
   executionOrder: 0
   icon: {instanceID: 0}
   userData: 

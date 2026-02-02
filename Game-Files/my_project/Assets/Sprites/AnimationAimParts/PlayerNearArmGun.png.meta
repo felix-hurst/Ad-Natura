@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 3ad12f2315142004091ff80415aa118d
+guid: 6d1e41d5c7f58b74ea50ed405315f519
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -1822118779403730218
-    second: "AnimationJump\uFF3FMoving 1_0002_0"
+      213: 1192015474109864904
+    second: PlayerNearArmGun_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -100,23 +100,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: "AnimationJump\uFF3FMoving 1_0002_0"
+      name: PlayerNearArmGun_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 1
-        width: 29
-        height: 59
-      alignment: 0
-      pivot: {x: 0, y: 0}
+        y: 0
+        width: 48
+        height: 57
+      alignment: 9
+      pivot: {x: 0.13824289, y: 0.75295794}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 6d28217cf9886b6e0800000000000000
-      internalID: -1822118779403730218
+      spriteID: 8cb561512c3ea8010800000000000000
+      internalID: 1192015474109864904
       vertices: []
       indices: 
       edges: []
@@ -125,7 +125,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
+    spriteID: a90ed91a5d219834db4a39761a6d4c2a
     internalID: 0
     vertices: []
     indices: 
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      "AnimationJump\uFF3FMoving 1_0002_0": -1822118779403730218
+      PlayerNearArmGun_0: 1192015474109864904
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
