@@ -17,7 +17,10 @@ public class Raycast : MonoBehaviour
     private GameObject exitDot;
     private RaycastReceiver currentlyHighlighted;
     private Transform playerTransform;
-    private float maxCuttingRange = 10f; 
+    private GameObject projectilePrefab; 
+    private float maxCuttingRange = 10f;
+    private int rifleExplosionRounds = 3;
+    private float rifleDelayBetweenRounds = 0.8f;
 
     // Tool State Management
     private PlayerController.ToolType currentTool;
@@ -93,15 +96,15 @@ public class Raycast : MonoBehaviour
         // --- Handle Input First ---
         if (Mouse.current.leftButton.wasPressedThisFrame)
         {
-            if (currentTool == PlayerController.ToolType.ExplosiveBall)
+            if (currentTool == PlayerController.ToolType.ExplosiveBall || 
+                currentTool == PlayerController.ToolType.WaterBall)
             {
-                ThrowExplosiveBall(direction);
+                ThrowProjectile(direction);
                 return;
             }
         }
 
-        // --- Handle Cutting Logic ---
-        if (currentTool != PlayerController.ToolType.CuttingTool)
+        if (currentTool != PlayerController.ToolType.CuttingTool && currentTool != PlayerController.ToolType.Rifle)
         {
             ClearAllHighlights();
             return;
@@ -121,7 +124,8 @@ public class Raycast : MonoBehaviour
             if (hit.collider.gameObject.name.Contains("Debris") || hit.collider.gameObject.name.Contains("Fragment")) continue;
 
             float hitDistance = Vector2.Distance(playerTransform.position, hit.point);
-            if (hitDistance > maxCuttingRange)
+
+            if (currentTool == PlayerController.ToolType.CuttingTool && hitDistance > maxCuttingRange)
                 continue;
 
             float distToMouse = Vector2.Distance(hit.point, mousePosition);
@@ -256,35 +260,54 @@ public class Raycast : MonoBehaviour
         // Execute Cut
         if (Mouse.current.leftButton.wasPressedThisFrame && hasValidCut && currentlyHighlighted != null)
         {
-            currentlyHighlighted.ExecuteCut(currentEntryPoint, currentExitPoint);
-            ClearAllHighlights();
+            if (currentTool == PlayerController.ToolType.Rifle)
+            {
+                currentlyHighlighted.ExecuteCutWithExplosion(currentEntryPoint, currentExitPoint, rifleExplosionRounds, rifleDelayBetweenRounds);
+            }
+            else
+            {
+                currentlyHighlighted.ExecuteCut(currentEntryPoint, currentExitPoint);
+            }
+
+            currentlyHighlighted.ClearHighlight();
+            currentlyHighlighted = null;
+            hasValidCut = false;
         }
     }
 
-    public void SetCurrentTool(PlayerController.ToolType tool, GameObject ballPrefab, float force, float spawnOffset = 1.0f, float cuttingRange = 10f)
+    public void SetCurrentTool(PlayerController.ToolType tool, GameObject ballPrefab, float force, float spawnOffset = 1.0f, float cuttingRange = 10f, int explosionRounds = 3, float delayBetweenRounds = 0.8f)
     {
         currentTool = tool;
-        explosiveBallPrefab = ballPrefab;
+        projectilePrefab = ballPrefab; 
         throwForce = force;
         ballSpawnOffset = spawnOffset;
         maxCuttingRange = cuttingRange;
+        rifleExplosionRounds = explosionRounds;
+        rifleDelayBetweenRounds = delayBetweenRounds;
     }
 
-    void ThrowExplosiveBall(Vector2 direction)
+    void ThrowProjectile(Vector2 direction)
     {
-        if (explosiveBallPrefab == null)
+        if (projectilePrefab == null)
         {
+            Debug.LogWarning($"Raycast: No projectile prefab assigned for {currentTool}!");
             return;
         }
 
         Vector3 spawnPosition = playerTransform.position + (Vector3)(direction * ballSpawnOffset);
-        GameObject ball = Instantiate(explosiveBallPrefab, spawnPosition, Quaternion.identity);
 
-        Rigidbody2D rb = ball.GetComponent<Rigidbody2D>();
-        if (rb == null) rb = ball.AddComponent<Rigidbody2D>();
+        GameObject projectile = Instantiate(projectilePrefab, spawnPosition, Quaternion.identity);
+
+        Rigidbody2D rb = projectile.GetComponent<Rigidbody2D>();
+        if (rb == null)
+        {
+            rb = projectile.AddComponent<Rigidbody2D>();
+        }
 
         rb.gravityScale = 1f;
         rb.linearVelocity = direction * throwForce;
+        
+        Debug.Log($"Raycast: Threw {currentTool} with force {throwForce} in direction {direction}");
     }
 
     private void HideDots()
