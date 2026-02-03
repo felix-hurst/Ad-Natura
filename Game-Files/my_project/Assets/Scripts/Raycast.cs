@@ -308,10 +308,9 @@ public class Raycast : MonoBehaviour
 
     public void Cleanup()
     {
-        ClearAllHighlights();
-
         if (entryDot != null) Object.Destroy(entryDot);
         if (exitDot != null) Object.Destroy(exitDot);
+        ClearAllHighlights();
     }
 
     private void OnDisable()
