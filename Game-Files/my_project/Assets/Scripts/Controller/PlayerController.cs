@@ -19,19 +19,31 @@ public class PlayerController : MonoBehaviour
 public enum ToolType
 {
     CuttingTool,
-    ExplosiveBall
+    ExplosiveBall,
+    Rifle,
+    WaterBall
 }
 
 [Header("Tool Selection")]
 [SerializeField] private ToolType currentTool = ToolType.CuttingTool;
 
 [Header("Cutting Tool Settings")]
-[SerializeField] private float maxCuttingRange = 10f; 
+[SerializeField] private float maxCuttingRange = 10f;
+
+[Header("Rifle Settings")]
+[SerializeField] private int rifleExplosionRounds = 3;
+[SerializeField] private float rifleDelayBetweenRounds = 0.8f;
 
 [Header("Explosive Ball Settings")]
 [SerializeField] private GameObject explosiveBallPrefab;
-[SerializeField] private float throwForce = 10f;
-[SerializeField] private float ballSpawnOffset = 1.0f;
+[SerializeField] private float explosiveBallThrowForce = 10f;
+[SerializeField] private float explosiveBallSpawnOffset = 1.0f;
+
+[Header("Water Ball Settings")]
+[SerializeField] private GameObject waterBallPrefab;
+[SerializeField] private float waterBallThrowForce = 10f;
+[SerializeField] private float waterBallSpawnOffset = 1.0f;
+
     private Animator anim;
     
     private Rigidbody2D rb;
@@ -107,7 +119,24 @@ public enum ToolType
 
             if (isAiming)
             {
-                raycast.SetCurrentTool(currentTool, explosiveBallPrefab, throwForce, ballSpawnOffset, maxCuttingRange);
+                GameObject ballPrefab = null;
+                float throwForce = 0f;
+                float spawnOffset = 0f;
+                
+                if (currentTool == ToolType.ExplosiveBall)
+                {
+                    ballPrefab = explosiveBallPrefab;
+                    throwForce = explosiveBallThrowForce;
+                    spawnOffset = explosiveBallSpawnOffset;
+                }
+                else if (currentTool == ToolType.WaterBall)
+                {
+                    ballPrefab = waterBallPrefab;
+                    throwForce = waterBallThrowForce;
+                    spawnOffset = waterBallSpawnOffset;
+                }
+                
+                raycast.SetCurrentTool(currentTool, ballPrefab, throwForce, spawnOffset, maxCuttingRange, rifleExplosionRounds, rifleDelayBetweenRounds);
             }
         }
     }

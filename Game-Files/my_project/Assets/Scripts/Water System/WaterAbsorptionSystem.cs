@@ -21,6 +21,12 @@ public class WaterAbsorptionSystem : MonoBehaviour
         new MaterialAbsorption("Sand", 1.5f),
     };
     
+    [Header("Wood Decomposition")]
+    [Tooltip("Enable automatic layer change for Wood objects in water")]
+    [SerializeField] private bool enableWoodDecomposition = true;
+    [Tooltip("Name of the layer to change Wood objects to when in water")]
+    [SerializeField] private string decomposeLayerName = "Decompose";
+    
     [Header("Absorption Effects")]
     [Tooltip("Visual effect when water is absorbed")]
     [SerializeField] private bool showAbsorptionParticles = true;
@@ -46,6 +52,10 @@ public class WaterAbsorptionSystem : MonoBehaviour
     private Dictionary<GameObject, float> objectSaturation = new Dictionary<GameObject, float>();
 
     private Dictionary<string, float> absorptionRateCache = new Dictionary<string, float>();
+
+    private HashSet<GameObject> decomposedWoodObjects = new HashSet<GameObject>();
+    
+    private int decomposeLayer = -1;
     
     [System.Serializable]
     public class MaterialAbsorption
@@ -72,8 +82,18 @@ public class WaterAbsorptionSystem : MonoBehaviour
         }
 
         BuildAbsorptionCache();
+
+        decomposeLayer = LayerMask.NameToLayer(decomposeLayerName);
+        if (decomposeLayer == -1)
+        {
+            Debug.LogWarning($"Layer '{decomposeLayerName}' not found! Please create this layer in Project Settings > Tags and Layers.");
+        }
         
         Debug.Log($"Water Absorption System initialized with {materialAbsorptions.Count} material types");
+        if (enableWoodDecomposition && decomposeLayer != -1)
+        {
+            Debug.Log($"Wood decomposition enabled - will change to layer '{decomposeLayerName}' (index {decomposeLayer})");
+        }
     }
     
     void BuildAbsorptionCache()
@@ -159,6 +179,11 @@ public class WaterAbsorptionSystem : MonoBehaviour
             {
                 objectsWithAbsorption++;
                 objectsInWater++;
+
+                if (enableWoodDecomposition && col.CompareTag("Wood"))
+                {
+                    ConvertToDecomposeLayer(col.gameObject);
+                }
                 
                 if (showDebugInfo)
                 {
@@ -200,6 +225,26 @@ public class WaterAbsorptionSystem : MonoBehaviour
                 Debug.Log($"[Absorption] No water absorbed. {objectsChecked} objects check with absorption capability");
             }
         }
+    }
+    
+    void ConvertToDecomposeLayer(GameObject woodObject)
+    {
+        if (decomposedWoodObjects.Contains(woodObject))
+            return;
+
+        if (decomposeLayer == -1)
+        {
+            if (showDebugInfo)
+                Debug.LogWarning($"Cannot convert {woodObject.name} - Decompose layer not found!");
+            return;
+        }
+
+        int oldLayer = woodObject.layer;
+        woodObject.layer = decomposeLayer;
+
+        decomposedWoodObjects.Add(woodObject);
+        
+        Debug.Log($"Converted {woodObject.name} from layer {LayerMask.LayerToName(oldLayer)} to {decomposeLayerName}");
     }
     
     int AbsorbWaterFromCollider(Collider2D collider, float absorptionRate)
@@ -432,6 +477,13 @@ public class WaterAbsorptionSystem : MonoBehaviour
         objectSaturation.Clear();
         Debug.Log("Reset all object saturation levels");
     }
+    
+    [ContextMenu("Reset Decomposed Objects")]
+    public void ResetDecomposedObjects()
+    {
+        decomposedWoodObjects.Clear();
+        Debug.Log("Reset decomposed wood objects tracking");
+    }
 
     [ContextMenu("List All Objects and Tags")]
     public void ListAllObjectsAndTags()
@@ -538,10 +590,11 @@ public class WaterAbsorptionSystem : MonoBehaviour
         if (!showDebugInfo || !Application.isPlaying)
             return;
         
-        GUILayout.BeginArea(new Rect(10, 200, 300, 400));
+        GUILayout.BeginArea(new Rect(10, 200, 300, 450));
         GUILayout.Label("=== Water Absorption Debug ===");
         GUILayout.Label($"Absorption: {(enableAbsorption ? "ON" : "OFF")}");
         GUILayout.Label($"Saturated Objects: {objectSaturation.Count}");
+        GUILayout.Label($"Decomposed Wood: {decomposedWoodObjects.Count}");
         
         GUILayout.Space(10);
         GUILayout.Label("Material Rates:");
