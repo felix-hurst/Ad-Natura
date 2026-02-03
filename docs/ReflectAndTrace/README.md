@@ -1,5 +1,3 @@
-# Development Plan
+# Reflection and Traceability Report
 
-The folders and files for this folder are as follows:
-
-Describe ...
+The Reflection and Traceability Report contains reflections from all team members regarding the project's progress, incorporation of feedback, and overall learning experience.

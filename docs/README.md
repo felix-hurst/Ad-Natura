@@ -1,32 +1,17 @@
-<Please keep the folder structure as given in the template repo.  We will
-discuss each artifact as we get to it in the course.  In some cases, like for
-the SRS, you should have a file of the same name.  For other cases, like the
-design documentation, you are required to document your design, but it may not
-be via a module guide and module interface specification documents.>
+# Documentation Folders
 
-<The files and folders have been set-up with tex files that have external links
-so that cross-referencing is possible between documents.>
-
-<The tex files Common.tex so that they can share definitions.>
-
-<The files use Comments.tex so that the comments package can be used to embed
-comments into the generated pdf.  Comments can be set to false so that they do
-not appear.>
-
-<None of the files are complete templates.  You will need to add extra
-information.  They are just intended to be a starting point.>
-
-<You should select an SRS template.  Three options are available in the repo, or
-you can introduce another template. You should delete any SRS options that you do
-not need. The folder SRS holds a template for Scientific Computing software;
-the folder SRS-Volere holds the Volere template in LaTeX; the folder SRS-Meyer holds
-the template that Dr. Mosser now uses in the third year requirements course.>
-
-<The Makefile assumes the SRS will be in a folder called SRS.  If you use the Makefile
-with a template other than the Scientific Computing template, you will have to delete
-the unnecessary folders and rename your folder to SRS.>
-# Documentation folders
-
-The folders and files for this folder are as follows:
-
-Describe ...
+The folders for this directory are as follows:
+- **Checklists:** Checklists for items to include in each document or tasks to complete for major project aspects.
+- **Design:** Design documents, including the Module Guide (MG) and Module Interface Specification (MIS).
+- **DevelopmentPlan:** The project development plan, outlining tasks across a specified timeline.
+- **Extras:** Extra deliverables, including the Technical Report on the Slime Mold Algorithm and the Usability Report.
+- **HazardAnalysis:** The hazard analysis, which discusses potential risks of the project and associated mitigation methods.
+- **moodboard:** An external link to a Figma moodboard for the project's aesthetic design.
+- **Presentations:** Contains any relevant files used in presentations, including scripts, slideshows and posters.
+- **ProblemStatementAndGoals:** The project's purpose and goals are clearly defined here.
+- **projMngmnt:** Records of team contribution.
+- **ReflectAndTrace:** The Reflection and Traceability Report, which contains the team's reflections of the project's progress, incorporated feedback, and overall learning experience.
+- **SRS:** The Software Requirements Specification, listing all functional and non-functional requirements for the project.
+- **UserGuide:** A user guide that demonstrates how to use the project software.
+- **VnVPlan:** The Verification and Validation Plan, describing how the team plans to ensure the project does what it intends to do, and that what it does aligns with the defined business requirements.
+- **VnVReport:** The Verifcation and Validation Report, describing the results of the VnV Plan.

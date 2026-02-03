@@ -1,5 +1,3 @@
 # Automated tests
 
-The folders and files for this folder are as follows:
-
-Describe ...
+Isolated scripts for unit testing are located here.
