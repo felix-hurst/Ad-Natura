@@ -38,6 +38,7 @@ public class ToolManager : MonoBehaviour
         if (keyboard.digit1Key.wasPressedThisFrame) { SelectTool(0); ShowHUD(); }
         if (keyboard.digit2Key.wasPressedThisFrame) { SelectTool(1); ShowHUD(); }
         if (keyboard.digit3Key.wasPressedThisFrame) { SelectTool(2); ShowHUD(); }
+        if (keyboard.digit4Key.wasPressedThisFrame) { SelectTool(3); ShowHUD(); }
 
         // Handle the auto-hide timer
         if (visibilityTimer > 0)

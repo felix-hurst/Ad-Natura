@@ -88,7 +88,7 @@ public class PlayerController : MonoBehaviour
         WaterBall
     }
     private ToolType currentTool = ToolType.CuttingTool;
-    private int currentToolIndex = -1; //-1 = unequipped, 0 = shovel, 1 = shooter, 2 unassigned yet.
+    private int currentToolIndex = -1; //-1 = unequipped, 0 = shovel, 1 = shooter water ammo, 2 shooter explosive ammo, 4 unassigned yet
 
     void Start()
     {
@@ -170,11 +170,21 @@ public class PlayerController : MonoBehaviour
 
         if (anim != null)
         {
-            //Set all necessary variables for animator
             anim.SetBool("isRunning", isRunning);
             anim.SetBool("isGrounded", isGrounded);
             anim.SetBool("isAiming", isAiming);
-            anim.SetInteger("ToolIndex", currentToolIndex);
+
+            int animValue = currentToolIndex;
+            if (currentToolIndex == 1 || currentToolIndex == 2)
+            {
+                animValue = 1; 
+            }
+            else if (currentToolIndex == 3)
+            {
+                animValue = 2; 
+            }
+
+            anim.SetInteger("ToolIndex", animValue);
         }
     }
 
