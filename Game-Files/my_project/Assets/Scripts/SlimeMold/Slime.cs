@@ -261,6 +261,12 @@ public class Slime : MonoBehaviour
 
     public Vector2Int GetSimulationResolution() => new Vector2Int(width, height);
 
+    /// <summary>
+    /// Get the current trail texture for sampling slime density.
+    /// Used by SlimeDecomposer to determine decomposition damage.
+    /// </summary>
+    public Texture2D GetTrailTexture() => displayTexture;
+
     void OnDrawGizmos()
     {
         Rect bounds = worldBounds;
