@@ -35,11 +35,20 @@ public class PlayerController : MonoBehaviour
 
     [Header("Explosive Ball Settings")]
     [SerializeField] private GameObject explosiveBallPrefab;
-    [SerializeField] private float throwForce = 10f;
-    [SerializeField] private float ballSpawnOffset = 1.0f;
+    [SerializeField] private float explosiveBallThrowForce = 10f;
+    [SerializeField] private float explosiveBallSpawnOffset = 1.0f;
+
+    [Header("Water Ball Settings")]
+    [SerializeField] private GameObject waterBallPrefab;
+    [SerializeField] private float waterBallThrowForce = 10f;
+    [SerializeField] private float waterBallSpawnOffset = 1.0f;
 
     [Header("Cutting Tool Settings")]
     [SerializeField] private float maxCuttingRange = 10f;
+
+    [Header("Rifle Settings")]
+    [SerializeField] private int rifleExplosionRounds = 3;
+    [SerializeField] private float rifleDelayBetweenRounds = 0.8f;
 
 
     [Header("References")]
@@ -71,7 +80,13 @@ public class PlayerController : MonoBehaviour
     private float currentRunningBuffer = 0f;
     private float velocityX;
 
-    public enum ToolType { CuttingTool, ExplosiveBall }
+    public enum ToolType
+    {
+        CuttingTool,
+        ExplosiveBall,
+        Rifle,
+        WaterBall
+    }
     private ToolType currentTool = ToolType.CuttingTool;
     private int currentToolIndex = -1; //-1 = unequipped, 0 = shovel, 1 = shooter, 2 unassigned yet.
 
@@ -126,7 +141,32 @@ public class PlayerController : MonoBehaviour
         HandleVisualSwitch();
 
         // Sync Raycast state with Aiming
-        if (raycast != null) raycast.enabled = isAiming;
+        if (raycast != null)
+        {
+            raycast.enabled = isAiming;
+
+            if (isAiming)
+            {
+                GameObject ballPrefab = null;
+                float throwForce = 0f;
+                float spawnOffset = 0f;
+
+                if (currentTool == ToolType.ExplosiveBall)
+                {
+                    ballPrefab = explosiveBallPrefab;
+                    throwForce = explosiveBallThrowForce;
+                    spawnOffset = explosiveBallSpawnOffset;
+                }
+                else if (currentTool == ToolType.WaterBall)
+                {
+                    ballPrefab = waterBallPrefab;
+                    throwForce = waterBallThrowForce;
+                    spawnOffset = waterBallSpawnOffset;
+                }
+
+                raycast.SetCurrentTool(currentTool, ballPrefab, throwForce, spawnOffset, maxCuttingRange, rifleExplosionRounds, rifleDelayBetweenRounds);
+            }
+        }
 
         if (anim != null)
         {
@@ -204,7 +244,8 @@ public class PlayerController : MonoBehaviour
             //Does the same as above but for the far arm
             if (farHandGrip != null)
             {
-                raycast.SetCurrentTool(currentTool, explosiveBallPrefab, throwForce, ballSpawnOffset, maxCuttingRange);
+                // TODO: Pass waterball attributes when appropriate
+                raycast.SetCurrentTool(currentTool, explosiveBallPrefab, explosiveBallThrowForce, explosiveBallSpawnOffset, maxCuttingRange);
                 Vector2 shoulderToGrip = (Vector2)farHandGrip.position - (Vector2)farArm.position;
                 float distance = shoulderToGrip.magnitude;
                 float farAngle = Mathf.Atan2(shoulderToGrip.y, shoulderToGrip.x) * Mathf.Rad2Deg;

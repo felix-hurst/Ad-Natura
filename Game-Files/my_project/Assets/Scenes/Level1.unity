@@ -912,7 +912,7 @@ MonoBehaviour:
   spawnX: 0.5
   spawnY: 0.5
   spawnRadius: 0.1
-  boundingObject: {fileID: 0}
+  boundingObject: {fileID: 1554318460}
   worldBounds:
     serializedVersion: 2
     x: -22.6
@@ -3720,7 +3720,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &1379807806
 Transform:
   m_ObjectHideFlags: 0

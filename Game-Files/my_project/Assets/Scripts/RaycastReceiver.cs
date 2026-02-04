@@ -453,6 +453,194 @@ private class IntersectionPoint
 
     
 
+public void ExecuteCutWithExplosion(Vector2 entryPoint, Vector2 exitPoint, int explosionRounds, float delayBetweenRounds)
+{
+    if (currentHighlightedShape == null || currentHighlightedShape.Count < 3)
+    {
+        return;
+    }
+    
+    float totalCutOffArea = ObjectReshape.CalculatePolygonArea(currentHighlightedShape);
+    
+    string materialTag = gameObject.tag;
+    if (string.IsNullOrEmpty(materialTag) || materialTag == "Untagged")
+    {
+        materialTag = gameObject.name;
+    }
+    
+    CutProfile cutProfile = CutProfileExtensions.GetCutProfileForObject(gameObject);
+    
+    float strengthInfluence = 1.0f - (cutProfile.strength * 0.4f);
+    float largePieceRatio = baseLargePieceRatio + (strengthInfluence - 0.6f) * (0.8f - baseLargePieceRatio) / 0.4f;
+    largePieceRatio = Mathf.Clamp(largePieceRatio, 0.3f, 0.8f);
+    
+    float largePieceArea = totalCutOffArea * largePieceRatio;
+    float debrisArea = totalCutOffArea - largePieceArea;
+    
+    List<Vector2> cutOffShape = objectReshape.CutOffPortion(entryPoint, exitPoint, currentHighlightedShape);
+    
+    if (cutOffShape != null && cutOffShape.Count >= 3)
+    {
+        if (debrisArea > 0.01f)
+        {
+            debrisSpawner.SpawnDebris(cutOffShape, debrisArea, materialTag);
+        }
+        
+        if (largePieceArea > 0.01f)
+        {
+            GameObject largePiece = SpawnLargeCutPieceWithMultiRoundExplosion(cutOffShape, largePieceArea, entryPoint, exitPoint, materialTag, cutProfile, explosionRounds, delayBetweenRounds);
+        }
+    }
+}
+
+
+GameObject SpawnLargeCutPieceWithMultiRoundExplosion(List<Vector2> cutOffShape, float targetArea, Vector2 entryPoint, Vector2 exitPoint, string materialTag, CutProfile cutProfile, int explosionRounds, float delayBetweenRounds)
+{
+    GameObject largePiece = new GameObject($"{gameObject.name}_CutPiece");
+
+    try
+    {
+        largePiece.tag = gameObject.tag;
+    }
+    catch (UnityException e)
+    {
+    }
+    
+    StructuralCollapseManager.ExplosionFragment parentMarker = GetComponent<StructuralCollapseManager.ExplosionFragment>();
+    if (parentMarker != null)
+    {
+        StructuralCollapseManager.ExplosionFragment childMarker = largePiece.AddComponent<StructuralCollapseManager.ExplosionFragment>();
+        childMarker.Initialize(parentMarker.materialType);
+    }
+    else
+    {
+        StructuralCollapseManager.ExplosionFragment childMarker = largePiece.AddComponent<StructuralCollapseManager.ExplosionFragment>();
+        childMarker.Initialize(materialTag);
+    }
+    
+    Vector2 centroid = Vector2.zero;
+    foreach (Vector2 v in cutOffShape)
+    {
+        centroid += v;
+    }
+    centroid /= cutOffShape.Count;
+    
+    Vector2 cutDirection = (exitPoint - entryPoint).normalized;
+    Vector2 perpendicular = new Vector2(-cutDirection.y, cutDirection.x);
+    
+    Vector2 separationOffset = perpendicular * 0.1f * (Random.value > 0.5f ? 1f : -1f);
+    Vector2 randomJitter = Random.insideUnitCircle * 0.03f;
+    centroid += separationOffset + randomJitter;
+    
+    largePiece.transform.position = new Vector3(centroid.x, centroid.y, transform.position.z);
+    
+    SpriteRenderer originalSpriteRenderer = GetComponent<SpriteRenderer>();
+    SpriteRenderer pieceSpriteRenderer = largePiece.AddComponent<SpriteRenderer>();
+    
+    if (originalSpriteRenderer != null)
+    {
+        pieceSpriteRenderer.sortingLayerName = originalSpriteRenderer.sortingLayerName;
+        pieceSpriteRenderer.sortingOrder = originalSpriteRenderer.sortingOrder;
+        pieceSpriteRenderer.color = originalSpriteRenderer.color;
+    }
+    
+    ObjectReshape pieceReshape = largePiece.AddComponent<ObjectReshape>();
+    
+    PixelatedCutRenderer piecePixelRenderer = largePiece.AddComponent<PixelatedCutRenderer>();
+    
+    List<Vector2> localVertices = new List<Vector2>();
+    foreach (Vector2 worldVertex in cutOffShape)
+    {
+        Vector2 localVertex = (Vector2)largePiece.transform.InverseTransformPoint(worldVertex);
+        localVertices.Add(localVertex);
+    }
+    
+    CutProfileManager profileManager = FindObjectOfType<CutProfileManager>();
+    List<Vector2> irregularShape = localVertices;
+    if (profileManager != null && cutProfile.strength > 0.01f)
+    {
+        Vector2 localEntry = largePiece.transform.InverseTransformPoint(entryPoint);
+        Vector2 localExit = largePiece.transform.InverseTransformPoint(exitPoint);
+        irregularShape = profileManager.ApplyIrregularCut(localVertices, localEntry, localExit, cutProfile);
+    }
+    
+    List<Vector2> pixelatedShape = irregularShape;
+    if (piecePixelRenderer != null)
+    {
+        Vector2 localEntry = largePiece.transform.InverseTransformPoint(entryPoint);
+        Vector2 localExit = largePiece.transform.InverseTransformPoint(exitPoint);
+        pixelatedShape = piecePixelRenderer.PixelatePolygonWithCutLine(irregularShape, localEntry, localExit);
+    }
+    
+    PolygonCollider2D polyCollider = largePiece.AddComponent<PolygonCollider2D>();
+    polyCollider.points = irregularShape.ToArray();
+    polyCollider.enabled = false;
+    
+    CreateLargePieceMesh(largePiece, pixelatedShape, materialTag);
+    
+    Rigidbody2D rb = largePiece.AddComponent<Rigidbody2D>();
+    rb.bodyType = RigidbodyType2D.Kinematic;
+    rb.mass = targetArea * largePieceMassMultiplier;
+    rb.gravityScale = 1f;
+    
+    rb.linearVelocity = Vector2.zero;
+    rb.angularVelocity = 0f;
+    
+    rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+    rb.sleepMode = RigidbodySleepMode2D.StartAwake;
+    
+    RaycastReceiver pieceReceiver = largePiece.AddComponent<RaycastReceiver>();
+    pieceReceiver.highlightMode = this.highlightMode;
+    pieceReceiver.showCutOutline = this.showCutOutline; 
+    pieceReceiver.baseLargePieceRatio = this.baseLargePieceRatio;
+    pieceReceiver.largePieceMassMultiplier = this.largePieceMassMultiplier;
+    pieceReceiver.largePieceForceRange = this.largePieceForceRange;
+
+    pieceReceiver.enableDelayedExplosions = false;
+    pieceReceiver.explosionDelay = this.explosionDelay;
+    pieceReceiver.minRayCount = this.minRayCount;
+    pieceReceiver.maxRayCount = this.maxRayCount;
+    pieceReceiver.explosionRayDistance = this.explosionRayDistance;
+    pieceReceiver.minAngle = this.minAngle;
+    pieceReceiver.maxAngle = this.maxAngle;
+    pieceReceiver.showExplosionRays = this.showExplosionRays;
+    pieceReceiver.rayVisualizationDuration = this.rayVisualizationDuration;
+    pieceReceiver.explosionRayColor = this.explosionRayColor;
+    pieceReceiver.showExplosionWarning = this.showExplosionWarning;
+    pieceReceiver.warningDuration = this.warningDuration;
+    pieceReceiver.warningColor = this.warningColor;
+    
+    DebrisSpawner pieceDebrisSpawner = largePiece.AddComponent<DebrisSpawner>();
+    
+    PhysicsMaterialManager physicsManager = FindObjectOfType<PhysicsMaterialManager>();
+    if (physicsManager != null)
+    {
+        physicsManager.ApplyPhysicsMaterial(largePiece);
+    }
+    
+    StartCoroutine(EnablePhysicsAfterDelay(largePiece, rb, polyCollider, 0.1f));
+
+    Vector2 pieceCenter = largePiece.transform.position;
+
+    StructuralCollapseManager.Instance.ScheduleDelayedExplosion(
+        largePiece,
+        pieceCenter,
+        explosionDelay,
+        minRayCount,
+        maxRayCount,
+        explosionRayDistance,
+        minAngle,
+        maxAngle,
+        showExplosionRays,
+        rayVisualizationDuration,
+        explosionRayColor,
+        showExplosionWarning,
+        warningDuration,
+        warningColor);
+    
+    return largePiece;
+}
+
 GameObject SpawnLargeCutPiece(List<Vector2> cutOffShape, float targetArea, Vector2 entryPoint, Vector2 exitPoint, string materialTag, CutProfile cutProfile)
 {
     GameObject largePiece = new GameObject($"{gameObject.name}_CutPiece");
