@@ -43,6 +43,7 @@ public class SlimeMoldManager : MonoBehaviour
     public float minWaterThreshold = 0.1f;
 
     private Slime slimeSimulation;
+    private SlimeDecomposer slimeDecomposer;
     private RenderTexture waterAttractionMap;
     private Texture2D waterAttractionTextureCPU;
     private Color[] pixelBuffer;
@@ -70,13 +71,13 @@ public class SlimeMoldManager : MonoBehaviour
             Rect liquidBounds = liquidSimulation.GetWorldBounds();
             slimeSimulation.SetWorldBounds(liquidBounds);
             worldBounds = liquidBounds;
-            #if UNITY_EDITOR
-            Debug.Log($"[SlimeMoldManager] Auto-synced bounds to liquid simulation: {liquidBounds}");
-            #endif
         }
 
         // Refresh resolution in case bounds changed
         resolution = slimeSimulation.GetSimulationResolution();
+
+        // Find SlimeDecomposer if present
+        slimeDecomposer = GetComponent<SlimeDecomposer>();
 
         CreateAttractionMap();
         RefreshSources();
@@ -291,6 +292,12 @@ public class SlimeMoldManager : MonoBehaviour
             SampleLiquidSimulation(w, h);
         }
 
+        // Add attraction from decomposable objects if SlimeDecomposer is present
+        if (slimeDecomposer != null)
+        {
+            slimeDecomposer.GetDecomposableAttractions(pixelBuffer, w, h, worldBounds);
+        }
+
         waterAttractionTextureCPU.SetPixels(pixelBuffer);
         waterAttractionTextureCPU.Apply();
         Graphics.Blit(waterAttractionTextureCPU, waterAttractionMap);
@@ -301,9 +308,17 @@ public class SlimeMoldManager : MonoBehaviour
         // Early exit if no water in simulation
         if (liquidSimulation.TotalWaterCells == 0) return;
 
-        // Get liquid sim bounds and find overlapping region
         Rect liquidBounds = liquidSimulation.GetWorldBounds();
 
+        // Sample overlapping region (water inside slime bounds)
+        SampleLiquidOverlap(w, h, liquidBounds);
+
+        // Sample edge attraction (water outside slime bounds)
+        SampleLiquidEdgeAttraction(w, h, liquidBounds);
+    }
+
+    private void SampleLiquidOverlap(int w, int h, Rect liquidBounds)
+    {
         // Calculate overlap in texture space
         float overlapMinX = Mathf.Max(worldBounds.xMin, liquidBounds.xMin);
         float overlapMaxX = Mathf.Min(worldBounds.xMax, liquidBounds.xMax);
@@ -336,6 +351,176 @@ public class SlimeMoldManager : MonoBehaviour
                         float attraction = Mathf.Clamp01(waterAmount) * liquidAttractionMultiplier;
                         int idx = y * w + x;
                         pixelBuffer[idx].r = Mathf.Min(1f, pixelBuffer[idx].r + attraction);
+                    }
+                }
+            }
+        }
+    }
+
+    private void SampleLiquidEdgeAttraction(int w, int h, Rect liquidBounds)
+    {
+        // How far outside the slime bounds to sense water (in world units)
+        float senseRange = Mathf.Min(worldBounds.width, worldBounds.height) * 0.5f;
+        // How deep into the slime bounds to create the attraction gradient
+        int gradientDepth = Mathf.Max(4, h / 8);
+
+        // Check for water ABOVE slime bounds (most common case - water falling down)
+        if (liquidBounds.yMax > worldBounds.yMax)
+        {
+            float scanYMin = worldBounds.yMax;
+            float scanYMax = Mathf.Min(liquidBounds.yMax, worldBounds.yMax + senseRange);
+
+            for (int texX = 0; texX < w; texX++)
+            {
+                float worldX = worldBounds.x + (texX / (float)w) * worldBounds.width;
+                float totalWater = 0f;
+
+                for (float scanY = scanYMin; scanY < scanYMax; scanY += liquidSimulation.CellSize)
+                {
+                    Vector2Int gridPos = liquidSimulation.WorldToGrid(new Vector2(worldX, scanY));
+                    if (liquidSimulation.IsValidCell(gridPos.x, gridPos.y))
+                    {
+                        float water = liquidSimulation.GetWater(gridPos.x, gridPos.y);
+                        if (water > minWaterThreshold)
+                        {
+                            float distFactor = 1f - (scanY - worldBounds.yMax) / senseRange;
+                            totalWater += water * distFactor;
+                        }
+                    }
+                }
+
+                if (totalWater > 0)
+                {
+                    float attraction = Mathf.Clamp01(totalWater) * liquidAttractionMultiplier;
+                    for (int depth = 0; depth < gradientDepth; depth++)
+                    {
+                        int texY = h - 1 - depth;
+                        if (texY < 0) break;
+                        float depthFalloff = 1f - (float)depth / gradientDepth;
+                        int idx = texY * w + texX;
+                        pixelBuffer[idx].r = Mathf.Min(1f, pixelBuffer[idx].r + attraction * depthFalloff);
+                    }
+                }
+            }
+        }
+
+        // Check for water BELOW slime bounds
+        if (liquidBounds.yMin < worldBounds.yMin)
+        {
+            float scanYMin = Mathf.Max(liquidBounds.yMin, worldBounds.yMin - senseRange);
+            float scanYMax = worldBounds.yMin;
+
+            for (int texX = 0; texX < w; texX++)
+            {
+                float worldX = worldBounds.x + (texX / (float)w) * worldBounds.width;
+                float totalWater = 0f;
+
+                for (float scanY = scanYMin; scanY < scanYMax; scanY += liquidSimulation.CellSize)
+                {
+                    Vector2Int gridPos = liquidSimulation.WorldToGrid(new Vector2(worldX, scanY));
+                    if (liquidSimulation.IsValidCell(gridPos.x, gridPos.y))
+                    {
+                        float water = liquidSimulation.GetWater(gridPos.x, gridPos.y);
+                        if (water > minWaterThreshold)
+                        {
+                            float distFactor = 1f - (worldBounds.yMin - scanY) / senseRange;
+                            totalWater += water * distFactor;
+                        }
+                    }
+                }
+
+                if (totalWater > 0)
+                {
+                    float attraction = Mathf.Clamp01(totalWater) * liquidAttractionMultiplier;
+                    for (int depth = 0; depth < gradientDepth; depth++)
+                    {
+                        int texY = depth;
+                        if (texY >= h) break;
+                        float depthFalloff = 1f - (float)depth / gradientDepth;
+                        int idx = texY * w + texX;
+                        pixelBuffer[idx].r = Mathf.Min(1f, pixelBuffer[idx].r + attraction * depthFalloff);
+                    }
+                }
+            }
+        }
+
+        // Check for water to the LEFT of slime bounds
+        if (liquidBounds.xMin < worldBounds.xMin)
+        {
+            float scanXMin = Mathf.Max(liquidBounds.xMin, worldBounds.xMin - senseRange);
+            float scanXMax = worldBounds.xMin;
+            int horizGradient = Mathf.Max(4, w / 8);
+
+            for (int texY = 0; texY < h; texY++)
+            {
+                float worldY = worldBounds.y + (texY / (float)h) * worldBounds.height;
+                float totalWater = 0f;
+
+                for (float scanX = scanXMin; scanX < scanXMax; scanX += liquidSimulation.CellSize)
+                {
+                    Vector2Int gridPos = liquidSimulation.WorldToGrid(new Vector2(scanX, worldY));
+                    if (liquidSimulation.IsValidCell(gridPos.x, gridPos.y))
+                    {
+                        float water = liquidSimulation.GetWater(gridPos.x, gridPos.y);
+                        if (water > minWaterThreshold)
+                        {
+                            float distFactor = 1f - (worldBounds.xMin - scanX) / senseRange;
+                            totalWater += water * distFactor;
+                        }
+                    }
+                }
+
+                if (totalWater > 0)
+                {
+                    float attraction = Mathf.Clamp01(totalWater) * liquidAttractionMultiplier;
+                    for (int depth = 0; depth < horizGradient; depth++)
+                    {
+                        int texX = depth;
+                        if (texX >= w) break;
+                        float depthFalloff = 1f - (float)depth / horizGradient;
+                        int idx = texY * w + texX;
+                        pixelBuffer[idx].r = Mathf.Min(1f, pixelBuffer[idx].r + attraction * depthFalloff);
+                    }
+                }
+            }
+        }
+
+        // Check for water to the RIGHT of slime bounds
+        if (liquidBounds.xMax > worldBounds.xMax)
+        {
+            float scanXMin = worldBounds.xMax;
+            float scanXMax = Mathf.Min(liquidBounds.xMax, worldBounds.xMax + senseRange);
+            int horizGradient = Mathf.Max(4, w / 8);
+
+            for (int texY = 0; texY < h; texY++)
+            {
+                float worldY = worldBounds.y + (texY / (float)h) * worldBounds.height;
+                float totalWater = 0f;
+
+                for (float scanX = scanXMin; scanX < scanXMax; scanX += liquidSimulation.CellSize)
+                {
+                    Vector2Int gridPos = liquidSimulation.WorldToGrid(new Vector2(scanX, worldY));
+                    if (liquidSimulation.IsValidCell(gridPos.x, gridPos.y))
+                    {
+                        float water = liquidSimulation.GetWater(gridPos.x, gridPos.y);
+                        if (water > minWaterThreshold)
+                        {
+                            float distFactor = 1f - (scanX - worldBounds.xMax) / senseRange;
+                            totalWater += water * distFactor;
+                        }
+                    }
+                }
+
+                if (totalWater > 0)
+                {
+                    float attraction = Mathf.Clamp01(totalWater) * liquidAttractionMultiplier;
+                    for (int depth = 0; depth < horizGradient; depth++)
+                    {
+                        int texX = w - 1 - depth;
+                        if (texX < 0) break;
+                        float depthFalloff = 1f - (float)depth / horizGradient;
+                        int idx = texY * w + texX;
+                        pixelBuffer[idx].r = Mathf.Min(1f, pixelBuffer[idx].r + attraction * depthFalloff);
                     }
                 }
             }
