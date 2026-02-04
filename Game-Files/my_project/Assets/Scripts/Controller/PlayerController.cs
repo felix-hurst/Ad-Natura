@@ -83,9 +83,9 @@ public class PlayerController : MonoBehaviour
     public enum ToolType
     {
         CuttingTool,
-        ExplosiveBall,
+        WaterBall,
         Rifle,
-        WaterBall
+        ExplosiveBall
     }
     private ToolType currentTool = ToolType.CuttingTool;
     private int currentToolIndex = -1; //-1 = unequipped, 0 = shovel, 1 = shooter water ammo, 2 shooter explosive ammo, 4 unassigned yet
