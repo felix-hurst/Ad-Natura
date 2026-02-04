@@ -129,7 +129,7 @@ GameObject:
   m_Component:
   - component: {fileID: 19064711}
   - component: {fileID: 19064712}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Coverup (3)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -718,7 +718,7 @@ GameObject:
   m_Component:
   - component: {fileID: 127870433}
   - component: {fileID: 127870434}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Foreground Top
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -949,7 +949,7 @@ GameObject:
   m_Component:
   - component: {fileID: 218022835}
   - component: {fileID: 218022836}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Foreground Bottom
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -3641,7 +3641,7 @@ GameObject:
   m_Component:
   - component: {fileID: 1346343360}
   - component: {fileID: 1346343361}
-  m_Layer: 0
+  m_Layer: 5
   m_Name: Coverup (1)
   m_TagString: Untagged
   m_Icon: {fileID: 0}
@@ -4741,7 +4741,7 @@ MonoBehaviour:
   gridWidth: 300
   gridHeight: 500
   cellSize: 0.1
-  gridOrigin: {x: -5, y: -5}
+  gridOrigin: {x: -10, y: 0}
   simulationStepsPerFrame: 4
   enableSimulation: 1
   maxWaterPerCell: 15

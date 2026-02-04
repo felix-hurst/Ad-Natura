@@ -7,11 +7,14 @@ TagManager:
   - Stone
   - Glass
   - Wood
+  - Ground
+  - Debris
+  - Fragment
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Decompose
   - Water
   - UI
   - Player
