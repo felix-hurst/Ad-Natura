@@ -35,14 +35,51 @@ public class WaterBall : MonoBehaviour
     [SerializeField] private Color impactColor = Color.cyan;
     [SerializeField] private float impactDuration = 0.3f;
     
+    [Header("Water Trail Settings")]
+    [Tooltip("Enable water trail while ball is in flight")]
+    [SerializeField] private bool enableWaterTrail = true;
+    [Tooltip("How often to spawn water trail particles (seconds)")]
+    [SerializeField] private float trailSpawnInterval = 0.05f;
+    [Tooltip("Amount of water to spawn per trail particle")]
+    [Range(0.01f, 0.5f)]
+    [SerializeField] private float trailWaterAmount = 0.1f;
+    [Tooltip("Radius of trail water spawn (in cells)")]
+    [Range(1, 3)]
+    [SerializeField] private int trailSpawnRadius = 1;
+    [Tooltip("Minimum velocity required to spawn trail (prevents trail when ball stops)")]
+    [SerializeField] private float minTrailVelocity = 0.5f;
+    [Tooltip("Create small splash effects for trail particles")]
+    [SerializeField] private bool enableTrailSplashes = true;
+    [Tooltip("Intensity of trail splash effects (0-1)")]
+    [Range(0f, 0.5f)]
+    [SerializeField] private float trailSplashIntensity = 0.15f;
+    [Tooltip("Scale trail amount with velocity (more velocity = more water)")]
+    [SerializeField] private bool scaleTrailWithVelocity = true;
+    [Tooltip("Maximum velocity for trail scaling")]
+    [SerializeField] private float maxTrailVelocity = 10f;
+    [Tooltip("How far behind the ball to spawn trail water (world units)")]
+    [SerializeField] private float trailBehindDistance = 0.15f;
+    [Tooltip("How much to spread trail water along trajectory path")]
+    [SerializeField] private float trajectorySpreadFactor = 1.5f;
+    
     private float lifetime = 0f;
     private bool hasImpacted = false;
     private CellularLiquidSimulation liquidSimulation;
     private WaterSplashSystem splashSystem;
+    private float trailTimer = 0f;
+    private Rigidbody2D rb;
     
     void Start()
     {
         CreateVisual();
+
+        rb = GetComponent<Rigidbody2D>();
+        if (rb == null)
+        {
+            Debug.LogWarning("WaterBall: No Rigidbody2D found! Adding one.");
+            rb = gameObject.AddComponent<Rigidbody2D>();
+            rb.gravityScale = 1f;
+        }
 
         liquidSimulation = FindObjectOfType<CellularLiquidSimulation>();
         if (liquidSimulation == null)
@@ -51,10 +88,12 @@ public class WaterBall : MonoBehaviour
         }
 
         splashSystem = FindObjectOfType<WaterSplashSystem>();
-        if (splashSystem == null && enableSplashEffect)
+        if (splashSystem == null && (enableSplashEffect || enableTrailSplashes))
         {
             Debug.LogWarning("WaterBall: No WaterSplashSystem found in scene! Splash effects will not work. Add WaterSplashSystem component to the same GameObject as CellularLiquidSimulation.");
         }
+
+        trailTimer = Random.Range(0f, trailSpawnInterval * 0.5f);
     }
     
     void Update()
@@ -64,6 +103,78 @@ public class WaterBall : MonoBehaviour
         if (lifetime >= maxLifetime)
         {
             Destroy(gameObject);
+            return;
+        }
+ 
+        if (enableWaterTrail && !hasImpacted && liquidSimulation != null && rb != null)
+        {
+            trailTimer += Time.deltaTime;
+            
+            float currentVelocity = rb.linearVelocity.magnitude;
+
+            if (currentVelocity >= minTrailVelocity && trailTimer >= trailSpawnInterval)
+            {
+                trailTimer = 0f;
+                SpawnWaterTrail(currentVelocity);
+            }
+        }
+    }
+    
+    void SpawnWaterTrail(float velocity)
+    {
+        Vector2 currentPosition = transform.position;
+
+        float actualTrailAmount = trailWaterAmount;
+        if (scaleTrailWithVelocity)
+        {
+            float velocityRatio = Mathf.Clamp01(velocity / maxTrailVelocity);
+            actualTrailAmount *= Mathf.Lerp(0.3f, 1f, velocityRatio);
+        }
+
+        Vector2 ballVelocity = rb.linearVelocity;
+        Vector2 velocityDirection = ballVelocity.normalized;
+
+        Vector2 trailOffset = -velocityDirection * trailBehindDistance;
+        Vector2 spawnPosition = currentPosition + trailOffset;
+        
+        Vector2Int centerCell = liquidSimulation.WorldToGrid(spawnPosition);
+
+        int randomOffset = Random.Range(-1, 2);
+        centerCell.x += randomOffset;
+        
+        for (int x = -trailSpawnRadius; x <= trailSpawnRadius; x++)
+        {
+            for (int y = -trailSpawnRadius; y <= trailSpawnRadius; y++)
+            {
+               
+                if (Mathf.Sqrt(x * x + y * y) <= trailSpawnRadius)
+                {
+                 
+                    float offsetX = x - velocityDirection.x * trajectorySpreadFactor;
+                    float offsetY = y - velocityDirection.y * trajectorySpreadFactor;
+                    
+                    int cellX = centerCell.x + Mathf.RoundToInt(offsetX);
+                    int cellY = centerCell.y + Mathf.RoundToInt(offsetY);
+
+                    if (liquidSimulation.IsValidCell(cellX, cellY))
+                    {
+                        float waterPerCell = actualTrailAmount / (trailSpawnRadius * trailSpawnRadius * 3.14f);
+
+                        waterPerCell *= Random.Range(0.5f, 1f);
+                        
+                        float currentWater = liquidSimulation.GetWater(cellX, cellY);
+                        liquidSimulation.SetWater(cellX, cellY, currentWater + waterPerCell);
+                    }
+                }
+            }
+        }
+        
+        // Create small splash effect for trail particles
+        if (enableTrailSplashes && splashSystem != null)
+        {
+            // Use ball's velocity for splash direction
+            Vector2 splashVelocity = rb.linearVelocity * 0.5f; // Reduce for trail effect
+            splashSystem.TriggerSplash(spawnPosition, trailSplashIntensity, splashVelocity);
         }
     }
     
@@ -106,6 +217,7 @@ public class WaterBall : MonoBehaviour
             for (int x = 0; x < size; x++)
             {
                 float distance = Vector2.Distance(new Vector2(x, y), center);
+
                 if (distance <= radius)
                 {
                     float alpha = 1f - (distance / radius) * 0.3f; // Slight fade at edges
@@ -246,7 +358,6 @@ public class WaterBall : MonoBehaviour
         lineRenderer.sortingOrder = 15;
         lineRenderer.useWorldSpace = true;
         lineRenderer.loop = true;
-
         int segments = 12;
         lineRenderer.positionCount = segments;
         
@@ -284,7 +395,5 @@ public class WaterBall : MonoBehaviour
         }
         
         return false;
-    }
-
-
+    }  
 }

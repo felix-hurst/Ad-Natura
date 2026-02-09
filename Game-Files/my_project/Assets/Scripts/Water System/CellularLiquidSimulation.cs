@@ -71,6 +71,21 @@ public class CellularLiquidSimulation : MonoBehaviour
     [Tooltip("How often to update displacement (seconds)")]
     [SerializeField] private float displacementUpdateInterval = 0.05f;
 
+    [Header("Performance Optimization")]
+    [Tooltip("Only update texture regions that changed (massive performance boost)")]
+    [SerializeField] private bool useDirtyRectOptimization = true;
+    [Tooltip("Expand dirty region by this many cells to avoid artifacts")]
+    [SerializeField] private int dirtyRectPadding = 2;
+    [Tooltip("Use cached rigidbody tracking for displacement (massive performance boost)")]
+    [SerializeField] private bool useCachedDisplacementRigidbodies = true;
+    [Tooltip("How often to refresh displacement rigidbody cache (seconds). 0 = only on enable/registration.")]
+    [SerializeField] private float displacementCacheRefreshInterval = 2.0f;
+    [Tooltip("Batch texture updates - only update every N frames (0 = every frame, 1 = every other frame)")]
+    [Range(0, 5)]
+    [SerializeField] private int textureUpdateFrameSkip = 0;
+    [Tooltip("Pre-allocate pixel arrays to avoid GC allocations")]
+    [SerializeField] private bool usePixelArrayPool = true;
+
     private float[,] water;
     private float[,] newWater;
     private bool[,] solid;
@@ -85,11 +100,59 @@ public class CellularLiquidSimulation : MonoBehaviour
     private float solidUpdateTimer = 0f;
     private Dictionary<Rigidbody2D, Vector2> trackedRigidbodies = new Dictionary<Rigidbody2D, Vector2>();
     private float displacementUpdateTimer = 0f;
+
+    private HashSet<Rigidbody2D> cachedDisplacementRigidbodies = new HashSet<Rigidbody2D>();
+    private float displacementCacheRefreshTimer = 0f;
+
+    private int dirtyMinX = int.MaxValue;
+    private int dirtyMinY = int.MaxValue;
+    private int dirtyMaxX = int.MinValue;
+    private int dirtyMaxY = int.MinValue;
+    private bool hasVisualChanges = false;
+
+    private int textureUpdateFrameCounter = 0;
+    private Color[] pixelArrayPool; 
+    private List<Vector2Int> activeCellsList;
+
+    private Color[] depthColorCache;
+    private const int DEPTH_CACHE_SIZE = 32;
     
     void Awake()
     {
         InitializeGrid();
+        InitializeOptimizations();
         InitializeRendering();
+
+        if (useCachedDisplacementRigidbodies && enableDisplacement)
+        {
+            RefreshDisplacementCache();
+        }
+    }
+    
+    void InitializeOptimizations()
+    {
+        if (usePixelArrayPool)
+        {
+            pixelArrayPool = new Color[gridWidth * gridHeight];
+        }
+        activeCellsList = new List<Vector2Int>(gridWidth * gridHeight / 4);
+
+        depthColorCache = new Color[DEPTH_CACHE_SIZE];
+        for (int i = 0; i < DEPTH_CACHE_SIZE; i++)
+        {
+            float depthRatio = Mathf.Clamp01((float)i / maxShadingDepth);
+            
+            if (depthRatio < 0.4f)
+            {
+                float t = depthRatio / 0.4f;
+                depthColorCache[i] = Color.Lerp(waterColorShallow, waterColorMid, t);
+            }
+            else
+            {
+                float t = (depthRatio - 0.4f) / 0.6f;
+                depthColorCache[i] = Color.Lerp(waterColorMid, waterColorDeep, t);
+            }
+        }
     }
     
     void InitializeGrid()
@@ -137,7 +200,7 @@ public class CellularLiquidSimulation : MonoBehaviour
             waterRenderer.material = waterMaterial;
         }
 
-        UpdateWaterTexture();
+        UpdateWaterTextureOptimized();
     }
     
     void Update()
@@ -162,7 +225,19 @@ public class CellularLiquidSimulation : MonoBehaviour
                 displacementUpdateTimer = 0f;
                 UpdateDisplacement();
             }
+
+            if (useCachedDisplacementRigidbodies && displacementCacheRefreshInterval > 0f)
+            {
+                displacementCacheRefreshTimer += Time.deltaTime;
+                if (displacementCacheRefreshTimer >= displacementCacheRefreshInterval)
+                {
+                    displacementCacheRefreshTimer = 0f;
+                    RefreshDisplacementCache();
+                }
+            }
         }
+
+        ResetDirtyRect();
 
         for (int i = 0; i < simulationStepsPerFrame; i++)
         {
@@ -174,7 +249,18 @@ public class CellularLiquidSimulation : MonoBehaviour
             CalculateWaterDepthAndSurface();
         }
 
-        UpdateWaterTexture();
+        textureUpdateFrameCounter++;
+        bool shouldUpdateTexture = textureUpdateFrameCounter > textureUpdateFrameSkip;
+        
+        if (shouldUpdateTexture)
+        {
+            textureUpdateFrameCounter = 0;
+
+            if (hasVisualChanges || !useDirtyRectOptimization)
+            {
+                UpdateWaterTextureOptimized();
+            }
+        }
     }
     
     void SimulationStep()
@@ -187,9 +273,14 @@ public class CellularLiquidSimulation : MonoBehaviour
         {
             FindAllWaterCells();
         }
-        
-        foreach (Vector2Int cell in activeCells)
+
+        activeCellsList.Clear();
+        activeCellsList.AddRange(activeCells);
+
+        int cellCount = activeCellsList.Count;
+        for (int i = 0; i < cellCount; i++)
         {
+            Vector2Int cell = activeCellsList[i];
             int x = cell.x;
             int y = cell.y;
             
@@ -227,6 +318,9 @@ public class CellularLiquidSimulation : MonoBehaviour
                     nextActiveCells.Add(new Vector2Int(x, y - 1));
                     settled[x, y] = false;
                     settled[x, y - 1] = false;
+                    
+                    MarkCellDirty(x, y);
+                    MarkCellDirty(x, y - 1);
                 }
             }
 
@@ -255,6 +349,8 @@ public class CellularLiquidSimulation : MonoBehaviour
                             currentWater -= flowLeft;
                             nextActiveCells.Add(new Vector2Int(x - 1, y - 1));
                             settled[x - 1, y - 1] = false;
+                            MarkCellDirty(x, y);
+                            MarkCellDirty(x - 1, y - 1);
                         }
                         
                         if (rightWater < maxWaterPerCell)
@@ -265,6 +361,8 @@ public class CellularLiquidSimulation : MonoBehaviour
                             currentWater -= flowRight;
                             nextActiveCells.Add(new Vector2Int(x + 1, y - 1));
                             settled[x + 1, y - 1] = false;
+                            MarkCellDirty(x, y);
+                            MarkCellDirty(x + 1, y - 1);
                         }
                     }
                     else if (canFlowDiagLeft)
@@ -278,6 +376,8 @@ public class CellularLiquidSimulation : MonoBehaviour
                             currentWater -= flowLeft;
                             nextActiveCells.Add(new Vector2Int(x - 1, y - 1));
                             settled[x - 1, y - 1] = false;
+                            MarkCellDirty(x, y);
+                            MarkCellDirty(x - 1, y - 1);
                         }
                     }
                     else if (canFlowDiagRight)
@@ -291,6 +391,8 @@ public class CellularLiquidSimulation : MonoBehaviour
                             currentWater -= flowRight;
                             nextActiveCells.Add(new Vector2Int(x + 1, y - 1));
                             settled[x + 1, y - 1] = false;
+                            MarkCellDirty(x, y);
+                            MarkCellDirty(x + 1, y - 1);
                         }
                     }
                 }
@@ -319,6 +421,8 @@ public class CellularLiquidSimulation : MonoBehaviour
                             nextActiveCells.Add(new Vector2Int(x - 1, y));
                             settled[x, y] = false;
                             settled[x - 1, y] = false;
+                            MarkCellDirty(x, y);
+                            MarkCellDirty(x - 1, y);
                         }
                     }
                     
@@ -335,6 +439,8 @@ public class CellularLiquidSimulation : MonoBehaviour
                             nextActiveCells.Add(new Vector2Int(x + 1, y));
                             settled[x, y] = false;
                             settled[x + 1, y] = false;
+                            MarkCellDirty(x, y);
+                            MarkCellDirty(x + 1, y);
                         }
                     }
                 }
@@ -359,6 +465,8 @@ public class CellularLiquidSimulation : MonoBehaviour
                             nextActiveCells.Add(new Vector2Int(x, y + 1));
                             settled[x, y] = false;
                             settled[x, y + 1] = false;
+                            MarkCellDirty(x, y);
+                            MarkCellDirty(x, y + 1);
                         }
                     }
                 }
@@ -472,60 +580,136 @@ public class CellularLiquidSimulation : MonoBehaviour
             }
         }
     }
-    
-    void UpdateWaterTexture()
+
+    void ResetDirtyRect()
     {
-        Color[] pixels = new Color[gridWidth * gridHeight];
+        dirtyMinX = int.MaxValue;
+        dirtyMinY = int.MaxValue;
+        dirtyMaxX = int.MinValue;
+        dirtyMaxY = int.MinValue;
+        hasVisualChanges = false;
+    }
+    
+    void MarkCellDirty(int x, int y)
+    {
+        if (!useDirtyRectOptimization) return;
         
-        for (int x = 0; x < gridWidth; x++)
+        hasVisualChanges = true;
+
+        int minX = Mathf.Max(0, x - dirtyRectPadding);
+        int minY = Mathf.Max(0, y - dirtyRectPadding);
+        int maxX = Mathf.Min(gridWidth - 1, x + dirtyRectPadding);
+        int maxY = Mathf.Min(gridHeight - 1, y + dirtyRectPadding);
+        
+        dirtyMinX = Mathf.Min(dirtyMinX, minX);
+        dirtyMinY = Mathf.Min(dirtyMinY, minY);
+        dirtyMaxX = Mathf.Max(dirtyMaxX, maxX);
+        dirtyMaxY = Mathf.Max(dirtyMaxY, maxY);
+    }
+
+    void UpdateWaterTextureOptimized()
+    {
+        if (usePixelArrayPool && pixelArrayPool == null)
         {
-            for (int y = 0; y < gridHeight; y++)
+            pixelArrayPool = new Color[gridWidth * gridHeight];
+        }
+        
+        if (useDirtyRectOptimization && hasVisualChanges)
+        {
+            int width = (dirtyMaxX - dirtyMinX) + 1;
+            int height = (dirtyMaxY - dirtyMinY) + 1;
+            
+            if (width <= 0 || height <= 0) return;
+
+            Color[] pixels;
+            if (usePixelArrayPool && width * height <= pixelArrayPool.Length)
             {
-                int index = y * gridWidth + x;
-                
-                if (solid[x, y])
+                pixels = pixelArrayPool;
+            }
+            else
+            {
+                pixels = new Color[width * height];
+            }
+ 
+            int index = 0;
+            for (int y = dirtyMinY; y <= dirtyMaxY; y++)
+            {
+                for (int x = dirtyMinX; x <= dirtyMaxX; x++)
                 {
-                    pixels[index] = Color.clear;
-                }
-                else
-                {
-                    float amount = water[x, y];
-                    if (amount > minWaterTransfer)
-                    {
-                        pixels[index] = GetWaterColor(x, y, amount);
-                    }
-                    else
+                    if (solid[x, y])
                     {
                         pixels[index] = Color.clear;
                     }
+                    else
+                    {
+                        float amount = water[x, y];
+                        if (amount > minWaterTransfer)
+                        {
+                            pixels[index] = GetWaterColorOptimized(x, y, amount);
+                        }
+                        else
+                        {
+                            pixels[index] = Color.clear;
+                        }
+                    }
+                    index++;
                 }
             }
+
+            waterTexture.SetPixels(dirtyMinX, dirtyMinY, width, height, pixels);
+            waterTexture.Apply(false); 
         }
-        
-        waterTexture.SetPixels(pixels);
-        waterTexture.Apply();
+        else if (!useDirtyRectOptimization)
+        {
+            Color[] pixels = usePixelArrayPool ? pixelArrayPool : new Color[gridWidth * gridHeight];
+            
+            int index = 0;
+            for (int y = 0; y < gridHeight; y++)
+            {
+                for (int x = 0; x < gridWidth; x++)
+                {
+                    if (solid[x, y])
+                    {
+                        pixels[index] = Color.clear;
+                    }
+                    else
+                    {
+                        float amount = water[x, y];
+                        if (amount > minWaterTransfer)
+                        {
+                            pixels[index] = GetWaterColorOptimized(x, y, amount);
+                        }
+                        else
+                        {
+                            pixels[index] = Color.clear;
+                        }
+                    }
+                    index++;
+                }
+            }
+            
+            waterTexture.SetPixels(pixels);
+            waterTexture.Apply(false);
+        }
 
         waterTexture.filterMode = FilterMode.Point;
     }
 
-    Color GetWaterColor(int x, int y, float amount)
+    Color GetWaterColorOptimized(int x, int y, float amount)
     {
         Color baseColor;
 
         if (enableDepthShading)
         {
             int depth = waterDepth[x, y];
-            float depthRatio = Mathf.Clamp01((float)depth / maxShadingDepth);
 
-            if (depthRatio < 0.4f)
+            if (depth < DEPTH_CACHE_SIZE)
             {
-                float t = depthRatio / 0.4f;
-                baseColor = Color.Lerp(waterColorShallow, waterColorMid, t);
+                baseColor = depthColorCache[depth];
             }
             else
             {
-                float t = (depthRatio - 0.4f) / 0.6f;
-                baseColor = Color.Lerp(waterColorMid, waterColorDeep, t);
+                baseColor = waterColorDeep;
             }
         }
         else
@@ -547,12 +731,14 @@ public class CellularLiquidSimulation : MonoBehaviour
                 baseColor = Color.Lerp(baseColor, surfaceHighlightColor, 0.2f);
             }
         }
+        
         float alphaRatio = Mathf.Clamp01(amount / maxWaterPerCell);
         float minAlpha = 0.2f;
         float alpha = Mathf.Lerp(minAlpha, 1f, alphaRatio) * baseColor.a;
         
         return new Color(baseColor.r, baseColor.g, baseColor.b, alpha);
     }
+    
     public void UpdateSolidCells()
     {
         bool[,] oldSolid = new bool[gridWidth, gridHeight];
@@ -574,6 +760,11 @@ public class CellularLiquidSimulation : MonoBehaviour
                         settled[x, y] = false;
                     }
                 }
+
+                if (oldSolid[x, y] != solid[x, y])
+                {
+                    MarkCellDirty(x, y);
+                }
             }
         }
     }
@@ -591,6 +782,7 @@ public class CellularLiquidSimulation : MonoBehaviour
                 {
                     water[x, y] = 0f;
                     cleanedCells++;
+                    MarkCellDirty(x, y);
                 }
             }
         }
@@ -606,6 +798,7 @@ public class CellularLiquidSimulation : MonoBehaviour
             water[gridPos.x, gridPos.y] = Mathf.Min(water[gridPos.x, gridPos.y] + amount, maxWaterPerCell);
             activeCells.Add(gridPos);
             settled[gridPos.x, gridPos.y] = false;
+            MarkCellDirty(gridPos.x, gridPos.y);
         }
     }
 
@@ -657,11 +850,11 @@ public class CellularLiquidSimulation : MonoBehaviour
                         water[x, y] = Mathf.Min(water[x, y] + waterPerCell, maxWaterPerCell);
                         activeCells.Add(new Vector2Int(x, y));
                         settled[x, y] = false;
+                        MarkCellDirty(x, y);
                     }
                 }
             }
         }
-
     }
 
     public void RemoveWater(Vector2 worldPosition, float amount)
@@ -671,6 +864,7 @@ public class CellularLiquidSimulation : MonoBehaviour
         {
             water[gridPos.x, gridPos.y] = Mathf.Max(0f, water[gridPos.x, gridPos.y] - amount);
             activeCells.Add(gridPos);
+            MarkCellDirty(gridPos.x, gridPos.y);
         }
     }
 
@@ -680,7 +874,14 @@ public class CellularLiquidSimulation : MonoBehaviour
         System.Array.Clear(newWater, 0, newWater.Length);
         System.Array.Clear(settled, 0, settled.Length);
         activeCells.Clear();
-        UpdateWaterTexture();
+
+        dirtyMinX = 0;
+        dirtyMinY = 0;
+        dirtyMaxX = gridWidth - 1;
+        dirtyMaxY = gridHeight - 1;
+        hasVisualChanges = true;
+        
+        UpdateWaterTextureOptimized();
     }
     
     bool IsPointInPolygon(Vector2 point, List<Vector2> polygon)
@@ -737,6 +938,7 @@ public class CellularLiquidSimulation : MonoBehaviour
                 activeCells.Add(new Vector2Int(x, y));
                 settled[x, y] = false;
             }
+            MarkCellDirty(x, y);
         }
     }
 
@@ -758,9 +960,6 @@ public class CellularLiquidSimulation : MonoBehaviour
         return x >= 0 && x < gridWidth && y >= 0 && y < gridHeight;
     }
 
-    /// <summary>
-    /// Returns the world-space bounds covered by this liquid simulation.
-    /// </summary>
     public Rect GetWorldBounds()
     {
         return new Rect(gridOrigin.x, gridOrigin.y, gridWidth * cellSize, gridHeight * cellSize);
@@ -774,18 +973,70 @@ public class CellularLiquidSimulation : MonoBehaviour
         Gizmos.DrawWireCube(gridOrigin + gridSize * 0.5f, gridSize);
     }
 
-    
-    void UpdateDisplacement()
+    void RefreshDisplacementCache()
     {
+        cachedDisplacementRigidbodies.Clear();
+        
         Rigidbody2D[] allRigidbodies = FindObjectsOfType<Rigidbody2D>();
-        
-        Dictionary<Rigidbody2D, Vector2> currentRigidbodies = new Dictionary<Rigidbody2D, Vector2>();
-        
         foreach (Rigidbody2D rb in allRigidbodies)
         {
+            if (rb == null || rb.bodyType == RigidbodyType2D.Static) continue;
+            
             int layerMask = 1 << rb.gameObject.layer;
-            if ((layerMask & displacementLayers) == 0) continue;
-            if (rb.bodyType == RigidbodyType2D.Static) continue;
+            if ((layerMask & displacementLayers) != 0)
+            {
+                cachedDisplacementRigidbodies.Add(rb);
+            }
+        }
+        
+        Debug.Log($"Displacement rigidbody cache refreshed: {cachedDisplacementRigidbodies.Count} tracked");
+    }
+
+    public void RegisterDisplacementRigidbody(Rigidbody2D rb)
+    {
+        if (!useCachedDisplacementRigidbodies) return;
+        if (rb == null || rb.bodyType == RigidbodyType2D.Static) return;
+        
+        int layerMask = 1 << rb.gameObject.layer;
+        if ((layerMask & displacementLayers) != 0)
+        {
+            cachedDisplacementRigidbodies.Add(rb);
+        }
+    }
+
+    public void UnregisterDisplacementRigidbody(Rigidbody2D rb)
+    {
+        if (!useCachedDisplacementRigidbodies) return;
+        
+        cachedDisplacementRigidbodies.Remove(rb);
+        trackedRigidbodies.Remove(rb);
+    }
+
+    void UpdateDisplacement()
+    {
+        Dictionary<Rigidbody2D, Vector2> currentRigidbodies = new Dictionary<Rigidbody2D, Vector2>();
+
+        IEnumerable<Rigidbody2D> rigidbodiestoCheck;
+        
+        if (useCachedDisplacementRigidbodies)
+        {
+            cachedDisplacementRigidbodies.RemoveWhere(rb => rb == null);
+            rigidbodiestoCheck = cachedDisplacementRigidbodies;
+        }
+        else
+        {
+            rigidbodiestoCheck = FindObjectsOfType<Rigidbody2D>();
+        }
+        
+        foreach (Rigidbody2D rb in rigidbodiestoCheck)
+        {
+            if (rb == null || rb.bodyType == RigidbodyType2D.Static) continue;
+
+            if (!useCachedDisplacementRigidbodies)
+            {
+                int layerMask = 1 << rb.gameObject.layer;
+                if ((layerMask & displacementLayers) == 0) continue;
+            }
             
             Vector2 currentPos = rb.position;
             Vector2 velocity = rb.linearVelocity;
@@ -874,6 +1125,8 @@ public class CellularLiquidSimulation : MonoBehaviour
             {
                 water[cell.x, cell.y] = 0f;
             }
+            
+            MarkCellDirty(cell.x, cell.y);
         }
         
         if (waterToDisplace > minWaterTransfer)
@@ -938,6 +1191,7 @@ public class CellularLiquidSimulation : MonoBehaviour
             
             activeCells.Add(targetCell);
             settled[targetCell.x, targetCell.y] = false;
+            MarkCellDirty(targetCell.x, targetCell.y);
         }
     }
 }
