@@ -68,6 +68,7 @@ MonoBehaviour:
   - Player
   - Debris
   - Fragment
+  - Ground
   showExplosionRays: 1
   rayVisualizationDuration: 0.5
   explosionRayColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}

@@ -112,13 +112,13 @@ MonoBehaviour:
   ballRadius: 0.3
   ballColor: {r: 0.8160377, g: 0.9165987, b: 1, a: 0.23921569}
   maxLifetime: 10
-  waterAmountToSpawn: 15
+  waterAmountToSpawn: 40
   waterSpawnRadius: 5
   useRegionSpawn: 1
   regionSpawnSize: 1.5
   enableSplashEffect: 1
   splashIntensity: 0.8
-  scaleWithVelocity: 1
+  scaleWithVelocity: 0
   maxVelocityForSplash: 15
   excludedLayers:
     serializedVersion: 2
@@ -130,14 +130,3 @@ MonoBehaviour:
   showImpactEffect: 0
   impactColor: {r: 0, g: 1, b: 1, a: 1}
   impactDuration: 0.3
-  enableWaterTrail: 1
-  trailSpawnInterval: 0.01
-  trailWaterAmount: 0.01
-  trailSpawnRadius: 1
-  minTrailVelocity: 0.5
-  enableTrailSplashes: 1
-  trailSplashIntensity: 0.069
-  scaleTrailWithVelocity: 1
-  maxTrailVelocity: 15
-  trailBehindDistance: 0.15
-  trajectorySpreadFactor: 1.5

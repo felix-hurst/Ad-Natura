@@ -60,6 +60,16 @@ public enum ToolType
 
     private float velocityX;
 
+    public enum ToolType
+    {
+        CuttingTool,
+        WaterBall,
+        Rifle,
+        ExplosiveBall
+    }
+    private ToolType currentTool = ToolType.CuttingTool;
+    private int currentToolIndex = -1; //-1 = unequipped, 0 = shovel, 1 = shooter water ammo, 2 shooter explosive ammo, 4 unassigned yet
+
     void Start()
     {
         rb = GetComponent<Rigidbody2D>();
@@ -138,14 +148,107 @@ public enum ToolType
                     throwForce = waterBallThrowForce;
                     spawnOffset = waterBallSpawnOffset;
                 }
-                else if (currentTool == ToolType.IncendiaryBall)
-                {
-                    ballPrefab = incendiaryBallPrefab;
-                    throwForce = incendiaryBallThrowForce;
-                    spawnOffset = incendiaryBallSpawnOffset;
-                }
-                
-                raycast.SetCurrentTool(currentTool, ballPrefab, throwForce, spawnOffset, maxCuttingRange);
+
+                raycast.SetCurrentTool(currentTool, ballPrefab, throwForce, spawnOffset, maxCuttingRange, rifleExplosionRounds, rifleDelayBetweenRounds);
+            }
+        }
+
+        if (anim != null)
+        {
+            anim.SetBool("isRunning", isRunning);
+            anim.SetBool("isGrounded", isGrounded);
+            anim.SetBool("isAiming", isAiming);
+
+            int animValue = currentToolIndex;
+            if (currentToolIndex == 1 || currentToolIndex == 2)
+            {
+                animValue = 1; 
+            }
+            else if (currentToolIndex == 3)
+            {
+                animValue = 2; 
+            }
+
+            anim.SetInteger("ToolIndex", animValue);
+        }
+    }
+
+    public void SwitchTool(int toolIndex)
+    {
+        Debug.Log("SwitchTool called with: " + toolIndex);
+
+        currentToolIndex = toolIndex;
+
+        if (anim != null)
+        {
+            anim.SetInteger("ToolIndex", toolIndex);
+        }
+
+        if (toolIndex == -1)
+        {
+            isAiming = false;
+            if (raycast != null) raycast.enabled = false;
+            Debug.Log("Player unselected all tools.");
+            return;
+        }
+
+        currentTool = (ToolType)toolIndex;
+
+        if (raycast != null)
+        {
+            raycast.SetCurrentTool(currentTool);
+            raycast.enabled = isAiming;
+        }
+
+        Debug.Log("Player switched to: " + currentTool.ToString());
+    }
+
+    //When player looks left, flip the entire sprite
+    private void HandleSpriteFlipping()
+    {
+        if (!isRunning)
+        {
+            if (gameCamera != null)
+            {
+                Vector3 mousePos = gameCamera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+                transform.localScale = new Vector3(mousePos.x > transform.position.x ? 1f : -1f, 1f, 1f);
+            }
+        }
+        else
+        {
+            if (Mathf.Abs(moveInput.x) > 0.01f)
+            {
+                transform.localScale = new Vector3(moveInput.x > 0 ? 1f : -1f, 1f, 1f);
+            }
+        }
+    }
+
+    private void HandleArmRotation()
+    {
+        if (nearArmGun == null || farArm == null || gameCamera == null) return;
+
+        if (isAiming)
+        {
+            //Takes the mouse position and calculates the angle towards it for the near Arm (and Gun)
+            Vector3 mousePos = gameCamera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+            Vector2 lookDir = (Vector2)mousePos - (Vector2)nearArmGun.position;
+            float angle = Mathf.Atan2(lookDir.y, lookDir.x) * Mathf.Rad2Deg;
+            float finalAngle = (transform.localScale.x < 0) ? angle + 180f : angle;
+            nearArmGun.rotation = Quaternion.Euler(0, 0, finalAngle);
+
+            //Does the same as above but for the far arm
+            if (farHandGrip != null)
+            {
+                // TODO: Pass waterball attributes when appropriate
+                raycast.SetCurrentTool(currentTool, explosiveBallPrefab, explosiveBallThrowForce, explosiveBallSpawnOffset, maxCuttingRange);
+                Vector2 shoulderToGrip = (Vector2)farHandGrip.position - (Vector2)farArm.position;
+                float distance = shoulderToGrip.magnitude;
+                float farAngle = Mathf.Atan2(shoulderToGrip.y, shoulderToGrip.x) * Mathf.Rad2Deg;
+                float finalFarAngle = (transform.localScale.x < 0) ? farAngle + 180f : farAngle;
+                farArm.rotation = Quaternion.Euler(0, 0, finalFarAngle);
+                //When not aiming perfectly left or right, gun will be closer/shorter to far arm, need to scale up/down
+                float stretchFactor = distance / armLength;
+                farArm.localScale = new Vector3(stretchFactor, 1f, 1f);
             }
         }
     }

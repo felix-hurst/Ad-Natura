@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 2454d69e78ec6e849a54500dfb546171
+guid: f2220ea32fac7084cb11bc89b6a437ae
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -2625059994249185709
-    second: AnimationAim_01 - Copy_0
+      213: 3780275148294825824
+    second: AmmoWater_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -37,7 +37,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 0
+    filterMode: 1
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -100,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: AnimationAim_01 - Copy_0
+      name: AmmoWater_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 55
-        height: 58
+        width: 192
+        height: 194
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 35630b8e7d9e19bd0800000000000000
-      internalID: -2625059994249185709
+      spriteID: 067a957f73c367430800000000000000
+      internalID: 3780275148294825824
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      AnimationAim_01 - Copy_0: -2625059994249185709
+      AmmoWater_0: 3780275148294825824
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
