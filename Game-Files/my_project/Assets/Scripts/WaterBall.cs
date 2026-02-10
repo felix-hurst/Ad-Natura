@@ -79,7 +79,7 @@ public class WaterBall : MonoBehaviour
             
             sr.sprite = sprite;
             sr.color = ballColor;
-            sr.sortingOrder = 10;
+            sr.sortingOrder = 20;
         }
         
         transform.localScale = Vector3.one * (ballRadius * 2f);

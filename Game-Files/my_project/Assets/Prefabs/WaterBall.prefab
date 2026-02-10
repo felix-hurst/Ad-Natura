@@ -112,7 +112,7 @@ MonoBehaviour:
   ballRadius: 0.3
   ballColor: {r: 0.8160377, g: 0.9165987, b: 1, a: 0.23921569}
   maxLifetime: 10
-  waterAmountToSpawn: 40
+  waterAmountToSpawn: 20
   waterSpawnRadius: 5
   useRegionSpawn: 1
   regionSpawnSize: 1.5

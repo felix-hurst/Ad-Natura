@@ -42,6 +42,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private GameObject waterBallPrefab;
     [SerializeField] private float waterBallThrowForce = 10f;
     [SerializeField] private float waterBallSpawnOffset = 1.0f;
+    [SerializeField] private Texture2D dashTexture;
 
     [Header("Cutting Tool Settings")]
     [SerializeField] private float maxCuttingRange = 10f;
@@ -97,7 +98,7 @@ public class PlayerController : MonoBehaviour
 
         // Create and initialize raycast system
         raycast = gameObject.AddComponent<Raycast>();
-        raycast.Initialize(transform);
+        raycast.Initialize(transform, dashTexture);
         raycast.SetCurrentTool(currentTool); // Set initial tool
         raycast.enabled = false; // Start with it off
 
