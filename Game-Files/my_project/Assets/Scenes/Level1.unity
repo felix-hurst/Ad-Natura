@@ -5952,7 +5952,7 @@ MonoBehaviour:
   pixelsPerUnit: 10
   solidLayer:
     serializedVersion: 2
-    m_Bits: 65
+    m_Bits: 321
   physicsCheckRadius: 0.05
   dynamicSolidUpdate: 1
   solidUpdateInterval: 0.01

@@ -6,6 +6,7 @@ public class Raycast : MonoBehaviour
     [Header("Raycast Settings")]
     [SerializeField] private float raycastMaxDistance = 100f;
     [SerializeField] private float dotSize = 0.2f;
+    [SerializeField] private float dashWorldSize = 0.2f;
 
     [Header("Explosive Settings")]
     [SerializeField] private GameObject explosiveBallPrefab;
@@ -25,7 +26,6 @@ public class Raycast : MonoBehaviour
     private int rifleExplosionRounds = 3;
     private float rifleDelayBetweenRounds = 0.8f;
     private int arcMask;
-    private GameObject landingDot;
 
     // Tool State Management
     private PlayerController.ToolType currentTool;
@@ -48,7 +48,7 @@ public class Raycast : MonoBehaviour
         lineRenderer.sortingOrder = 5;
         lineRenderer.useWorldSpace = true;
         lineRenderer.positionCount = 2;
-        lineRenderer.textureMode = LineTextureMode.RepeatPerSegment;
+        lineRenderer.textureMode = LineTextureMode.Tile;
 
         // Create entry dot
         entryDot = GameObject.CreatePrimitive(PrimitiveType.Sphere);
@@ -183,58 +183,55 @@ public class Raycast : MonoBehaviour
     private void DrawStraightLine(Vector3 target)
     {
         Vector3 start = playerTransform.position;
+        start.z = 0; 
+        target.z = 0;
         float distance = Vector3.Distance(start, target);
 
-        //creates "fake" segments so RepeatPerSegment has something to tile onto
-        float segmentLength = 0.5f;
-        int pointCount = Mathf.Max(2, Mathf.CeilToInt(distance / segmentLength));
+        // 'Tile' maps the texture based on world units
+        lineRenderer.textureMode = LineTextureMode.Tile;
+        lineRenderer.positionCount = 2;
+        lineRenderer.SetPosition(0, start);
+        lineRenderer.SetPosition(1, target);
 
-        //Repeat dashed texture along the lines
-        lineRenderer.textureMode = LineTextureMode.RepeatPerSegment;
-        lineRenderer.positionCount = pointCount;
-
-        for (int i = 0; i < pointCount; i++)
-        {
-            float t = i / (float)(pointCount - 1);
-            lineRenderer.SetPosition(i, Vector3.Lerp(start, target, t));
-        }
+        //Total distance divided by the size of one dash cycle
+        lineRenderer.material.mainTextureScale = new Vector2(distance / dashWorldSize, 1f);
     }
+  
 
     private void DrawArc(Vector2 direction)
     {
         Vector2 velocity = direction * throwForce;
         Vector2 startPosition = (Vector2)playerTransform.position + (direction * ballSpawnOffset);
 
-        lineRenderer.positionCount = arcResolution;
+        System.Collections.Generic.List<Vector3> points = new System.Collections.Generic.List<Vector3>();
+        points.Add(new Vector3(startPosition.x, startPosition.y, 0));
+
+        float totalLength = 0f;
         Vector2 lastPos = startPosition;
 
-        for (int i = 0; i < arcResolution; i++)
+        for (int i = 1; i < arcResolution; i++)
         {
             float t = i * 0.05f;
             Vector2 pos = startPosition + (velocity * t) + 0.5f * Physics2D.gravity * t * t;
 
             RaycastHit2D hit = Physics2D.Linecast(lastPos, pos, arcMask);
+            Vector3 currentPoint = hit.collider != null ? (Vector3)hit.point : (Vector3)pos;
+            currentPoint.z = 0;
 
-            if (hit.collider != null)
-            {
-                Debug.Log("Raycast hit: " + hit.collider.name);
-            }
-            else
-            {
-                Debug.Log("Raycast hit nothing.");
-            }
+            totalLength += Vector3.Distance(new Vector3(lastPos.x, lastPos.y, 0), currentPoint);
+            points.Add(currentPoint);
 
-            if (hit.collider != null)
-            {
-
-                lineRenderer.positionCount = i + 1;
-                lineRenderer.SetPosition(i, new Vector3(hit.point.x, hit.point.y, 0));
-                return;
-            }
-
-            lineRenderer.SetPosition(i, new Vector3(pos.x, pos.y, 0));
+            if (hit.collider != null) break;
             lastPos = pos;
         }
+
+        if (points.Count < 2) return;
+
+        lineRenderer.textureMode = LineTextureMode.Tile;
+        lineRenderer.positionCount = points.Count;
+        lineRenderer.SetPositions(points.ToArray());
+
+        lineRenderer.material.mainTextureScale = new Vector2(totalLength / dashWorldSize, 1f);
     }
 
     private void HandleCuttingDots(RaycastHit2D targetHit, Vector2 direction, float distance)
