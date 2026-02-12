@@ -94,7 +94,7 @@ public class PlayerController : MonoBehaviour
 
         IncendiaryBall
     }
-    private ToolType currentTool = ToolType.IncendiaryBall;
+    private ToolType currentTool = ToolType.WaterBall;
     private int currentToolIndex = -1; 
 
     void Start()
