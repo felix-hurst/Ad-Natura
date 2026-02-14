@@ -284,13 +284,23 @@ MonoBehaviour:
   groundLayer:
     serializedVersion: 2
     m_Bits: 1
+  enableSlimeClimbing: 1
+  slimeClimbSpeed: 3
+  slimeWallCheckDistance: 0.3
+  slimeSurfaceLayer:
+    serializedVersion: 2
+    m_Bits: 0
+  explosiveBallPrefab: {fileID: 0}
+  throwForce: 10
+  ballSpawnOffset: 1
+  maxCuttingRange: 10
   gameCamera: {fileID: 519420031}
-  classicModel: {fileID: 641443465}
-  aimingModel: {fileID: 485250197}
-  nearArmGun: {fileID: 368002417}
-  farArm: {fileID: 880960051}
-  farHandGrip: {fileID: 1984669038}
-  armLength: 0.8
+  classicModel: {fileID: 0}
+  aimingModel: {fileID: 0}
+  nearArmGun: {fileID: 0}
+  farArm: {fileID: 0}
+  farHandGrip: {fileID: 0}
+  armLength: 0.5
 --- !u!61 &148678583
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -1387,9 +1397,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   highlightMode: 0
+  showCutOutline: 1
   baseLargePieceRatio: 0.4
   largePieceMassMultiplier: 0.5
   largePieceForceRange: {x: 1, y: 3}
+  enableDelayedExplosions: 1
+  explosionDelay: 0.01
+  minRayCount: 4
+  maxRayCount: 9
+  explosionRayDistance: 5
+  minAngle: 0
+  maxAngle: 360
+  showExplosionRays: 1
+  rayVisualizationDuration: 0.5
+  explosionRayColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  showExplosionWarning: 1
+  warningDuration: 0.5
+  warningColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!1 &619394800
 GameObject:
   m_ObjectHideFlags: 0
@@ -1988,9 +2012,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   highlightMode: 2
+  showCutOutline: 1
   baseLargePieceRatio: 0.4
   largePieceMassMultiplier: 0.5
   largePieceForceRange: {x: 1, y: 3}
+  enableDelayedExplosions: 1
+  explosionDelay: 0.01
+  minRayCount: 4
+  maxRayCount: 9
+  explosionRayDistance: 5
+  minAngle: 0
+  maxAngle: 360
+  showExplosionRays: 1
+  rayVisualizationDuration: 0.5
+  explosionRayColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  showExplosionWarning: 1
+  warningDuration: 0.5
+  warningColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!61 &1136925121
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -2350,9 +2388,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   highlightMode: 2
+  showCutOutline: 1
   baseLargePieceRatio: 0.4
   largePieceMassMultiplier: 0.5
   largePieceForceRange: {x: 1, y: 3}
+  enableDelayedExplosions: 1
+  explosionDelay: 0.01
+  minRayCount: 4
+  maxRayCount: 9
+  explosionRayDistance: 5
+  minAngle: 0
+  maxAngle: 360
+  showExplosionRays: 1
+  rayVisualizationDuration: 0.5
+  explosionRayColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  showExplosionWarning: 1
+  warningDuration: 0.5
+  warningColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!50 &1312493599
 Rigidbody2D:
   serializedVersion: 5
@@ -2851,9 +2903,23 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   highlightMode: 2
+  showCutOutline: 1
   baseLargePieceRatio: 0.4
   largePieceMassMultiplier: 0.5
   largePieceForceRange: {x: 1, y: 3}
+  enableDelayedExplosions: 1
+  explosionDelay: 0.01
+  minRayCount: 4
+  maxRayCount: 9
+  explosionRayDistance: 5
+  minAngle: 0
+  maxAngle: 360
+  showExplosionRays: 1
+  rayVisualizationDuration: 0.5
+  explosionRayColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
+  showExplosionWarning: 1
+  warningDuration: 0.5
+  warningColor: {r: 1, g: 0, b: 0, a: 1}
 --- !u!61 &1733121334
 BoxCollider2D:
   m_ObjectHideFlags: 0
