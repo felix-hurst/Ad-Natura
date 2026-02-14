@@ -19,6 +19,7 @@ public class PlayerController : MonoBehaviour
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float jumpForce = 3f;
+    [SerializeField] private float minGroundAngleToJump = 60f;
 
     [Header("Ground Check")]
     [SerializeField] private Transform groundCheck;
@@ -32,6 +33,11 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float slimeClimbSpeed = 3f;
     [SerializeField] private float slimeWallCheckDistance = 0.3f;
     [SerializeField] private LayerMask slimeSurfaceLayer;
+
+    [Header("Incendiary Ball Settings")]
+    [SerializeField] private GameObject incendiaryBallPrefab;
+    [SerializeField] private float incendiaryBallThrowForce = 10f;
+    [SerializeField] private float incendiaryBallSpawnOffset = 1.0f;
 
     [Header("Explosive Ball Settings")]
     [SerializeField] private GameObject explosiveBallPrefab;
@@ -87,7 +93,8 @@ public class PlayerController : MonoBehaviour
         CuttingTool,
         WaterBall,
         Rifle,
-        ExplosiveBall
+        ExplosiveBall,
+        IncendiaryBall
     }
     private ToolType currentTool = ToolType.CuttingTool;
     private int currentToolIndex = -1; //-1 = unequipped, 0 = shovel, 1 = shooter water ammo, 2 shooter explosive ammo, 4 unassigned yet
@@ -413,7 +420,7 @@ public class PlayerController : MonoBehaviour
             if (norm.y > 0)
             {
                 float angle = Mathf.Atan(norm.y / Mathf.Abs(norm.x)) * Mathf.Rad2Deg;
-                if (angle >= 80 && angle <= 90)
+                if (angle >= minGroundAngleToJump && angle <= 90)
                 {
                     isGrounded = true;
                 }
