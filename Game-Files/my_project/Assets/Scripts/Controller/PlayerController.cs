@@ -38,6 +38,11 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float explosiveBallThrowForce = 10f;
     [SerializeField] private float explosiveBallSpawnOffset = 1.0f;
 
+        [Header("Incendiary Ball Settings")]
+    [SerializeField] private GameObject incendiaryBallPrefab;
+    [SerializeField] private float incendiaryBallThrowForce = 10f;
+    [SerializeField] private float incendiaryBallSpawnOffset = 1.0f;
+
     [Header("Water Ball Settings")]
     [SerializeField] private GameObject waterBallPrefab;
     [SerializeField] private float waterBallThrowForce = 10f;
@@ -85,10 +90,12 @@ public class PlayerController : MonoBehaviour
         CuttingTool,
         WaterBall,
         Rifle,
-        ExplosiveBall
+        ExplosiveBall,
+
+        IncendiaryBall
     }
-    private ToolType currentTool = ToolType.CuttingTool;
-    private int currentToolIndex = -1; //-1 = unequipped, 0 = shovel, 1 = shooter water ammo, 2 shooter explosive ammo, 4 unassigned yet
+    private ToolType currentTool = ToolType.WaterBall;
+    private int currentToolIndex = -1; 
 
     void Start()
     {
@@ -98,7 +105,6 @@ public class PlayerController : MonoBehaviour
         // Create and initialize raycast system
         raycast = gameObject.AddComponent<Raycast>();
         raycast.Initialize(transform);
-        raycast.SetCurrentTool(currentTool); // Set initial tool
         raycast.enabled = false; // Start with it off
 
         if (classicModel != null)
@@ -164,7 +170,14 @@ public class PlayerController : MonoBehaviour
                     spawnOffset = waterBallSpawnOffset;
                 }
 
-                raycast.SetCurrentTool(currentTool, ballPrefab, throwForce, spawnOffset, maxCuttingRange, rifleExplosionRounds, rifleDelayBetweenRounds);
+                                else if (currentTool == ToolType.IncendiaryBall)
+                {
+                    ballPrefab = incendiaryBallPrefab;
+                    throwForce = incendiaryBallThrowForce;
+                    spawnOffset = incendiaryBallSpawnOffset;
+                }
+
+                raycast.SetCurrentTool(currentTool, ballPrefab, throwForce, spawnOffset, maxCuttingRange);
             }
         }
 
@@ -211,7 +224,6 @@ public class PlayerController : MonoBehaviour
 
         if (raycast != null)
         {
-            raycast.SetCurrentTool(currentTool);
             raycast.enabled = isAiming;
         }
 
@@ -254,6 +266,7 @@ public class PlayerController : MonoBehaviour
             //Does the same as above but for the far arm
             if (farHandGrip != null)
             {
+                
                 // TODO: Pass waterball attributes when appropriate
                 raycast.SetCurrentTool(currentTool, explosiveBallPrefab, explosiveBallThrowForce, explosiveBallSpawnOffset, maxCuttingRange);
                 Vector2 shoulderToGrip = (Vector2)farHandGrip.position - (Vector2)farArm.position;
