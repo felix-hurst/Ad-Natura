@@ -375,7 +375,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 606b42d27c394be4a87cf96536693662, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  useCellularDebris: 1
 --- !u!114 &78049747
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -477,22 +476,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   highlightMode: 2
   showCutOutline: 1
-  baseLargePieceRatio: 0.4
   largePieceMassMultiplier: 0.5
   largePieceForceRange: {x: 1, y: 3}
-  enableDelayedExplosions: 1
-  explosionDelay: 0.01
-  minRayCount: 4
-  maxRayCount: 9
-  explosionRayDistance: 5
-  minAngle: 0
-  maxAngle: 360
-  showExplosionRays: 1
-  rayVisualizationDuration: 0.5
-  explosionRayColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  showExplosionWarning: 1
-  warningDuration: 0.5
-  warningColor: {r: 1, g: 0, b: 0, a: 1}
+  cutPieceLifetime: 2
+  enableAutoCleanup: 1
+  minAreaThreshold: 0.15
+  enableMinSizeCheck: 1
 --- !u!212 &78049753
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -1575,7 +1564,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 606b42d27c394be4a87cf96536693662, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  useCellularDebris: 1
 --- !u!114 &643169755
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1677,22 +1665,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   highlightMode: 2
   showCutOutline: 1
-  baseLargePieceRatio: 0.4
   largePieceMassMultiplier: 0.5
   largePieceForceRange: {x: 1, y: 3}
-  enableDelayedExplosions: 1
-  explosionDelay: 0.01
-  minRayCount: 4
-  maxRayCount: 9
-  explosionRayDistance: 5
-  minAngle: 0
-  maxAngle: 360
-  showExplosionRays: 1
-  rayVisualizationDuration: 0.5
-  explosionRayColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  showExplosionWarning: 1
-  warningDuration: 0.5
-  warningColor: {r: 1, g: 0, b: 0, a: 1}
+  cutPieceLifetime: 30
+  enableAutoCleanup: 1
+  minAreaThreshold: 0.15
+  enableMinSizeCheck: 1
 --- !u!212 &643169761
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -1868,47 +1846,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eafb647397e95e44da4ea3ea3efdcc1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gridWidth: 800
-  gridHeight: 800
-  cellSize: 0.05
-  gridOrigin: {x: 0, y: -5}
-  simulationStepsPerFrame: 2
-  enableSimulation: 1
-  maxDebrisPerCell: 2
-  minDebrisTransfer: 0.001
-  gravityMultiplier: 1
-  transferRate: 1
-  debrisLifetime: 90000
-  powderPhysics: 1
-  slideCoefficient: 0.7
-  angleOfRepose: 35
-  inertia: 0.3
-  enablePressure: 1
-  maxCompression: 0.3
-  pressureStrength: 0.15
-  enableDiagonalFlow: 1
-  diagonalFlowRate: 0.4
-  debrisSpreadRate: 0.3
-  enableDisplacement: 1
-  displacementLayers:
-    serializedVersion: 2
-    m_Bits: 4294967295
-  displacementStrength: 2
-  pushForce: 2
-  minDisplacementVelocity: 0.5
-  displacementUpdateInterval: 0.05
-  renderMaterial: {fileID: 0}
-  pixelsPerUnit: 20
-  enableDepthShading: 1
-  maxShadingDepth: 8
-  chunkSize: 3
-  randomizedChunks: 1
-  solidLayer:
-    serializedVersion: 2
-    m_Bits: 321
-  physicsCheckRadius: 0.05
-  dynamicSolidUpdate: 1
-  solidUpdateInterval: 0.5
 --- !u!4 &718768942
 Transform:
   m_ObjectHideFlags: 0
@@ -2324,7 +2261,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 606b42d27c394be4a87cf96536693662, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  useCellularDebris: 1
 --- !u!114 &862233246
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2426,22 +2362,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   highlightMode: 2
   showCutOutline: 1
-  baseLargePieceRatio: 0.4
   largePieceMassMultiplier: 0.5
   largePieceForceRange: {x: 1, y: 3}
-  enableDelayedExplosions: 1
-  explosionDelay: 0.01
-  minRayCount: 4
-  maxRayCount: 9
-  explosionRayDistance: 5
-  minAngle: 0
-  maxAngle: 360
-  showExplosionRays: 1
-  rayVisualizationDuration: 0.5
-  explosionRayColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  showExplosionWarning: 1
-  warningDuration: 0.5
-  warningColor: {r: 1, g: 0, b: 0, a: 1}
+  cutPieceLifetime: 30
+  enableAutoCleanup: 1
+  minAreaThreshold: 0.15
+  enableMinSizeCheck: 1
 --- !u!212 &862233252
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -2745,7 +2671,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 606b42d27c394be4a87cf96536693662, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  useCellularDebris: 1
 --- !u!114 &901333439
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2847,22 +2772,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   highlightMode: 2
   showCutOutline: 1
-  baseLargePieceRatio: 0.4
   largePieceMassMultiplier: 0.5
   largePieceForceRange: {x: 1, y: 3}
-  enableDelayedExplosions: 1
-  explosionDelay: 0.01
-  minRayCount: 4
-  maxRayCount: 9
-  explosionRayDistance: 5
-  minAngle: 0
-  maxAngle: 360
-  showExplosionRays: 1
-  rayVisualizationDuration: 0.5
-  explosionRayColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  showExplosionWarning: 1
-  warningDuration: 0.5
-  warningColor: {r: 1, g: 0, b: 0, a: 1}
+  cutPieceLifetime: 30
+  enableAutoCleanup: 1
+  minAreaThreshold: 0.15
+  enableMinSizeCheck: 1
 --- !u!212 &901333445
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -3106,6 +3021,9 @@ MonoBehaviour:
   explosiveBallPrefab: {fileID: 7397440784313061156, guid: 55c7fb9dd2972f640acdf6283654fbf2, type: 3}
   explosiveBallThrowForce: 10
   explosiveBallSpawnOffset: 1
+  incendiaryBallPrefab: {fileID: 0}
+  incendiaryBallThrowForce: 10
+  incendiaryBallSpawnOffset: 1
   waterBallPrefab: {fileID: 1920139217570416795, guid: 1ecefb02fd788de45abec1189397179e, type: 3}
   waterBallThrowForce: 10
   waterBallSpawnOffset: 1
@@ -3294,7 +3212,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 606b42d27c394be4a87cf96536693662, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  useCellularDebris: 1
 --- !u!114 &1046064509
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3396,22 +3313,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   highlightMode: 2
   showCutOutline: 1
-  baseLargePieceRatio: 0.4
   largePieceMassMultiplier: 0.5
   largePieceForceRange: {x: 1, y: 3}
-  enableDelayedExplosions: 1
-  explosionDelay: 0.01
-  minRayCount: 4
-  maxRayCount: 9
-  explosionRayDistance: 5
-  minAngle: 0
-  maxAngle: 360
-  showExplosionRays: 1
-  rayVisualizationDuration: 0.5
-  explosionRayColor: {r: 1, g: 0.92156863, b: 0.015686275, a: 1}
-  showExplosionWarning: 1
-  warningDuration: 0.5
-  warningColor: {r: 1, g: 0, b: 0, a: 1}
+  cutPieceLifetime: 30
+  enableAutoCleanup: 1
+  minAreaThreshold: 0.15
+  enableMinSizeCheck: 1
 --- !u!212 &1046064516
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -4776,6 +4683,12 @@ MonoBehaviour:
   pushForce: 1.5
   minDisplacementVelocity: 0.5
   displacementUpdateInterval: 0.05
+  useDirtyRectOptimization: 1
+  dirtyRectPadding: 2
+  useCachedDisplacementRigidbodies: 1
+  displacementCacheRefreshInterval: 2
+  textureUpdateFrameSkip: 0
+  usePixelArrayPool: 1
 --- !u!114 &1931747239
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4794,19 +4707,61 @@ MonoBehaviour:
     serializedVersion: 2
     m_Bits: 4294967295
   checkInterval: 0.05
-  maxParticlesPerSplash: 20
-  minParticlesPerSplash: 3
-  maxParticleHeight: 3
-  horizontalSpread: 2
+  enableEnhancedPhysics: 1
+  crownCellCount: 12
+  crownRadius: 0.8
+  crownHeight: 0.6
+  jetCellCount: 5
+  jetHeight: 1.2
+  jetDelay: 0.15
+  sprayCellCount: 8
+  sprayRadius: 1
+  sprayHeight: 0.8
+  enableRayleighPlateau: 1
+  mostUnstableWavelength: 0.15
+  cuspNoiseAngle: 12
+  enableProgressiveEjection: 1
+  crownEjectionDuration: 0.08
+  splashWaterAmount: 0.8
+  splashIntensityScale: 1
+  waterRemoveAmount: 2
+  arcSteps: 6
+  arcStepInterval: 0.025
+  crownParticlesPerSplash: 8
+  sprayParticlesPerSplash: 10
   particleSize: 0.08
   particleLifetime: 1.5
-  waterPerParticle: 0.1
-  particlesReturnWater: 1
-  splashColor: {r: 1, g: 1, b: 1, a: 0.8}
-  fadeParticles: 1
   maxActiveParticles: 100
+  particleGravity: -18
+  particleDamping: 0.97
+  secondaryDropletMinSize: 0.15
+  secondaryDropletMaxSize: 0.24
+  secondaryVelocityMin: 1.5
+  secondaryVelocityMax: 2.5
+  enableSecondaryCollisions: 1
+  minTimeBeforeSecondaryCollision: 0.15
+  particleCollisionLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  particleCollisionRadius: 0.05
+  collisionBounceFactor: 0.4
+  minMicroSplashVelocity: 1.5
+  microSplashWaterAmount: 0.15
+  crownParticleColor: {r: 0.25, g: 0.45, b: 0.75, a: 0.9}
+  sprayParticleColor: {r: 0.55, g: 0.78, b: 1, a: 0.75}
   maxSplashesPerFrame: 3
+  useCachedRigidbodies: 1
+  cacheRefreshInterval: 2
+  useSpatialHashingForCollisions: 1
+  spatialHashCellSize: 0.15
+  cacheWaterSurfaceCells: 1
+  waterSurfaceCacheRefreshInterval: 0.1
+  useBatchedParticleUpdates: 1
+  particleBatchSize: 16
   showDebugInfo: 0
+  showCollisionDebug: 0
+  showCuspDebug: 0
+  showSpatialHashDebug: 0
 --- !u!114 &1931747240
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -375,7 +375,7 @@ public class SlimeMoldManager : MonoBehaviour
                 float worldX = worldBounds.x + (texX / (float)w) * worldBounds.width;
                 float totalWater = 0f;
 
-                for (float scanY = scanYMin; scanY < scanYMax; scanY += liquidSimulation.CellSize)
+                for (float scanY = scanYMin; scanY < scanYMax; scanY += liquidSimulation.cellSize)
                 {
                     Vector2Int gridPos = liquidSimulation.WorldToGrid(new Vector2(worldX, scanY));
                     if (liquidSimulation.IsValidCell(gridPos.x, gridPos.y))
@@ -415,7 +415,7 @@ public class SlimeMoldManager : MonoBehaviour
                 float worldX = worldBounds.x + (texX / (float)w) * worldBounds.width;
                 float totalWater = 0f;
 
-                for (float scanY = scanYMin; scanY < scanYMax; scanY += liquidSimulation.CellSize)
+                for (float scanY = scanYMin; scanY < scanYMax; scanY += liquidSimulation.cellSize)
                 {
                     Vector2Int gridPos = liquidSimulation.WorldToGrid(new Vector2(worldX, scanY));
                     if (liquidSimulation.IsValidCell(gridPos.x, gridPos.y))
@@ -456,7 +456,7 @@ public class SlimeMoldManager : MonoBehaviour
                 float worldY = worldBounds.y + (texY / (float)h) * worldBounds.height;
                 float totalWater = 0f;
 
-                for (float scanX = scanXMin; scanX < scanXMax; scanX += liquidSimulation.CellSize)
+                for (float scanX = scanXMin; scanX < scanXMax; scanX += liquidSimulation.cellSize)
                 {
                     Vector2Int gridPos = liquidSimulation.WorldToGrid(new Vector2(scanX, worldY));
                     if (liquidSimulation.IsValidCell(gridPos.x, gridPos.y))
@@ -497,7 +497,7 @@ public class SlimeMoldManager : MonoBehaviour
                 float worldY = worldBounds.y + (texY / (float)h) * worldBounds.height;
                 float totalWater = 0f;
 
-                for (float scanX = scanXMin; scanX < scanXMax; scanX += liquidSimulation.CellSize)
+                for (float scanX = scanXMin; scanX < scanXMax; scanX += liquidSimulation.cellSize)
                 {
                     Vector2Int gridPos = liquidSimulation.WorldToGrid(new Vector2(scanX, worldY));
                     if (liquidSimulation.IsValidCell(gridPos.x, gridPos.y))
