@@ -58,6 +58,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private GameObject aimingModel; //aiming model is the model that the aiming section manipulates
     [SerializeField] private Transform nearArmGun;
     [SerializeField] private Transform farArm;
+    [SerializeField] private Transform muzzle;
 
     [Header("Stretching Settings")]
     [SerializeField] private Transform farHandGrip;
@@ -98,7 +99,7 @@ public class PlayerController : MonoBehaviour
 
         // Create and initialize raycast system
         raycast = gameObject.AddComponent<Raycast>();
-        raycast.Initialize(transform, dashTexture);
+        raycast.Initialize(transform, muzzle, dashTexture);
         raycast.SetCurrentTool(currentTool); // Set initial tool
         raycast.enabled = false; // Start with it off
 

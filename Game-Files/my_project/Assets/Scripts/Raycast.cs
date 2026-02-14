@@ -26,6 +26,7 @@ public class Raycast : MonoBehaviour
     private int rifleExplosionRounds = 3;
     private float rifleDelayBetweenRounds = 0.8f;
     private int arcMask;
+    private Transform muzzleTransform;
 
     // Tool State Management
     private PlayerController.ToolType currentTool;
@@ -33,9 +34,10 @@ public class Raycast : MonoBehaviour
     private Vector2 currentExitPoint;
     private bool hasValidCut;
 
-    public void Initialize(Transform player, Texture2D dashTexture)
+    public void Initialize(Transform player, Transform muzzle, Texture2D dashTexture)
     {
         playerTransform = player;
+        muzzleTransform = muzzle;
 
         // Set up LineRenderer for visualization
         lineRenderer = gameObject.AddComponent<LineRenderer>();
@@ -95,8 +97,8 @@ public class Raycast : MonoBehaviour
         Vector3 mousePosition = Camera.main.ScreenToWorldPoint(mouseScreenPos);
         mousePosition.z = 0;
 
-        Vector2 direction = (mousePosition - playerTransform.position).normalized;
-        float distance = Vector2.Distance(new Vector2(playerTransform.position.x, playerTransform.position.y), new Vector2(mousePosition.x, mousePosition.y));
+        Vector2 direction = (mousePosition - muzzleTransform.position).normalized;
+        float distance = Vector2.Distance(new Vector2(muzzleTransform.position.x, muzzleTransform.position.y), new Vector2(mousePosition.x, mousePosition.y));
 
         if (currentTool == PlayerController.ToolType.WaterBall ||
             currentTool == PlayerController.ToolType.ExplosiveBall)
@@ -126,7 +128,7 @@ public class Raycast : MonoBehaviour
             ClearAllHighlights();
             return;
         }
-        RaycastHit2D[] hits = Physics2D.RaycastAll(playerTransform.position, direction, distance);
+        RaycastHit2D[] hits = Physics2D.RaycastAll(muzzleTransform.position, direction, distance);
 
         RaycastHit2D targetHit = default;
         Collider2D targetCollider = null;
@@ -138,7 +140,7 @@ public class Raycast : MonoBehaviour
             if (hit.collider.gameObject == playerTransform.gameObject) continue;
             if (hit.collider.gameObject.name.Contains("Debris") || hit.collider.gameObject.name.Contains("Fragment")) continue;
 
-            float hitDistance = Vector2.Distance(playerTransform.position, hit.point);
+            float hitDistance = Vector2.Distance(muzzleTransform.position, hit.point);
 
             if (currentTool == PlayerController.ToolType.CuttingTool && hitDistance > maxCuttingRange)
                 continue;
@@ -182,7 +184,7 @@ public class Raycast : MonoBehaviour
 
     private void DrawStraightLine(Vector3 target)
     {
-        Vector3 start = playerTransform.position;
+        Vector3 start = muzzleTransform.position;
         start.z = 0; 
         target.z = 0;
         float distance = Vector3.Distance(start, target);
@@ -201,7 +203,7 @@ public class Raycast : MonoBehaviour
     private void DrawArc(Vector2 direction)
     {
         Vector2 velocity = direction * throwForce;
-        Vector2 startPosition = (Vector2)playerTransform.position + (direction * ballSpawnOffset);
+        Vector2 startPosition = (Vector2)muzzleTransform.position;
 
         System.Collections.Generic.List<Vector3> points = new System.Collections.Generic.List<Vector3>();
         points.Add(new Vector3(startPosition.x, startPosition.y, 0));
@@ -244,7 +246,7 @@ public class Raycast : MonoBehaviour
         Bounds bounds = hitCollider.bounds;
 
         // Calculate a point far enough on the other side of the object to raycast back
-        Vector2 farPoint = (Vector2)playerTransform.position + direction * (distance + bounds.size.magnitude);
+        Vector2 farPoint = (Vector2)muzzleTransform.position + direction * (distance + bounds.size.magnitude);
 
         RaycastHit2D[] reverseHits = Physics2D.RaycastAll(farPoint, -direction, distance + bounds.size.magnitude);
         Vector2 exitPoint = Vector2.zero;
@@ -317,7 +319,7 @@ public class Raycast : MonoBehaviour
             return;
         }
 
-        Vector3 spawnPosition = playerTransform.position + (Vector3)(direction * ballSpawnOffset);
+        Vector3 spawnPosition = muzzleTransform.position;
 
         GameObject projectile = Instantiate(projectilePrefab, spawnPosition, Quaternion.identity);
 
