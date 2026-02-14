@@ -19,6 +19,7 @@ public class PlayerController : MonoBehaviour
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float jumpForce = 3f;
+    [SerializeField] private float minGroundAngleToJump = 60f;
 
     [Header("Ground Check")]
     [SerializeField] private Transform groundCheck;
@@ -424,7 +425,7 @@ public class PlayerController : MonoBehaviour
             if (norm.y > 0)
             {
                 float angle = Mathf.Atan(norm.y / Mathf.Abs(norm.x)) * Mathf.Rad2Deg;
-                if (angle >= 80 && angle <= 90)
+                if (angle >= minGroundAngleToJump && angle <= 90)
                 {
                     isGrounded = true;
                 }
