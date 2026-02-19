@@ -235,10 +235,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eda1291aa67c08e4f8db83129d35f167, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  popupPanel: {fileID: 105881244}
-  titleText: {fileID: 105881242}
-  messageText: {fileID: 105881241}
-  iconImage: {fileID: 105881243}
+  popupPanel: {fileID: 0}
+  titleText: {fileID: 0}
+  messageText: {fileID: 0}
+  iconImage: {fileID: 0}
   displayDuration: 4
   fadeSpeed: 2
 --- !u!4 &25440274
@@ -425,10 +425,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 606b42d27c394be4a87cf96536693662, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  useCellularDebris: 1
-  spriteRenderer: {fileID: 0}
-  parentMaterialTag: 
-  cellularDebris: {fileID: 0}
 --- !u!114 &78049747
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -532,7 +528,7 @@ MonoBehaviour:
   showCutOutline: 1
   largePieceMassMultiplier: 0.5
   largePieceForceRange: {x: 1, y: 3}
-  cutPieceLifetime: 30
+  cutPieceLifetime: 1
   enableAutoCleanup: 1
   minAreaThreshold: 0.15
   enableMinSizeCheck: 1
@@ -676,6 +672,54 @@ PrefabInstance:
       propertyPath: m_Name
       value: Canvas
       objectReference: {fileID: 0}
+    - target: {fileID: 5103750636515412517, guid: 5edeb1fa39034c14f964eaa03ae0e6db, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5103750636515412517, guid: 5edeb1fa39034c14f964eaa03ae0e6db, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5103750636515412517, guid: 5edeb1fa39034c14f964eaa03ae0e6db, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 5103750636515412517, guid: 5edeb1fa39034c14f964eaa03ae0e6db, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7691888776784841688, guid: 5edeb1fa39034c14f964eaa03ae0e6db, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7691888776784841688, guid: 5edeb1fa39034c14f964eaa03ae0e6db, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7691888776784841688, guid: 5edeb1fa39034c14f964eaa03ae0e6db, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7691888776784841688, guid: 5edeb1fa39034c14f964eaa03ae0e6db, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7697249457699559269, guid: 5edeb1fa39034c14f964eaa03ae0e6db, type: 3}
+      propertyPath: m_AnchorMax.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7697249457699559269, guid: 5edeb1fa39034c14f964eaa03ae0e6db, type: 3}
+      propertyPath: m_AnchorMin.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7697249457699559269, guid: 5edeb1fa39034c14f964eaa03ae0e6db, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7697249457699559269, guid: 5edeb1fa39034c14f964eaa03ae0e6db, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 8874439350379211480, guid: 5edeb1fa39034c14f964eaa03ae0e6db, type: 3}
       propertyPath: m_Pivot.x
       value: 0
@@ -761,44 +805,6 @@ PrefabInstance:
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 5edeb1fa39034c14f964eaa03ae0e6db, type: 3}
---- !u!114 &105881241 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 4023831614370779284, guid: 5edeb1fa39034c14f964eaa03ae0e6db, type: 3}
-  m_PrefabInstance: {fileID: 105881240}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &105881242 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 3966655077454534452, guid: 5edeb1fa39034c14f964eaa03ae0e6db, type: 3}
-  m_PrefabInstance: {fileID: 105881240}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f4688fdb7df04437aeb418b961361dc5, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!114 &105881243 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 1887322608060602457, guid: 5edeb1fa39034c14f964eaa03ae0e6db, type: 3}
-  m_PrefabInstance: {fileID: 105881240}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: fe87c0e1cc204ed48ad3b37840f39efc, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
---- !u!1 &105881244 stripped
-GameObject:
-  m_CorrespondingSourceObject: {fileID: 7178903769044967548, guid: 5edeb1fa39034c14f964eaa03ae0e6db, type: 3}
-  m_PrefabInstance: {fileID: 105881240}
-  m_PrefabAsset: {fileID: 0}
 --- !u!1 &110789065
 GameObject:
   m_ObjectHideFlags: 0
@@ -1181,10 +1187,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 606b42d27c394be4a87cf96536693662, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  useCellularDebris: 1
-  spriteRenderer: {fileID: 0}
-  parentMaterialTag: 
-  cellularDebris: {fileID: 0}
 --- !u!114 &169951193
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1288,7 +1290,7 @@ MonoBehaviour:
   showCutOutline: 1
   largePieceMassMultiplier: 0.5
   largePieceForceRange: {x: 1, y: 3}
-  cutPieceLifetime: 30
+  cutPieceLifetime: 1
   enableAutoCleanup: 1
   minAreaThreshold: 0.15
   enableMinSizeCheck: 1
@@ -2098,10 +2100,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 606b42d27c394be4a87cf96536693662, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  useCellularDebris: 1
-  spriteRenderer: {fileID: 0}
-  parentMaterialTag: 
-  cellularDebris: {fileID: 0}
 --- !u!114 &643169755
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2205,7 +2203,7 @@ MonoBehaviour:
   showCutOutline: 1
   largePieceMassMultiplier: 0.5
   largePieceForceRange: {x: 1, y: 3}
-  cutPieceLifetime: 30
+  cutPieceLifetime: 1
   enableAutoCleanup: 1
   minAreaThreshold: 0.15
   enableMinSizeCheck: 1
@@ -2384,50 +2382,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: eafb647397e95e44da4ea3ea3efdcc1c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  gridWidth: 800
-  gridHeight: 800
-  cellSize: 0.05
-  gridOrigin: {x: 0, y: -5}
-  simulationStepsPerFrame: 2
-  enableSimulation: 1
-  maxDebrisPerCell: 2
-  minDebrisTransfer: 0.001
-  gravityMultiplier: 1
-  transferRate: 1
-  debrisLifetime: 90000
-  powderPhysics: 1
-  slideCoefficient: 0.7
-  angleOfRepose: 35
-  inertia: 0.3
-  enablePressure: 1
-  maxCompression: 0.3
-  pressureStrength: 0.15
-  enableDiagonalFlow: 1
-  diagonalFlowRate: 0.4
-  debrisSpreadRate: 0.3
-  enableDisplacement: 1
-  displacementLayers:
-    m_Bits: 4294967295
-  displacementStrength: 2
-  pushForce: 2
-  minDisplacementVelocity: 0.5
-  displacementUpdateInterval: 0.05
-  renderMaterial: {fileID: 0}
-  pixelsPerUnit: 20
-  enableDepthShading: 1
-  maxShadingDepth: 8
-  chunkSize: 3
-  randomizedChunks: 1
-  solidLayer:
-    m_Bits: 321
-  physicsCheckRadius: 0.05
-  dynamicSolidUpdate: 1
-  solidUpdateInterval: 0.5
-  debrisTexture: {fileID: 0}
-  debrisRenderer: {fileID: 0}
-  debrisVisualObject: {fileID: 0}
-  solidUpdateTimer: 0
-  displacementUpdateTimer: 0
 --- !u!4 &718768942
 Transform:
   m_ObjectHideFlags: 0
@@ -2843,10 +2797,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 606b42d27c394be4a87cf96536693662, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  useCellularDebris: 1
-  spriteRenderer: {fileID: 0}
-  parentMaterialTag: 
-  cellularDebris: {fileID: 0}
 --- !u!114 &862233246
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2950,7 +2900,7 @@ MonoBehaviour:
   showCutOutline: 1
   largePieceMassMultiplier: 0.5
   largePieceForceRange: {x: 1, y: 3}
-  cutPieceLifetime: 30
+  cutPieceLifetime: 1
   enableAutoCleanup: 1
   minAreaThreshold: 0.15
   enableMinSizeCheck: 1
@@ -3257,10 +3207,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 606b42d27c394be4a87cf96536693662, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  useCellularDebris: 1
-  spriteRenderer: {fileID: 0}
-  parentMaterialTag: 
-  cellularDebris: {fileID: 0}
 --- !u!114 &901333439
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3364,7 +3310,7 @@ MonoBehaviour:
   showCutOutline: 1
   largePieceMassMultiplier: 0.5
   largePieceForceRange: {x: 1, y: 3}
-  cutPieceLifetime: 30
+  cutPieceLifetime: 1
   enableAutoCleanup: 1
   minAreaThreshold: 0.15
   enableMinSizeCheck: 1
@@ -3735,12 +3681,12 @@ MonoBehaviour:
   jumpForce: 6
   minGroundAngleToJump: 60
   groundCheck: {fileID: 558186175}
-  groundCheckSize: {x: 1.1, y: 2.2}
+  groundCheckSize: {x: 1.2, y: 2.8}
   groundCheckAngle: 0
   groundCheckOffset: {x: 0, y: 0}
   groundLayer:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 41
   enableSlimeClimbing: 1
   slimeClimbSpeed: 3
   slimeWallCheckDistance: 0.3
@@ -3760,6 +3706,8 @@ MonoBehaviour:
   maxCuttingRange: 10
   rifleExplosionRounds: 3
   rifleDelayBetweenRounds: 0.8
+  maxWaterAmmo: 5
+  maxExplosiveAmmo: 5
   gameCamera: {fileID: 1869255175}
   classicModel: {fileID: 779350709}
   aimingModel: {fileID: 1379807805}
@@ -3802,7 +3750,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.00740017, y: 0}
+  m_Offset: {x: 0, y: 0}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
@@ -3943,10 +3891,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 606b42d27c394be4a87cf96536693662, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  useCellularDebris: 1
-  spriteRenderer: {fileID: 0}
-  parentMaterialTag: 
-  cellularDebris: {fileID: 0}
 --- !u!114 &1046064509
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4938,10 +4882,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 606b42d27c394be4a87cf96536693662, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  useCellularDebris: 1
-  spriteRenderer: {fileID: 0}
-  parentMaterialTag: 
-  cellularDebris: {fileID: 0}
 --- !u!114 &1591383858
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -5045,7 +4985,7 @@ MonoBehaviour:
   showCutOutline: 1
   largePieceMassMultiplier: 0.5
   largePieceForceRange: {x: 1, y: 3}
-  cutPieceLifetime: 30
+  cutPieceLifetime: 1
   enableAutoCleanup: 1
   minAreaThreshold: 0.15
   enableMinSizeCheck: 1

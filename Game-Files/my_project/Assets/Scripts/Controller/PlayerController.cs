@@ -57,6 +57,10 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private int rifleExplosionRounds = 3;
     [SerializeField] private float rifleDelayBetweenRounds = 0.8f;
 
+    [Header("Ammo Settings")]
+    [SerializeField] private int maxWaterAmmo = 5;
+    [SerializeField] private int maxExplosiveAmmo = 5;
+
 
     [Header("References")]
     [SerializeField] private Camera gameCamera;
@@ -88,6 +92,9 @@ public class PlayerController : MonoBehaviour
     private float currentRunningBuffer = 0f;
     private float velocityX;
 
+    private int waterAmmo;
+    private int explosiveAmmo;
+
     public enum ToolType
     {
         CuttingTool,
@@ -109,6 +116,9 @@ public class PlayerController : MonoBehaviour
         raycast.Initialize(transform, muzzle, dashTexture);
         raycast.SetCurrentTool(currentTool); // Set initial tool
         raycast.enabled = false; // Start with it off
+
+        waterAmmo = maxWaterAmmo;
+        explosiveAmmo = maxExplosiveAmmo;
 
         if (classicModel != null)
         {
@@ -132,6 +142,11 @@ public class PlayerController : MonoBehaviour
             isRunning = currentRunningBuffer > 0f;
         }
 
+        if (Keyboard.current.rKey.wasPressedThisFrame)
+        {
+            ReloadAmmo();
+        }
+
         // Ground Check
         Vector2 checkPosition = (Vector2)groundCheck.position + groundCheckOffset;
         //isGrounded = Physics2D.OverlapBox(checkPosition, groundCheckSize, groundCheckAngle, groundLayer);
@@ -149,11 +164,17 @@ public class PlayerController : MonoBehaviour
         HandleArmRotation();
         HandleVisualSwitch();
 
-        // Sync Raycast state with Aiming
         if (raycast != null)
         {
-            raycast.enabled = isAiming;
+            //Determine if the current tool HAS ammo
+            bool hasAmmo = true;
+            if (currentTool == ToolType.WaterBall) hasAmmo = waterAmmo > 0;
+            else if (currentTool == ToolType.ExplosiveBall) hasAmmo = explosiveAmmo > 0;
 
+            //The Raycast line is only ENABLED if aiming AND ammo exists
+            raycast.enabled = isAiming && hasAmmo;
+
+            //We still pass the data to the raycast so it knows WHAT it's aiming even if the line is invisible
             if (isAiming)
             {
                 GameObject ballPrefab = null;
@@ -173,6 +194,7 @@ public class PlayerController : MonoBehaviour
                     spawnOffset = waterBallSpawnOffset;
                 }
 
+                // We update the tool data regardless of ammo so the firing logic works
                 raycast.SetCurrentTool(currentTool, ballPrefab, throwForce, spawnOffset, maxCuttingRange, rifleExplosionRounds, rifleDelayBetweenRounds);
             }
         }
@@ -370,6 +392,7 @@ public class PlayerController : MonoBehaviour
 
     public void OnAim(InputValue value)
     {
+        // Remove the ammo check here entirely
         if (value.isPressed && isGrounded)
         {
             isAiming = !isAiming;
@@ -432,5 +455,44 @@ public class PlayerController : MonoBehaviour
     {
         isGrounded = false;
     }
+
+    public bool RequestAmmoUse(ToolType tool)
+    {
+        if (tool == ToolType.WaterBall && waterAmmo > 0)
+        {
+            waterAmmo--;
+            Debug.Log($"Water Ammo Left: {waterAmmo}");
+            return true;
+        }
+        if (tool == ToolType.ExplosiveBall && explosiveAmmo > 0)
+        {
+            explosiveAmmo--;
+            Debug.Log($"Explosive Ammo Left: {explosiveAmmo}");
+            return true;
+        }
+
+        // Tools that don't use ammo (like CuttingTool) always return true
+        if (tool == ToolType.CuttingTool || tool == ToolType.Rifle) return true;
+
+        return false;
+    }
+
+    public void OnReload(InputValue value)
+    {
+        if (value.isPressed)
+        {
+            ReloadAmmo();
+        }
+    }
+
+    public void ReloadAmmo()
+    {
+        // Resets current ammo to the max values defined in the Inspector
+        waterAmmo = maxWaterAmmo;
+        explosiveAmmo = maxExplosiveAmmo;
+
+        Debug.Log($"Reloaded! Water: {waterAmmo}, Explosive: {explosiveAmmo}");
+    }
+
 
 }

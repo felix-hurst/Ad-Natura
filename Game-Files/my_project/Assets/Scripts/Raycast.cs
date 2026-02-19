@@ -116,7 +116,19 @@ public class Raycast : MonoBehaviour
             if (currentTool == PlayerController.ToolType.ExplosiveBall ||
                 currentTool == PlayerController.ToolType.WaterBall)
             {
-                ThrowProjectile(direction);
+                // Get reference to player to check ammo
+                PlayerController pc = playerTransform.GetComponent<PlayerController>();
+
+                // Only throw if RequestAmmoUse returns true
+                if (pc != null && pc.RequestAmmoUse(currentTool))
+                {
+                    ThrowProjectile(direction);
+                }
+                else
+                {
+                    // Optional: Play a "click" empty sound here
+                    Debug.Log("Click! Out of ammo.");
+                }
                 return;
             }
         }
