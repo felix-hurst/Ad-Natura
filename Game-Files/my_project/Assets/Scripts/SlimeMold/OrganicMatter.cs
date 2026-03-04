@@ -35,6 +35,20 @@ public class OrganicMatter : MonoBehaviour
     [Header("Debug")]
     [SerializeField] private bool showHealthBar = true;
 
+    [Header("Structural Collapse Settings")]
+    [SerializeField] private float weaknessDelay = 1.5f;
+    [SerializeField] private int minRayCount = 10;
+    [SerializeField] private int maxRayCount = 15;
+    [SerializeField] private float explosionRayDistance = 4f;
+    [SerializeField] private float minAngle = 0f;
+    [SerializeField] private float maxAngle = 360f;
+    [SerializeField] private bool showExplosionRays = true;
+    [SerializeField] private float rayVisualizationDuration = 0.4f;
+    [SerializeField] private Color explosionRayColor = new Color(1f, 0.4f, 0.1f);
+    [SerializeField] private bool showFractureWarning = true;
+    [SerializeField] private float warningDuration = 0.4f;
+    [SerializeField] private Color warningColor = new Color(1f, 0.3f, 0.1f);
+
     private float currentHealth;
     private bool isDecomposed;
     private SpriteRenderer overlayRenderer;
@@ -127,12 +141,22 @@ public class OrganicMatter : MonoBehaviour
 
     void TriggerDebris()
     {
-        // Try to find DebrisSpawner and trigger decomposition debris
-        var debrisSpawner = GetComponent<DebrisSpawner>();
-        if (debrisSpawner != null)
-        {
-            debrisSpawner.SpawnDecompositionDebris();
-        }
+        StructuralCollapseManager.Instance.ScheduleDelayedExplosion(
+                    new GameObject(),
+                    new Vector2(transform.position.x, transform.position.y),
+                    weaknessDelay,
+                    minRayCount,
+                    maxRayCount,
+                    explosionRayDistance,
+                    minAngle,
+                    maxAngle,
+                    showExplosionRays,
+                    rayVisualizationDuration,
+                    explosionRayColor,
+                    showFractureWarning,
+                    warningDuration,
+                    warningColor
+                );
     }
 
     [ContextMenu("Debug: Take 50 Damage")]

@@ -116,6 +116,7 @@ public class CellularLiquidSimulation : MonoBehaviour
 
     private Color[] depthColorCache;
     private const int DEPTH_CACHE_SIZE = 32;
+
     
     void Awake()
     {
@@ -903,6 +904,7 @@ public class CellularLiquidSimulation : MonoBehaviour
     }
 
     public int ActiveCellCount => activeCells.Count;
+  
     public int TotalWaterCells
     {
         get
@@ -941,7 +943,8 @@ public class CellularLiquidSimulation : MonoBehaviour
             MarkCellDirty(x, y);
         }
     }
-
+public float CellSize => cellSize;
+public Vector2 GridOrigin => gridOrigin;
     public Vector2Int WorldToGrid(Vector2 worldPos)
     {
         Vector2 localPos = worldPos - gridOrigin;

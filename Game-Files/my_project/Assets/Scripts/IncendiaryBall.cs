@@ -68,6 +68,13 @@ public class IncendiaryBall : MonoBehaviour
     [SerializeField] private float warningDuration = 0.4f;
     [SerializeField] private Color warningColor = new Color(1f, 0.3f, 0.1f);
     
+    [Header("Leaf Blast on Impact")]
+    [Tooltip("Blow nearby leaves away on impact")]
+    [SerializeField] private bool enableLeafBlastOnImpact = true;
+    [SerializeField] private float impactLeafBlastRadius = 4f;
+    [SerializeField] private float impactLeafBlastForce = 12f;
+    [SerializeField] private float impactLeafBlastUpwardBias = 0.5f;
+    
     [Header("Debug")]
     [SerializeField] private bool showDebugInfo = false;
     
@@ -335,6 +342,11 @@ void OnCollisionEnter2D(Collision2D collision)
     if (showImpactEffect)
     {
         ShowImpactEffect(impactPoint);
+    }
+    
+    if (enableLeafBlastOnImpact)
+    {
+        BurstLeafSystem.BlastAll(impactPoint, impactLeafBlastRadius, impactLeafBlastForce, impactLeafBlastUpwardBias);
     }
     
     hasImpacted = true;
