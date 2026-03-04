@@ -19,6 +19,7 @@ public class PlayerController : MonoBehaviour
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float jumpForce = 3f;
+    [SerializeField] private float minGroundAngleToJump = 60f;
 
     [Header("Ground Check")]
     [SerializeField] private Transform groundCheck;
@@ -33,6 +34,11 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float slimeWallCheckDistance = 0.3f;
     [SerializeField] private LayerMask slimeSurfaceLayer;
 
+    [Header("Incendiary Ball Settings")]
+    [SerializeField] private GameObject incendiaryBallPrefab;
+    [SerializeField] private float incendiaryBallThrowForce = 10f;
+    [SerializeField] private float incendiaryBallSpawnOffset = 1.0f;
+
     [Header("Explosive Ball Settings")]
     [SerializeField] private GameObject explosiveBallPrefab;
     [SerializeField] private float explosiveBallThrowForce = 10f;
@@ -42,6 +48,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private GameObject waterBallPrefab;
     [SerializeField] private float waterBallThrowForce = 10f;
     [SerializeField] private float waterBallSpawnOffset = 1.0f;
+    [SerializeField] private Texture2D dashTexture;
 
     [Header("Cutting Tool Settings")]
     [SerializeField] private float maxCuttingRange = 10f;
@@ -57,6 +64,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private GameObject aimingModel; //aiming model is the model that the aiming section manipulates
     [SerializeField] private Transform nearArmGun;
     [SerializeField] private Transform farArm;
+    [SerializeField] private Transform muzzle;
 
     [Header("Stretching Settings")]
     [SerializeField] private Transform farHandGrip;
@@ -85,7 +93,8 @@ public class PlayerController : MonoBehaviour
         CuttingTool,
         WaterBall,
         Rifle,
-        ExplosiveBall
+        ExplosiveBall,
+        IncendiaryBall
     }
     private ToolType currentTool = ToolType.CuttingTool;
     private int currentToolIndex = -1; //-1 = unequipped, 0 = shovel, 1 = shooter water ammo, 2 shooter explosive ammo, 4 unassigned yet
@@ -97,7 +106,7 @@ public class PlayerController : MonoBehaviour
 
         // Create and initialize raycast system
         raycast = gameObject.AddComponent<Raycast>();
-        raycast.Initialize(transform);
+        raycast.Initialize(transform, muzzle, dashTexture);
         raycast.SetCurrentTool(currentTool); // Set initial tool
         raycast.enabled = false; // Start with it off
 
@@ -177,11 +186,11 @@ public class PlayerController : MonoBehaviour
             int animValue = currentToolIndex;
             if (currentToolIndex == 1 || currentToolIndex == 2)
             {
-                animValue = 1; 
+                animValue = 1;
             }
             else if (currentToolIndex == 3)
             {
-                animValue = 2; 
+                animValue = 2;
             }
 
             anim.SetInteger("ToolIndex", animValue);
@@ -275,7 +284,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-        // PREVENT MOVEMENT WHILE AIMING
+    // PREVENT MOVEMENT WHILE AIMING
     //Switch between classic model and aiming model based on if player is aiming
     private void HandleVisualSwitch()
     {
@@ -292,7 +301,7 @@ public class PlayerController : MonoBehaviour
         {
             effectiveMoveSpeed *= currentSlimeProps.speedMultiplier;
         }
-    
+
         if (isAiming && isGrounded)
         {
             rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);
@@ -411,7 +420,7 @@ public class PlayerController : MonoBehaviour
             if (norm.y > 0)
             {
                 float angle = Mathf.Atan(norm.y / Mathf.Abs(norm.x)) * Mathf.Rad2Deg;
-                if (angle >= 80 && angle <= 90)
+                if (angle >= minGroundAngleToJump && angle <= 90)
                 {
                     isGrounded = true;
                 }

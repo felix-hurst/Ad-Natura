@@ -21,41 +21,31 @@ public class RaycastReceiver : MonoBehaviour
     public event OnLargePieceSpawned LargePieceSpawned;
     
     [Header("Large Piece Settings")]
-    [Tooltip("Base ratio for large piece. Material strength modulates this. (0.4 = 40% large piece, 60% debris at strength 1.0)")]
-    [Range(0.1f, 0.49f)]
-    public float baseLargePieceRatio = 0.4f;
-    
-    [Tooltip("Mass multiplier for large cut pieces")]
+    [Tooltip("Entire cut piece becomes a large piece (no debris generation)")]
     public float largePieceMassMultiplier = 0.5f;
     
     [Tooltip("Force range applied to large cut pieces")]
     public Vector2 largePieceForceRange = new Vector2(1f, 3f);
     
-    [Header("Delayed Explosion Settings")]
-    [Tooltip("Enable automatic delayed explosions on cut pieces")]
-    public bool enableDelayedExplosions = true;
-    public float explosionDelay = 0.01f;
-    public int minRayCount = 4;
-    public int maxRayCount = 9;
-    public float explosionRayDistance = 5f;
-    public float minAngle = 0f;
-    public float maxAngle = 360f;
+    [Header("Cleanup Settings")]
+    [Tooltip("Time in seconds before cut pieces are automatically destroyed")]
+    [SerializeField] private float cutPieceLifetime = 30f;
     
-    [Header("Visual Feedback")]
-    public bool showExplosionRays = true;
-    public float rayVisualizationDuration = 0.5f;
-    public Color explosionRayColor = Color.yellow;
-    public bool showExplosionWarning = true;
-    public float warningDuration = 0.5f;
-    public Color warningColor = Color.red;
+    [Tooltip("Enable automatic cleanup of cut pieces")]
+    [SerializeField] private bool enableAutoCleanup = true;
+    
+    [Tooltip("Minimum area threshold - parent objects at or below this size will be cleaned up")]
+    [SerializeField] private float minAreaThreshold = 0.15f;
+    
+    [Tooltip("Enable automatic destruction of too-small parent objects")]
+    [SerializeField] private bool enableMinSizeCheck = true;
     
     private LineRenderer edgeLineRenderer;
     private SpriteRenderer spriteRenderer;
     private List<Vector2> currentHighlightedShape;
     
     private ObjectReshape objectReshape;
-    private DebrisSpawner debrisSpawner;
-    
+    private bool isOriginalCutPiece = false; 
     void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
@@ -65,12 +55,17 @@ public class RaycastReceiver : MonoBehaviour
         {
             objectReshape = gameObject.AddComponent<ObjectReshape>();
         }
-        
-        debrisSpawner = GetComponent<DebrisSpawner>();
-        if (debrisSpawner == null)
-        {
-            debrisSpawner = gameObject.AddComponent<DebrisSpawner>();
-        }
+    }
+
+    public void MarkAsOriginalCutPiece()
+    {
+        isOriginalCutPiece = true;
+    }
+ 
+    private bool IsParentObject()
+    {
+
+        return !isOriginalCutPiece;
     }
     
 public void HighlightCutEdges(Vector2 entryPoint, Vector2 exitPoint)
@@ -353,33 +348,40 @@ private class IntersectionPoint
         {
             materialTag = gameObject.name;
         }
+
+        string originalParentName = gameObject.name;
         
         CutProfile cutProfile = CutProfileExtensions.GetCutProfileForObject(gameObject);
         
-        float strengthInfluence = 1.0f - (cutProfile.strength * 0.4f);
-        float largePieceRatio = baseLargePieceRatio + (strengthInfluence - 0.6f) * (0.8f - baseLargePieceRatio) / 0.4f;
-        largePieceRatio = Mathf.Clamp(largePieceRatio, 0.3f, 0.8f);
-        
-        float largePieceArea = totalCutOffArea * largePieceRatio;
-        float debrisArea = totalCutOffArea - largePieceArea;
-        
         List<Vector2> cutOffShape = objectReshape.CutOffPortion(entryPoint, exitPoint, currentHighlightedShape);
+
+        gameObject.name = originalParentName;
         
         if (cutOffShape != null && cutOffShape.Count >= 3)
         {
-            if (debrisArea > 0.01f)
+            SpawnLargeCutPiece(cutOffShape, totalCutOffArea, entryPoint, exitPoint, materialTag, cutProfile);
+
+            gameObject.name = originalParentName;
+
+            if (isOriginalCutPiece)
             {
-                debrisSpawner.SpawnDebris(cutOffShape, debrisArea, materialTag);
+
+                CutPieceCleanup existingCleanup = GetComponent<CutPieceCleanup>();
+                if (existingCleanup != null)
+                {
+                    Destroy(existingCleanup);
+                    Debug.Log($"[RaycastReceiver] Removed cleanup timer from {gameObject.name} - it's now a parent object");
+                }
             }
-            
-            if (largePieceArea > 0.01f)
-            {
-                SpawnLargeCutPiece(cutOffShape, largePieceArea, entryPoint, exitPoint, materialTag, cutProfile);
-            }
+            isOriginalCutPiece = false;
+        }
+        
+        // Check if the remaining PARENT object is too small after the cut
+        if (enableMinSizeCheck && IsParentObject())
+        {
+            CheckAndDestroyIfTooSmall();
         }
     }
-
-    
 
     public void ExecuteCutDirect(Vector2 entryPoint, Vector2 exitPoint, OnLargePieceSpawned onPieceSpawned = null)
     {
@@ -387,15 +389,6 @@ private class IntersectionPoint
         {
             objectReshape = GetComponent<ObjectReshape>();
             if (objectReshape == null)
-            {
-                return;
-            }
-        }
-        
-        if (debrisSpawner == null)
-        {
-            debrisSpawner = GetComponent<DebrisSpawner>();
-            if (debrisSpawner == null)
             {
                 return;
             }
@@ -420,231 +413,52 @@ private class IntersectionPoint
         {
             materialTag = gameObject.name;
         }
+
+        string originalParentName = gameObject.name;
         
         CutProfile cutProfile = CutProfileExtensions.GetCutProfileForObject(gameObject);
         
-        float strengthInfluence = 1.0f - (cutProfile.strength * 0.4f);
-        float largePieceRatio = baseLargePieceRatio + (strengthInfluence - 0.6f) * (0.8f - baseLargePieceRatio) / 0.4f;
-        largePieceRatio = Mathf.Clamp(largePieceRatio, 0.3f, 0.8f);
-        
-        float largePieceArea = totalCutOffArea * largePieceRatio;
-        float debrisArea = totalCutOffArea - largePieceArea;
-        
         List<Vector2> actualCutShape = objectReshape.CutOffPortion(entryPoint, exitPoint, cutOffShape);
+
+        gameObject.name = originalParentName;
         
         if (actualCutShape != null && actualCutShape.Count >= 3)
         {
-            if (debrisArea > 0.01f && debrisSpawner != null)
-            {
-                debrisSpawner.SpawnDebris(actualCutShape, debrisArea, materialTag);
-            }
+            GameObject largePiece = SpawnLargeCutPiece(actualCutShape, totalCutOffArea, entryPoint, exitPoint, materialTag, cutProfile);
             
-            if (largePieceArea > 0.01f)
+            if (largePiece != null && onPieceSpawned != null)
             {
-                GameObject largePiece = SpawnLargeCutPiece(actualCutShape, largePieceArea, entryPoint, exitPoint, materialTag, cutProfile);
-                
-                if (largePiece != null && onPieceSpawned != null)
+                onPieceSpawned.Invoke(largePiece);
+            }
+
+            gameObject.name = originalParentName;
+
+            if (isOriginalCutPiece)
+            {
+                CutPieceCleanup existingCleanup = GetComponent<CutPieceCleanup>();
+                if (existingCleanup != null)
                 {
-                    onPieceSpawned.Invoke(largePiece);
+                    Destroy(existingCleanup);
+                    Debug.Log($"[RaycastReceiver] Removed cleanup timer from {gameObject.name} - it's now a parent object");
                 }
             }
-        }
-    }
-
-    
-
-public void ExecuteCutWithExplosion(Vector2 entryPoint, Vector2 exitPoint, int explosionRounds, float delayBetweenRounds)
-{
-    if (currentHighlightedShape == null || currentHighlightedShape.Count < 3)
-    {
-        return;
-    }
-    
-    float totalCutOffArea = ObjectReshape.CalculatePolygonArea(currentHighlightedShape);
-    
-    string materialTag = gameObject.tag;
-    if (string.IsNullOrEmpty(materialTag) || materialTag == "Untagged")
-    {
-        materialTag = gameObject.name;
-    }
-    
-    CutProfile cutProfile = CutProfileExtensions.GetCutProfileForObject(gameObject);
-    
-    float strengthInfluence = 1.0f - (cutProfile.strength * 0.4f);
-    float largePieceRatio = baseLargePieceRatio + (strengthInfluence - 0.6f) * (0.8f - baseLargePieceRatio) / 0.4f;
-    largePieceRatio = Mathf.Clamp(largePieceRatio, 0.3f, 0.8f);
-    
-    float largePieceArea = totalCutOffArea * largePieceRatio;
-    float debrisArea = totalCutOffArea - largePieceArea;
-    
-    List<Vector2> cutOffShape = objectReshape.CutOffPortion(entryPoint, exitPoint, currentHighlightedShape);
-    
-    if (cutOffShape != null && cutOffShape.Count >= 3)
-    {
-        if (debrisArea > 0.01f)
-        {
-            debrisSpawner.SpawnDebris(cutOffShape, debrisArea, materialTag);
+            isOriginalCutPiece = false;
         }
         
-        if (largePieceArea > 0.01f)
+        // Check if the remaining PARENT object is too small after the cut
+        if (enableMinSizeCheck && IsParentObject())
         {
-            GameObject largePiece = SpawnLargeCutPieceWithMultiRoundExplosion(cutOffShape, largePieceArea, entryPoint, exitPoint, materialTag, cutProfile, explosionRounds, delayBetweenRounds);
+            CheckAndDestroyIfTooSmall();
         }
     }
-}
-
-
-GameObject SpawnLargeCutPieceWithMultiRoundExplosion(List<Vector2> cutOffShape, float targetArea, Vector2 entryPoint, Vector2 exitPoint, string materialTag, CutProfile cutProfile, int explosionRounds, float delayBetweenRounds)
-{
-    GameObject largePiece = new GameObject($"{gameObject.name}_CutPiece");
-
-    try
-    {
-        largePiece.tag = gameObject.tag;
-    }
-    catch (UnityException e)
-    {
-    }
-    
-    StructuralCollapseManager.ExplosionFragment parentMarker = GetComponent<StructuralCollapseManager.ExplosionFragment>();
-    if (parentMarker != null)
-    {
-        StructuralCollapseManager.ExplosionFragment childMarker = largePiece.AddComponent<StructuralCollapseManager.ExplosionFragment>();
-        childMarker.Initialize(parentMarker.materialType);
-    }
-    else
-    {
-        StructuralCollapseManager.ExplosionFragment childMarker = largePiece.AddComponent<StructuralCollapseManager.ExplosionFragment>();
-        childMarker.Initialize(materialTag);
-    }
-    
-    Vector2 centroid = Vector2.zero;
-    foreach (Vector2 v in cutOffShape)
-    {
-        centroid += v;
-    }
-    centroid /= cutOffShape.Count;
-    
-    Vector2 cutDirection = (exitPoint - entryPoint).normalized;
-    Vector2 perpendicular = new Vector2(-cutDirection.y, cutDirection.x);
-    
-    Vector2 separationOffset = perpendicular * 0.1f * (Random.value > 0.5f ? 1f : -1f);
-    Vector2 randomJitter = Random.insideUnitCircle * 0.03f;
-    centroid += separationOffset + randomJitter;
-    
-    largePiece.transform.position = new Vector3(centroid.x, centroid.y, transform.position.z);
-    
-    SpriteRenderer originalSpriteRenderer = GetComponent<SpriteRenderer>();
-    SpriteRenderer pieceSpriteRenderer = largePiece.AddComponent<SpriteRenderer>();
-    
-    if (originalSpriteRenderer != null)
-    {
-        pieceSpriteRenderer.sortingLayerName = originalSpriteRenderer.sortingLayerName;
-        pieceSpriteRenderer.sortingOrder = originalSpriteRenderer.sortingOrder;
-        pieceSpriteRenderer.color = originalSpriteRenderer.color;
-    }
-    
-    ObjectReshape pieceReshape = largePiece.AddComponent<ObjectReshape>();
-    
-    PixelatedCutRenderer piecePixelRenderer = largePiece.AddComponent<PixelatedCutRenderer>();
-    
-    List<Vector2> localVertices = new List<Vector2>();
-    foreach (Vector2 worldVertex in cutOffShape)
-    {
-        Vector2 localVertex = (Vector2)largePiece.transform.InverseTransformPoint(worldVertex);
-        localVertices.Add(localVertex);
-    }
-    
-    CutProfileManager profileManager = FindObjectOfType<CutProfileManager>();
-    List<Vector2> irregularShape = localVertices;
-    if (profileManager != null && cutProfile.strength > 0.01f)
-    {
-        Vector2 localEntry = largePiece.transform.InverseTransformPoint(entryPoint);
-        Vector2 localExit = largePiece.transform.InverseTransformPoint(exitPoint);
-        irregularShape = profileManager.ApplyIrregularCut(localVertices, localEntry, localExit, cutProfile);
-    }
-    
-    List<Vector2> pixelatedShape = irregularShape;
-    if (piecePixelRenderer != null)
-    {
-        Vector2 localEntry = largePiece.transform.InverseTransformPoint(entryPoint);
-        Vector2 localExit = largePiece.transform.InverseTransformPoint(exitPoint);
-        pixelatedShape = piecePixelRenderer.PixelatePolygonWithCutLine(irregularShape, localEntry, localExit);
-    }
-    
-    PolygonCollider2D polyCollider = largePiece.AddComponent<PolygonCollider2D>();
-    polyCollider.points = irregularShape.ToArray();
-    polyCollider.enabled = false;
-    
-    CreateLargePieceMesh(largePiece, pixelatedShape, materialTag);
-    
-    Rigidbody2D rb = largePiece.AddComponent<Rigidbody2D>();
-    rb.bodyType = RigidbodyType2D.Kinematic;
-    rb.mass = targetArea * largePieceMassMultiplier;
-    rb.gravityScale = 1f;
-    
-    rb.linearVelocity = Vector2.zero;
-    rb.angularVelocity = 0f;
-    
-    rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
-    rb.sleepMode = RigidbodySleepMode2D.StartAwake;
-    
-    RaycastReceiver pieceReceiver = largePiece.AddComponent<RaycastReceiver>();
-    pieceReceiver.highlightMode = this.highlightMode;
-    pieceReceiver.showCutOutline = this.showCutOutline; 
-    pieceReceiver.baseLargePieceRatio = this.baseLargePieceRatio;
-    pieceReceiver.largePieceMassMultiplier = this.largePieceMassMultiplier;
-    pieceReceiver.largePieceForceRange = this.largePieceForceRange;
-
-    pieceReceiver.enableDelayedExplosions = false;
-    pieceReceiver.explosionDelay = this.explosionDelay;
-    pieceReceiver.minRayCount = this.minRayCount;
-    pieceReceiver.maxRayCount = this.maxRayCount;
-    pieceReceiver.explosionRayDistance = this.explosionRayDistance;
-    pieceReceiver.minAngle = this.minAngle;
-    pieceReceiver.maxAngle = this.maxAngle;
-    pieceReceiver.showExplosionRays = this.showExplosionRays;
-    pieceReceiver.rayVisualizationDuration = this.rayVisualizationDuration;
-    pieceReceiver.explosionRayColor = this.explosionRayColor;
-    pieceReceiver.showExplosionWarning = this.showExplosionWarning;
-    pieceReceiver.warningDuration = this.warningDuration;
-    pieceReceiver.warningColor = this.warningColor;
-    
-    DebrisSpawner pieceDebrisSpawner = largePiece.AddComponent<DebrisSpawner>();
-    
-    PhysicsMaterialManager physicsManager = FindObjectOfType<PhysicsMaterialManager>();
-    if (physicsManager != null)
-    {
-        physicsManager.ApplyPhysicsMaterial(largePiece);
-    }
-    
-    StartCoroutine(EnablePhysicsAfterDelay(largePiece, rb, polyCollider, 0.1f));
-
-    Vector2 pieceCenter = largePiece.transform.position;
-
-    StructuralCollapseManager.Instance.ScheduleDelayedExplosion(
-        largePiece,
-        pieceCenter,
-        explosionDelay,
-        minRayCount,
-        maxRayCount,
-        explosionRayDistance,
-        minAngle,
-        maxAngle,
-        showExplosionRays,
-        rayVisualizationDuration,
-        explosionRayColor,
-        showExplosionWarning,
-        warningDuration,
-        warningColor);
-    
-    return largePiece;
-}
 
 GameObject SpawnLargeCutPiece(List<Vector2> cutOffShape, float targetArea, Vector2 entryPoint, Vector2 exitPoint, string materialTag, CutProfile cutProfile)
 {
+    Debug.Log($"[RaycastReceiver] SpawnLargeCutPiece called on {gameObject.name} (ID: {gameObject.GetInstanceID()})");
+    
     GameObject largePiece = new GameObject($"{gameObject.name}_CutPiece");
-
+    
+    Debug.Log($"[RaycastReceiver] Created large piece: {largePiece.name} (ID: {largePiece.GetInstanceID()})");
     try
     {
         largePiece.tag = gameObject.tag;
@@ -720,84 +534,58 @@ GameObject SpawnLargeCutPiece(List<Vector2> cutOffShape, float targetArea, Vecto
     
     CreateLargePieceMesh(largePiece, pixelatedShape, materialTag);
     
-    Rigidbody2D rb = largePiece.AddComponent<Rigidbody2D>();
-    rb.bodyType = RigidbodyType2D.Kinematic;
-    rb.mass = targetArea * largePieceMassMultiplier;
-    rb.gravityScale = 1f;
-    
-    rb.linearVelocity = Vector2.zero;
-    rb.angularVelocity = 0f;
-    
-    rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
-    rb.sleepMode = RigidbodySleepMode2D.StartAwake;
+Rigidbody2D rb = largePiece.AddComponent<Rigidbody2D>();
+rb.bodyType = RigidbodyType2D.Kinematic;
+rb.mass = targetArea * largePieceMassMultiplier;
+rb.gravityScale = 1f;
+
+rb.linearVelocity = Vector2.zero;
+rb.angularVelocity = 0f;
+
+rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
+rb.sleepMode = RigidbodySleepMode2D.StartAwake;
+
+rb.constraints = RigidbodyConstraints2D.None;
     
     RaycastReceiver pieceReceiver = largePiece.AddComponent<RaycastReceiver>();
     pieceReceiver.highlightMode = this.highlightMode;
     pieceReceiver.showCutOutline = this.showCutOutline; 
-    pieceReceiver.baseLargePieceRatio = this.baseLargePieceRatio;
     pieceReceiver.largePieceMassMultiplier = this.largePieceMassMultiplier;
     pieceReceiver.largePieceForceRange = this.largePieceForceRange;
+    pieceReceiver.cutPieceLifetime = this.cutPieceLifetime;
+    pieceReceiver.enableAutoCleanup = this.enableAutoCleanup;
+    pieceReceiver.minAreaThreshold = this.minAreaThreshold;
+    pieceReceiver.enableMinSizeCheck = this.enableMinSizeCheck;
 
-    pieceReceiver.enableDelayedExplosions = this.enableDelayedExplosions;
-    pieceReceiver.explosionDelay = this.explosionDelay;
-    pieceReceiver.minRayCount = this.minRayCount;
-    pieceReceiver.maxRayCount = this.maxRayCount;
-    pieceReceiver.explosionRayDistance = this.explosionRayDistance;
-    pieceReceiver.minAngle = this.minAngle;
-    pieceReceiver.maxAngle = this.maxAngle;
-    pieceReceiver.showExplosionRays = this.showExplosionRays;
-    pieceReceiver.rayVisualizationDuration = this.rayVisualizationDuration;
-    pieceReceiver.explosionRayColor = this.explosionRayColor;
-    pieceReceiver.showExplosionWarning = this.showExplosionWarning;
-    pieceReceiver.warningDuration = this.warningDuration;
-    pieceReceiver.warningColor = this.warningColor;
-    
-    DebrisSpawner pieceDebrisSpawner = largePiece.AddComponent<DebrisSpawner>();
-    
-    PhysicsMaterialManager physicsManager = FindObjectOfType<PhysicsMaterialManager>();
-    if (physicsManager != null)
+    pieceReceiver.MarkAsOriginalCutPiece();
+
+    if (enableAutoCleanup)
     {
-        physicsManager.ApplyPhysicsMaterial(largePiece);
+        CutPieceCleanup cleanup = largePiece.AddComponent<CutPieceCleanup>();
+        cleanup.Initialize(cutPieceLifetime);
     }
-    
-    // TODO: Uncomment when RealisticWindManager and WindAffected are implemented
-    // if (FindObjectOfType<RealisticWindManager>() != null)
-    // {
-    //     WindAffected windAffected = largePiece.AddComponent<WindAffected>();
-    //     windAffected.SetWindMultiplier(0.6f);
-    //     windAffected.scaleWithMass = true;
-    //     windAffected.massScalingFactor = 1.0f;
-    //     windAffected.referenceMass = 1.0f;
-    //     windAffected.applyWindTorque = true;
-    //     windAffected.torqueMultiplier = 0.5f;
-    //     windAffected.limitVelocity = true;
-    //     windAffected.maxWindVelocity = 10f;
-    //     if (cutProfile != null)
-    //     {
-    //         windAffected.dragCoefficient = Mathf.Lerp(0.8f, 1.5f, cutProfile.strength);
-    //     }
-    // }
-    
-    StartCoroutine(EnablePhysicsAfterDelay(largePiece, rb, polyCollider, 0.1f));
 
-    if (enableDelayedExplosions)
+PhysicsMaterialManager physicsManager = FindObjectOfType<PhysicsMaterialManager>();
+if (physicsManager != null)
+{
+    physicsManager.ApplyPhysicsMaterial(largePiece);
+}
+
+polyCollider.enabled = true;
+rb.constraints = RigidbodyConstraints2D.None;
+rb.bodyType = RigidbodyType2D.Dynamic;
+
+
+    Debug.Log($"[RaycastReceiver] About to invoke LargePieceSpawned event for {largePiece.name}");
+    if (LargePieceSpawned != null)
     {
-        Vector2 pieceCenter = largePiece.transform.position;
-        StructuralCollapseManager.Instance.ScheduleSingleRoundExplosion(
-            largePiece,
-            pieceCenter,
-            explosionDelay,
-            minRayCount,
-            maxRayCount,
-            explosionRayDistance,
-            minAngle,
-            maxAngle,
-            showExplosionRays,
-            rayVisualizationDuration,
-            explosionRayColor,
-            showExplosionWarning,
-            warningDuration,
-            warningColor);
+        Debug.Log($"[RaycastReceiver] LargePieceSpawned has {LargePieceSpawned.GetInvocationList().Length} subscribers");
+        LargePieceSpawned.Invoke(largePiece);
+        Debug.Log($"[RaycastReceiver] LargePieceSpawned event invoked");
+    }
+    else
+    {
+        Debug.Log($"[RaycastReceiver] LargePieceSpawned event has no subscribers");
     }
     
     return largePiece;
@@ -812,8 +600,11 @@ IEnumerator EnablePhysicsAfterDelay(GameObject piece, Rigidbody2D rb, PolygonCol
         collider.enabled = true;
         
         yield return new WaitForFixedUpdate();
-        
+
+        rb.constraints = RigidbodyConstraints2D.None;
         rb.bodyType = RigidbodyType2D.Dynamic;
+        
+        Debug.Log($"[EnablePhysicsAfterDelay] {piece.name} switched to Dynamic with constraints: {rb.constraints}");
     }
 }
     
@@ -1102,8 +893,147 @@ IEnumerator EnablePhysicsAfterDelay(GameObject piece, Rigidbody2D rb, PolygonCol
         currentHighlightedShape = null;
     }
     
+void CheckAndDestroyIfTooSmall()
+{
+    if (!IsParentObject())
+    {
+        return;
+    }
+    
+    Vector2[] currentVertices = GetCurrentShapeVertices();
+    
+    if (currentVertices.Length < 3)
+    {
+        Destroy(gameObject);
+        return;
+    }
+    
+    List<Vector2> vertexList = new List<Vector2>(currentVertices);
+    float currentArea = ObjectReshape.CalculatePolygonArea(vertexList);
+    
+    if (currentArea <= minAreaThreshold)
+    {
+        DebugHighlightTooSmallParent(vertexList);
+
+        if (enableAutoCleanup)
+        {
+            CutPieceCleanup cleanup = GetComponent<CutPieceCleanup>();
+            if (cleanup == null)
+            {
+                cleanup = gameObject.AddComponent<CutPieceCleanup>();
+                cleanup.Initialize(cutPieceLifetime);
+                Debug.Log($"[RaycastReceiver] Parent object {gameObject.name} is too small (area: {currentArea:F3} <= {minAreaThreshold:F3}). Added cleanup timer.");
+            }
+        }
+
+        SmallParentCollisionHandler collisionHandler = GetComponent<SmallParentCollisionHandler>();
+        if (collisionHandler == null)
+        {
+            gameObject.AddComponent<SmallParentCollisionHandler>();
+        }
+    }
+}
+
+void DebugHighlightTooSmallParent(List<Vector2> vertices)
+{
+    if (vertices.Count < 2) return;
+
+    LineRenderer debugLine = GetComponent<LineRenderer>();
+    if (debugLine == null)
+    {
+        GameObject lineObj = new GameObject($"{gameObject.name}_TooSmallDebug");
+        lineObj.transform.SetParent(transform);
+        
+        debugLine = lineObj.AddComponent<LineRenderer>();
+        debugLine.startWidth = 0.12f;
+        debugLine.endWidth = 0.12f;
+        debugLine.material = new Material(Shader.Find("Unlit/Color"));
+        debugLine.material.color = Color.red;
+        debugLine.startColor = Color.red;
+        debugLine.endColor = Color.red;
+        debugLine.sortingOrder = 20;
+        debugLine.useWorldSpace = true;
+        debugLine.loop = true;
+
+        lineObj.AddComponent<DebugPulseEffect>();
+    }
+    
+    debugLine.positionCount = vertices.Count;
+    for (int i = 0; i < vertices.Count; i++)
+    {
+        debugLine.SetPosition(i, new Vector3(vertices[i].x, vertices[i].y, 0));
+    }
+}
+    void Update()
+    {
+
+        if (enableMinSizeCheck && IsParentObject())
+        {
+
+            if (GetComponent<CutPieceCleanup>() == null)
+            {
+                CheckAndDestroyIfTooSmall();
+            }
+        }
+    }
+    
     void OnDestroy()
     {
         ClearHighlight();
+    }
+}
+
+public class CutPieceCleanup : MonoBehaviour
+{
+    private float lifetime = 0f;
+    private float maxLifetime = 30f;
+    
+    public void Initialize(float lifeTime)
+    {
+        maxLifetime = lifeTime;
+    }
+    
+    void Update()
+    {
+        lifetime += Time.deltaTime;
+        
+        if (lifetime >= maxLifetime)
+        {
+            Destroy(gameObject);
+        }
+    }
+}
+
+public class SmallParentCollisionHandler : MonoBehaviour
+{
+    void OnCollisionEnter2D(Collision2D collision)
+    {
+        Destroy(gameObject);
+    }
+}
+
+public class DebugPulseEffect : MonoBehaviour
+{
+    private LineRenderer lineRenderer;
+    private float pulseSpeed = 3f;
+    private float minAlpha = 0.3f;
+    private float maxAlpha = 1f;
+    
+    void Start()
+    {
+        lineRenderer = GetComponent<LineRenderer>();
+    }
+    
+    void Update()
+    {
+        if (lineRenderer != null)
+        {
+            float alpha = Mathf.Lerp(minAlpha, maxAlpha, (Mathf.Sin(Time.time * pulseSpeed) + 1f) / 2f);
+            Color color = lineRenderer.material.color;
+            color.a = alpha;
+            lineRenderer.material.color = color;
+            lineRenderer.startColor = color;
+            lineRenderer.endColor = color;
+        }
     }
 }

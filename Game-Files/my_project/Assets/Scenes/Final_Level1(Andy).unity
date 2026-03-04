@@ -590,12 +590,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OrganicMatter
   maxHealth: 100
-  enableSlimeOverlay: 1
-  slimeColor: {r: 0.9, g: 0.85, b: 0.2, a: 1}
-  overlayStartThreshold: 0.1
-  overlaySortingOffset: 1
-  triggerDebrisSpawner: 1
-  destroyDelay: 0.1
   onDecomposed:
     m_PersistentCalls:
       m_Calls: []
@@ -950,7 +944,7 @@ MonoBehaviour:
   numAgents: 1024
   moveSpeed: 1.5
   diffuseSpeed: 0.063
-  evaporateSpeed: 0.08
+  evaporateSpeed: 0.052
   trailWeight: 0.377
   idleSpeed: 0.03
   attractedSpeedMultiplier: 1.5
@@ -3849,12 +3843,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::OrganicMatter
   maxHealth: 500
-  enableSlimeOverlay: 1
-  slimeColor: {r: 0.9, g: 0.85, b: 0.2, a: 1}
-  overlayStartThreshold: 0.1
-  overlaySortingOffset: 1
-  triggerDebrisSpawner: 1
-  destroyDelay: 0.1
   onDecomposed:
     m_PersistentCalls:
       m_Calls: []
@@ -5055,7 +5043,7 @@ MonoBehaviour:
   numAgents: 1024
   moveSpeed: 1.5
   diffuseSpeed: 0.063
-  evaporateSpeed: 0.08
+  evaporateSpeed: 0.052
   trailWeight: 0.377
   idleSpeed: 0.03
   attractedSpeedMultiplier: 1.5
