@@ -6,7 +6,7 @@ public class Raycast : MonoBehaviour
     [Header("Raycast Settings")]
     [SerializeField] private float raycastMaxDistance = 100f;
     [SerializeField] private float dotSize = 0.2f;
-    [SerializeField] private float dashWorldSize = 0.2f;
+     [SerializeField] private float dashWorldSize = 0.2f;
 
     [Header("Incendiary Settings")]
     [SerializeField] private GameObject incendiaryBallPrefab;
@@ -14,7 +14,7 @@ public class Raycast : MonoBehaviour
     [SerializeField] private float ballSpawnOffset = 1.0f;
 
     [Header("Arc Settings")]
-    [SerializeField] private int arcResolution = 60; // How many points in the arc should be simulated
+      [SerializeField] private int arcResolution = 60; // How many points in the arc should be simulated
 
     private LineRenderer lineRenderer;
     private GameObject entryDot;
@@ -108,10 +108,11 @@ public class Raycast : MonoBehaviour
             DrawStraightLine(mousePosition);
         }
 
-        if (Mouse.current.leftButton.wasPressedThisFrame)
+
+       if (Mouse.current.leftButton.wasPressedThisFrame)
         {
             if (currentTool == PlayerController.ToolType.IncendiaryBall ||
-                currentTool == PlayerController.ToolType.WaterBall)
+                currentTool == PlayerController.ToolType.WaterBall||currentTool == PlayerController.ToolType.WindBall)
             {
                 // Get reference to player to check ammo
                 PlayerController pc = playerTransform.GetComponent<PlayerController>();
