@@ -6,6 +6,15 @@ public class Raycast : MonoBehaviour
     [Header("Raycast Settings")]
     [SerializeField] private float raycastMaxDistance = 100f;
     [SerializeField] private float dotSize = 0.2f;
+    [SerializeField] private float dashWorldSize = 0.2f;
+
+    [Header("Incendiary Settings")]
+    [SerializeField] private GameObject incendiaryBallPrefab;
+    [SerializeField] private float throwForce = 15f;
+    [SerializeField] private float ballSpawnOffset = 1.0f;
+
+    [Header("Arc Settings")]
+    [SerializeField] private int arcResolution = 60; // How many points in the arc should be simulated
 
     private LineRenderer lineRenderer;
     private GameObject entryDot;
@@ -53,6 +62,31 @@ public class Raycast : MonoBehaviour
         exitDot.GetComponent<Renderer>().material.color = Color.white;
         Object.Destroy(exitDot.GetComponent<Collider>());
         exitDot.SetActive(false);
+
+        //Mask Calculation
+        int playerLayer = LayerMask.NameToLayer("Player");
+        int ignoreRaycastLayer = LayerMask.NameToLayer("Ignore Raycast");
+        arcMask = ~((1 << playerLayer) | (1 << ignoreRaycastLayer));
+
+        // Default color
+        SetLaserColor(Color.white);
+    }
+
+    private void SetLaserColor(Color color)
+    {
+        if (lineRenderer == null) return;
+        lineRenderer.material.color = color;
+        lineRenderer.startColor = color;
+        lineRenderer.endColor = color;
+        entryDot.GetComponent<Renderer>().material.color = color;
+        exitDot.GetComponent<Renderer>().material.color = color;
+    }
+
+    public void SetCurrentTool(PlayerController.ToolType tool)
+    {
+        currentTool = tool;
+        projectilePrefab = null;
+        SetLaserColor(Color.white);
     }
 
     public void DrawLineAndCheckHits()
@@ -60,27 +94,44 @@ public class Raycast : MonoBehaviour
         Vector3 mousePosition = Camera.main.ScreenToWorldPoint(Mouse.current.position.ReadValue());
         mousePosition.z = 0;
 
-        Vector2 direction = (mousePosition - playerTransform.position).normalized;
-        float distance = Vector2.Distance(playerTransform.position, mousePosition);
+        Vector2 direction = (mousePosition - muzzleTransform.position).normalized;
+        float distance = Vector2.Distance(new Vector2(muzzleTransform.position.x, muzzleTransform.position.y), new Vector2(mousePosition.x, mousePosition.y));
 
-        lineRenderer.SetPosition(0, playerTransform.position);
-        lineRenderer.SetPosition(1, mousePosition);
-
+        if (currentTool == PlayerController.ToolType.WaterBall ||
+            currentTool == PlayerController.ToolType.IncendiaryBall)
+        {
+            DrawArc(direction);
+            HideDots();
+        }
+        else
+        {
+            DrawStraightLine(mousePosition);
+        }
 
         if (Mouse.current.leftButton.wasPressedThisFrame)
         {
-            if (currentTool == PlayerController.ToolType.ExplosiveBall || 
-                currentTool == PlayerController.ToolType.WaterBall ||
-                currentTool == PlayerController.ToolType.IncendiaryBall ||
-                currentTool == PlayerController.ToolType.WindBall)
+            if (currentTool == PlayerController.ToolType.IncendiaryBall ||
+                currentTool == PlayerController.ToolType.WaterBall)
             {
-                ThrowProjectile(direction);
+                // Get reference to player to check ammo
+                PlayerController pc = playerTransform.GetComponent<PlayerController>();
+
+                // Only throw if RequestAmmoUse returns true
+                if (pc != null && pc.RequestAmmoUse(currentTool))
+                {
+                    ThrowProjectile(direction);
+                }
+                else
+                {
+                    // Optional: Play a "click" empty sound here
+                    Debug.Log("Click! Out of ammo.");
+                }
                 return;
             }
         }
 
- 
-        if (currentTool != PlayerController.ToolType.CuttingTool && currentTool != PlayerController.ToolType.Rifle)
+        //Hit Detection Logic (For Cutting/Rifle)
+        if (currentTool != PlayerController.ToolType.Rifle)
         {
             entryDot.SetActive(false);
             exitDot.SetActive(false);
@@ -110,9 +161,9 @@ public class Raycast : MonoBehaviour
                 hit.collider.gameObject.name.Contains("Fragment"))
                 continue;
 
-            float hitDistance = Vector2.Distance(playerTransform.position, hit.point);
-            
-            if (currentTool == PlayerController.ToolType.CuttingTool && hitDistance > maxCuttingRange)
+            float hitDistance = Vector2.Distance(muzzleTransform.position, hit.point);
+
+            if (currentTool == PlayerController.ToolType.Rifle && hitDistance > maxCuttingRange)
                 continue;
 
             float distToMouse = Vector2.Distance(hit.point, mousePosition);

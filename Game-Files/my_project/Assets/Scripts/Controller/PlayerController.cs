@@ -60,6 +60,10 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private int rifleExplosionRounds = 3;
     [SerializeField] private float rifleDelayBetweenRounds = 0.8f;
 
+    [Header("Ammo Settings")]
+    [SerializeField] private int maxWaterAmmo = 5;
+    [SerializeField] private int maxExplosiveAmmo = 5;
+
 
     [Header("References")]
     [SerializeField] private Camera gameCamera;
@@ -89,17 +93,18 @@ public class PlayerController : MonoBehaviour
     private float currentRunningBuffer = 0f;
     private float velocityX;
 
+    private int waterAmmo;
+    private int explosiveAmmo;
+
     public enum ToolType
     {
-        CuttingTool,
-        WaterBall,
-        Rifle,
-        ExplosiveBall,
-        IncendiaryBall,
-        WindBall
+        WaterBall,      // Index 0
+        IncendiaryBall, // Index 1
+        Rifle           // Index 2
     }
-    private ToolType currentTool = ToolType.WindBall;
-    private int currentToolIndex = -1; 
+
+    private ToolType currentTool = ToolType.WaterBall;
+    private int currentToolIndex = -1; //-1 = unequipped, 0 = waterball, 1 = incendiary ball, 2 = rifle
 
     void Start()
     {
@@ -107,8 +112,12 @@ public class PlayerController : MonoBehaviour
         originalGravityScale = rb.gravityScale;
 
         raycast = gameObject.AddComponent<Raycast>();
-        raycast.Initialize(transform);
-        raycast.enabled = false;
+        raycast.Initialize(transform, muzzle, dashTexture);
+        raycast.SetCurrentTool(currentTool); // Set initial tool
+        raycast.enabled = false; // Start with it off
+
+        waterAmmo = maxWaterAmmo;
+        explosiveAmmo = maxExplosiveAmmo;
 
         if (classicModel != null)
         {
@@ -130,6 +139,11 @@ public class PlayerController : MonoBehaviour
             isRunning = currentRunningBuffer > 0f;
         }
 
+        if (Keyboard.current.rKey.wasPressedThisFrame)
+        {
+            ReloadAmmo();
+        }
+
         Vector2 checkPosition = (Vector2)groundCheck.position + groundCheckOffset;
 
         CheckSlimeSurface();
@@ -145,21 +159,22 @@ public class PlayerController : MonoBehaviour
 
         if (raycast != null)
         {
-            raycast.enabled = isAiming;
+            //Determine if the current tool HAS ammo
+            bool hasAmmo = true;
+            if (currentTool == ToolType.WaterBall) hasAmmo = waterAmmo > 0;
+            else if (currentTool == ToolType.IncendiaryBall) hasAmmo = explosiveAmmo > 0;
 
+            //The Raycast line is only ENABLED if aiming AND ammo exists
+            raycast.enabled = isAiming && hasAmmo;
+
+            //We still pass the data to the raycast so it knows WHAT it's aiming even if the line is invisible
             if (isAiming)
             {
                 GameObject ballPrefab = null;
                 float throwForce = 0f;
                 float spawnOffset = 0f;
 
-                if (currentTool == ToolType.ExplosiveBall)
-                {
-                    ballPrefab = explosiveBallPrefab;
-                    throwForce = explosiveBallThrowForce;
-                    spawnOffset = explosiveBallSpawnOffset;
-                }
-                else if (currentTool == ToolType.WaterBall)
+                if (currentTool == ToolType.WaterBall)
                 {
                     ballPrefab = waterBallPrefab;
                     throwForce = waterBallThrowForce;
@@ -167,18 +182,15 @@ public class PlayerController : MonoBehaviour
                 }
                 else if (currentTool == ToolType.IncendiaryBall)
                 {
-                    ballPrefab = incendiaryBallPrefab;
+                    ballPrefab = incendiaryBallPrefab; // Use the new incendiary prefab
                     throwForce = incendiaryBallThrowForce;
                     spawnOffset = incendiaryBallSpawnOffset;
                 }
-                else if (currentTool == ToolType.WindBall)
-                {
-                    ballPrefab = windBallPrefab;
-                    throwForce = windBallThrowForce;
-                    spawnOffset = windBallSpawnOffset;
-                }
 
-                raycast.SetCurrentTool(currentTool, ballPrefab, throwForce, spawnOffset, maxCuttingRange);
+                Debug.Log($"[DEBUG] Sending to Raycast: Tool={currentTool}, Prefab={ballPrefab?.name}");
+
+                // Pass the data to the raycast
+                raycast.SetCurrentTool(currentTool, ballPrefab, throwForce, spawnOffset, maxCuttingRange, rifleExplosionRounds, rifleDelayBetweenRounds);
             }
         }
 
@@ -188,25 +200,17 @@ public class PlayerController : MonoBehaviour
             anim.SetBool("isGrounded", isGrounded);
             anim.SetBool("isAiming", isAiming);
 
-            int animValue = currentToolIndex;
-            if (currentToolIndex == 1 || currentToolIndex == 2)
-            {
-                animValue = 1; 
-            }
-            else if (currentToolIndex == 3)
-            {
-                animValue = 2; 
-            }
-
-            anim.SetInteger("ToolIndex", animValue);
+            anim.SetInteger("ToolIndex", currentToolIndex);
         }
     }
 
     public void SwitchTool(int toolIndex)
     {
-        Debug.Log("SwitchTool called with: " + toolIndex);
+        Debug.Log($"[DEBUG] SwitchTool index: {toolIndex}");
 
         currentToolIndex = toolIndex;
+
+        Debug.Log($"[DEBUG] currentTool Enum is now: {currentTool}");
 
         if (anim != null)
         {
@@ -226,6 +230,37 @@ public class PlayerController : MonoBehaviour
         if (raycast != null)
         {
             raycast.enabled = isAiming;
+        }
+
+        if (raycast != null)
+        {
+            GameObject ballPrefab = null;
+            float throwForce = 0f;
+            float spawnOffset = 0f;
+
+            // Map the new tool data immediately
+            if (currentTool == ToolType.WaterBall)
+            {
+                ballPrefab = waterBallPrefab;
+                throwForce = waterBallThrowForce;
+                spawnOffset = waterBallSpawnOffset;
+            }
+            else if (currentTool == ToolType.IncendiaryBall)
+            {
+                ballPrefab = incendiaryBallPrefab;
+                throwForce = incendiaryBallThrowForce;
+                spawnOffset = incendiaryBallSpawnOffset;
+            }
+
+            // Push this to Raycast right now so it switches Prefabs/Logic instantly
+            raycast.SetCurrentTool(currentTool, ballPrefab, throwForce, spawnOffset, maxCuttingRange, rifleExplosionRounds, rifleDelayBetweenRounds);
+
+            // Refresh visibility based on new tool ammo
+            bool hasAmmo = true;
+            if (currentTool == ToolType.WaterBall) hasAmmo = waterAmmo > 0;
+            else if (currentTool == ToolType.IncendiaryBall) hasAmmo = explosiveAmmo > 0;
+
+            raycast.enabled = isAiming && hasAmmo;
         }
 
         Debug.Log("Player switched to: " + currentTool.ToString());
@@ -265,7 +300,7 @@ public class PlayerController : MonoBehaviour
             if (farHandGrip != null)
             {
                 // TODO: Pass waterball attributes when appropriate
-                raycast.SetCurrentTool(currentTool, explosiveBallPrefab, explosiveBallThrowForce, explosiveBallSpawnOffset, maxCuttingRange);
+                //raycast.SetCurrentTool(currentTool, explosiveBallPrefab, explosiveBallThrowForce, explosiveBallSpawnOffset, maxCuttingRange);
                 Vector2 shoulderToGrip = (Vector2)farHandGrip.position - (Vector2)farArm.position;
                 float distance = shoulderToGrip.magnitude;
                 float farAngle = Mathf.Atan2(shoulderToGrip.y, shoulderToGrip.x) * Mathf.Rad2Deg;
@@ -356,6 +391,7 @@ public class PlayerController : MonoBehaviour
 
     public void OnAim(InputValue value)
     {
+        // Remove the ammo check here entirely
         if (value.isPressed && isGrounded)
         {
             isAiming = !isAiming;
@@ -414,5 +450,43 @@ public class PlayerController : MonoBehaviour
     {
         isGrounded = false;
     }
+
+    public bool RequestAmmoUse(ToolType tool)
+    {
+        if (tool == ToolType.WaterBall && waterAmmo > 0)
+        {
+            waterAmmo--;
+            return true;
+        }
+
+        // We'll use the 'explosiveAmmo' variable as the pool for Incendiary
+        if (tool == ToolType.IncendiaryBall && explosiveAmmo > 0)
+        {
+            explosiveAmmo--;
+            return true;
+        }
+
+        if (tool == ToolType.Rifle) return true;
+
+        return false;
+    }
+
+    public void OnReload(InputValue value)
+    {
+        if (value.isPressed)
+        {
+            ReloadAmmo();
+        }
+    }
+
+    public void ReloadAmmo()
+    {
+        // Resets current ammo to the max values defined in the Inspector
+        waterAmmo = maxWaterAmmo;
+        explosiveAmmo = maxExplosiveAmmo;
+
+        Debug.Log($"Reloaded! Water: {waterAmmo}, Explosive: {explosiveAmmo}");
+    }
+
 
 }
