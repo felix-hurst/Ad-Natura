@@ -1253,11 +1253,25 @@ public void ApplyBlastForce(Vector2 origin, float radius, float force, float upw
         Vector2 delta = leafPos - origin;
         float distSq = delta.sqrMagnitude;
         
-        if (distSq > radiusSq) continue;
-        
         float dist = Mathf.Sqrt(distSq);
-        float falloff = 1f - (dist / radius);
-        falloff = falloff * falloff;
+
+// Soft outer boundary: tapers force out to 2x radius instead of hard cutoff
+float effectiveRadius = radius * 2f;
+if (distSq > effectiveRadius * effectiveRadius) continue;
+
+float falloff;
+if (dist <= radius)
+{
+    // Inner zone: squared falloff — strong core (same behaviour as before)
+    float t = 1f - (dist / radius);
+    falloff = t * t;
+}
+else
+{
+    // Outer zone: gentle linear fade from radius → 2x radius, capped at 25% peak
+    float t = 1f - ((dist - radius) / radius);
+    falloff = t * 0.25f;
+}
         
         Vector2 blastDir = dist > 0.01f ? delta / dist : UnityEngine.Random.insideUnitCircle.normalized;
         

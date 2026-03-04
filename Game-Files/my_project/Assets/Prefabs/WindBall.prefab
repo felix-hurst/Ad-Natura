@@ -1,0 +1,135 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &6202584585063726497
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 5466946290933693308}
+  - component: {fileID: 5463288024705853229}
+  - component: {fileID: 8804469939988279521}
+  m_Layer: 0
+  m_Name: WindBall
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &5466946290933693308
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6202584585063726497}
+  serializedVersion: 2
+  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
+  m_LocalPosition: {x: 7, y: -3.7, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &5463288024705853229
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6202584585063726497}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 7f4535553ea4b3f4182f3ef62cb84055, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  maxLifetime: 10
+  ballRadius: 0.3
+  impactIntensity: 0.8
+  scaleWithVelocity: 1
+  maxVelocityForImpact: 1
+  enableDestruction: 0
+  enableIncidentCut: 0
+  cutRaycastDistance: 0
+  explosionAffectsParent: 0
+  excludedLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  excludedTags:
+  - Player
+  - Debris
+  - Fragment
+  enableLeafSweep: 1
+  leafSweepRadius: 10
+  leafSweepForce: 8
+  leafSweepInterval: 0.15
+  enableProximityPush: 1
+  pushAuraRadius: 2
+  pushForce: 10
+  pushInterval: 0.1
+  pushMaxMass: 2
+  weaknessDelay: 1.5
+  minRayCount: 3
+  maxRayCount: 6
+  explosionRayDistance: 4
+  minAngle: 0
+  maxAngle: 360
+  showExplosionRays: 1
+  rayVisualizationDuration: 0.4
+  explosionRayColor: {r: 0.6, g: 0.8, b: 1, a: 1}
+  showFractureWarning: 1
+  warningDuration: 0.4
+  warningColor: {r: 0.5, g: 0.7, b: 1, a: 1}
+  gravityScale: 0
+  linearDrag: 0.4
+  wispCount: 2
+  wispOrbitRadius: 0.5
+  wispOrbitRadiusMax: 1.2
+  wispExpandTime: 1.5
+  wispOrbitSpeed: 2.2
+  wispPulseFrequency: 1.4
+  wispPulseAmount: 0.35
+  wispTrailTime: 0.55
+  wispWidthMax: 0.1
+  wispAlpha: 0.85
+  enableTipWisp: 1
+  tipWispOrbitRadius: 0.22
+  tipWispOrbitRadiusMax: 0.6
+  tipWispOrbitSpeed: 5
+  tipWispTrailTime: 0.28
+  tipWispWidthMax: 0.022
+  wispSortingOrder: 11
+  showDebugInfo: 0
+  showDebugVisual: 0
+  debugBallColor: {r: 0.4, g: 0.8, b: 1, a: 0.6}
+  showPushRadius: 0
+  debugPushColor: {r: 0.4, g: 0.8, b: 1, a: 0.15}
+--- !u!50 &8804469939988279521
+Rigidbody2D:
+  serializedVersion: 5
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6202584585063726497}
+  m_BodyType: 0
+  m_Simulated: 1
+  m_UseFullKinematicContacts: 0
+  m_UseAutoMass: 0
+  m_Mass: 1
+  m_LinearDamping: 0
+  m_AngularDamping: 0.05
+  m_GravityScale: 1
+  m_Material: {fileID: 0}
+  m_IncludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_ExcludeLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  m_Interpolate: 0
+  m_SleepingMode: 1
+  m_CollisionDetection: 0
+  m_Constraints: 0
