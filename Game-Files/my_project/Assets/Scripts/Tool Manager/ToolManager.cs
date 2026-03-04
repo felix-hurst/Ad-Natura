@@ -48,10 +48,10 @@ public class ToolManager : MonoBehaviour
             ShowHUD(); 
         }
 
-        // 3 = Rifle (Index 2)
+        // 3 = Wind Ball (Index 2)
         if (keyboard.digit3Key.wasPressedThisFrame) {
             Debug.Log("ToolManager: Pressed 3");
-            //SelectTool(2); 
+            SelectTool(2); 
             ShowHUD(); 
         }
 

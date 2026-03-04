@@ -2,6 +2,8 @@ using UnityEngine;
 using System.IO;
 using System.Text;
 using System.Collections;
+using UnityEngine.SceneManagement;
+using System;
 
 public class PerformanceReporter : MonoBehaviour
 {
@@ -18,7 +20,10 @@ public class PerformanceReporter : MonoBehaviour
 
     void Start()
     {
-        filePath = Path.Combine(Application.persistentDataPath, "PerformanceReport.txt");
+        string sceneName = SceneManager.GetActiveScene().name;
+        string timestamp = DateTime.Now.ToString("yyyy-MM-dd_HH-mm-ss");
+        string fileName = $"{timestamp}_{sceneName}_PerformanceReport.txt";
+        filePath = Path.Combine(Application.persistentDataPath, fileName);
 
         // Start the countdown timer
         StartCoroutine(WaitToStartMeasuring());
