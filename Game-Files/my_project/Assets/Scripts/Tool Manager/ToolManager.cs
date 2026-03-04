@@ -51,7 +51,7 @@ public class ToolManager : MonoBehaviour
         // 3 = Rifle (Index 2)
         if (keyboard.digit3Key.wasPressedThisFrame) {
             Debug.Log("ToolManager: Pressed 3");
-            SelectTool(2); 
+            //SelectTool(2); 
             ShowHUD(); 
         }
 
