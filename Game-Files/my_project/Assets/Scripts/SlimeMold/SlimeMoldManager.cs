@@ -62,7 +62,7 @@ public class SlimeMoldManager : MonoBehaviour
         // Auto-find liquid simulation if not assigned
         if (liquidSimulation == null && useLiquidSimulation)
         {
-            liquidSimulation = FindObjectOfType<CellularLiquidSimulation>();
+            liquidSimulation = FindAnyObjectByType<CellularLiquidSimulation>();
         }
 
         // Auto-sync bounds to match liquid simulation area
