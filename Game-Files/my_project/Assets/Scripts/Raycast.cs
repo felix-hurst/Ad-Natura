@@ -23,8 +23,6 @@ public class Raycast : MonoBehaviour
     private Transform playerTransform;
     private PlayerController.ToolType currentTool;
     private GameObject projectilePrefab;
-    private float throwForce;
-    private float ballSpawnOffset;
     private float maxCuttingRange = 10f;
     private int rifleExplosionRounds = 3;
     private float rifleDelayBetweenRounds = 0.8f;
