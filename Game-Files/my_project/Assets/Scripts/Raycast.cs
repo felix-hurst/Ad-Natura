@@ -21,15 +21,19 @@ public class Raycast : MonoBehaviour
     private GameObject exitDot;
     private RaycastReceiver currentlyHighlighted;
     private Transform playerTransform;
+    private PlayerController.ToolType currentTool;
     private GameObject projectilePrefab;
+    private float throwForce;
+    private float ballSpawnOffset;
     private float maxCuttingRange = 10f;
     private int rifleExplosionRounds = 3;
     private float rifleDelayBetweenRounds = 0.8f;
     private int arcMask;
     private Transform muzzleTransform;
 
-    // Tool State Management
-    private PlayerController.ToolType currentTool;
+    [Header("Muzzle Blast Settings (Incendiary Ball)")]
+    [SerializeField] private BurstLeafSystem.MuzzleBlastSettings muzzleBlastSettings = new BurstLeafSystem.MuzzleBlastSettings();
+
     private Vector2 currentEntryPoint;
     private Vector2 currentExitPoint;
     private bool hasValidCut;
@@ -327,7 +331,12 @@ public class Raycast : MonoBehaviour
 
         rb.gravityScale = 1f;
         rb.linearVelocity = direction * throwForce;
-
+        
+        if (currentTool == PlayerController.ToolType.IncendiaryBall)
+        {
+            BurstLeafSystem.MuzzleBlastAll(spawnPosition, direction, muzzleBlastSettings);
+        }
+        
         Debug.Log($"Raycast: Threw {currentTool} with force {throwForce} in direction {direction}");
     }
 

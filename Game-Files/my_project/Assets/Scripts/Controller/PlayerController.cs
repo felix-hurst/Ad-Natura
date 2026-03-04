@@ -96,8 +96,8 @@ public class PlayerController : MonoBehaviour
         ExplosiveBall,
         IncendiaryBall
     }
-    private ToolType currentTool = ToolType.CuttingTool;
-    private int currentToolIndex = -1; //-1 = unequipped, 0 = shovel, 1 = shooter water ammo, 2 shooter explosive ammo, 4 unassigned yet
+    private ToolType currentTool = ToolType.IncendiaryBall;
+    private int currentToolIndex = -1; 
 
     void Start()
     {
