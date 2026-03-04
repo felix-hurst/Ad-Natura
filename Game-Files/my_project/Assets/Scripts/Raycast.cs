@@ -103,6 +103,11 @@ public class Raycast : MonoBehaviour
             DrawArc(direction);
             HideDots();
         }
+        else if (currentTool == PlayerController.ToolType.WindBall)
+        {
+            DrawStraightLine(mousePosition);  // straight line, no arc
+            HideDots();
+        }
         else
         {
             DrawStraightLine(mousePosition);
@@ -296,34 +301,23 @@ public class Raycast : MonoBehaviour
         maxCuttingRange = cuttingRange;
     }
 
-    void ThrowProjectile(Vector2 direction)
-    {
-        if (projectilePrefab == null)
-        {
-            Debug.LogWarning($"Raycast: No projectile prefab assigned for {currentTool}!");
-            return;
-        }
+void ThrowProjectile(Vector2 direction)
+{
+    if (projectilePrefab == null) return;
 
-        Vector3 spawnPosition = playerTransform.position + (Vector3)(direction * ballSpawnOffset);
+    Vector3 spawnPosition = playerTransform.position + (Vector3)(direction * ballSpawnOffset);
+    GameObject projectile = Instantiate(projectilePrefab, spawnPosition, Quaternion.identity);
 
-        GameObject projectile = Instantiate(projectilePrefab, spawnPosition, Quaternion.identity);
+    Rigidbody2D rb = projectile.GetComponent<Rigidbody2D>();
+    if (rb == null) rb = projectile.AddComponent<Rigidbody2D>();
 
-        Rigidbody2D rb = projectile.GetComponent<Rigidbody2D>();
-        if (rb == null)
-        {
-            rb = projectile.AddComponent<Rigidbody2D>();
-        }
+    // WindBall flies straight — gravity is handled by WindBall.cs itself
+    rb.gravityScale = (currentTool == PlayerController.ToolType.WindBall) ? 0f : 1f;
+    rb.linearVelocity = direction * throwForce;
 
-        rb.gravityScale = 1f;
-        rb.linearVelocity = direction * throwForce;
-        
-        if (currentTool == PlayerController.ToolType.IncendiaryBall)
-        {
-            BurstLeafSystem.MuzzleBlastAll(spawnPosition, direction, muzzleBlastSettings);
-        }
-        
-        Debug.Log($"Raycast: Threw {currentTool} with force {throwForce} in direction {direction}");
-    }
+    if (currentTool == PlayerController.ToolType.IncendiaryBall)
+        BurstLeafSystem.MuzzleBlastAll(spawnPosition, direction, muzzleBlastSettings);
+}
 
     public void Cleanup()
     {
