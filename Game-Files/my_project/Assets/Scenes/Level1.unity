@@ -3427,6 +3427,13 @@ MonoBehaviour:
     y: -5
     width: 20
     height: 20
+  pulseAmplitude: 0.2
+  pulseMinFreq: 0.3
+  pulseMaxFreq: 1.5
+  pulseWaveScale: 0
+  entropyScale: 0.05
+  entropySpeed: 0.15
+  entropyStrength: 0.4
   slimeColor: {r: 1, g: 0.9, b: 0.2, a: 1}
   sortingOrder: 5
 --- !u!4 &938531633
@@ -3615,21 +3622,24 @@ MonoBehaviour:
   slimeSurfaceLayer:
     serializedVersion: 2
     m_Bits: 0
-  incendiaryBallPrefab: {fileID: 8220776105218794862, guid: a1c2aca37611d654884e8d551c7457c6, type: 3}
-  incendiaryBallThrowForce: 10
-  incendiaryBallSpawnOffset: 1
   explosiveBallPrefab: {fileID: 7397440784313061156, guid: 55c7fb9dd2972f640acdf6283654fbf2, type: 3}
   explosiveBallThrowForce: 10
   explosiveBallSpawnOffset: 1
+  incendiaryBallPrefab: {fileID: 8220776105218794862, guid: 1180151eb7f2eba4bbea3bcedc6bd15f, type: 3}
+  incendiaryBallThrowForce: 10
+  incendiaryBallSpawnOffset: 1
   waterBallPrefab: {fileID: 1920139217570416795, guid: 1ecefb02fd788de45abec1189397179e, type: 3}
   waterBallThrowForce: 10
   waterBallSpawnOffset: 1
-  dashTexture: {fileID: 2800000, guid: 4202e93f7ce07e941beae27bd3d38b47, type: 3}
+  windBallPrefab: {fileID: 6202584585063726497, guid: d87ca641020f2104682202252572a28e, type: 3}
+  windBallThrowForce: 10
+  windBallSpawnOffset: 1
   maxCuttingRange: 10
   rifleExplosionRounds: 3
   rifleDelayBetweenRounds: 0.8
   maxWaterAmmo: 5
-  maxExplosiveAmmo: 5
+  maxIncendiaryAmmo: 5
+  maxWindAmmo: 5
   gameCamera: {fileID: 1869255175}
   classicModel: {fileID: 779350709}
   aimingModel: {fileID: 1379807805}
@@ -3638,6 +3648,7 @@ MonoBehaviour:
   muzzle: {fileID: 1763697048}
   farHandGrip: {fileID: 1896015240}
   armLength: 0.5
+  dashTexture: {fileID: 2800000, guid: 4202e93f7ce07e941beae27bd3d38b47, type: 3}
 --- !u!61 &1036342112
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -4506,6 +4517,13 @@ MonoBehaviour:
     y: -5
     width: 20
     height: 20
+  pulseAmplitude: 0.2
+  pulseMinFreq: 0.3
+  pulseMaxFreq: 1.5
+  pulseWaveScale: 0
+  entropyScale: 0.05
+  entropySpeed: 0.15
+  entropyStrength: 0.4
   slimeColor: {r: 1, g: 0.9, b: 0.2, a: 1}
   sortingOrder: 5
 --- !u!4 &1448286673

@@ -1,0 +1,204 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &7284805373884167814
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 4895721954484833624}
+  - component: {fileID: 8323253867115542395}
+  - component: {fileID: 7431568018142717580}
+  - component: {fileID: 7491180584647777319}
+  m_Layer: 0
+  m_Name: CellularLiquidSimulation
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &4895721954484833624
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7284805373884167814}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0, y: 0, z: 0}
+  m_LocalScale: {x: 15, y: 15, z: 0}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8323253867115542395
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7284805373884167814}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 08e2bd987b5725d47944e16c5c290390, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  gridWidth: 300
+  gridHeight: 500
+  cellSize: 0.1
+  gridOrigin: {x: -5, y: -5}
+  simulationStepsPerFrame: 4
+  enableSimulation: 1
+  maxWaterPerCell: 15
+  minWaterTransfer: 0.04
+  waterFlowSpeed: 0.7
+  waterSpreadRate: 0.5
+  enablePressure: 1
+  maxCompression: 0.5
+  pressureStrength: 0.25
+  enableDiagonalFlow: 1
+  diagonalFlowRate: 0.3
+  waterColorDeep: {r: 0.31038627, g: 0.37941143, b: 0.4245283, a: 0.5882353}
+  waterColorMid: {r: 0.37864897, g: 0.52603143, b: 0.6320754, a: 0.5882353}
+  waterColorShallow: {r: 0.5509968, g: 0.6821648, b: 0.7735849, a: 0.5882353}
+  surfaceHighlightColor: {r: 0.80718225, g: 0.89072704, b: 0.9150943, a: 0.5882353}
+  enableDepthShading: 1
+  enableSurfaceHighlight: 1
+  maxShadingDepth: 8
+  waterMaterial: {fileID: 0}
+  pixelsPerUnit: 10
+  solidLayer:
+    serializedVersion: 2
+    m_Bits: 3393
+  physicsCheckRadius: 0.05
+  dynamicSolidUpdate: 1
+  solidUpdateInterval: 0.01
+  enableDisplacement: 1
+  displacementLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  displacementStrength: 1
+  pushForce: 1.5
+  minDisplacementVelocity: 0.5
+  displacementUpdateInterval: 0.05
+  useDirtyRectOptimization: 1
+  dirtyRectPadding: 2
+  useCachedDisplacementRigidbodies: 1
+  displacementCacheRefreshInterval: 2
+  textureUpdateFrameSkip: 0
+  usePixelArrayPool: 1
+--- !u!114 &7431568018142717580
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7284805373884167814}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: ee4c517495f4f87438020f36e99823a4, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  absorptionCheckInterval: 0.1
+  enableAbsorption: 1
+  materialAbsorptions:
+  - tag: Sponge
+    absorptionRate: 5
+  - tag: Cloth
+    absorptionRate: 3
+  - tag: Wood
+    absorptionRate: 1
+  - tag: Paper
+    absorptionRate: 4
+  - tag: Dirt
+    absorptionRate: 2
+  - tag: Stone
+    absorptionRate: 500
+  enableWoodDecomposition: 1
+  decomposeLayerName: Decompose
+  showAbsorptionParticles: 1
+  absorptionParticleColor: {r: 0.3, g: 0.6, b: 1, a: 0.5}
+  enableSaturation: 1
+  saturationCapacity: 5000
+  showDebugInfo: 1
+  showAbsorptionGizmos: 1
+  showDebugLines: 1
+  showCellChecks: 1
+  showAbsorptionRays: 1
+  debugLineDuration: 0.2
+--- !u!114 &7491180584647777319
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7284805373884167814}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa8e44b13b3fd68408ac76adcad0fe35, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  minSplashVelocity: 0
+  maxSplashVelocity: 15
+  splashLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  checkInterval: 0.05
+  enableEnhancedPhysics: 1
+  crownCellCount: 12
+  crownRadius: 0.8
+  crownHeight: 0.6
+  jetCellCount: 5
+  jetHeight: 1.2
+  jetDelay: 0.15
+  sprayCellCount: 8
+  sprayRadius: 1
+  sprayHeight: 0.8
+  enableRayleighPlateau: 1
+  mostUnstableWavelength: 0.15
+  cuspNoiseAngle: 12
+  enableProgressiveEjection: 1
+  crownEjectionDuration: 0.08
+  splashWaterAmount: 0.8
+  splashIntensityScale: 1
+  waterRemoveAmount: 2
+  arcSteps: 6
+  arcStepInterval: 0.025
+  crownParticlesPerSplash: 8
+  sprayParticlesPerSplash: 10
+  particleSize: 0.02
+  particleLifetime: 1.5
+  maxActiveParticles: 100
+  particleGravity: -18
+  particleDamping: 0.97
+  secondaryDropletMinSize: 0.15
+  secondaryDropletMaxSize: 0.24
+  secondaryVelocityMin: 1.5
+  secondaryVelocityMax: 2.5
+  enableSecondaryCollisions: 1
+  minTimeBeforeSecondaryCollision: 0.15
+  particleCollisionLayers:
+    serializedVersion: 2
+    m_Bits: 4294967295
+  particleCollisionRadius: 0.05
+  collisionBounceFactor: 0.4
+  minMicroSplashVelocity: 1.5
+  microSplashWaterAmount: 0.15
+  crownParticleColor: {r: 0.4707191, g: 0.6118699, b: 0.7735849, a: 0.59607846}
+  sprayParticleColor: {r: 0.7812834, g: 0.87804633, b: 0.9150943, a: 0.23529412}
+  maxSplashesPerFrame: 3
+  useCachedRigidbodies: 1
+  cacheRefreshInterval: 2
+  useSpatialHashingForCollisions: 1
+  spatialHashCellSize: 0.15
+  cacheWaterSurfaceCells: 1
+  waterSurfaceCacheRefreshInterval: 0.1
+  useBatchedParticleUpdates: 1
+  particleBatchSize: 16
+  showDebugInfo: 0
+  showCollisionDebug: 0
+  showCuspDebug: 0
+  showSpatialHashDebug: 0
