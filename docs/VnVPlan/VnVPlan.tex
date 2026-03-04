@@ -30,12 +30,13 @@
 
 \section*{Revision History}
 
-\begin{tabularx}{\textwidth}{p{3cm}p{2cm}X}
+\begin{tabularx}{\textwidth}{p{5cm}p{2cm}X}
 \toprule {\bf Author} & {\bf Version}& {\bf Date}\\
 \midrule
-All & 1.0 & November\\
-Marcos Hernandez-Rivero & 1.1 & November\\
-Marcos Hernandez-Rivero & 1.2 & December 13\\
+All & 1.0 & November 2026\\
+Marcos Hernandez-Rivero & 1.1 & November 2026\\
+Marcos Hernandez-Rivero & 1.2 & December 13, 2026\\
+Felix Hurst & 1.3 & February 26, 2026\\
 \bottomrule
 \end{tabularx}
 
@@ -46,7 +47,11 @@ Marcos Hernandez-Rivero & 1.2 & December 13\\
 \listoftables
 \newpage
 
-This document will cover our team’s plan to ensure our project will do what we intend it to do, and will meet our stakeholders’ needs. This will cover background information regarding our software project and team, high--level plans for verifying all of the important artifacts of our project, detailed descriptions of system and unit tests, and lastly, a list of usability survey questions.
+This document will cover our team's plan to ensure our project will do what we intend it to do,
+and will meet our stakeholders' needs. This will cover background information regarding our
+software project and team, high-level plans for verifying all the important artifacts of
+our project, detailed descriptions of system and unit tests, and lastly, a list of usability
+survey questions.
 
 \section{General Information}
 
@@ -58,13 +63,13 @@ The software being tested is our game, Ad Natura. This 2D pixel art styled puzzl
 
 \subsection{Objectives}
 
-This project’s key objectives include:
+This project's key objectives include:
 
 \begin{itemize}
 \item Establish confidence in software correctness for the primary two functions: Terrain decomposition and the slime mold organism.
 \item Establish confidence in software safety and security by ensuring the application maintains system integrity, mitigates vulnerabilities against external exploits, and operates within resource constraints to prevent system instability.
 \item Demonstrate our message of cooperation between humans and nature, through the use of aesthetics and environmental storytelling.
-\item Demonstrate satisfactory usability for both gamers and non--gamers, to expand to a wide audience.
+\item Demonstrate satisfactory usability for both gamers and non-gamers, to expand to a wide audience.
 \end{itemize}
 
 \noindent Objectives that are out of scope for this project include:
@@ -72,18 +77,20 @@ This project’s key objectives include:
 \begin{itemize}
 \item Establishing confidence in software correctness for fundamental Unity engine code and functions. This is not necessary as we can assume that Unity’s engine has been thoroughly verified.
 
-\item Demonstrating eye--catching, memorable visuals and music. These aspects are only important for marketing purposes, which is a very late--stage concern, and therefore not within the scope of this project at this stage.
+\item Demonstrating eye-catching, memorable visuals and music. These aspects are only important for marketing purposes, which is a very late--stage concern, and therefore not within the scope of this project at this stage.
 \end{itemize}
 
 \subsection{Extras}
 
-The extras include a Design Thinking Report and a Usability Report. The Design Thinking Report will demonstrate the iterative design process, showing our work at each stage of development, and the reasoning behind each important decision we made. The Usability Report will take data collected from stakeholder testers to assess the usability of our system and determine any potential improvements that could be made.
+The extras include a Technical Report on the Slime Mold Algorithm and a Usability Report.
+The Technical Report will detail the unique and queer features of slime mold organisms, and
+how we were able to implement some of these features into our project.
+The Usability Report will take data collected from stakeholder testers to assess the
+usability of our system and determine any potential improvements that could be made.
 
 \subsection{Relevant Documentation}
 
-\begin{itemize}
-  \item Relevant documents include:
-\end{itemize}
+Relevant documents include:
 
 \href{https://github.com/felix-hurst/Ad-Natura/blob/main/docs/ProblemStatementAndGoals/ProblemStatement.pdf}{\bf{Problem Statement and Goals}}. This document includes information about our goals, which is what the Verification and Validation Plan’s objectives are based on. It also lists stakeholders, which are relevant to our testing efforts.
 
@@ -94,8 +101,6 @@ The extras include a Design Thinking Report and a Usability Report. The Design T
 \href{https://github.com/felix-hurst/Ad-Natura/blob/main/docs/HazardAnalysis/HazardAnalysis.pdf}{\bf{Hazard Analysis.}} This document includes some safety and security focused software requirements, which will be subject to verification.
 
 \href{https://github.com/felix-hurst/Ad-Natura/blob/main/docs/Design/SoftArchitecture/MG.pdf}{\bf{Module Guide.}} This document describes all of the modules of our system. This is important for organizing our System and Unit Tests.
-
-\href{https://github.com/felix-hurst/Ad-Natura/blob/main/docs/Design/SoftDetailedDes/MIS.pdf}{\bf{Module Interface Specification.}} This document describes specifications for the interfaces. This is also important for organizing our System and Unit Tests.
 
 \section{Plan}
 
@@ -118,7 +123,17 @@ Michelle Bunton         & Supervisor    & Aid to the capstone supervisor, ensuri
 
 \subsection{SRS Verification}
 
-We intend to use a mix of ad hoc feedback from fellow team members and our supervisor, and a proper structured plan. This will be done via a structured inspection process involving both internal team reviews and external stakeholder feedback. Internally, team members will use an ad hoc feedback approach to log any issues concerning clarity or consistency in our central issue tracker. For our supervisor, we will conduct a formal meeting where we present the game concept and critical requirements, followed by a Task--Based Inspection. The supervisor will be asked to specifically review pre--selected, complex requirements related to environment manipulation, physics simulations, and various elements of our project, such as the slime mold algorithm that we are using, focusing on their feasibility and testability. This ensures a structured approach to leveraging our supervisor's expertise beyond a simple read--over.
+We intend to use a mix of feedback from fellow team members, classmates, and our supervisors.
+This will be done via team meetings, supervisor meetings, and peer reviews. Internally,
+team members will use an ad hoc feedback approach to log any issues concerning clarity
+or consistency in our central issue tracker. For our supervisor, we will conduct informal meetings
+where we will discuss the progress on our documentation and ask for their feedback and suggestions,
+especially considering complex requirements related to environment manipulation, physics
+simulations, and various elements of our project, such as the slime mold algorithm
+that we are using, focusing on their feasibility and testability. This ensures we leverage
+our supervisor's expertise beyond a simple read-over. Peer reviews with other Capstone teams
+will give us further insight into potential flaws in our documentation that we may not be able
+to see on our own.
 
 \begin{table}[H]
 \caption{SRS Verification Checklist}
@@ -137,7 +152,13 @@ Traceability      & Is each requirement uniquely identified to allow tracing to 
 
 \subsection{Design Verification}
 
-Our design verification plan focuses on ensuring the architectural and detailed design correctly implements the SRS and follows good software engineering principles like modularity. The core of this verification will be formal design inspections and walk--throughs. The Lead Developer will walk the team and classmates through critical design elements, such as the Tool--Effect System Architecture and the Level Data Structure, to scrutinize interface specifications and component interactions. Classmates will be leveraged as peer reviewers to ensure the design is robust and maintainable. The review process will focus on whether the design efficiently supports all functional requirements for traversing and manipulating the puzzle environments.
+Our design verification plan focuses on ensuring the architectural and detailed design
+correctly implements the SRS and follows good software engineering principles, such as modularity.
+The core of this verification will be informal reviews among our team and with our supervisors.
+Classmates will be leveraged as peer reviewers to ensure the design is robust and maintainable.
+The review process will involve a walk-through of our design documentation, and it will focus
+on whether the design efficiently supports all functional requirements for traversing and
+manipulating the puzzle environments.
 
 \begin{table}[H]
 \caption{Design Verification Checklist}
@@ -160,7 +181,15 @@ Maintainability       & Is the design simple, consistent, and easy to modify or 
 
 \subsection{Verification and Validation Plan Verification}
 
-We will subject this document to a formal peer review by classmates, ensuring the plan adequately covers verification for all key project artifacts (SRS, Design, Implementation) and specifies a viable strategy for testing and validation. Additionally, we will employ conceptual mutation testing by deliberately considering how the plan would handle various types of software failures (e.g., unit test failure, non--functional requirement breach). We will also be subject to a review by Dr. Kelley and Michelle Bunton, to ensure that the core ideas and themes of the game, which may not be understood by classmates, are conveyed properly and free from errors in the document, as well as proper testing mechanisms for aspects which cannot be unit tested, like slime mold algorithm.
+We will subject this document to a peer review by classmates, ensuring the plan adequately
+covers verification for all key project artifacts (SRS, Design, Implementation) and specifies
+a viable strategy for testing and validation. Additionally, we will employ conceptual
+mutation testing by deliberately considering how the plan would handle various types of failures
+(e.g., unit test failure, non-functional requirement breach). We will
+also subject this document to a review by Dr.\ Kelly and Michelle Bunton, to ensure that the core
+ideas and themes of the game, which may not be understood by classmates, are conveyed
+properly and free from errors in the document, as well as proper testing mechanisms for
+aspects which cannot be unit tested, like the slime mold algorithm.
 
 
 \begin{table}[H]
@@ -183,17 +212,43 @@ Acceptance Criteria     & Does the plan clearly define the Pass/Fail criteria fo
 
 \subsection{Implementation Verification}
 
-This verification relies heavily on three components: automated testing, manual testing, and static analysis. We will execute all automated tests detailed in the Unit Testing Plan, covering critical logic like physics calculations and tool--effect application, that can be mathematically verified. For static verification, the team will conduct internal code inspections on complex components, such as the logic for object mutation. Furthermore, the final presentation in CAS 741 will be used as both a formal Code Walk--Through and to help with one of our extras which was a usability report, where a section of the most complex game logic is presented and explained to an external audience, and a usability survey can also be conducted. For manual tests (integration testing), we need to ensure that the game components connect well, and that the goals we set are being met such as framerate, graphics, tools working properly under different conditions, etc.
+This verification relies heavily on three components: automated testing, manual testing, and
+static analysis. We will execute all automated tests detailed in the Unit Testing Plan,
+covering critical logic like physics calculations and tool-effect application, that can be
+mathematically verified. For static verification, the team will conduct internal code
+inspections on complex components, such as the logic for object mutation. For manual tests
+(integration testing), we need to ensure that the game components connect well, and that
+the goals we set are being met such as framerate, graphics, tools working properly under
+different conditions, etc.
 
 \subsection{Automated Testing and Verification Tools}
 
-Our team will be using a combination of runtime and CI/CD tests to test each of our feature modules. For runtime tests, we will be using Unity's built-in Test Framework to create and run unit tests for our core game mechanics, such as proper geometry and clipping detection for terrain destruction system and slime mold traversal algorithm location and logic checking. These tests will be executed locally by developers during development to catch issues early. In terms of CI/CD tests, we will integrate automated test runs into our GitHub Actions pipeline for example formatting checks using tools like EditorConfig and static code analysis using SonarQube. This will ensure that every code change is automatically verified for both functionality and code quality before being merged into the main branch. Additionally, we will use Unity's Profiler to monitor performance metrics during gameplay, ensuring that non-functional requirements like frame rate and memory usage are consistently met.
+Our team will be using a combination of runtime and CI/CD tests to test each of our
+feature modules. For runtime tests, we will be using Unity's built-in Test Framework
+to create and run unit tests for our core game mechanics, such as proper geometry and
+clipping detection for the terrain destruction system, and slime mold traversal algorithm
+location and logic checking. These tests will be executed locally by developers during
+development to catch issues early. In terms of CI/CD tests, we will integrate automated
+unit tests into our GitHub Actions pipeline. This will ensure that every code
+change is automatically verified for functionality before being
+merged into the main branch. Additionally, we will use Unity's Profiler to monitor
+performance metrics during gameplay, ensuring that non-functional requirements like
+frame rate and memory usage are consistently met.
 
 \subsection{Software Validation}
 
-We will use the Rev 0 demo to our supervisor/stakeholder as the first key opportunity for requirements validation, ensuring the core mechanics align with their expectations. If we are able to, we will also be demoing to a small group of external user testers, likely our friends or classmates in engineering programs, that can provide us with feedback. These users will be engaged in task--based inspection, where they are asked to complete specific puzzle levels while being observed. Feedback will be gathered on the usability of the tool--selection interface and the satisfaction of the core puzzle loop, directly validating the non--functional and game design requirements. We will then ask them questions based on their experience, and seeing what aspects they enjoyed or did not enjoy, and what they found easy or difficult to use.
+We will use the PoC and Rev 0 demos as the first key opportunity for
+software validation, ensuring the core functionality aligns with our stakeholders' expectations.
+
+We will also distribute an alpha version of our project to some of our friends, family, classmates,
+and other potential testers. These testers will be asked to play through the game and then fill in
+a survey form which will ask them questions about their experience with the game.
+This survey will act as our Usability Survey, which will be used to write our
+Usability Report, as one of our extra deliverables. Usability Survey questions are detailed in
+Section~\ref{Survey}.
+
 \section{System Tests}
-System tests provide an effective and quantifiable way of evaluating success of functional and non--functional requirements.
+System tests provide an effective and quantifiable way of evaluating success of functional and non-functional requirements.
 \subsection{Tests for Functional Requirements}
 The following are tests for the functional requirements outlined in the SRS. Testing for functional requirements will include the two key game mechanics of destructive environment and path traversal as well as the saving feature. Each feature and mechanics' specific functionalities will be tested to ensure it meets proper adherence to functionality.
 \subsubsection{SavingManualTest-FRT01}
@@ -532,15 +587,8 @@ PerformanceModule-UT02 & Destruction System & Verify destruction performance \\ 
 MemoryModule-UT01 & Object Management & Verify memory management \\ \hline
 \end{tabular}
 \end{table}
-\subsection{Traceability Between Test Cases and Modules [Provide evidence that all of the modules have been considered. —SS]}
-
-References
-
-Author Author. System requirements specification. https://github.com/..., 2019.
 
 \section{Appendix}
-
-This is where you can place additional information.
 
 \subsection{Symbolic Parameters}
 
@@ -567,7 +615,7 @@ SLIME\_MOLD\_ATTRACTANT      & Target resource guiding traversal                
 
 
 Notes: SAVE\_RECORD\_FIELDS mirrors the save--snapshot contents described in the save tests; “LEVEL\_LOCATION” denotes the level/area identifier distinct from PLAYER\_COORDS.
-\subsection{Usability Survey}
+\subsection{Usability Survey}\label{Survey}
 
 \subsubsection{Survey Administration}
 
