@@ -8,8 +8,8 @@ public class Raycast : MonoBehaviour
     [SerializeField] private float dotSize = 0.2f;
     [SerializeField] private float dashWorldSize = 0.2f;
 
-    [Header("Explosive Settings")]
-    [SerializeField] private GameObject explosiveBallPrefab;
+    [Header("Incendiary Settings")]
+    [SerializeField] private GameObject incendiaryBallPrefab;
     [SerializeField] private float throwForce = 15f;
     [SerializeField] private float ballSpawnOffset = 1.0f;
 
@@ -86,6 +86,7 @@ public class Raycast : MonoBehaviour
     public void SetCurrentTool(PlayerController.ToolType tool)
     {
         currentTool = tool;
+        projectilePrefab = null;
         SetLaserColor(Color.white);
     }
 
@@ -101,7 +102,7 @@ public class Raycast : MonoBehaviour
         float distance = Vector2.Distance(new Vector2(muzzleTransform.position.x, muzzleTransform.position.y), new Vector2(mousePosition.x, mousePosition.y));
 
         if (currentTool == PlayerController.ToolType.WaterBall ||
-            currentTool == PlayerController.ToolType.ExplosiveBall)
+            currentTool == PlayerController.ToolType.IncendiaryBall)
         {
             DrawArc(direction);
             HideDots();
@@ -113,7 +114,7 @@ public class Raycast : MonoBehaviour
 
         if (Mouse.current.leftButton.wasPressedThisFrame)
         {
-            if (currentTool == PlayerController.ToolType.ExplosiveBall ||
+            if (currentTool == PlayerController.ToolType.IncendiaryBall ||
                 currentTool == PlayerController.ToolType.WaterBall)
             {
                 // Get reference to player to check ammo
@@ -134,7 +135,7 @@ public class Raycast : MonoBehaviour
         }
 
         //Hit Detection Logic (For Cutting/Rifle)
-        if (currentTool != PlayerController.ToolType.CuttingTool && currentTool != PlayerController.ToolType.Rifle)
+        if (currentTool != PlayerController.ToolType.Rifle)
         {
             //If its not a cutting tool, return
             ClearAllHighlights();
@@ -154,7 +155,7 @@ public class Raycast : MonoBehaviour
 
             float hitDistance = Vector2.Distance(muzzleTransform.position, hit.point);
 
-            if (currentTool == PlayerController.ToolType.CuttingTool && hitDistance > maxCuttingRange)
+            if (currentTool == PlayerController.ToolType.Rifle && hitDistance > maxCuttingRange)
                 continue;
 
             float distToMouse = Vector2.Distance(hit.point, mousePosition);

@@ -35,18 +35,36 @@ public class ToolManager : MonoBehaviour
         if (keyboard == null) return;
 
         // When a key is pressed, trigger the tool AND show the UI
-        if (keyboard.digit1Key.wasPressedThisFrame) { SelectTool(0); ShowHUD(); }
-        if (keyboard.digit2Key.wasPressedThisFrame) { SelectTool(1); ShowHUD(); }
-        if (keyboard.digit3Key.wasPressedThisFrame) { SelectTool(2); ShowHUD(); }
-        if (keyboard.digit4Key.wasPressedThisFrame) { SelectTool(3); ShowHUD(); }
+        if (keyboard.digit1Key.wasPressedThisFrame) {
+            Debug.Log("ToolManager: Pressed 1");
+            SelectTool(0); 
+            ShowHUD(); 
+        }
 
-        // Handle the auto-hide timer
+        // 2 = Incendiary Ball (Index 1)
+        if (keyboard.digit2Key.wasPressedThisFrame) {
+            Debug.Log("ToolManager: Pressed 2");
+            SelectTool(1); 
+            ShowHUD(); 
+        }
+
+        // 3 = Rifle (Index 2)
+        if (keyboard.digit3Key.wasPressedThisFrame) {
+            Debug.Log("ToolManager: Pressed 3");
+            SelectTool(2); 
+            ShowHUD(); 
+        }
+
+        HandleHUDVisibility();
+    }
+
+    private void HandleHUDVisibility()
+    {
         if (visibilityTimer > 0)
         {
             visibilityTimer -= Time.deltaTime;
             if (visibilityTimer <= 0 && hudGroup != null)
             {
-                // Start fading or just hide
                 hudGroup.alpha = 0;
             }
         }

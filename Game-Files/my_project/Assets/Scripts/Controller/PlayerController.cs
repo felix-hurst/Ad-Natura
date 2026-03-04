@@ -97,13 +97,11 @@ public class PlayerController : MonoBehaviour
 
     public enum ToolType
     {
-        CuttingTool,
-        WaterBall,
-        Rifle,
-        ExplosiveBall,
-        IncendiaryBall
+        WaterBall,      // Index 0
+        IncendiaryBall, // Index 1
+        Rifle           // Index 2
     }
-    private ToolType currentTool = ToolType.CuttingTool;
+    private ToolType currentTool = ToolType.WaterBall;
     private int currentToolIndex = -1; //-1 = unequipped, 0 = shovel, 1 = shooter water ammo, 2 shooter explosive ammo, 4 unassigned yet
 
     void Start()
@@ -169,7 +167,7 @@ public class PlayerController : MonoBehaviour
             //Determine if the current tool HAS ammo
             bool hasAmmo = true;
             if (currentTool == ToolType.WaterBall) hasAmmo = waterAmmo > 0;
-            else if (currentTool == ToolType.ExplosiveBall) hasAmmo = explosiveAmmo > 0;
+            else if (currentTool == ToolType.IncendiaryBall) hasAmmo = explosiveAmmo > 0;
 
             //The Raycast line is only ENABLED if aiming AND ammo exists
             raycast.enabled = isAiming && hasAmmo;
@@ -181,20 +179,22 @@ public class PlayerController : MonoBehaviour
                 float throwForce = 0f;
                 float spawnOffset = 0f;
 
-                if (currentTool == ToolType.ExplosiveBall)
-                {
-                    ballPrefab = explosiveBallPrefab;
-                    throwForce = explosiveBallThrowForce;
-                    spawnOffset = explosiveBallSpawnOffset;
-                }
-                else if (currentTool == ToolType.WaterBall)
+                if (currentTool == ToolType.WaterBall)
                 {
                     ballPrefab = waterBallPrefab;
                     throwForce = waterBallThrowForce;
                     spawnOffset = waterBallSpawnOffset;
                 }
+                else if (currentTool == ToolType.IncendiaryBall)
+                {
+                    ballPrefab = incendiaryBallPrefab; // Use the new incendiary prefab
+                    throwForce = incendiaryBallThrowForce;
+                    spawnOffset = incendiaryBallSpawnOffset;
+                }
 
-                // We update the tool data regardless of ammo so the firing logic works
+                Debug.Log($"[DEBUG] Sending to Raycast: Tool={currentTool}, Prefab={ballPrefab?.name}");
+
+                // Pass the data to the raycast
                 raycast.SetCurrentTool(currentTool, ballPrefab, throwForce, spawnOffset, maxCuttingRange, rifleExplosionRounds, rifleDelayBetweenRounds);
             }
         }
@@ -205,25 +205,17 @@ public class PlayerController : MonoBehaviour
             anim.SetBool("isGrounded", isGrounded);
             anim.SetBool("isAiming", isAiming);
 
-            int animValue = currentToolIndex;
-            if (currentToolIndex == 1 || currentToolIndex == 2)
-            {
-                animValue = 1;
-            }
-            else if (currentToolIndex == 3)
-            {
-                animValue = 2;
-            }
-
-            anim.SetInteger("ToolIndex", animValue);
+            anim.SetInteger("ToolIndex", currentToolIndex);
         }
     }
 
     public void SwitchTool(int toolIndex)
     {
-        Debug.Log("SwitchTool called with: " + toolIndex);
+        Debug.Log($"[DEBUG] SwitchTool index: {toolIndex}");
 
         currentToolIndex = toolIndex;
+
+        Debug.Log($"[DEBUG] currentTool Enum is now: {currentTool}");
 
         if (anim != null)
         {
@@ -244,6 +236,37 @@ public class PlayerController : MonoBehaviour
         {
             raycast.SetCurrentTool(currentTool);
             raycast.enabled = isAiming;
+        }
+
+        if (raycast != null)
+        {
+            GameObject ballPrefab = null;
+            float throwForce = 0f;
+            float spawnOffset = 0f;
+
+            // Map the new tool data immediately
+            if (currentTool == ToolType.WaterBall)
+            {
+                ballPrefab = waterBallPrefab;
+                throwForce = waterBallThrowForce;
+                spawnOffset = waterBallSpawnOffset;
+            }
+            else if (currentTool == ToolType.IncendiaryBall)
+            {
+                ballPrefab = incendiaryBallPrefab;
+                throwForce = incendiaryBallThrowForce;
+                spawnOffset = incendiaryBallSpawnOffset;
+            }
+
+            // Push this to Raycast right now so it switches Prefabs/Logic instantly
+            raycast.SetCurrentTool(currentTool, ballPrefab, throwForce, spawnOffset, maxCuttingRange, rifleExplosionRounds, rifleDelayBetweenRounds);
+
+            // Refresh visibility based on new tool ammo
+            bool hasAmmo = true;
+            if (currentTool == ToolType.WaterBall) hasAmmo = waterAmmo > 0;
+            else if (currentTool == ToolType.IncendiaryBall) hasAmmo = explosiveAmmo > 0;
+
+            raycast.enabled = isAiming && hasAmmo;
         }
 
         Debug.Log("Player switched to: " + currentTool.ToString());
@@ -286,7 +309,7 @@ public class PlayerController : MonoBehaviour
             if (farHandGrip != null)
             {
                 // TODO: Pass waterball attributes when appropriate
-                raycast.SetCurrentTool(currentTool, explosiveBallPrefab, explosiveBallThrowForce, explosiveBallSpawnOffset, maxCuttingRange);
+                //raycast.SetCurrentTool(currentTool, explosiveBallPrefab, explosiveBallThrowForce, explosiveBallSpawnOffset, maxCuttingRange);
                 Vector2 shoulderToGrip = (Vector2)farHandGrip.position - (Vector2)farArm.position;
                 float distance = shoulderToGrip.magnitude;
                 float farAngle = Mathf.Atan2(shoulderToGrip.y, shoulderToGrip.x) * Mathf.Rad2Deg;
@@ -461,18 +484,17 @@ public class PlayerController : MonoBehaviour
         if (tool == ToolType.WaterBall && waterAmmo > 0)
         {
             waterAmmo--;
-            Debug.Log($"Water Ammo Left: {waterAmmo}");
-            return true;
-        }
-        if (tool == ToolType.ExplosiveBall && explosiveAmmo > 0)
-        {
-            explosiveAmmo--;
-            Debug.Log($"Explosive Ammo Left: {explosiveAmmo}");
             return true;
         }
 
-        // Tools that don't use ammo (like CuttingTool) always return true
-        if (tool == ToolType.CuttingTool || tool == ToolType.Rifle) return true;
+        // We'll use the 'explosiveAmmo' variable as the pool for Incendiary
+        if (tool == ToolType.IncendiaryBall && explosiveAmmo > 0)
+        {
+            explosiveAmmo--;
+            return true;
+        }
+
+        if (tool == ToolType.Rifle) return true;
 
         return false;
     }
