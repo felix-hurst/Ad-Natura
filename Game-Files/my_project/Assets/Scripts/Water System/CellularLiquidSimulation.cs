@@ -6,7 +6,7 @@ public class CellularLiquidSimulation : MonoBehaviour
     [Header("Grid Settings")]
     [SerializeField] private int gridWidth = 200;
     [SerializeField] private int gridHeight = 150;
-    [SerializeField] private float cellSize = 0.1f;
+    [SerializeField] public float cellSize = 0.1f;
     [SerializeField] private Vector2 gridOrigin = new Vector2(-10f, -7.5f);
     
     [Header("Simulation Settings")]
