@@ -1,0 +1,79 @@
+
+\documentclass[12pt, titlepage]{article}
+
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{hyperref}
+\usepackage{float}
+\usepackage{graphicx}
+\usepackage[margin=1in]{geometry}
+\hypersetup{
+    colorlinks,
+    citecolor=blue,
+    filecolor=black,
+    linkcolor=red,
+    urlcolor=blue
+}
+
+\input{../../Common}
+
+\begin{document}
+
+\title{Usability Report for \progname{}} 
+\author{\authname}
+\date{\today}
+	
+\maketitle
+
+\pagenumbering{roman}
+
+\section*{Revision History}
+
+\begin{tabularx}{\textwidth}{p{5cm}p{2cm}X}
+\toprule {\bf Author} & {\bf Version}& {\bf Date}\\
+\midrule
+All & 1.0 & March 5, 2026\\
+\bottomrule
+\end{tabularx}
+
+\newpage
+
+\tableofcontents
+%\newpage
+%\listoftables
+\newpage
+
+\pagenumbering{arabic}
+
+% For this report follow the HCI course. The usability testing has to be systematic,
+% rigorous and quantified. You should have a clear plan for the usability testing,
+% including the goals of the testing, the specific tasks you ask users to complete,
+% the specific questions you ask users, the specific survey you ask the users to complete, etc.
+
+This document will report on and discuss the results of the Usability Survey.
+
+\section{General Information}
+The Usability Survey was conducted by deploying a demo build of our project
+executable, and distributing it to our stakeholders, our players. They were asked
+to play our game and then submit a survey to tell us about their experience.
+
+For a list of the questions found in the Usability Survey, refer to the
+\href{https://github.com/felix-hurst/Ad-Natura/blob/main/docs/VnVPlan/VnVPlan.pdf}{VnV Plan} document.
+
+This report is also closely tied with our
+\href{https://github.com/felix-hurst/Ad-Natura/blob/main/docs/VnVReport/VnVReport.pdf}{Verification and Validation Report},
+as this report serves to determine the level of validation we have with our stakeholders.
+
+\section{Usability Survey Results}
+This section will report a summary of the results from each major section
+of the survey form.
+
+\section{Discussion of Survey Results}
+This section will discuss what went well in our development and deployment
+of this demo, and what went poorly or was lacking.
+
+\section{Changes Due To Results}
+This section will propose the most major changes we should take to
+address the feedback received from this survey.
+
+\end{document}
