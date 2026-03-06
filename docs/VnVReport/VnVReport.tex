@@ -25,78 +25,308 @@
 
 \pagenumbering{roman}
 
-\section{Revision History}
+\section*{Revision History}
 
 \begin{tabularx}{\textwidth}{p{3cm}p{2cm}X}
 \toprule {\bf Date} & {\bf Version} & {\bf Notes}\\
 \midrule
-Date 1 & 1.0 & Notes\\
-Date 2 & 1.1 & Notes\\
+March 4, 2026 & 1.0 & Initial version\\
 \bottomrule
 \end{tabularx}
 
 ~\newpage
 
-\section{Symbols, Abbreviations and Acronyms}
-
-\renewcommand{\arraystretch}{1.2}
-\begin{tabular}{l l} 
-  \toprule		
-  \textbf{symbol} & \textbf{description}\\
-  \midrule 
-  T & Test\\
-  \bottomrule
-\end{tabular}\\
-
-\wss{symbols, abbreviations or acronyms -- you can reference the SRS tables if needed}
-
-\newpage
-
 \tableofcontents
-
-\listoftables %if appropriate
-
-\listoffigures %if appropriate
 
 \newpage
 
 \pagenumbering{arabic}
 
-This document ...
+This document will report on the results of the Verification \& Validation (VnV) Plan.
+After covering the results, we will discuss the changes we intend to make to
+improve the final version of the project.
 
-\section{Functional Requirements Evaluation}
+\section{General Information}
+The VnV Plan covers plans for evaluating key documents and artifacts of our project.
+This includes the Software Requirements Specification (SRS), the Module Guide (MG) which
+served as our design document, the VnV Plan itself, the implementation of the design, and
+the system as a whole. The plan also included a list of system tests and unit tests to be
+performed on the project and its source code.
 
-\section{Nonfunctional Requirements Evaluation}
+For a full description of the plan, refer to the original
+\href{https://github.com/felix-hurst/Ad-Natura/blob/main/docs/VnVPlan/VnVPlan.pdf}{\bf{VnV Plan}}.
 
-\subsection{Usability}
-		
-\subsection{Performance}
+\section{Evaluation of Documentation and Artifacts}
+This section will cover the evaluation of our key design-related documentation,
+as well as informal demonstration and feedback on our implementation.
 
-\subsection{etc.}
-	
-\section{Comparison to Existing Implementation}	
+\subsection{Overview}
+A large portion of feedback received, especially from classmates designated as peer reviewers,
+covered formatting issues in our documentation that caused difficulties with readability and clarity.
+However, we also received plenty of useful feedback for the content and substance of our
+documents and artifacts. Overall, our project had decent verification but weak validation,
+requiring us to make significant changes to our plans of what we are creating with this project.
 
-This section will not be appropriate for every project.
+\subsection{SRS Verification}
+This refers to the \href{https://github.com/felix-hurst/Ad-Natura/blob/main/docs/SRS/SRS.pdf}{\bf{SRS}}.
 
-\section{Unit Testing}
+Feedback gathered resulted in many fixes being made to the SRS, but these were
+primarily formatting fixes. The content was deemed well-suited to the project,
+covering key aspects of the project appropriately, and so we moved forward
+without making major changes to the requirements.
+
+\subsection{Design Verification}
+This refers to the \href{https://github.com/felix-hurst/Ad-Natura/blob/main/docs/Design/SoftArchitecture/MG.pdf}{\bf{MG}}.
+
+Feedback gathered included some significant points of low clarity in the design
+documentation, namely the lack of modules covering the slime mold algorithm, a
+crucial aspect of our project. We swiftly amended this issue, adding new, clear
+modules for the slime mold algorithm and slime mold entities our project will use.
+The remaining feedback received majorly covered formatting and typographical errors,
+and indicated that the content of the other modules listed was appropriate.
+Specifications were easy to understand and usable by other external teams, as evidenced
+by the implementation of our Pixelation Module (M13) by Team 11.
+
+\subsection{Verification and Validation Plan Verification}
+This refers to the \href{https://github.com/felix-hurst/Ad-Natura/blob/main/docs/VnVPlan/VnVPlan.pdf}{\bf{VnV Plan}}.
+
+Feedback gathered indicated that some of our sections lacked clarity, on top of
+having poor formatting. These issues were amended, restoring a clear and
+effective plan that properly covers all project documents and artifacts.
+
+\subsection{Implementation Verification}
+Detailed descriptions of test results for system and unit tests are written in
+Sections \ref{systemtests} and \ref{unittests} respectively.
+
+Static analysis showed that for the majority of scripts, code quality was to
+an acceptable degree, with minimal necessity to refactor for optimization purposes.
+However, one particular set of scripts responsible for water simulation was a cause
+for major performance issues. It was found through static analysis that these scripts
+were running background event checks far too many times per second, slowing down the
+system. This issue was quickly corrected.
+
+\subsection{Automated Testing and Verification Tools}
+Due to the inaccessibility of Unity Unit Testing integration to GitHub Actions,
+automated testing was not able to be performed.
+
+\subsection{Software Validation}
+A large volume of useful and thought-provoking feedback was given to us
+from the PoC and Rev 0 demonstrations we presented. Through speaking with some of
+our stakeholders, including our instructor, TA and supervisors, we learned
+that our project was lacking unified direction and was failing to meet the
+goals that we had laid out for it in our prior documents, such as the
+\href{https://github.com/felix-hurst/Ad-Natura/blob/main/docs/ProblemStatementAndGoals/ProblemStatement.pdf}{\bf{Problem Statement and Goals}} document.
+
+This led to major changes in our development plans. As a team, we held
+meetings to discuss the new direction we wanted to take our project,
+which involved numerous votes and compromises to ensure every team member
+was on board with the plan. This included a renewed focus on the element of
+eliciting emotions from our users, as we present this project which is both
+artistic and educational, showcasing the unique properties of the slime mold
+while simultaneously teaching about cooperation with and protection of nature.
+
+We have also been conducting a Usability Survey, to directly connect with our
+end-users, the players of our game. The results of this survey can be found
+in the \href{https://github.com/felix-hurst/Ad-Natura/blob/main/docs/Extras/UsabilityReport/UsabilityReport.pdf}{\bf{Usability Report}} document.
+
+
+
+\section{System Tests}\label{systemtests}
+
+\subsection{Tests for Functional Requirements}
+
+
+\subsubsection{ObjectDestructionTest-FRT01}
+
+
+\textbf{Initial State}: Character at beginning of level, with a destructible
+obstacle in their path.
+
+\textbf{Input}: Select destructive ball tool, approach a destructible obstacle, aim,
+and fire the tool at the object.
+
+\textbf{Expected Output}: A destructive ball is fired from the tool at the object.
+About one second after contact, the object breaks into smaller pieces.
+
+\textbf{Actual Output}: Same as expected.
+
+
+
+\subsubsection{SlimeMoldFunctionalityTest-FRT02}
+
+\textbf{Initial State}: Character at beginning of level, with a wood obstacle
+in their path, and a slime mold source near that obstacle.
+
+\textbf{Input}: Select water ball tool, approach a wood obstacle, aim,
+and fire the tool at the object.
+
+\textbf{Expected Output}: A water ball is fired from the tool at the object.
+After making contact with the wood obstacle, a nearby slime mold organism
+begins to traverse toward it. After a while, the slime mold decomposes the
+wood obstacle, destroying it entirely.
+
+\textbf{Actual Output}: Same as expected.
+
+
+
+\subsubsection{SlimeSporeSpreadingTest-FRT03}
+
+\textbf{Initial State}: Character standing still, large number of spore
+particles spawned on the ground.
+
+\textbf{Input}: Select spore fan tool, aim at the spore particles on the
+ground, and fire the tool at the spore particles.
+
+\textbf{Expected Output}: Spore particles are accelerated away from the character,
+following a smooth, gentle path through the air, and landing on the ground
+a short distance away. Where spores land, they spawn new slime mold sources.
+
+\textbf{Actual Output}: Mostly the same as expected, except that spore particles
+are accelerated too quickly.
+
+
+
+\subsubsection{SlimeWallClimbTest-FRT04}
+
+\textbf{Initial State}: Character at beginning of level, with a vertical
+surface (i.e.\ a wall) in their path, and a slime mold source near that wall.
+
+\textbf{Input}: Select water ball tool, aim at the wall, and fire
+the tool at the wall. Wait a few seconds, then attempt to climb the wall.
+
+\textbf{Expected Output}: The slime mold is attracted to the water on the wall. After covering
+enough of the wall, the wall becomes climbable, and the character ascends it successfully.
+
+\textbf{Actual Output}: Untested. Functionality has yet to be implemented.
+
+
+
+\subsection{Tests for Non-Functional Requirements}
+
+
+\subsubsection{PerformanceTest-NFRT01}
+
+\textbf{Initial State}: Freshly loaded level.
+
+\textbf{Input}: Repeated usage of tools in an attempt to spawn as many particles
+as possible and/or break obstacles into as many pieces as possible.
+
+\textbf{Expected Output}: The frame rate will be carefully observed, and
+should stay within reasonable bounds, averaging 30 fps or higher.
+
+\textbf{Actual Output}: Same as expected.
+
+
+
+\subsubsection{SlimeMoldRandomnessTest-NFRT02}
+
+\textbf{Initial State}: Freshly loaded level.
+
+\textbf{Input}: Repeated reloads of a single part of a level, each time aiming
+the water ball tool in the same place to direct the slime mold toward the first
+wood obstacle.
+
+\textbf{Expected Output}: The slime mold should have subtly different, random behaviour each time.
+
+\textbf{Actual Output}: Same as expected.
+
+
+
+\subsection{Traceability Between Test Cases and Requirements}
+Refer to the original
+\href{https://github.com/felix-hurst/Ad-Natura/blob/main/docs/VnVPlan/VnVPlan.pdf}{\bf{VnV Plan}}.
+
+\section{Unit Tests}\label{unittests}
+
+
+\subsection{Tests}
+
+\subsubsection{RaycastObjectSplitTest-UT01}
+
+\textbf{Initial State}: Rectangular object.
+
+\textbf{Input}: Apply raycast through object, entering from one side and exiting
+out the other, with a straight line.
+
+\textbf{Expected Output}: Remove chunk from object and generate it as a new separated object,
+with the shape determined by the placement of the raycast.
+
+\textbf{Actual Output}: Same as expected.
+
+
+
+\subsubsection{WaterLimitTest-UT02}
+
+\textbf{Initial State}: An empty, enclosed area of terrain.
+
+\textbf{Input}: A water spawner is placed inside this area.
+
+\textbf{Expected Output}: Water falls from the spawner and pools up on the ground,
+but only to a certain capacity, after which it remains a steady volume
+of water directly above the ground.
+
+\textbf{Actual Output}: Same as expected.
+
+
+
+\subsubsection{SlimeMoldAttractionTest-UT03}
+
+\textbf{Initial State}: Slime mold source in a relatively stationary state.
+
+\textbf{Input}: Introduction of water particles near slime mold source.
+
+\textbf{Expected Output}: Some slime mold agents begin to move toward the water source.
+
+\textbf{Actual Output}: Same as expected.
+
+
+
+\subsection{Traceability Between Test Cases and Modules}
+Refer to the original
+\href{https://github.com/felix-hurst/Ad-Natura/blob/main/docs/VnVPlan/VnVPlan.pdf}{\bf{VnV Plan}}.
+
+
+\section{Discussion of System and Unit Test Results}
+%Overall thoughts of what has gone well, what hasn't.
+The vast majority of system and unit tests were successful.
+Our project is well-verified in terms of calculations and
+integrations between modules. The main point of possible
+improvement lies in the newest implemented features, such as
+the spore fan tool.
+
+However, while our tests indicate success, much of our project
+still needs proper validation from our stakeholders. This will be
+most prominently showcased in our
+\href{https://github.com/felix-hurst/Ad-Natura/blob/main/docs/Extras/UsabilityReport/UsabilityReport.pdf}{\bf{Usability Report}} document.
+
+We currently believe the project is lacking substance and length.
+It is too small, and needs more for the player to experience, and
+a proper story to feel emotion from.
+
+
 
 \section{Changes Due to Testing}
+Parameters for certain modules such as the spore fan tool
+as well as the slime mold scripts still need adjustment for the
+best appearance that will reflect natural and realistic particle
+movement, which is important for the artistic and educational aspects
+of our project.
 
-\wss{This section should highlight how feedback from the users and from 
-the supervisor (when one exists) shaped the final product.  In particular 
-the feedback from the Rev 0 demo to the supervisor (or to potential users) 
-should be highlighted.}
+In addition, we plan to increase the amount of playable content in
+the game to give our players a deeper experience that will elicit
+further emotion and learning.
+%Later this will include what changes we DID make to the final product
 
-\section{Automated Testing}
-		
-\section{Trace to Requirements}
-		
-\section{Trace to Modules}		
 
 \section{Code Coverage Metrics}
-
-\bibliographystyle{plainnat}
-\bibliography{../../refs/References}
+The system and unit test suites together are designed to ensure near-100\%
+{\bf{branch coverage}} of the source code, for all important functionality,
+including player movement, tool usage, slime mold behaviour, and destructible
+object behaviour. We believe branch coverage is sufficient for our project
+given the time we have to perform tests, as it guarantees every major block
+of code, as well as every major control-flow path, has been executed at least once.
+However, it would become too tedious to strive for condition or
+multiple condition coverage.
 
 \newpage{}
 \section*{Appendix --- Reflection}
@@ -104,10 +334,8 @@ should be highlighted.}
 The information in this section will be used to evaluate the team members on the
 graduate attribute of Reflection.
 
-\input{../Reflection.tex}
-
 \begin{enumerate}
-  \item What went well while writing this deliverable? 
+  \item What went well while writing this deliverable?
   \item What pain points did you experience during this deliverable, and how
     did you resolve them?
   \item Which parts of this document stemmed from speaking to your client(s) or
@@ -120,6 +348,37 @@ graduate attribute of Reflection.
   predict a feasible amount of effort and the right tasks needed to build the
   evidence that demonstrates the required quality?  (It is expected that most
   teams will have had to deviate from their original VnV Plan.)
+\end{enumerate}
+
+{\bf{Team Response:}}
+
+\begin{enumerate}
+  \item It was easy to draw conclusions about what our team had done right and
+  what we had done wrong, as well as how to improve our project moving forward,
+  using the feedback and recommendations we received.
+  \item It was difficult to collect information about some of our team's past meetings
+  with each other, our instructor and TA, and our supervisors. Care needed to be taken
+  to search through our Issue Tracker on GitHub as well as our chat history on Discord
+  to find notes on past discussions we had that were part of the VnV process.
+  \item The most important aspect of our VnV Plan regarding speaking with our clients
+  was our Usability Survey, an opportunity for alpha testers to play a demo of our game
+  and submit their feedback on it. Formal demonstrations to our instructor and TA, and
+  informal demonstrations to our supervisors, which were done for verification and validation
+  of documentation and artifacts, were also of high importance. In contrast, manual testing
+  in the form of system and unit tests were done independently without client interaction,
+  as these were technical verification processes and did not require client input.
+  \item Most of our original VnV Plan was modified to reflect more accurately feasible steps
+  we could take to verify and validate our project. These modifications needed to be made
+  because our team encountered setbacks in our development process, due to miscommunication,
+  overestimation of what we could accomplish, and drama within the team. These setbacks meant
+  that we had less time to dedicate to longer, more thorough VnV processes that may have involved
+  more formal meetings with stakeholders and classmates, more sophisticated and lengthier test suites,
+  automated testing, and more. Instead, we had to trim much of our initial plan down and focus
+  on key VnV activities such as our key system and unit tests, and our Usability Survey.
+  In future projects, we would likely be able to anticipate such changes sooner, having the
+  experience to improve our estimation and time management, and the general knowledge of certain
+  activities that require more time to invest in, or that are simply infeasible, such as how
+  we dropped automated testing.
 \end{enumerate}
 
 \end{document}

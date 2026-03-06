@@ -16,6 +16,7 @@ public class PlayerController : MonoBehaviour
     [Header("Movement")]
     [SerializeField] private float moveSpeed = 5f;
     [SerializeField] private float jumpForce = 3f;
+    [SerializeField] private float minGroundAngleToJump = 60f;
 
     [Header("Ground Check")]
     [SerializeField] private Transform groundCheck;
@@ -59,7 +60,8 @@ public class PlayerController : MonoBehaviour
 
     [Header("Ammo Settings")]
     [SerializeField] private int maxWaterAmmo = 5;
-    [SerializeField] private int maxExplosiveAmmo = 5;
+    [SerializeField] private int maxIncendiaryAmmo = 5;
+    [SerializeField] private int maxWindAmmo = 5;
 
 
     [Header("References")]
@@ -68,10 +70,12 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private GameObject aimingModel;
     [SerializeField] private Transform nearArmGun;
     [SerializeField] private Transform farArm;
+    [SerializeField] private Transform muzzle;
 
     [Header("Stretching Settings")]
     [SerializeField] private Transform farHandGrip;
     [SerializeField] private float armLength = 0.5f;
+    [SerializeField] private Texture2D dashTexture;
 
     private Animator anim;
     private Rigidbody2D rb;
@@ -91,15 +95,16 @@ public class PlayerController : MonoBehaviour
     private float velocityX;
 
     private int waterAmmo;
-    private int explosiveAmmo;
+    private int incendiaryAmmo;
+    private int windAmmo;
 
 public enum ToolType
 {
     WaterBall,
-    Rifle,
+    IncendiaryBall,
     WindBall
 }
-    private ToolType currentTool = ToolType.WindBall;
+    private ToolType currentTool = ToolType.WaterBall;
     private int currentToolIndex = -1; 
 
     void Start()
@@ -109,11 +114,12 @@ public enum ToolType
 
         raycast = gameObject.AddComponent<Raycast>();
         raycast.Initialize(transform, muzzle, dashTexture);
-        raycast.SetCurrentTool(currentTool);
+        raycast.SetCurrentTool(currentTool, waterBallPrefab, waterBallThrowForce, waterBallSpawnOffset, maxCuttingRange);
         raycast.enabled = false;
 
         waterAmmo = maxWaterAmmo;
-        explosiveAmmo = maxExplosiveAmmo;
+        incendiaryAmmo = maxIncendiaryAmmo;
+        windAmmo = maxWindAmmo;
 
         if (classicModel != null)
         {
@@ -157,9 +163,10 @@ public enum ToolType
         {
             bool hasAmmo = true;
             if (currentTool == ToolType.WaterBall) hasAmmo = waterAmmo > 0;
-            else if (currentTool == ToolType.IncendiaryBall) hasAmmo = explosiveAmmo > 0;
+            else if (currentTool == ToolType.IncendiaryBall) hasAmmo = incendiaryAmmo > 0;
+            else if (currentTool == ToolType.WindBall) hasAmmo = windAmmo > 0;
 
-            raycast.enabled = isAiming && hasAmmo;
+                raycast.enabled = isAiming && hasAmmo;
 
             if (isAiming)
             {
@@ -167,13 +174,7 @@ public enum ToolType
                 float throwForce = 0f;
                 float spawnOffset = 0f;
 
-                if (currentTool == ToolType.ExplosiveBall)
-                {
-                    ballPrefab = explosiveBallPrefab;
-                    throwForce = explosiveBallThrowForce;
-                    spawnOffset = explosiveBallSpawnOffset;
-                }
-                else if (currentTool == ToolType.WaterBall)
+                if (currentTool == ToolType.WaterBall)
                 {
                     ballPrefab = waterBallPrefab;
                     throwForce = waterBallThrowForce;
@@ -202,30 +203,13 @@ public enum ToolType
             anim.SetBool("isGrounded", isGrounded);
             anim.SetBool("isAiming", isAiming);
 
-            int animValue = currentToolIndex;
-            if (currentToolIndex == 1 || currentToolIndex == 2)
-            {
-                animValue = 1; 
-            }
-            else if (currentToolIndex == 3)
-            {
-                animValue = 2; 
-            }
-
-            anim.SetInteger("ToolIndex", animValue);
+            anim.SetInteger("ToolIndex", currentToolIndex);
         }
     }
 
     public void SwitchTool(int toolIndex)
     {
         Debug.Log("SwitchTool called with: " + toolIndex);
-
-        currentToolIndex = toolIndex;
-
-        if (anim != null)
-        {
-            anim.SetInteger("ToolIndex", toolIndex);
-        }
 
         if (toolIndex == -1)
         {
@@ -235,31 +219,76 @@ public enum ToolType
             return;
         }
 
+        currentToolIndex = toolIndex;
         currentTool = (ToolType)toolIndex;
+
+        if (anim != null)
+        {
+            anim.SetInteger("ToolIndex", toolIndex);
+        }
 
         if (raycast != null)
         {
-            raycast.enabled = isAiming;
-        }
+            GameObject ballPrefab = null;
+            float throwForce = 0f;
+            float spawnOffset = 0f;
 
-        Debug.Log("Player switched to: " + currentTool.ToString());
+            // Map data based on the new 3-tool setup
+            if (currentTool == ToolType.WaterBall)
+            {
+                ballPrefab = waterBallPrefab;
+                throwForce = waterBallThrowForce;
+                spawnOffset = waterBallSpawnOffset;
+            }
+            else if (currentTool == ToolType.IncendiaryBall)
+            {
+                ballPrefab = incendiaryBallPrefab;
+                throwForce = incendiaryBallThrowForce;
+                spawnOffset = incendiaryBallSpawnOffset;
+            }
+            else if (currentTool == ToolType.WindBall)
+            {
+                ballPrefab = windBallPrefab;
+                throwForce = windBallThrowForce;
+                spawnOffset = windBallSpawnOffset;
+            }
+
+            // Push data to Raycast
+            raycast.SetCurrentTool(currentTool, ballPrefab, throwForce, spawnOffset, maxCuttingRange);
+
+            // Update visibility based on ammo
+            raycast.enabled = isAiming && HasAmmo(currentTool);
+
+            Debug.Log("Player switched to: " + currentTool.ToString());
+        }
     }
     public bool RequestAmmoUse(ToolType tool)
     {
-        if (tool == ToolType.WaterBall)
-        {
-            if (waterAmmo <= 0) return false;
-            waterAmmo--;
-            return true;
-        }
-        if (tool == ToolType.ExplosiveBall || tool == ToolType.IncendiaryBall)
-        {
-            if (explosiveAmmo <= 0) return false;
-            explosiveAmmo--;
-            return true;
-        }
+        if (!HasAmmo(tool)) return false;
+
+        if (tool == ToolType.WaterBall) waterAmmo--;
+        else if (tool == ToolType.IncendiaryBall) incendiaryAmmo--;
+        else if (tool == ToolType.WindBall) windAmmo--;
+
         return true;
     }
+
+    private bool HasAmmo(ToolType tool)
+    {
+        if (tool == ToolType.WaterBall) return waterAmmo > 0;
+        if (tool == ToolType.IncendiaryBall) return incendiaryAmmo > 0;
+        if (tool == ToolType.WindBall) return windAmmo > 0;
+        return false;
+    }
+
+    public void ReloadAmmo()
+    {
+        waterAmmo = maxWaterAmmo;
+        incendiaryAmmo = maxIncendiaryAmmo;
+        windAmmo = maxWindAmmo;
+        Debug.Log("All Ammo Refilled!");
+    }
+
     private void HandleSpriteFlipping()
     {
         if (!isRunning)
@@ -293,7 +322,6 @@ public enum ToolType
 
             if (farHandGrip != null)
             {
-                raycast.SetCurrentTool(currentTool, explosiveBallPrefab, explosiveBallThrowForce, explosiveBallSpawnOffset, maxCuttingRange);
                 Vector2 shoulderToGrip = (Vector2)farHandGrip.position - (Vector2)farArm.position;
                 float distance = shoulderToGrip.magnitude;
                 float farAngle = Mathf.Atan2(shoulderToGrip.y, shoulderToGrip.x) * Mathf.Rad2Deg;
