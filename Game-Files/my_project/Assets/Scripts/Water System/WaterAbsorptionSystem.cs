@@ -18,7 +18,7 @@ public class WaterAbsorptionSystem : MonoBehaviour
 
         new MaterialAbsorption("Wood", 1.0f),
         new MaterialAbsorption("Dirt", 2.0f),
-        new MaterialAbsorption("Sand", 1.5f),
+        new MaterialAbsorption("Sand", 1.5f)
     };
     
     [Header("Wood Decomposition")]
@@ -180,7 +180,7 @@ public class WaterAbsorptionSystem : MonoBehaviour
                 objectsWithAbsorption++;
                 objectsInWater++;
 
-                if (enableWoodDecomposition && col.CompareTag("Wood"))
+                if (enableWoodDecomposition && (col.CompareTag("Wood") || col.CompareTag("Dirt")))
                 {
                     ConvertToDecomposeLayer(col.gameObject);
                 }

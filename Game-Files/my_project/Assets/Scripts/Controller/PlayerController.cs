@@ -77,6 +77,10 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float armLength = 0.5f;
     [SerializeField] private Texture2D dashTexture;
 
+    [Header("Wall Climb")]
+    [SerializeField] private float slowFall = -0.5f;
+    private bool canClimb = false;
+
     private Animator anim;
     private Rigidbody2D rb;
     private bool isGrounded;
@@ -422,8 +426,10 @@ public enum ToolType
 
     public void OnJump(InputValue value)
     {
-        if (!isAiming && isGrounded && value.isPressed)
+        if (!isAiming && (isGrounded || canClimb) && value.isPressed)
         {
+            if (canClimb)               // Debug
+                Debug.Log("Wall Jump"); // Debug
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
             isGrounded = false;
         }
@@ -463,6 +469,19 @@ public enum ToolType
                     isGrounded = true;
                 }
             }
+        }
+
+        if (collision.gameObject.layer == 7)
+        {
+            // Bool to allow jumping while on wall
+            // Slow fall
+            canClimb = true;
+            if (rb.linearVelocityY < slowFall)
+                rb.linearVelocityY = slowFall;
+        }
+        else
+        {
+            canClimb = false;
         }
     }
 
