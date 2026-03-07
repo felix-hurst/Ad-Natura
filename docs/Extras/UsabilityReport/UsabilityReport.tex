@@ -33,6 +33,7 @@
 \toprule {\bf Author} & {\bf Version}& {\bf Date}\\
 \midrule
 All & 1.0 & March 5, 2026\\
+Felix Hurst & 1.1 & March 7, 2026\\
 \bottomrule
 \end{tabularx}
 
@@ -66,14 +67,100 @@ as this report serves to determine the level of validation we have with our stak
 
 \section{Usability Survey Results}
 This section will report a summary of the results from each major section
-of the survey form.
+of the survey form. This survey was conducted from March 4th to March 7th, 2026.
+
+\subsection{Performance Report}
+Reported average frame rates ranged from 12.80 fps to 35.44 fps,
+resulting in an overall average of 23.8 fps. This is not ideal,
+as we were aiming for an overall average of at least 30 fps,
+though it is still playable and will not harm the experience by
+a lot, especially considering our pixel art style.
+
+\subsection{Demographics}
+The people who participated in the survey included a mix of North
+Americans and Europeans. They were aged 22+ and predominantly male.
+Most preferred the genres of Action and RPG. There were many different
+themes enjoyed by responders.
+
+\subsection{Learnability}
+Participants played the game for 5--20 minutes before finishing or
+deciding to submit the survey. The basic controls were learned quickly,
+however, the game mechanics were not very intuitive to the player.
+The water ball tool was understood best, and the destructive ball tool
+was confusing. Responders indicated a need for stronger indicators and
+tutorials for basic mechanics, such as a menu explaining the control
+scheme, improved visual feedback for correct actions, and more
+obvious usage for the tools. In particular, the destructive ball tool
+currently looks too much like a fireball, and gives the wrong impression
+of how to use it, with players trying to vaporize water or burn wood
+rather than destroy the breakable stone objects. Overall, responders
+thought the puzzles were a bit too difficult to overcome.
+
+\subsection{Entertainment Value}
+Participants enjoyed the visual aspects of the game, including the
+slime mold's movement, the art style and environment, the player
+animations and aiming of the tools, and the water splashing.
+Players had frustration with the lack of clarity in certain game
+mechanics, such as the ammo system, uncontrollable nature of
+the slime mold, and overall lack of direction for the puzzles.
+In particular, the wall climbing section at the end of the level
+was considered the least entertaining game mechanic.
+
+\subsection{Business Requirements}
+We received mixed ratings for the business requirements of the
+project. No one experienced game freezes, crashes, and other
+similar software exceptions. However, there were a mix of high
+and low ratings for whether the game was worth their time.
+
+\subsection{Story / Message}
+Most participants felt that the demo was too short to discern
+a story or message from it, but a few responders did catch on to
+exactly what we were intending to present in terms of story: The
+ideas of working with nature instead of against it, and avoiding
+interjecting man-made items and waste into the environment.
+
+\subsection{Emotions}
+There were a mix of emotions that participants experienced. Those that
+struggled with the game mechanics felt confusion and irritation,
+and others felt intrigue and curiosity, as well as accomplishment
+when solving puzzles. A particular moment of emotion happened when
+players figured out they could break the stone objects to expose
+water sources, serving as an ``Aha!" moment.
+
+\subsection{Exploring the Slime Mold Algorithm}
+Most participants learned that the slime mold is attracted to water.
+They indicated the game does not make the slime mold's mechanics
+clear, but it does behave in a natural and unpredictable manner.
+A responder suggested adding something trying to harm the slime mold,
+as a means of eliciting empathy from the player. Another responder
+wondered why the slime mold was even present in the world.
+Some responders enjoyed the slime mold's pulsing visual and unique
+concept.
 
 \section{Discussion of Survey Results}
-This section will discuss what went well in our development and deployment
-of this demo, and what went poorly or was lacking.
+It is clear that our project in its current state is lacking a lot
+of key elements that make a game fun to play. Currently, the game
+does not give the player instructions or tutorials, and as a result,
+the game is confusing and frustrating to learn. This led to low levels
+of engagement, where players mostly looked to the visual aspects for
+enjoyment. However, we did succeed in part in sending the message we
+intended to send, eliciting feelings of curiosity and intrigue,
+and teaching the player of some aspects of the slime mold.
 
 \section{Changes Due To Results}
-This section will propose the most major changes we should take to
-address the feedback received from this survey.
+Our next major focus should be on introducing proper menus and
+tutorials to the game, explaining to the player what they can do
+with their tools, and give them hints on how to overcome puzzles.
+This will be accomplished through the in-game journal logs, which
+will aid in both teaching the player how to play, and telling
+the story of the game. Additionally, we will consider some feedback
+from the respondents involving specific visual feedback improvements
+for the slime mold's behaviour and mechanics, and we will work on
+further optimizing the game's performance wherever possible.
+
+We plan on running a second Usability Survey in late March after
+making improvements to the project, so that we may measure our
+success again and compare our results to our past results, to
+see how much we succeeded in improving the project.
 
 \end{document}
