@@ -101,9 +101,9 @@ UC & Unlikely Change \\
 
 \section{Notation}\label{SecNotation}
 
-The structure of the Module Guide (MG) for modules follows \cite{HoffmanStrooper1995},
+The structure of the Module Guide (MG) for modules follows \cite{Parnas1984},
 with adaptations for Unity game engine components and 2D geometric operations.
-The mathematical notation comes from Chapter 3 of \cite{HoffmanStrooper1995} and
+The mathematical notation comes from Chapter 3 of \cite{Parnas1984} and
 standard computational geometry references. For instance, the symbol := is used for
 assignment statements and conditional rules follow the form
 \newline
@@ -153,9 +153,15 @@ The Destructible Environment System uses several derived data types: sequences, 
 \item distance: Vector2 $\times$ Vector2 $\rightarrow$ $\mathbb{R}$
 \end{itemize}
 
+The following additional types are used in the Slime Mold Algorithm modules (Section~\ref{SecSMA}):
+\begin{itemize}
+\item \textbf{Agent} := (\textit{position} : Vector2, \textit{angle} : $\mathbb{R}$, \textit{type} : $\mathbb{Z}$) --- Represents a single slime mold agent with its world position, heading angle, and type identifier.
+\item \textbf{Texture2D} --- A Unity engine type representing a 2D raster image (grid of pixel values). Used to store pheromone trail maps and attraction maps in the SMA modules.
+\end{itemize}
+
 \subsection{Geometric Notation}
 
-The following geometric primitives and operations are used throughout the system:
+The following geometric primitives are used in the cutting pipeline (Sections~\ref{M6}--\ref{M15}):
 
 \begin{table}[h]
 \centering
@@ -169,14 +175,14 @@ V & seq of Vector2 & Ordered sequence of vertices defining a polygon \\
 C & Vector2 & Centroid (geometric center) of a polygon \\
 $\hat{d}$ & Vector2 & Normalized direction vector where $\|\hat{d}\| = 1$ \\
 $\hat{n}$ & Vector2 & Unit normal (perpendicular) vector to $\hat{d}$ \\
-$\theta(P, C)$ & $\mathbb{R}$ & Angle from centroid C to point P \\
+$\theta(P, C)$ & $\mathbb{R}$ & Angle from centroid C to point P, used in Sort\_CW \\
 \bottomrule
 \end{tabular}
 \end{table}
 
 \subsection{Cut Profile Parameters}
 
-Material cutting behaviour is defined by the following parameters:
+Material cutting behaviour is defined by the following parameters, used in Sections~\ref{M9} and~\ref{M15}:
 
 \begin{table}[h]
 \centering
@@ -194,7 +200,7 @@ $\delta_{max}$ & $\mathbb{R}$ & $\mathbb{R}^+$ & Maximum perpendicular offset fr
 
 \subsection{Physics Parameters}
 
-The following parameters govern the physical behaviour of objects and debris:
+The following parameters govern the physical behaviour of objects and debris, referenced in Sections~\ref{M8} and~\ref{M14}:
 
 \begin{table}[h]
 \centering
@@ -459,13 +465,14 @@ actually be implemented.
 & Debris Generation & \hyperref[M8]{M8}\\
 & Cut Profile Manager & \hyperref[M9]{M9}\\
 \hline
-\multirow{9}{*}{Software Decision} & Geometric Operations & \hyperref[M10]{M10}\\
+\multirow{6}{*}{Software Decision} & Geometric Operations & \hyperref[M10]{M10}\\
 & Polygon Partitioning & \hyperref[M11]{M11}\\
 & Mesh Generation & \hyperref[M12]{M12}\\
 & Pixelation & \hyperref[M13]{M13}\\
 & Physics Update & \hyperref[M14]{M14}\\
 & Material Properties & \hyperref[M15]{M15}\\
-& Slime Mold Simulation & \hyperref[M16]{M16}\\
+\hline
+\multirow{3}{*}{Slime Mold Algorithm} & Slime Mold Simulation & \hyperref[M16]{M16}\\
 & Slime Mold Manager & \hyperref[M17]{M17}\\
 & Attraction Source & \hyperref[M18]{M18}\\
 \hline
@@ -534,6 +541,18 @@ object mass is updated proportionally to the change in area, maintaining consist
 \newline
 \textit{Related modules: \hyperref[M10]{M10}, \hyperref[M14]{M14}}
 
+\vspace{5mm}
+\noindent
+\textbf{DD6: GPU-Accelerated Slime Mold Simulation}
+\newline
+In order to meet the requirement for real-time slime mold pathfinding (R11), the simulation is executed
+on the GPU via compute shaders. This allows tens of thousands of agents to be simulated
+simultaneously without impacting frame rate. Attraction sources (water, light) are represented
+as 2D texture maps passed to the shader, decoupling the source representation from the
+simulation algorithm.
+\newline
+\textit{Related modules: \hyperref[M16]{M16}, \hyperref[M17]{M17}, \hyperref[M18]{M18}}
+
 
 % ======================================================================
 % ===================== MODULE DECOMPOSITION ===========================
@@ -557,6 +576,13 @@ Only the leaf modules in the hierarchy have to be implemented. If a dash (-) is 
 
 
 \subsection{Hardware Hiding Modules}
+
+Hardware-hiding modules abstract away the details of the underlying hardware and
+operating environment. Their secrets are the data structures and algorithms used to
+interact with physical devices and platform-specific libraries. The modules in this
+category wrap Unity's built-in engine systems for input, physics, rendering, and
+collision, so that the rest of the system can remain platform-agnostic. If the game
+is ported to a new platform or device, only these modules need to change.
 
 \subsubsection{Unity Input System (M1)}\label{M1}
 
@@ -733,14 +759,11 @@ Library
 
 \subsection{Behaviour-Hiding Modules}
 
-\subsubsection*{Secrets:}
-The contents of the required behaviours.
-
-\subsubsection*{Services:}
-Includes programs that provide externally visible behaviour of the system as specified in the software requirements specification (SRS) documents. This module serves as a communication layer between the hardware-hiding module and the software decision module. The programs in this module will need to change if there are changes in the SRS.
-
-\subsubsection*{Implemented By:}
---
+Behaviour-hiding modules encapsulate the externally visible behaviour of the system as
+described in the SRS. Their secrets are the required behaviours themselves --- specifically,
+how user inputs and system events are translated into game actions such as player movement,
+cutting, visualization, and debris spawning. These modules serve as the communication layer
+between the hardware-hiding modules below them and the software decision modules above.
 
 \subsubsection{Player Controller (M5)} \label{M5}
 
@@ -1033,14 +1056,12 @@ Abstract Object
 
 \subsection{Software Decision Modules}
 
-\subsubsection*{Secrets:}
-The design decision based on mathematical theorems, physical facts, or programming considerations. The secrets of this module are not described in the SRS.
-
-\subsubsection*{Services:}
-Includes data structure and algorithms used in the system that do not provide direct interaction with the user.
-
-\subsubsection*{Implemented By:}
---
+Software decision modules encapsulate design decisions based on mathematical theorems,
+physical facts, or programming considerations. Unlike behaviour-hiding modules, their
+secrets are not described in the SRS --- they are internal algorithmic choices made to
+implement the required behaviours efficiently and correctly. This includes geometry
+algorithms, mesh construction, physics calculations, and material-specific edge generation.
+These modules are primarily stateless libraries called by higher-level modules.
 
 \subsubsection{Geometric Operations (M10)} \label{M10}
 
@@ -1333,7 +1354,15 @@ Library
 
 \newpage
 
-\subsection{Slime Mold Algorithm Modules}
+\subsection{Slime Mold Algorithm Modules}\label{SecSMA}
+
+The Slime Mold Algorithm (SMA) modules implement a GPU-accelerated agent-based simulation
+inspired by the growth patterns real slime mold behaviours. Agents move through the
+environment depositing pheromone trails and steering toward attraction sources such as water
+and light. Over time, these trails converge into efficient network-like paths that guide
+gameplay elements. This category contains three modules: the core simulation running on the
+GPU (\hyperref[M16]{M16}), the manager that coordinates attraction data (\hyperref[M17]{M17}),
+and the individual attraction source components placed in the scene (\hyperref[M18]{M18}).
 
 \subsubsection{Slime Mold Simulation Module (M16)} \label{M16}
 
@@ -1342,8 +1371,8 @@ The GPU compute shader implementation for simulating slime mold agent behaviour,
 
 \paragraph{State Variables:}
 \begin{itemize}
-\item $agents : \text{seq of Agent}$ --- Buffer containing all agent positions, angles, and types
-\item $trailMap : \text{Texture2D}$ --- 2D texture storing pheromone trail intensities
+\item $agents : \text{seq of Agent}$ --- Buffer containing all agent positions, angles, and types (see Section~\ref{SecNotation} for the Agent type definition)
+\item $trailMap : \text{Texture2D}$ --- 2D texture storing pheromone trail intensities (see Section~\ref{SecNotation} for the Texture2D type definition)
 \item $numAgents : \mathbb{N}$ --- Number of active agents in simulation
 \item $moveSpeed : \mathbb{R}^+$ --- Agent movement speed per frame
 \item $turnSpeed : \mathbb{R}^+$ --- Maximum agent turn rate in degrees
@@ -1579,6 +1608,7 @@ R11: Slime Mold Pathfinding & \mref{M16}, \mref{M17}, \mref{M18}\\
 \acref{AC17} &  \mref{M16}\\
 \acref{AC18} &  \mref{M16}\\
 \acref{AC19} &  \mref{M17}, \mref{M18}\\
+\acref{AC20} &  \mref{M3}, \mref{M6}\\
 \bottomrule
 \end{tabular}
 \label{TblACT}
@@ -1586,7 +1616,10 @@ R11: Slime Mold Pathfinding & \mref{M16}, \mref{M17}, \mref{M18}\\
 
 \section{Use Hierarchy Between Modules}\label{SecUse}
 
-The following graphic describes the direct dependencies between modules (A $\rightarrow$ B means A uses B):\\
+The following diagram describes the direct dependencies between modules
+(A $\rightarrow$ B means A uses B). Higher-level modules depend on the services
+provided by lower-level modules; the reverse is not permitted, ensuring the
+module hierarchy forms a Directed Acyclic Graph (DAG).\\
 
 \includegraphics[scale=0.6]{traceability.png}
 
@@ -1594,11 +1627,8 @@ The following graphic describes the direct dependencies between modules (A $\rig
 
 \subsection{Use Hierarchy Diagram}
 
-% Figure~\ref{FigUseHierarchy} shows the use hierarchy between modules organized by levels. Modules at higher levels use (depend on) modules at lower levels. An arrow from module A to module B indicates that A uses B.
 Table~\ref{TabUseHierarchy} shows the use hierarchy between modules organized by levels.
 Modules at higher levels use (depend on) modules at lower levels.
-
-% TODO: Replace with a diagram that actually connects modules to others with arrows
 
 \begin{table}[H]
 \centering
@@ -1685,6 +1715,10 @@ Modules at higher levels use (depend on) modules at lower levels.
 
 \section{User Interfaces}\label{SecUI}
 
+This section describes the interfaces through which players interact with the game,
+including input controls, visual feedback mechanisms, and the hardware required to
+run the system.
+
 \subsection{Input Interface}
 
 \begin{itemize}
@@ -1692,6 +1726,7 @@ Modules at higher levels use (depend on) modules at lower levels.
 \item \textbf{Jump:} Spacebar or W key for jumping when grounded
 \item \textbf{Cutting Tool Aim:} Mouse position determines the cutting line direction from the player
 \item \textbf{Cut Execution:} Left mouse button click executes the cut on the targeted object
+\item \textbf{Tool Selection:} Hold CTRL to pause the game and scroll the mouse wheel to cycle through available tools; release CTRL to equip the highlighted tool
 \end{itemize}
 
 \subsection{Visual Feedback}
@@ -1703,25 +1738,54 @@ Modules at higher levels use (depend on) modules at lower levels.
 \item \textbf{Debris Visualization:} Cut-off portions and debris fragments are rendered with pixelated edges to maintain visual style
 \end{itemize}
 
+\subsection*{Aiming Interface}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{images/aiming_diagram.PNG}
+    \caption{Aiming interface diagram}
+\end{figure}
+The player's mouse draws a line symbolizing the path the strike will take from the character to the mouse position.
+Any objects that will be destroyed by the strike are highlighted with an outline.
+The player clicks to strike, which is always bound to the circular button.
+
+\subsection*{Tool Selection Interface}
+\begin{figure}[h]
+    \centering
+    \includegraphics[width=\textwidth]{images/tool_selection_diagram.PNG}
+    \caption{Tool selection interface diagram}
+\end{figure}
+The player holds the CTRL key to pause the game and uses the mouse wheel to scroll through the available tools.
+When the key is released, the highlighted tool is equipped.
+The selected tool displays its damage type (Projectile, Water, or Wind).
+
 \subsection{Hardware Requirements}
 
 \begin{itemize}
-\item \textbf{Display:} Standard monitor capable of rendering 2D graphics
+\item \textbf{Operating System:} Windows, macOS, or Linux (64-bit)
+\item \textbf{Display:} Standard monitor capable of rendering 2D graphics at 1280$\times$720 or higher
 \item \textbf{Input Devices:} Keyboard and mouse (primary), with potential future support for touchscreen
-\item \textbf{Graphics:} GPU with support for Unity's 2D rendering pipeline
+\item \textbf{Graphics:} GPU with support for DirectX 11 or OpenGL 4.3 (or higher), required for Unity's 2D rendering pipeline and the slime mold compute shaders (\hyperref[M16]{M16})
+\item \textbf{Memory:} Sufficient RAM and GPU memory to maintain agent buffers and trail textures for the slime mold simulation (see \hyperref[M16]{M16})
 \end{itemize}
 
 \section{Design of Communication Protocols}\label{SecDCP}
 
 \subsection{Inter-Module Communication}
 
-The system uses Unity's component-based architecture for module communication:
+The system uses Unity's component-based architecture for module communication.
+In Unity, game logic is attached to scene objects via \texttt{MonoBehaviour} scripts.
+The engine automatically calls certain lifecycle methods on these scripts:
+\texttt{Update()} is called once per rendered frame for per-frame logic,
+\texttt{FixedUpdate()} is called on a fixed physics timestep (configured in \hyperref[M2]{M2})
+for physics-dependent logic, and \texttt{OnCollisionEnter2D} is invoked when two
+physics colliders first make contact. These callbacks form the backbone of Unity's
+event-driven communication model.
 
 \paragraph{Event-Based Communication:}
 \begin{itemize}
-\item \textbf{Input Events:} Unity's Input System generates events for mouse clicks, movement, and jumps
-\item \textbf{Collision Events:} Physics2D triggers \texttt{OnCollisionEnter2D} events when debris or cut pieces collide
-\item \textbf{Frame Events:} Unity's \texttt{Update()} and \texttt{FixedUpdate()} provide timing for continuous operations
+\item \textbf{Input Events:} Unity's Input System generates events for mouse clicks, movement, and jumps when the corresponding hardware is activated.
+\item \textbf{Collision Events:} The Physics2D system (\hyperref[M2]{M2}) invokes \texttt{OnCollisionEnter2D} on the relevant \texttt{MonoBehaviour} components when two colliders make contact. This is used to trigger debris interactions.
+\item \textbf{Frame Events:} The engine loop calls \texttt{Update()} on every active \texttt{MonoBehaviour} once per rendered frame, and \texttt{FixedUpdate()} on the fixed physics timestep. These drive continuous per-frame and per-physics-step behaviour in modules such as \hyperref[M5]{M5} and \hyperref[M16]{M16}.
 \end{itemize}
 
 \paragraph{Direct Method Calls:}
@@ -1759,12 +1823,16 @@ The system uses Unity's component-based architecture for module communication:
 
 \section{Timeline}\label{SecTimeline}
 
-The development schedule and task assignments for this project are managed through GitHub's project management features. For the most up-to-date information on implementation status, task assignments, and milestones, please refer to:
+The project follows the SFWRENG 4G06 course schedule, with two major demonstration
+milestones: Rev0 (Revision 0 demonstration in late November 2025) and Rev1 (final
+demonstration in late March 2026). Development is divided into five phases, each
+targeting a functional milestone aligned with these deadlines. Detailed task
+assignments and issue tracking are maintained on the team's GitHub repository.
 
 \begin{itemize}
 \item \textbf{GitHub Repository:} \url{https://github.com/felix-hurst/Ad-Natura}
 \item \textbf{Issues:} Task tracking and bug reports are managed through GitHub Issues
-\item \textbf{Milestones:} Major deliverables aligned with course deadlines (Rev0, Rev1 demonstrations)
+\item \textbf{Milestones:} Rev0 (late November 2025) and Rev1 (late March 2026)
 \end{itemize}
 
 \subsection{Team Responsibilities}
@@ -1789,7 +1857,7 @@ Marcos Hernandez-Rivero & Documentation, Testing, Integration Support \\
 
 \subsection{Development Phases}
 
-\paragraph{Phase 1: Core Cutting System (Completed)}
+\paragraph{Phase 1: Core Cutting System (Oct 1 -- Oct 31, 2025 --- Completed)}
 \begin{itemize}
 \item \hyperref[M10]{M10}: Geometric Operations Module
 \item \hyperref[M11]{M11}: Polygon Partitioning Module
@@ -1797,49 +1865,52 @@ Marcos Hernandez-Rivero & Documentation, Testing, Integration Support \\
 \item \hyperref[M14]{M14}: Physics Update Module
 \end{itemize}
 
-\paragraph{Phase 2: User Interaction (Completed)}
+\paragraph{Phase 2: User Interaction (Nov 1 -- Nov 15, 2025 --- Completed)}
 \begin{itemize}
 \item \hyperref[M5]{M5}: Player Control Module
 \item \hyperref[M6]{M6}: Raycast Visualization Module
 \item \hyperref[M7]{M7}: Cut Execution Module
 \end{itemize}
 
-\paragraph{Phase 3: Enhanced Features (Completed)}
+\paragraph{Phase 3: Enhanced Features (Nov 16 -- Dec 15, 2025 --- Completed)}
 \begin{itemize}
 \item \hyperref[M8]{M8}: Debris Generation Module
 \item \hyperref[M9]{M9}: Cut Profile Manager Module
 \item \hyperref[M15]{M15}: Material Properties Module
 \end{itemize}
 
-\paragraph{Phase 4: Visual Polish (Not Complete)}
+\paragraph{Phase 4: Slime Mold Algorithm (Jan 1 -- Feb 15, 2026 --- In Progress)}
+\begin{itemize}
+\item \hyperref[M16]{M16}: Slime Mold Simulation Module
+\item \hyperref[M17]{M17}: Slime Mold Manager Module
+\item \hyperref[M18]{M18}: Attraction Source Module
+\end{itemize}
+
+\paragraph{Phase 5: Visual Polish \& Integration (Feb 16 -- Mar 25, 2026 --- Not Started)}
 \begin{itemize}
 \item \hyperref[M13]{M13}: Pixelation Module
 \item Visual feedback refinements
 \item Debug visualization tools
+\item Full system integration testing and Rev1 preparation
 \end{itemize}
 
 \bibliographystyle{plain}
 \begin{thebibliography}{9}
 
-\bibitem{HoffmanStrooper1995}
-Daniel M. Hoffman and Paul A. Strooper.
-\textit{Software Design, Automated Testing, and Maintenance: A Practical Approach}.
-International Thomson Computer Press, 1995.
+\bibitem{Parnas1984}
+D.L. Parnas, P.C. Clement, and D.M. Weiss.
+\textit{The modular structure of complex systems}.
+In International Conference on Software Engineering, pages 408--419, 1984.
 
 \bibitem{Parnas1972}
 David L. Parnas.
 \textit{On the criteria to be used in decomposing systems into modules}.
 Comm. ACM, 15(2):1053--1058, December 1972.
 
-\bibitem{Parnas1978}
-David L. Parnas.
-\textit{Designing software for ease of extension and contraction}.
-In ICSE '78: Proceedings of the 3rd international conference on Software engineering, pages 264--277, Piscataway, NJ, USA, 1978. IEEE Press.
-
-\bibitem{Parnas1984}
-D.L. Parnas, P.C. Clement, and D.M. Weiss.
-\textit{The modular structure of complex systems}.
-In International Conference on Software Engineering, pages 408--419, 1984.
+\bibitem{HoffmanStrooper1995}
+Daniel M. Hoffman and Paul A. Strooper.
+\textit{Software Design, Automated Testing, and Maintenance: A Practical Approach}.
+International Thomson Computer Press, 1995.
 
 \end{thebibliography}
 
