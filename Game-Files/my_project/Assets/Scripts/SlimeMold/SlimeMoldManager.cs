@@ -23,6 +23,10 @@ public class SlimeMoldManager : MonoBehaviour
     [Tooltip("Manual list of water sources (used when autoFindSources is false)")]
     public List<WaterSource> manualWaterSources = new List<WaterSource>();
 
+    [Header("Light Aversion")]
+    public bool enableLightAversion = true;
+    private List<LightSource> cachedLightSources = new List<LightSource>();
+
     [Header("Performance")]
     [Tooltip("How often to update attraction map (seconds). Lower = more responsive")]
     [Range(0.016f, 0.5f)]
@@ -286,6 +290,22 @@ public class SlimeMoldManager : MonoBehaviour
             }
         }
 
+        // Inside UpdateAttractionMap()
+        if (enableLightAversion)
+        {
+            cachedLightSources.Clear();
+            cachedLightSources.AddRange(FindObjectsByType<LightSource>(FindObjectsSortMode.None));
+
+            foreach (LightSource light in cachedLightSources)
+            {
+                if (!light.isActive) continue;
+
+                // Draw attraction ONLY within the bounds of the light
+                // This ensures agents outside the light don't 'see' the repulsion
+                DrawLocalizedRepulsion(light, w, h);
+            }
+        }
+
         // Sample from CellularLiquidSimulation if enabled
         if (useLiquidSimulation && liquidSimulation != null)
         {
@@ -302,6 +322,45 @@ public class SlimeMoldManager : MonoBehaviour
         waterAttractionTextureCPU.Apply();
         Graphics.Blit(waterAttractionTextureCPU, waterAttractionMap);
     }
+
+    private void DrawLocalizedRepulsion(LightSource light, int w, int h)
+    {
+        Vector2 center = light.GetPosition();
+        Vector2 halfSize = light.rectSize / 2f;
+
+        // We remove the outer edgeThickness to stop attracting outside agents
+        int minX = Mathf.Clamp(Mathf.RoundToInt(((center.x - halfSize.x) - worldBounds.x) / worldBounds.width * w), 0, w - 1);
+        int maxX = Mathf.Clamp(Mathf.RoundToInt(((center.x + halfSize.x) - worldBounds.x) / worldBounds.width * w), 0, w - 1);
+        int minY = Mathf.Clamp(Mathf.RoundToInt(((center.y - halfSize.y) - worldBounds.y) / worldBounds.height * h), 0, h - 1);
+        int maxY = Mathf.Clamp(Mathf.RoundToInt(((center.y + halfSize.y) - worldBounds.y) / worldBounds.height * h), 0, h - 1);
+
+        for (int y = minY; y <= maxY; y++)
+        {
+            for (int x = minX; x <= maxX; x++)
+            {
+                Vector2 worldPos = TextureToWorld(x, y);
+
+                // Signed distance: negative is inside, positive is outside
+                float dx = Mathf.Abs(worldPos.x - center.x) - halfSize.x;
+                float dy = Mathf.Abs(worldPos.y - center.y) - halfSize.y;
+                float distToEdge = Mathf.Max(dx, dy);
+
+                // ONLY process pixels that are strictly INSIDE the light
+                if (distToEdge <= 0)
+                {
+                    int idx = y * w + x;
+
+                    // InverseLerp creates a ramp from the center (0) to the edge (1)
+                    // We use a small epsilon (like -0.1f) to ensure the peak is 
+                    // right at the exit boundary.
+                    float internalRamp = Mathf.InverseLerp(-Mathf.Max(halfSize.x, halfSize.y), 0f, distToEdge);
+
+                    pixelBuffer[idx].r = Mathf.Min(1f, pixelBuffer[idx].r + internalRamp * light.repulsionStrength);
+                }
+            }
+        }
+    }
+
 
     private void SampleLiquidSimulation(int w, int h)
     {
@@ -541,5 +600,14 @@ public class SlimeMoldManager : MonoBehaviour
     {
         if (waterAttractionMap != null) waterAttractionMap.Release();
         if (waterAttractionTextureCPU != null) Destroy(waterAttractionTextureCPU);
+    }
+
+    void OnDrawGizmosSelected()
+    {
+        if (waterAttractionTextureCPU == null) return;
+
+        // Draws a semi-transparent overlay of the attraction map in the scene
+        Gizmos.color = new Color(1, 1, 1, 0.2f);
+        Gizmos.DrawGUITexture(new Rect(worldBounds.x, worldBounds.y, worldBounds.width, worldBounds.height), waterAttractionTextureCPU);
     }
 }

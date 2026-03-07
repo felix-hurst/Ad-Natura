@@ -94,7 +94,7 @@ public class SlimeDecomposer : MonoBehaviour
 
         if (logDecomposition)
         {
-            Debug.Log($"[SlimeDecomposer] SlimeBounds: X({worldBounds.xMin:F1} to {worldBounds.xMax:F1}) Y({worldBounds.yMin:F1} to {worldBounds.yMax:F1}), Found {allOrganic.Length} OrganicMatter");
+            //Debug.Log($"[SlimeDecomposer] SlimeBounds: X({worldBounds.xMin:F1} to {worldBounds.xMax:F1}) Y({worldBounds.yMin:F1} to {worldBounds.yMax:F1}), Found {allOrganic.Length} OrganicMatter");
         }
 
         foreach (OrganicMatter organic in allOrganic)
