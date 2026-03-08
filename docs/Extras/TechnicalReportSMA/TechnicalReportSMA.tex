@@ -1,0 +1,586 @@
+\documentclass[12pt, titlepage]{article}
+
+\usepackage{fullpage}
+\usepackage[numbers]{natbib}
+\usepackage{booktabs}
+\usepackage{tabularx}
+\usepackage{graphicx}
+\usepackage{float}
+\usepackage[margin=1in]{geometry}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{hyperref}
+\hypersetup{
+    colorlinks,
+    citecolor=blue,
+    filecolor=black,
+    linkcolor=red,
+    urlcolor=blue
+}
+
+\lstset{
+  language=C,
+  basicstyle=\ttfamily\small,
+  keywordstyle=\color{blue}\bfseries,
+  commentstyle=\color{gray},
+  stringstyle=\color{orange},
+  breaklines=true,
+  frame=single,
+  numbers=left,
+  numberstyle=\tiny\color{gray},
+  tabsize=4
+}
+
+\input{../../Comments}
+\input{../../Common}
+
+\begin{document}
+
+\title{Technical Report: Slime Mold Algorithm\\Bio-Inspired Simulation in Ad-Natura\\[0.5em]
+\large \progname}
+\author{\authname}
+\date{\today}
+
+\maketitle
+
+\pagenumbering{roman}
+
+\newpage
+
+\tableofcontents
+
+\newpage
+
+\section{Revision History}
+
+\begin{tabularx}{\textwidth}{p{3cm}p{2cm}X}
+\toprule {\bf Date} & {\bf Version} & {\bf Notes}\\
+\midrule
+Mar 7, 2026 & 1.0 & Initial report: architecture, implemented behaviors, design rationale\\
+\bottomrule
+\end{tabularx}
+
+\vspace{1em}
+\noindent \textbf{Author:} Andy Liang
+
+\newpage
+
+\pagenumbering{arabic}
+
+% ============================================================
+\section{Introduction}
+\label{sec:intro}
+% ============================================================
+
+This report documents the design and implementation of the slime mold
+simulation system in \textit{Ad-Natura}, a 2D environmental exploration game.
+The simulation models \textit{Physarum polycephalum}, a single-celled organism
+capable of decentralized decision-making, adaptive network formation, and
+environmental sensing---without any central nervous system or governing
+structure \cite{keller1983, adamatzky2014}.
+
+The system runs entirely on the GPU as a compute shader, driving 1024
+autonomous agents that deposit chemical trails, sense their environment, and
+collectively produce emergent network structures. Beyond serving as a game
+mechanic, the simulation is designed as a site of inquiry: a counter-algorithmic
+system \cite{bunton2025} that resists optimization in favor of organic
+unpredictability.
+
+This report covers the technical architecture (Section~\ref{sec:arch}), agent
+behavior (Section~\ref{sec:agents}), trail dynamics including implemented
+features (Section~\ref{sec:trails}), noise generation
+(Section~\ref{sec:noise}), game integration (Section~\ref{sec:game}), design
+rationale (Section~\ref{sec:rationale}), technical challenges
+(Section~\ref{sec:challenges}), and future work (Section~\ref{sec:future}).
+
+% ============================================================
+\section{System Architecture}
+\label{sec:arch}
+% ============================================================
+
+The simulation is implemented as a Unity compute shader
+(\texttt{Slime.compute}) driven by a C\# controller (\texttt{Slime.cs}). It
+uses a ping-pong double-buffering scheme and two GPU kernels dispatched each
+\texttt{FixedUpdate} frame.
+
+\subsection{Data Structures}
+
+Each agent is represented by a minimal struct:
+
+\begin{lstlisting}
+struct Agent {
+    float2 position;   // world-space position
+    float  angle;      // heading in radians
+    float4 type;       // species color (unused in current build)
+};
+\end{lstlisting}
+
+Agents are stored in a \texttt{StructuredBuffer} of 1024 elements, initialized
+with random positions and angles via a uint-based hash PRNG.
+
+\subsection{Ping-Pong Buffering}
+
+Two \texttt{RenderTexture} buffers (\texttt{TrailMap} and
+\texttt{TrailMapProcessed}) alternate roles each frame. The \textbf{Update}
+kernel reads from the current trail map and writes agent deposits to it. The
+\textbf{Postprocess} kernel reads from that same buffer, applies diffusion,
+decay, and pulse, then writes the result to the other buffer. On the next
+frame, the roles swap. This prevents read-write hazards on the GPU.
+
+Both trail maps use a floating-point texture format
+(\texttt{RenderTextureFormat.RFloat} for attraction maps,
+\texttt{RenderTextureFormat.ARGBFloat} for trail maps). This is critical:
+trail intensity values routinely exceed 1.0, creating a ``reservoir effect''
+where dense trail networks store accumulated chemical signal. Clamping to
+$[0, 1]$ destroys this behavior entirely.
+
+\subsection{Kernel Overview}
+
+\begin{itemize}
+    \item \textbf{Update kernel} (\texttt{[numthreads(16,1,1)]}): One thread
+    per agent. Handles sensing, turning, movement, boundary behavior, and trail
+    deposition. Dispatched as $\lceil 1024 / 16 \rceil = 64$ thread groups.
+
+    \item \textbf{Postprocess kernel} (\texttt{[numthreads(8,8,1)]}): One
+    thread per texel. Handles 3$\times$3 diffusion, entropic decay, and
+    cytoplasmic pulse. Dispatched over the full trail map resolution.
+\end{itemize}
+
+% ============================================================
+\section{Agent Behavior and Chemotaxis}
+\label{sec:agents}
+% ============================================================
+
+Each agent performs a sense-turn-move cycle inspired by the Jones
+model of Physarum chemotaxis \cite{adamatzky2014}.
+
+\subsection{Sensing}
+
+The \texttt{sense()} function samples a $3 \times 3$ neighborhood at a point
+offset from the agent's position by \texttt{sensorOffsetDist} in a given
+direction. It sums both trail intensity and water attraction values, weighted by
+\texttt{waterWeight}:
+
+\begin{equation}
+    S(\theta) = \sum_{i=-1}^{1}\sum_{j=-1}^{1}
+    \Big[\text{trail}(p + d_\theta + (i,j)) +
+    w \cdot \text{water}(p + d_\theta + (i,j))\Big]
+\end{equation}
+
+where $p$ is the agent position, $d_\theta$ is the sensor offset vector at
+angle $\theta$, and $w$ is the water attraction weight.
+
+\subsection{Turning}
+
+Three sensor readings are taken: forward ($S_F$), left ($S_L$, at
+$+\texttt{sensorAngleSpacing}$), and right ($S_R$, at
+$-\texttt{sensorAngleSpacing}$). The turning logic follows:
+
+\begin{enumerate}
+    \item If $S_F > S_L$ and $S_F > S_R$: continue straight.
+    \item If $S_F < S_L$ and $S_F < S_R$: turn randomly left or right
+    (stochastic tie-breaking prevents deadlock).
+    \item If $S_L > S_R$: turn left by \texttt{turnSpeed} $\cdot \Delta t$.
+    \item If $S_R > S_L$: turn right by \texttt{turnSpeed} $\cdot \Delta t$.
+\end{enumerate}
+
+This produces emergent path-following and network formation without any global
+coordination---each agent responds only to local chemical gradients.
+
+\subsection{Movement and Boundary Handling}
+
+Agent speed is modulated by local water attraction:
+
+\begin{equation}
+    v = \texttt{moveSpeed} \cdot (1 + \texttt{waterSpeedBoost} \cdot
+    \text{water}(p))
+\end{equation}
+
+At boundaries, agents do not simply reflect. Instead, they are assigned a new
+random heading and repositioned at the edge. An \texttt{edgeSpread} parameter
+adds slight random displacement along the boundary to prevent agents from
+clustering at corners---a subtle but important detail for maintaining organic
+boundary behavior.
+
+\subsection{Trail Deposition}
+
+Each agent deposits trail intensity proportional to local water attraction:
+
+\begin{equation}
+    \text{deposit} = \texttt{trailWeight} \cdot
+    (1 + \texttt{waterTrailBoost} \cdot \text{water}(p))
+\end{equation}
+
+This creates denser trail networks near water sources, visually emphasizing the
+organism's attraction to moisture.
+
+% ============================================================
+\section{Trail Dynamics}
+\label{sec:trails}
+% ============================================================
+
+The Postprocess kernel transforms the raw trail map each frame through three
+sequential stages: diffusion, entropic decay, and cytoplasmic pulse.
+
+\subsection{Diffusion}
+
+A standard $3 \times 3$ box blur computes the mean trail value in the
+neighborhood of each texel. The result is linearly interpolated with the
+original value:
+
+\begin{equation}
+    T'(x,y) = \text{lerp}\Big(T(x,y),\;\frac{1}{9}\sum_{i,j \in
+    \{-1,0,1\}} T(x+i,\; y+j),\;\texttt{diffuseSpeed} \cdot \Delta t\Big)
+\end{equation}
+
+This simulates the physical diffusion of chemical signal through the
+environment, smoothing the trail network over time.
+
+\subsection{Entropic Decay}
+\label{sec:entropy}
+
+Rather than applying a uniform evaporation rate, the system modulates decay
+with a two-octave noise field that varies in both space and time:
+
+\begin{equation}
+    \text{noise}(x,y,t) = \texttt{organicNoise}\Big(\frac{x \cdot
+    s_e}{W},\;\frac{y \cdot s_e}{H},\; t \cdot v_e\Big)
+\end{equation}
+
+\begin{equation}
+    e(x,y,t) = \texttt{evaporateSpeed} \cdot \Delta t \cdot
+    \big(1 + \texttt{entropyStrength} \cdot (2 \cdot \text{noise} - 1)\big)
+\end{equation}
+
+\begin{equation}
+    T''(x,y) = T'(x,y) - e(x,y,t)
+\end{equation}
+
+where $s_e$ is the entropy scale, $v_e$ is the entropy speed, $W$ and $H$ are
+texture dimensions. The noise field creates regions of faster and slower decay,
+producing organic, non-uniform trail dissolution. Some areas persist longer
+while others erode quickly, breaking the visual monotony of uniform evaporation.
+
+This feature is grounded in the observation that real biological decay is never
+uniform---it is shaped by local moisture, temperature, microbial activity, and
+countless other environmental variables \cite{bunton2025}.
+
+\subsection{Cytoplasmic Streaming (Pulse)}
+\label{sec:pulse}
+
+Real \textit{Physarum} exhibits rhythmic cytoplasmic streaming---the
+shuttle flow of protoplasm that oscillates through the organism's network, driving
+nutrient transport and enabling distributed decision-making \cite{adamatzky2014}.
+
+The simulation reproduces this as a density-thresholded brightness oscillation:
+
+\begin{equation}
+    d_n = \text{smoothstep}(0.3,\; 0.6,\; T''(x,y) / T_{\max})
+\end{equation}
+
+\begin{equation}
+    f(x,y) = \text{lerp}\big(\texttt{pulseMinFreq},\;
+    \texttt{pulseMaxFreq},\; \text{water}(x,y)\big)
+\end{equation}
+
+\begin{equation}
+    \phi(x,y) = (x + y) \cdot \texttt{pulseWaveScale}
+\end{equation}
+
+\begin{equation}
+    \text{pulse}(x,y,t) = d_n \cdot \texttt{pulseAmplitude} \cdot
+    \sin(2\pi f t + \phi)
+\end{equation}
+
+The final trail output is:
+
+\begin{equation}
+    T_{\text{out}}(x,y) = \max\big(T''(x,y) + \text{pulse}(x,y,t),\; 0\big)
+\end{equation}
+
+Key design decisions:
+\begin{itemize}
+    \item \textbf{Density threshold}: The smoothstep activation ensures only
+    established trail networks pulse, not sparse background noise. This mirrors
+    real Physarum, where streaming occurs in mature veins.
+
+    \item \textbf{Water-driven frequency}: Pulse frequency increases near water
+    sources, simulating heightened metabolic activity near nutrients.
+
+    \item \textbf{Spatial phase offset}: The $(x+y)$ phase term creates the
+    illusion of wave propagation across the network, rather than uniform
+    blinking.
+
+    \item \textbf{No clamping}: The output uses $\max(\cdot, 0)$ rather than
+    $\text{clamp}(0, 1)$, preserving the reservoir effect of accumulated
+    chemical signal.
+\end{itemize}
+
+% ============================================================
+\section{GPU Noise Implementation}
+\label{sec:noise}
+% ============================================================
+
+GPU-based noise requires careful implementation. Standard approaches using
+$\sin()$-based hash functions suffer from precision artifacts on many GPU
+architectures. The system uses an integer hash approach:
+
+\begin{lstlisting}
+float hashNoise(float2 p) {
+    uint2 i = uint2(abs(p));
+    uint  h = i.x * 1597334677u ^ i.y * 3812015801u;
+    h = h * h;
+    return float(h) / 4294967295.0;
+}
+\end{lstlisting}
+
+This provides well-distributed pseudorandom values without relying on
+trigonometric functions. A \texttt{valueNoise()} function interpolates between
+hash corners using smoothstep, and \texttt{organicNoise()} layers two octaves
+with halved amplitude:
+
+\begin{equation}
+    \text{organicNoise}(x, y, t) = \text{valueNoise}(x, y, t) +
+    0.5 \cdot \text{valueNoise}(2x, 2y, 2t)
+\end{equation}
+
+The result is normalized to $[0, 1]$ by dividing by 1.5. This two-octave
+structure adds fine detail to the noise field without the computational cost of
+full fractal Brownian motion, which is unnecessary for the visual effect.
+
+% ============================================================
+\section{Game Integration}
+\label{sec:game}
+% ============================================================
+
+While the simulation is designed as a self-contained system, it integrates with
+the broader game through several mechanics:
+
+\begin{itemize}
+    \item \textbf{Water Attraction}: A water attraction map
+    (\texttt{WaterAttractionMap}) is generated by the game's water simulation
+    system and passed to the compute shader. Agents preferentially move toward
+    water, deposit stronger trails near it, and pulse at higher frequencies in
+    its proximity.
+
+    \item \textbf{Decomposition}: The slime mold participates in the game's
+    decomposition system, breaking down organic obstacles in the environment.
+    Trail density in an area contributes to the decomposition rate of nearby
+    objects.
+
+    \item \textbf{Planned---Light Avoidance}: Real \textit{Physarum}
+    is negatively phototactic. A future implementation will add light sources
+    that repel agents, creating gameplay opportunities around guiding the
+    organism through shadowed paths.
+
+    \item \textbf{Planned---Wall Climbing}: Extending the slime mold's
+    navigable space to vertical surfaces, allowing players to use the organism
+    to traverse otherwise inaccessible terrain.
+\end{itemize}
+
+The \texttt{SlimeMoldManager} class coordinates between the simulation and
+other game systems, providing a public API (\texttt{SetAttractionMaps},
+\texttt{GetTrailTexture}, \texttt{GetWorldBounds}) for other scripts to
+interact with the slime mold.
+
+% ============================================================
+\section{Design Rationale}
+\label{sec:rationale}
+% ============================================================
+
+The design of this system is informed by both biological research and critical
+theory. Several deliberate choices distinguish it from conventional algorithmic
+implementations.
+
+\subsection{Self-Organization Without Central Control}
+
+Evelyn Fox Keller's foundational work on slime mold aggregation \cite{keller1983}
+demonstrated that scientists historically assumed \textit{Dictyostelium}
+required a ``pacemaker'' cell to coordinate collective behavior. Keller showed
+that aggregation is fully self-organizing: no leader, no central governor.
+
+This principle is encoded in the simulation's architecture. All 1024 agents
+follow identical local rules---sense, turn, move, deposit. Network formation,
+trail reinforcement, and path optimization emerge entirely from these local
+interactions. There is no global pathfinding, no master controller, no
+optimization objective.
+
+\subsection{Counter-Algorithmic Design}
+
+Bunton \cite{bunton2025} critiques the Slime Mold Algorithm (SMA) for reducing
+\textit{Physarum}'s complex, ``queer'' biology to a metaheuristic optimization
+tool---stripping away precisely the behaviors that make the organism
+interesting. The concept of ``jamming''---blocking, improvising, knotting---is
+proposed as an alternative relation to algorithmic systems.
+
+The entropic decay system (Section~\ref{sec:entropy}) functions as a form of
+jamming. Rather than optimizing trail networks toward efficiency, the
+noise-modulated decay introduces unpredictable dissolution. Trails that
+``should'' persist may erode; regions that ``should'' clear may linger. The
+system resists convergence toward optimal solutions.
+
+\subsection{Nature's Performativity}
+
+Barad's theory of agential realism \cite{barad2011} argues that nature is not
+passive matter awaiting measurement, but actively performs---entities
+co-constitute through ``intra-action'' rather than interaction. The slime mold
+simulation embodies this: the organism and its environment are not separate
+systems that interact, but a single entangled process. Trail deposition shapes
+agent movement, which shapes trail deposition. The water map shapes the
+organism, and in the game's decomposition system, the organism reshapes its
+environment.
+
+\subsection{Non-Human Play}
+
+Stone \cite{stone2019} extends the concept of ``player'' beyond the human,
+drawing on Bennett's distributive agency to argue that nonhuman entities---bacteria, plants, algorithms---can be understood as players in an
+assemblage. In \textit{Ad-Natura}, the slime mold is not an object the player
+controls but a co-player with its own agency: it responds to the environment,
+makes decisions (through chemotaxis), and produces outcomes the human player
+cannot fully predict or control.
+
+This framing connects to Ruberg's concept of ``after agency''
+\cite{ruberg2022}---game systems where the human player's control is
+deliberately limited. The player can influence the slime mold's environment
+(e.g., directing water flow), but cannot command the organism directly.
+
+% ============================================================
+\section{Technical Challenges and Lessons}
+\label{sec:challenges}
+% ============================================================
+
+\subsection{The Reservoir Effect}
+
+The most consequential technical discovery during development was that trail
+values in floating-point \texttt{RenderTexture} buffers routinely exceed 1.0.
+When multiple agents deposit trails in the same region over several frames, the
+accumulated value grows well above the $[0, 1]$ range. This ``reservoir
+effect'' is essential to the simulation's visual quality: dense networks appear
+brighter and more saturated, while sparse trails fade naturally.
+
+An early implementation clamped the output to $[0, 1]$, which flattened all
+dense networks to a uniform maximum brightness and eliminated the visual
+distinction between mature veins and new trails. The fix was simple but
+non-obvious: output $\max(\text{value}, 0)$ with no upper clamp.
+
+\subsection{GPU Noise Precision}
+
+Initial noise implementations using $\sin()$-based hash functions produced
+visible banding artifacts on certain GPU architectures. The integer hash
+approach (Section~\ref{sec:noise}) resolved this entirely, at no performance
+cost.
+
+\subsection{RenderTexture Format}
+
+The default water attraction map must use
+\texttt{RenderTextureFormat.RFloat}, not \texttt{ARGB32}. Using an integer
+format caused the attraction values to be silently quantized, producing
+step-like artifacts in agent movement near water boundaries.
+
+\subsection{Inspector Serialization}
+
+Unity's Inspector serializes field values independently of code defaults. When
+default parameter values were changed in the C\# script, existing scene
+references retained their old serialized values. This caused confusion during
+development, as code changes appeared to have no effect until the component was
+reset manually.
+
+% ============================================================
+\section{Future Work}
+\label{sec:future}
+% ============================================================
+
+Three additional features are planned to deepen the simulation's biological
+fidelity and conceptual range:
+
+\subsection{Behavioral Drift}
+
+Currently, all agents share identical parameters (sensor distance, turn speed,
+move speed). Behavioral Drift will introduce per-agent variation: each agent's
+parameters will be initialized with slight offsets from the base values, and
+these offsets will evolve slowly over time via noise-driven drift.
+
+This produces a population of individuals within a collective---some agents
+more exploratory, others more conservative; some faster, others slower. The
+emergent effect is a simulation that never fully converges to a single stable
+pattern, mirroring the paraconsistent logic of biological individuality
+described by Sinclair \cite{sinclair2020}: the organism is simultaneously
+individual \textit{and} collective.
+
+\subsection{Microphone as Interface}
+
+Audio input from the player's microphone will modulate simulation parameters in
+real time. Amplitude may drive trail deposition strength; frequency spectrum may
+influence agent speed or turning behavior. This creates what Barad
+\cite{barad2011} would call an intra-action between the player's body and the
+simulated organism---not a control interface but a zone of mutual influence.
+
+\subsection{Consent and Resistance}
+
+A state system where the slime mold can ``refuse'' player input when
+overstimulated. If environmental changes are too rapid or too intense, the
+organism enters a refractory state---withdrawing, slowing, reducing
+responsiveness. This encodes the organism's autonomy: it is not an
+infinitely compliant tool but an entity with thresholds and boundaries.
+
+% ============================================================
+\section{Conclusion}
+\label{sec:conclusion}
+% ============================================================
+
+The slime mold simulation in \textit{Ad-Natura} is a GPU-accelerated,
+agent-based model of \textit{Physarum polycephalum} that prioritizes biological
+plausibility and emergent complexity over algorithmic efficiency. Through
+entropic decay, cytoplasmic pulse, and careful architectural decisions, the
+system produces organic, unpredictable behavior from simple local rules.
+
+The design is grounded in critical engagement with both biological research and
+theoretical frameworks that challenge conventional approaches to computational
+modeling of living systems. Rather than reducing \textit{Physarum} to an
+optimization heuristic, the system attempts to honor the organism's capacity
+for self-organization, distributed agency, and resistance to centralized
+control.
+
+% ============================================================
+\begin{thebibliography}{9}
+
+\bibitem[Adamatzky(2014)]{adamatzky2014}
+A.~Adamatzky.
+\newblock Slime mould analog models of space exploration.
+\newblock \textit{International Journal of Bifurcation and Chaos}, 24(02):1430006, 2014.
+
+\bibitem[Barad(2011)]{barad2011}
+K.~Barad.
+\newblock Nature's queer performativity.
+\newblock \textit{Qui Parle}, 19(2):121--158, 2011.
+
+\bibitem[Bunton(2025)]{bunton2025}
+K.~Bunton.
+\newblock \textit{Jamming Playbook: Re/Decomposing the Slime Mold Algorithm}.
+\newblock MA thesis, Royal Academy of Art, The Hague, 2025.
+
+\bibitem[Keller(1983)]{keller1983}
+E.~F.~Keller.
+\newblock The force of the pacemaker concept in theories of aggregation.
+\newblock \textit{Journal of the History of Biology}, 16(1):39--56, 1983.
+
+\bibitem[Ruberg(2022)]{ruberg2022}
+B.~Ruberg.
+\newblock After agency: Video games and the non-player character.
+\newblock In \textit{The Routledge Companion to Media and Fairy-Tale Cultures}, pages 479--487. Routledge, 2022.
+
+\bibitem[Sinclair(2020)]{sinclair2020}
+N.~W.~Sinclair.
+\newblock Exploding individuals: Engaging indigenous logic within science.
+\newblock \textit{Hypatia}, 35(1):58--74, 2020.
+
+\bibitem[Stone(2019)]{stone2019}
+K.~Stone.
+\newblock What can play: The potential of non-human players.
+\newblock In \textit{Games and Play in the Creative, Media and Cultural Industries}, pages 165--180. Routledge, 2019.
+
+\end{thebibliography}
+
+\end{document}
