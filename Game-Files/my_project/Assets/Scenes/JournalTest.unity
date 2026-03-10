@@ -840,7 +840,38 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 3406898395983688105, guid: b6ff7e9fa6be6224db075a4f94c206ec, type: 3}
       propertyPath: m_Name
-      value: JournalCheckpoint
+      value: 'Mission Log #1: Arrival'
+      objectReference: {fileID: 0}
+    - target: {fileID: 3435467237574143893, guid: b6ff7e9fa6be6224db075a4f94c206ec, type: 3}
+      propertyPath: journalTitle
+      value: 'Mission Log #1: Arrival'
+      objectReference: {fileID: 0}
+    - target: {fileID: 3435467237574143893, guid: b6ff7e9fa6be6224db075a4f94c206ec, type: 3}
+      propertyPath: journalFullText
+      value: It is the year 2100. The world's greatest minds could not foresee it,
+        but the Earth is beginning to fall into ruin as a terrible calamity approaches.
+        The harmful pollution us humans have been releasing into the environment
+        has begun to inexplicably grow and spread out of control. Pestilence and
+        decay has been destroying more and more of nature, and the government has
+        just tasked agents such as myself to look for a solution in a last-ditch
+        effort. I was given a mission to investigate this region, in search of a
+        natural seed pod that is immune to the calamity through a hypothesized rare
+        genetic variation. It's a long shot, but if I can find one, scientists back
+        at the city may be able to cultivate it and reproduce it, to plant them back
+        in the wild and restore the environment. Strangely enough, while most life
+        forms have been suffering due to the calamity, there is one kind of organism
+        that has been seen in much larger sizes and population than ever before.
+        This organism is called a slime mold. This yellow, slime-like creature has
+        been seen practically everywhere. They feed on decaying organic matter, which
+        there has been an abundance of due to the calamity, so this must be why they
+        have grown so big and common. They also are known to thrive in moist environments.
+        There are the roots of dead trees in my way. Perhaps if I get them wet, the
+        slime mold may be able to decompose them and break them down, helping me
+        get through. I could use the water shooter tool I was supplied with, or if
+        there are any other water sources in the area, I may be able to use those
+        as well. If there is any brittle stone in my way, I could use my grenades
+        to break them apart. They won't work on anything sturdier, though. I was
+        also given a fan tool, but I'm not sure yet what it might be useful for.
       objectReference: {fileID: 0}
     - target: {fileID: 6485533160007763511, guid: b6ff7e9fa6be6224db075a4f94c206ec, type: 3}
       propertyPath: m_LocalPosition.x
@@ -961,6 +992,19 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1955099109486614008, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: checkpointTitle
+      value: 'Journal Log: Sticky Slime Mold'
+      objectReference: {fileID: 0}
+    - target: {fileID: 1955099109486614008, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: checkpointMessage
+      value: Slime mold is sticky to the touch. If enough slime mold covers a vertical
+        surface, you can climb it.
+      objectReference: {fileID: 0}
+    - target: {fileID: 3515815524360262869, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_Name
+      value: 'Journal Log: Sticky Slime Mold'
+      objectReference: {fileID: 0}
     - target: {fileID: 5326353293780594685, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
       propertyPath: m_Name
       value: Checkpoint
@@ -1243,6 +1287,84 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 228833681}
   m_CullTransparentMesh: 1
+--- !u!1001 &249909194
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1955099109486614008, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: checkpointTitle
+      value: 'Journal Log: SM Nondeterminism'
+      objectReference: {fileID: 0}
+    - target: {fileID: 1955099109486614008, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: checkpointMessage
+      value: Slime mold pathfinding is not deterministic. It may take a different
+        route from origin to destination in subsequent attempts of the same puzzle.
+      objectReference: {fileID: 0}
+    - target: {fileID: 3515815524360262869, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_Name
+      value: 'Journal Log: SM Nondeterminism'
+      objectReference: {fileID: 0}
+    - target: {fileID: 5326353293780594685, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_Name
+      value: Checkpoint
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.65
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -3.32
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7406257626581917475, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 14.101
+      objectReference: {fileID: 0}
+    - target: {fileID: 7406257626581917475, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -1.74
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
 --- !u!1 &332612818
 GameObject:
   m_ObjectHideFlags: 0
@@ -2850,6 +2972,83 @@ SpriteRenderer:
   m_WasSpriteAssigned: 1
   m_MaskInteraction: 0
   m_SpriteSortPoint: 0
+--- !u!1001 &1046858715
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1955099109486614008, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: checkpointTitle
+      value: 'Journal Log: TBD'
+      objectReference: {fileID: 0}
+    - target: {fileID: 1955099109486614008, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: checkpointMessage
+      value: TBD
+      objectReference: {fileID: 0}
+    - target: {fileID: 3515815524360262869, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_Name
+      value: 'Journal Log: TBD'
+      objectReference: {fileID: 0}
+    - target: {fileID: 5326353293780594685, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_Name
+      value: Checkpoint
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.65
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -3.32
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7406257626581917475, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 21.74
+      objectReference: {fileID: 0}
+    - target: {fileID: 7406257626581917475, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -1.74
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
 --- !u!1 &1082201131
 GameObject:
   m_ObjectHideFlags: 0
@@ -3676,6 +3875,11 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   m_Asset: {fileID: -944628639613478452, guid: 2bcd2660ca9b64942af0de543d8d7100, type: 3}
   m_ActionId: 9caa3d8a-6b2f-4e8e-8bad-6ede561bd9be
+--- !u!1 &1623343341 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 6043755643634921371, guid: 5edeb1fa39034c14f964eaa03ae0e6db, type: 3}
+  m_PrefabInstance: {fileID: 1626160068}
+  m_PrefabAsset: {fileID: 0}
 --- !u!1001 &1626160068
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -3684,6 +3888,26 @@ PrefabInstance:
     serializedVersion: 3
     m_TransformParent: {fileID: 0}
     m_Modifications:
+    - target: {fileID: 1266955218824902764, guid: 5edeb1fa39034c14f964eaa03ae0e6db, type: 3}
+      propertyPath: m_fontSize
+      value: 29.8
+      objectReference: {fileID: 0}
+    - target: {fileID: 1266955218824902764, guid: 5edeb1fa39034c14f964eaa03ae0e6db, type: 3}
+      propertyPath: m_enableAutoSizing
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 3549582608171025517, guid: 5edeb1fa39034c14f964eaa03ae0e6db, type: 3}
+      propertyPath: m_text
+      value: 'Mission Log #1: Arrival'
+      objectReference: {fileID: 0}
+    - target: {fileID: 3549582608171025517, guid: 5edeb1fa39034c14f964eaa03ae0e6db, type: 3}
+      propertyPath: m_fontSize
+      value: 23.15
+      objectReference: {fileID: 0}
+    - target: {fileID: 3549582608171025517, guid: 5edeb1fa39034c14f964eaa03ae0e6db, type: 3}
+      propertyPath: m_enableAutoSizing
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4776339146825921665, guid: 5edeb1fa39034c14f964eaa03ae0e6db, type: 3}
       propertyPath: m_Name
       value: Journal UI Canvas
@@ -3691,6 +3915,14 @@ PrefabInstance:
     - target: {fileID: 4776339146825921665, guid: 5edeb1fa39034c14f964eaa03ae0e6db, type: 3}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 4942838003563997496, guid: 5edeb1fa39034c14f964eaa03ae0e6db, type: 3}
+      propertyPath: m_SizeDelta.x
+      value: 331.6363
+      objectReference: {fileID: 0}
+    - target: {fileID: 4942838003563997496, guid: 5edeb1fa39034c14f964eaa03ae0e6db, type: 3}
+      propertyPath: m_AnchoredPosition.x
+      value: 240.81813
       objectReference: {fileID: 0}
     - target: {fileID: 5103750636515412517, guid: 5edeb1fa39034c14f964eaa03ae0e6db, type: 3}
       propertyPath: m_AnchorMax.y
@@ -4396,6 +4628,83 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1764787557}
   m_CullTransparentMesh: 1
+--- !u!1001 &1775296740
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1955099109486614008, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: checkpointTitle
+      value: 'Journal Log: SM and Light'
+      objectReference: {fileID: 0}
+    - target: {fileID: 1955099109486614008, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: checkpointMessage
+      value: Slime mold does not like light. It is repelled by light sources.
+      objectReference: {fileID: 0}
+    - target: {fileID: 3515815524360262869, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_Name
+      value: 'Journal Log: SM and Light'
+      objectReference: {fileID: 0}
+    - target: {fileID: 5326353293780594685, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_Name
+      value: Checkpoint
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.65
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -3.32
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7406257626581917475, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 17.66
+      objectReference: {fileID: 0}
+    - target: {fileID: 7406257626581917475, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -1.74
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
 --- !u!1 &1793237782
 GameObject:
   m_ObjectHideFlags: 0
@@ -4927,6 +5236,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   pauseMenuUI: {fileID: 350507562}
+  journalUI: {fileID: 1623343341}
 --- !u!4 &1880768355
 Transform:
   m_ObjectHideFlags: 0
@@ -4972,6 +5282,84 @@ MonoBehaviour:
   m_DefaultActionMap: UI
   m_SplitScreenIndex: -1
   m_Camera: {fileID: 0}
+--- !u!1001 &1884879959
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1955099109486614008, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: checkpointTitle
+      value: 'Journal Log: Natural Fertilizer'
+      objectReference: {fileID: 0}
+    - target: {fileID: 1955099109486614008, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: checkpointMessage
+      value: Freshly decomposed organic matter, also known as compost, makes an excellent
+        fertilizer for plants.
+      objectReference: {fileID: 0}
+    - target: {fileID: 3515815524360262869, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_Name
+      value: 'Journal Log: Natural Fertilizer'
+      objectReference: {fileID: 0}
+    - target: {fileID: 5326353293780594685, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_Name
+      value: Checkpoint
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.65
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -3.32
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7406257626581917475, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 25.936
+      objectReference: {fileID: 0}
+    - target: {fileID: 7406257626581917475, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -1.74
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
 --- !u!1 &1912167850
 GameObject:
   m_ObjectHideFlags: 0
@@ -5251,6 +5639,84 @@ Canvas:
   m_SortingLayerID: 0
   m_SortingOrder: 0
   m_TargetDisplay: 0
+--- !u!1001 &2146868602
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 1955099109486614008, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: checkpointTitle
+      value: 'Journal Log: Slime Mold Limits'
+      objectReference: {fileID: 0}
+    - target: {fileID: 1955099109486614008, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: checkpointMessage
+      value: Slime mold has a limit to how far it can extend from its source, and
+        it can't cross through solid pavement.
+      objectReference: {fileID: 0}
+    - target: {fileID: 3515815524360262869, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_Name
+      value: 'Journal Log: Slime Mold Limits'
+      objectReference: {fileID: 0}
+    - target: {fileID: 5326353293780594685, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_Name
+      value: Checkpoint
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: -0.65
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -3.32
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7193226225798270684, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 7406257626581917475, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 10.45
+      objectReference: {fileID: 0}
+    - target: {fileID: 7406257626581917475, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: -1.74
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
 --- !u!1660057539 &9223372036854775807
 SceneRoots:
   m_ObjectHideFlags: 0
@@ -5264,8 +5730,13 @@ SceneRoots:
   - {fileID: 1309313421}
   - {fileID: 1111795876}
   - {fileID: 192394505}
-  - {fileID: 1626160068}
+  - {fileID: 2146868602}
+  - {fileID: 249909194}
+  - {fileID: 1775296740}
+  - {fileID: 1046858715}
+  - {fileID: 1884879959}
   - {fileID: 124643399}
+  - {fileID: 1626160068}
   - {fileID: 1847573236}
   - {fileID: 1880768355}
   - {fileID: 350507566}

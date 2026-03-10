@@ -5,7 +5,14 @@ using UnityEngine.SceneManagement;
 public class PauseMenuManager : MonoBehaviour
 {
     [SerializeField] private GameObject pauseMenuUI;
+    [SerializeField] private GameObject journalUI;
+    private Journal journal;
     private bool isPaused = false;
+
+    private void Start()
+    {
+        journal = journalUI.GetComponent<Journal>();
+    }
 
     public void Resume()
     {
@@ -16,7 +23,7 @@ public class PauseMenuManager : MonoBehaviour
 
     public void OnPause(InputValue value)
     {
-        if (value.isPressed && !isPaused)
+        if (value.isPressed && !isPaused && !journal.IsOpen())
             Pause();
         else if (value.isPressed && isPaused)
             Resume();
