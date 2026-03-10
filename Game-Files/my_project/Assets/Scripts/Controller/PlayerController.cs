@@ -211,6 +211,18 @@ public enum ToolType
         }
     }
 
+    public int GetCurrentTool()
+        { return currentToolIndex; }
+
+    public int GetWaterAmmo()
+        { return waterAmmo; }
+
+    public int GetIncendiaryAmmo()
+        { return incendiaryAmmo; }
+
+    public int GetWindAmmo()
+        { return windAmmo; }
+
     public void SwitchTool(int toolIndex)
     {
         Debug.Log("SwitchTool called with: " + toolIndex);
@@ -266,6 +278,7 @@ public enum ToolType
             Debug.Log("Player switched to: " + currentTool.ToString());
         }
     }
+
     public bool RequestAmmoUse(ToolType tool)
     {
         if (!HasAmmo(tool)) return false;
