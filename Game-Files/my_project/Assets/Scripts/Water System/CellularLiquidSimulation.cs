@@ -6,7 +6,7 @@ public class CellularLiquidSimulation : MonoBehaviour
     [Header("Grid Settings")]
     [SerializeField] private int gridWidth = 200;
     [SerializeField] private int gridHeight = 150;
-    [SerializeField] public float cellSize = 0.1f;
+    [SerializeField] private float cellSize = 0.1f;
     [SerializeField] private Vector2 gridOrigin = new Vector2(-10f, -7.5f);
     
     [Header("Simulation Settings")]
@@ -116,7 +116,6 @@ public class CellularLiquidSimulation : MonoBehaviour
 
     private Color[] depthColorCache;
     private const int DEPTH_CACHE_SIZE = 32;
-
     
     void Awake()
     {
@@ -943,8 +942,8 @@ public class CellularLiquidSimulation : MonoBehaviour
             MarkCellDirty(x, y);
         }
     }
-public float CellSize => cellSize;
-public Vector2 GridOrigin => gridOrigin;
+    public float CellSize => cellSize;
+    public Vector2 GridOrigin => gridOrigin;
     public Vector2Int WorldToGrid(Vector2 worldPos)
     {
         Vector2 localPos = worldPos - gridOrigin;
