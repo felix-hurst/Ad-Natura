@@ -20,10 +20,10 @@ public class AmmoUI : MonoBehaviour
     [SerializeField] private GameObject player;
     private PlayerController playerCon;
 
-    private string[] toolNames =
+    private readonly string[] toolNames =
     {
         "Water Shooter",
-        "Grenades",
+        "Impact Round",
         "Wind Fan"
     };
 
@@ -34,6 +34,8 @@ public class AmmoUI : MonoBehaviour
     }
 
     // Update is called once per frame
+    // Potential future optimization: Call the following code block
+    // only when switching tools or using a tool
     void Update()
     {
         // Check current tool of the player
@@ -41,29 +43,15 @@ public class AmmoUI : MonoBehaviour
         // Display information
         
         int currentTool = playerCon.GetCurrentTool();
-        int ammoCount;
-
-        switch (currentTool)
-        {
-            case 0:
-                // Water shooter tool
-                ammoCount = playerCon.GetWaterAmmo();
-                break;
-            case 1:
-                // Destructive ball (grenade) tool
-                ammoCount = playerCon.GetIncendiaryAmmo();
-                break;
-            case 2:
-                // Wind fan tool
-                ammoCount = playerCon.GetWindAmmo();
-                break;
-            default:
-                ammoCount = 0;
-                break;
-        }
-
+        var ammoCount = currentTool switch
+                {
+                    0 => playerCon.GetWaterAmmo(), // Water shooter tool
+                    1 => playerCon.GetIncendiaryAmmo(), // Impact round tool
+                    2 => playerCon.GetWindAmmo(), // Wind fan tool
+                    _ => 0,
+                };
+        
         string toolName;
-
         if (currentTool >= 0)
             toolName = toolNames[currentTool];
         else
@@ -121,6 +109,13 @@ public class AmmoUI : MonoBehaviour
                 bar3.SetActive(true);
                 bar4.SetActive(true);
                 bar5.SetActive(true);
+                break;
+            default:
+                bar1.SetActive(false);
+                bar2.SetActive(false);
+                bar3.SetActive(false);
+                bar4.SetActive(false);
+                bar5.SetActive(false);
                 break;
         }
     }

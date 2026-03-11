@@ -13,10 +13,11 @@ public class ToolManager : MonoBehaviour
 
     [Header("Slot UI References")]
     [SerializeField] private Image[] slots;
+    [SerializeField] private GameObject[] descs;
     [SerializeField] private CanvasGroup hudGroup;
 
     [Header("Visibility Settings")]
-    [SerializeField] private float displayDuration = 2.0f;
+    [SerializeField] private float displayDuration = 5.0f;
     private float visibilityTimer;
     [SerializeField] private float activeScale = 1.2f;
 
@@ -82,6 +83,7 @@ public class ToolManager : MonoBehaviour
         for (int i = 0; i < slots.Length; i++)
         {
             slots[i].sprite = inactiveFrame;
+            descs[i].SetActive(false);
             slots[i].rectTransform.localScale = Vector3.one;
         }
     }
@@ -104,11 +106,13 @@ public class ToolManager : MonoBehaviour
             if (i == currentToolIndex)
             {
                 slots[i].sprite = activeFrame;
+                descs[i].SetActive(true);
                 slots[i].transform.localScale = Vector3.one * activeScale;
             }
             else
             {
                 slots[i].sprite = inactiveFrame;
+                descs[i].SetActive(false);
                 slots[i].transform.localScale = Vector3.one;
             }
         }
