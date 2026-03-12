@@ -2,7 +2,7 @@ name: Unity C# Linter
 
 on:
   push:
-    branches: [ main, marcoschanges ]
+    branches: [ main,marcoschanges ]
   pull_request:
     branches: [ main ]
 
