@@ -50,10 +50,23 @@ public class Slime : MonoBehaviour
     [SerializeField] private GameObject boundingObject;
     [SerializeField] private Rect worldBounds = new Rect(-10f, -7.5f, 20f, 15f);
 
-    [Header("Visual")]
-    [Tooltip("Slime color. Golden yellow is classic Physarum")]
-    [SerializeField] private Color slimeColor = new Color(1f, 0.9f, 0.2f, 1f);
-    [SerializeField] private int sortingOrder = 5;
+    [Header("Pulse (Cytoplasmic Streaming)")]
+    [Tooltip("How strongly trails brighten and dim. 0 = no pulse, 0.3 = subtle breathing, 0.6 = dramatic")]
+    [SerializeField, Range(0f, 0.8f)] private float pulseAmplitude = 0.2f;
+    [Tooltip("Pulse frequency when far from water (Hz). Low = slow, meditative breathing")]
+    [SerializeField, Range(0.1f, 2f)] private float pulseMinFreq = 0.3f;
+    [Tooltip("Pulse frequency when near water (Hz). Higher = excited, rapid streaming")]
+    [SerializeField, Range(1f, 6f)] private float pulseMaxFreq = 1.5f;
+    [Tooltip("Wave spatial scale. Controls how fast the pulse phase shifts across the organism. Higher = tighter ripples")]
+    [SerializeField, Range(0f, 1f)] private float pulseWaveScale = 0f;
+
+    [Header("Entropic Decay")]
+    [Tooltip("Spatial scale of decay noise. Lower = larger patches of persistence, higher = fine grain")]
+    [SerializeField, Range(0.005f, 0.2f)] private float entropyScale = 0.05f;
+    [Tooltip("How fast the noise pattern drifts over time")]
+    [SerializeField, Range(0f, 1f)] private float entropySpeed = 0.15f;
+    [Tooltip("How much evaporation varies. 0 = uniform (original), 1 = some pixels barely evaporate at all")]
+    [SerializeField, Range(0f, 1f)] private float entropyStrength = 0.4f;
 
     [Header("Hazard Death Visuals")]
     [Tooltip("How strongly agents steer away from hazards. Higher = wider avoidance zone")]
@@ -64,6 +77,11 @@ public class Slime : MonoBehaviour
     [SerializeField, Range(0f, 15f)] private float hazardCorrosionRate = 6f;
     [Tooltip("Trail deposit reduction in decay zone (0=full trails, 1=no trails)")]
     [SerializeField, Range(0f, 1f)] private float hazardTrailDampen = 0.85f;
+
+    [Header("Visual")]
+    [Tooltip("Slime color. Golden yellow is classic Physarum")]
+    [SerializeField] private Color slimeColor = new Color(1f, 0.9f, 0.2f, 1f);
+    [SerializeField] private int sortingOrder = 5;
 
     private RenderTexture trailMapA;
     private RenderTexture trailMapB;
@@ -118,7 +136,7 @@ public class Slime : MonoBehaviour
 
         InitializeAgents();
 
-        defaultAttractionMap = new RenderTexture(width, height, 0);
+        defaultAttractionMap = new RenderTexture(width, height, 0, RenderTextureFormat.RFloat);
         defaultAttractionMap.enableRandomWrite = true;
         defaultAttractionMap.Create();
         ClearTexture(defaultAttractionMap);
@@ -228,6 +246,7 @@ public class Slime : MonoBehaviour
         shader.SetTexture(kernelUpdate, "WaterAttractionMap", waterMap);
         shader.SetFloat("waterAttractionStrength", waterStrength);
 
+        // Hazard map + death visual parameters
         var hazMap = hasExternalHazard && externalHazardMap != null ? externalHazardMap : defaultHazardMap;
         shader.SetTexture(kernelUpdate, "HazardMap", hazMap);
         shader.SetFloat("spawnCenterX", width * spawnX);
@@ -243,8 +262,21 @@ public class Slime : MonoBehaviour
 
         shader.SetFloat("evaporateSpeed", evaporateSpeed);
         shader.SetFloat("diffuseSpeed", diffuseSpeed);
+
+        // Pulse parameters
+        shader.SetFloat("pulseAmplitude", pulseAmplitude);
+        shader.SetFloat("pulseMinFreq", pulseMinFreq);
+        shader.SetFloat("pulseMaxFreq", pulseMaxFreq);
+        shader.SetFloat("pulseWaveScale", pulseWaveScale);
+
+        // Entropic Decay parameters
+        shader.SetFloat("entropyScale", entropyScale);
+        shader.SetFloat("entropySpeed", entropySpeed);
+        shader.SetFloat("entropyStrength", entropyStrength);
+
         shader.SetTexture(kernelPostprocess, "TrailMap", readBuffer);
         shader.SetTexture(kernelPostprocess, "TrailMapProcessed", writeBuffer);
+        shader.SetTexture(kernelPostprocess, "WaterAttractionMap", waterMap);
         shader.SetTexture(kernelPostprocess, "HazardMap", hazMap);
         shader.Dispatch(kernelPostprocess, width / 8, height / 8, 1);
 
