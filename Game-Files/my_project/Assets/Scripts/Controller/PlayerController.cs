@@ -98,14 +98,14 @@ public class PlayerController : MonoBehaviour
     private int incendiaryAmmo;
     private int windAmmo;
 
-public enum ToolType
-{
-    WaterBall,
-    IncendiaryBall,
-    WindBall
-}
+    public enum ToolType
+    {
+        WaterBall,
+        IncendiaryBall,
+        WindBall
+    }
     private ToolType currentTool = ToolType.WaterBall;
-    private int currentToolIndex = -1; 
+    private int currentToolIndex = -1;
 
     void Start()
     {
@@ -166,7 +166,7 @@ public enum ToolType
             else if (currentTool == ToolType.IncendiaryBall) hasAmmo = incendiaryAmmo > 0;
             else if (currentTool == ToolType.WindBall) hasAmmo = windAmmo > 0;
 
-                raycast.enabled = isAiming && hasAmmo;
+            raycast.enabled = isAiming && hasAmmo;
 
             if (isAiming)
             {
@@ -353,7 +353,7 @@ public enum ToolType
         {
             effectiveMoveSpeed *= currentSlimeProps.speedMultiplier;
         }
-    
+
         if (isAiming && isGrounded)
         {
             rb.linearVelocity = new Vector2(0f, rb.linearVelocity.y);

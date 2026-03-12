@@ -88,19 +88,19 @@ public class Journal : MonoBehaviour
         }
     }
 
-private void RefreshPage()
-{
-    titleText.text = journalTitle;
-    pageTextLeft.text = pages.Count > currentPage ? pages[currentPage] : "";
-    pageTextRight.text = pages.Count > currentPage + 1 ? pages[currentPage + 1] : "";
+    private void RefreshPage()
+    {
+        titleText.text = journalTitle;
+        pageTextLeft.text = pages.Count > currentPage ? pages[currentPage] : "";
+        pageTextRight.text = pages.Count > currentPage + 1 ? pages[currentPage + 1] : "";
 
-    int leftPageNum = currentPage + 1;
-    int rightPageNum = currentPage + 2;
-    pageNumberText.text = $"{currentPage}";
+        int leftPageNum = currentPage + 1;
+        int rightPageNum = currentPage + 2;
+        pageNumberText.text = $"{currentPage}";
 
-    previousButton.interactable = currentPage > 1;
-    nextButton.interactable = currentPage + 2 < pages.Count;
-}
+        previousButton.interactable = currentPage > 1;
+        nextButton.interactable = currentPage + 2 < pages.Count;
+    }
 
     private List<string> SplitIntoPages(string fullText, int maxWords)
     {

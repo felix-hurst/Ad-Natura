@@ -35,24 +35,27 @@ public class ToolManager : MonoBehaviour
         if (keyboard == null) return;
 
         // When a key is pressed, trigger the tool AND show the UI
-        if (keyboard.digit1Key.wasPressedThisFrame) {
+        if (keyboard.digit1Key.wasPressedThisFrame)
+        {
             Debug.Log("ToolManager: Pressed 1");
-            SelectTool(0); 
-            ShowHUD(); 
+            SelectTool(0);
+            ShowHUD();
         }
 
         // 2 = Incendiary Ball (Index 1)
-        if (keyboard.digit2Key.wasPressedThisFrame) {
+        if (keyboard.digit2Key.wasPressedThisFrame)
+        {
             Debug.Log("ToolManager: Pressed 2");
-            SelectTool(1); 
-            ShowHUD(); 
+            SelectTool(1);
+            ShowHUD();
         }
 
         // 3 = Wind Ball (Index 2)
-        if (keyboard.digit3Key.wasPressedThisFrame) {
+        if (keyboard.digit3Key.wasPressedThisFrame)
+        {
             Debug.Log("ToolManager: Pressed 3");
-            SelectTool(2); 
-            ShowHUD(); 
+            SelectTool(2);
+            ShowHUD();
         }
 
         HandleHUDVisibility();

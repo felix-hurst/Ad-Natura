@@ -7,24 +7,24 @@ public class ProceduralTextureApplicator : MonoBehaviour
     [SerializeField] private bool applyOnStart = true;
     [SerializeField] private bool useMaterialTag = true;
     [SerializeField] private string overrideMaterialName = "";
-    
+
     [Header("Sprite Settings")]
     [SerializeField] private int pixelsPerUnit = 64;
-    
+
     private SpriteRenderer spriteRenderer;
     private MaterialTextureGenerator textureGenerator;
-    
+
     void Start()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
         textureGenerator = FindObjectOfType<MaterialTextureGenerator>();
-        
+
         if (textureGenerator == null)
         {
             Debug.LogError("MaterialTextureGenerator not found in scene! Please add one.");
             return;
         }
-        
+
         if (applyOnStart)
         {
             ApplyTexture();
@@ -41,7 +41,7 @@ public class ProceduralTextureApplicator : MonoBehaviour
 
         string materialName = GetMaterialName();
         Texture2D texture = textureGenerator.GetTexture(materialName);
-        
+
         if (texture == null)
         {
             Debug.LogError($"Failed to generate texture for material: {materialName}");
@@ -82,7 +82,7 @@ public class ProceduralTextureApplicator : MonoBehaviour
         {
             textureGenerator = FindObjectOfType<MaterialTextureGenerator>();
         }
-        
+
         if (textureGenerator != null)
         {
             textureGenerator.ClearCache();

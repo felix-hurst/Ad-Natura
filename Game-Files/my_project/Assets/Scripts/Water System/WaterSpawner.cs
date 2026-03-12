@@ -14,51 +14,51 @@ public class WaterSpawner : MonoBehaviour
     [Header("Spawn Location")]
     [Tooltip("World position where water will spawn (uses transform position if not overridden)")]
     [SerializeField] private bool useTransformPosition = true;
-    
+
     [Tooltip("Custom spawn position (only used if Use Transform Position is false)")]
     [SerializeField] private Vector2 customSpawnPosition = Vector2.zero;
-    
+
     [Header("Spawn Behavior")]
     [Tooltip("Continuously spawn water like a waterfall")]
     [SerializeField] private bool continuousSpawning = false;
-    
+
     [Tooltip("Spawn pattern type")]
     [SerializeField] private SpawnPattern spawnPattern = SpawnPattern.Circle;
-    
+
     [Tooltip("Amount of water to spawn per interval (0.0 to 1.0, where 1.0 is a full cell)")]
-    [SerializeField] [Range(0.01f, 1.0f)] private float waterAmount = 0.15f;
-    
+    [SerializeField][Range(0.01f, 1.0f)] private float waterAmount = 0.15f;
+
     [Tooltip("How often to spawn water when continuous (seconds). Lower = smoother stream")]
     [SerializeField] private float spawnInterval = 0.02f;
-    
+
     [Tooltip("Radius of water spawn area (in cells)")]
-    [SerializeField] [Range(1, 10)] private int spawnRadius = 1;
-    
+    [SerializeField][Range(1, 10)] private int spawnRadius = 1;
+
     [Header("Spawn Duration")]
     [Tooltip("How long to spawn water for (in seconds). Set 0 for infinite spawning")]
     [SerializeField] private float spawnDuration = 0f;
-    
+
     [Tooltip("Should spawning automatically restart after duration ends?")]
     [SerializeField] private bool loopSpawning = false;
-    
+
     [Tooltip("Delay before restarting spawn loop (seconds)")]
     [SerializeField] private float loopDelay = 1f;
-    
+
     [Header("Manual Spawn")]
     [Tooltip("Press this key to manually spawn water")]
     [SerializeField] private Key manualSpawnKey = Key.Space;
-    
+
     [Tooltip("Enable manual spawning with key press")]
     [SerializeField] private bool allowManualSpawn = true;
-    
+
     [Header("Auto-Start")]
     [Tooltip("Start spawning automatically when the game starts")]
     [SerializeField] private bool spawnOnStart = false;
-    
+
     [Header("References")]
     [Tooltip("Reference to the liquid simulation (auto-finds if not set)")]
     [SerializeField] private CellularLiquidSimulation liquidSimulation;
-    
+
     private float spawnTimer;
     private float durationTimer;
     private float loopDelayTimer;
@@ -68,7 +68,7 @@ public class WaterSpawner : MonoBehaviour
     public bool IsSpawning => isSpawning;
     public float RemainingDuration => spawnDuration > 0 ? Mathf.Max(0, spawnDuration - durationTimer) : -1f;
     public float SpawnProgress => spawnDuration > 0 ? Mathf.Clamp01(durationTimer / spawnDuration) : 0f;
-    
+
     void Start()
     {
         if (liquidSimulation == null)
@@ -81,7 +81,7 @@ public class WaterSpawner : MonoBehaviour
                 return;
             }
         }
-        
+
         if (spawnOnStart && continuousSpawning)
         {
             StartSpawning();
@@ -91,7 +91,7 @@ public class WaterSpawner : MonoBehaviour
             SpawnWater();
         }
     }
-    
+
     void Update()
     {
         if (allowManualSpawn && Keyboard.current != null && Keyboard.current[manualSpawnKey].wasPressedThisFrame)
@@ -143,7 +143,7 @@ public class WaterSpawner : MonoBehaviour
             }
         }
     }
-    
+
     [ContextMenu("Spawn Water Once")]
     public void SpawnWater()
     {
@@ -152,10 +152,10 @@ public class WaterSpawner : MonoBehaviour
             Debug.LogWarning("WaterSpawner: No liquid simulation reference!");
             return;
         }
-        
+
         Vector2 spawnPos = useTransformPosition ? transform.position : customSpawnPosition;
         Vector2Int centerCell = liquidSimulation.WorldToGrid(spawnPos);
-        
+
         switch (spawnPattern)
         {
 
@@ -165,7 +165,7 @@ public class WaterSpawner : MonoBehaviour
         }
     }
 
-    
+
     private void SpawnCircle(Vector2Int centerCell)
     {
         for (int x = -spawnRadius; x <= spawnRadius; x++)
@@ -196,13 +196,13 @@ public class WaterSpawner : MonoBehaviour
             Debug.LogWarning("WaterSpawner: Continuous spawning is disabled. Enable it in the inspector.");
             return;
         }
-        
+
         isSpawning = true;
         isInLoopDelay = false;
         spawnTimer = 0f;
         durationTimer = 0f;
         loopDelayTimer = 0f;
-        
+
         if (spawnDuration > 0)
         {
             Debug.Log($"WaterSpawner: Started spawning at {GetSpawnPosition()} for {spawnDuration} seconds");
@@ -218,7 +218,7 @@ public class WaterSpawner : MonoBehaviour
         float originalDuration = spawnDuration;
         spawnDuration = customDuration;
         StartSpawning();
-        spawnDuration = originalDuration; 
+        spawnDuration = originalDuration;
     }
 
     [ContextMenu("Stop Spawning")]
@@ -291,7 +291,7 @@ public class WaterSpawner : MonoBehaviour
             Gizmos.DrawWireSphere(spawnPos, 0.15f);
         }
     }
-    
+
     void OnDrawGizmosSelected()
     {
         Vector2 spawnPos = useTransformPosition ? transform.position : customSpawnPosition;
@@ -313,15 +313,15 @@ public class WaterSpawner : MonoBehaviour
             DrawSpawnPatternGizmo(centerCell, false);
         }
     }
-    
+
     private void DrawSpawnPatternGizmo(Vector2Int centerCell, bool useSimulation)
     {
         float estimatedCellSize = 0.1f;
-        
+
         switch (spawnPattern)
         {
 
-                
+
             case SpawnPattern.Circle:
                 for (int x = -spawnRadius; x <= spawnRadius; x++)
                 {
@@ -336,11 +336,11 @@ public class WaterSpawner : MonoBehaviour
                 break;
         }
     }
-    
+
     private void DrawCellGizmo(Vector2Int cell, float cellSize, bool useSimulation)
     {
         Vector2 worldPos;
-        
+
         if (useSimulation && liquidSimulation != null)
         {
             if (liquidSimulation.IsValidCell(cell.x, cell.y))

@@ -28,21 +28,30 @@ csharp_indent_switch_labels = true
 
 #### Naming Styles ####
 
-#Classes, Methods (Functions), and Structs must be PascalCase
-dotnet_naming_rule.types_and_methods_should_be_pascal_case.severity = warning
-dotnet_naming_rule.types_and_methods_should_be_pascal_case.symbols = types_and_methods
-dotnet_naming_rule.types_and_methods_should_be_pascal_case.style = pascal_case_style
+#Constants can be PascalCase or SCREAMING_SNAKE_CASE
+dotnet_naming_rule.constants_should_be_pascal_or_screaming.severity = suggestion
+dotnet_naming_rule.constants_should_be_pascal_or_screaming.symbols = constants
+dotnet_naming_rule.constants_should_be_pascal_or_screaming.style = screaming_snake_case_style
 
-dotnet_naming_symbols.types_and_methods.applicable_kinds = class, method, struct, enum, property
-dotnet_naming_symbols.types_and_methods.applicable_accessibilities = *
+dotnet_naming_symbols.constants.applicable_kinds = field
+dotnet_naming_symbols.constants.required_modifiers = const
+dotnet_naming_style.screaming_snake_case_style.capitalization = all_upper
+
+#Classes, Methods (Functions), and Structs must be PascalCase
+dotnet_naming_rule.types_and_members_should_be_pascal_case.severity = warning
+dotnet_naming_rule.types_and_members_should_be_pascal_case.symbols = types_and_members_symbols
+dotnet_naming_rule.types_and_members_should_be_pascal_case.style = pascal_case_style
+
+dotnet_naming_symbols.types_and_members_symbols.applicable_kinds = class, method, struct, enum, property, event
+dotnet_naming_symbols.types_and_members_symbols.applicable_accessibilities = *
 
 #Variables (Fields, Locals, Parameters) must be camelCase
-dotnet_naming_rule.variables_should_be_camel_case.severity = warning
-dotnet_naming_rule.variables_should_be_camel_case.symbols = variables
-dotnet_naming_rule.variables_should_be_camel_case.style = camel_case_style
+dotnet_naming_rule.locals_should_be_camel_case.severity = warning
+dotnet_naming_rule.locals_should_be_camel_case.symbols = locals_symbols
+dotnet_naming_rule.locals_should_be_camel_case.style = camel_case_style
 
-dotnet_naming_symbols.variables.applicable_kinds = variable, local, parameter, field
-dotnet_naming_symbols.variables.applicable_accessibilities = *
+dotnet_naming_symbols.locals_symbols.applicable_kinds = local, parameter
+dotnet_naming_symbols.locals_symbols.applicable_accessibilities = *
 
 # Define the styles
 dotnet_naming_style.pascal_case_style.capitalization = pascal_case

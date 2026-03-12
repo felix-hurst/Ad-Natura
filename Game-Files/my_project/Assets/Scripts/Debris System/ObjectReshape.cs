@@ -110,7 +110,7 @@ public class ObjectReshape : MonoBehaviour
 
         CutProfile cutProfile = CutProfileExtensions.GetCutProfileForObject(gameObject);
         CutProfileManager profileManager = FindObjectOfType<CutProfileManager>();
-        
+
         if (profileManager != null && cutProfile.strength > 0.01f)
         {
             remainingShape = profileManager.ApplyIrregularCut(remainingShape, entryPoint, exitPoint, cutProfile);
@@ -185,7 +185,7 @@ public class ObjectReshape : MonoBehaviour
 
         shape1 = CleanupPolygon(shape1);
         shape2 = CleanupPolygon(shape2);
-        
+
         shape1 = EnsureClockwiseWinding(shape1);
         shape2 = EnsureClockwiseWinding(shape2);
     }
@@ -369,39 +369,39 @@ public class ObjectReshape : MonoBehaviour
         return GetWorldCorners();
     }
 
-public void ApplyNewShape(List<Vector2> visualShape, List<Vector2> colliderShape)
-{
-    if (visualShape.Count < 3 || colliderShape.Count < 3)
+    public void ApplyNewShape(List<Vector2> visualShape, List<Vector2> colliderShape)
     {
-        Debug.LogWarning($"[ObjectReshape] Invalid shapes - Visual: {visualShape.Count}, Collider: {colliderShape.Count}");
-        return;
+        if (visualShape.Count < 3 || colliderShape.Count < 3)
+        {
+            Debug.LogWarning($"[ObjectReshape] Invalid shapes - Visual: {visualShape.Count}, Collider: {colliderShape.Count}");
+            return;
+        }
+
+        List<Vector2> localVisualVertices = new List<Vector2>();
+        foreach (Vector2 worldVertex in visualShape)
+        {
+            Vector2 localVertex = transform.InverseTransformPoint(worldVertex);
+            localVisualVertices.Add(localVertex);
+        }
+
+        List<Vector2> localColliderVertices = new List<Vector2>();
+        foreach (Vector2 worldVertex in colliderShape)
+        {
+            Vector2 localVertex = transform.InverseTransformPoint(worldVertex);
+            localColliderVertices.Add(localVertex);
+        }
+
+        Debug.Log($"[ObjectReshape] Applying new shape to {gameObject.name} - Visual: {localVisualVertices.Count} verts, Collider: {localColliderVertices.Count} verts");
+
+        UpdateCollider(useSmoothCollider ? localColliderVertices : localVisualVertices);
+
+        UpdateVisualMesh(localVisualVertices);
     }
 
-    List<Vector2> localVisualVertices = new List<Vector2>();
-    foreach (Vector2 worldVertex in visualShape)
+    public void ApplyNewShape(List<Vector2> worldShape)
     {
-        Vector2 localVertex = transform.InverseTransformPoint(worldVertex);
-        localVisualVertices.Add(localVertex);
+        ApplyNewShape(worldShape, worldShape);
     }
-
-    List<Vector2> localColliderVertices = new List<Vector2>();
-    foreach (Vector2 worldVertex in colliderShape)
-    {
-        Vector2 localVertex = transform.InverseTransformPoint(worldVertex);
-        localColliderVertices.Add(localVertex);
-    }
-
-    Debug.Log($"[ObjectReshape] Applying new shape to {gameObject.name} - Visual: {localVisualVertices.Count} verts, Collider: {localColliderVertices.Count} verts");
-
-    UpdateCollider(useSmoothCollider ? localColliderVertices : localVisualVertices);
-
-    UpdateVisualMesh(localVisualVertices);
-}
-
-public void ApplyNewShape(List<Vector2> worldShape)
-{
-    ApplyNewShape(worldShape, worldShape);
-}
 
     void UpdateCollider(List<Vector2> localVertices)
     {
@@ -544,7 +544,7 @@ public void ApplyNewShape(List<Vector2> worldShape)
                 newMeshFilter.mesh = mesh;
                 meshFilter = newMeshFilter;
                 meshRenderer = newMeshRenderer;
-                
+
                 Debug.Log($"[ObjectReshape] Successfully created visual mesh for {gameObject.name} with {localVertices.Count} vertices");
             }
             else
