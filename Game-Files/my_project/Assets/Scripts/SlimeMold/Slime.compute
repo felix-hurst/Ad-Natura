@@ -18,7 +18,6 @@ float idleSpeed;
 float attractedSpeedMultiplier;
 
 RWTexture2D<float4> WaterAttractionMap;
-RWTexture2D<float4> WaterAttractionMap;
 float waterAttractionStrength;
 
 
@@ -34,10 +33,12 @@ float hazardTrailDampen;
 
 float4 slimeColor;
 
+
 float pulseAmplitude;
 float pulseMinFreq;
 float pulseMaxFreq;
 float pulseWaveScale;
+
 
 float entropyScale;
 float entropySpeed;
@@ -126,39 +127,15 @@ void Update(uint3 id : SV_DispatchThreadID)
     int2 leftPos = int2(clamp(agent.pos + leftDir * sensorLength, float2(0,0), float2(width-1, height-1)));
     int2 rightPos = int2(clamp(agent.pos + rightDir * sensorLength, float2(0,0), float2(width-1, height-1)));
 
-    float waterFwd = WaterAttractionMap[fwdPos];
-    float waterLeft = WaterAttractionMap[leftPos];
-    float waterRight = WaterAttractionMap[rightPos];
 
-    // Sense trails
-    float trailFwd = sense(agent, 0);
-    float trailLeft = sense(agent, sensorAngleSpacing);
-    float trailRight = sense(agent, -sensorAngleSpacing);
+    float3 waterValues = float3(
+        WaterAttractionMap[fwdPos].g,
+        WaterAttractionMap[leftPos].g,
+        WaterAttractionMap[rightPos].g
+    );
 
-        // Calculate water influence using the strength
-        float waterFwd = waterValues.x * waterAttractionStrength;
-        float waterLeft = waterValues.y * waterAttractionStrength;
-        float waterRight = waterValues.z * waterAttractionStrength;
-
-        // Combine for turning logic
-        totalFwd = waterFwd + (trailFwd * trailWeight);
-        totalLeft = waterLeft + (trailLeft * trailWeight);
-        totalRight = waterRight + (trailRight * trailWeight);
-
-        //Speed
-        float maxWaterSensed = max(waterFwd, max(waterLeft, waterRight));
-        float maxTrailSensed = trailFwd * trailWeight;
-        
-        if (maxWaterSensed > 0.01) {
-            // Speed up when near water
-            speed = moveSpeed * attractedSpeedMultiplier;
-        } else if (maxTrailSensed > 0.01) {
-            // Move normal speed on trails
-            speed = moveSpeed;
-        } else {
-            // Truly nothing around
-            speed = idleSpeed;
-        }
+    int2 currentPos = int2(clamp(agent.pos, float2(0,0), float2(width-1, height-1)));
+    float currentFear = WaterAttractionMap[currentPos].r;
 
     float hazFwd = senseHazard(agent, 0);
     float hazLeft = senseHazard(agent, sensorAngleSpacing);
@@ -170,7 +147,6 @@ void Update(uint3 id : SV_DispatchThreadID)
 
     if (currentFear > 0.1)
     {
-
         totalFwd = 1.0 - WaterAttractionMap[fwdPos].r;
         totalLeft = 1.0 - WaterAttractionMap[leftPos].r;
         totalRight = 1.0 - WaterAttractionMap[rightPos].r;
@@ -213,21 +189,18 @@ void Update(uint3 id : SV_DispatchThreadID)
     float hazardSlowdown = saturate(1.0 - maxHazard * 0.7);
     speed *= hazardSlowdown;
 
-    //Turning
     float turnAmount = turnSpeed * deltaTime;
     float randomTurn = (random01 - 0.5) * turnAmount * 0.5;
 
     if (totalFwd >= totalLeft && totalFwd >= totalRight) {
         agents[id.x].angle += randomTurn * 0.3;
     } else if (totalLeft > totalRight) {
-    } else if (totalLeft > totalRight) {
         agents[id.x].angle += turnAmount + randomTurn;
-    } else {
     } else {
         agents[id.x].angle -= turnAmount + randomTurn;
     }
 
-  
+
     float2 dir = float2(cos(agents[id.x].angle), sin(agents[id.x].angle));
     float2 newPos = agent.pos + dir * speed * deltaTime;
 
@@ -312,6 +285,7 @@ RWTexture2D<float4> TrailMapProcessed;
 float evaporateSpeed;
 float diffuseSpeed;
 
+
 float hashNoise(float2 p)
 {
     uint2 ip = uint2(uint(abs(p.x)), uint(abs(p.y)));
@@ -349,6 +323,7 @@ void Postprocess(uint3 id : SV_DispatchThreadID)
 {
     float4 original = TrailMap[id.xy];
 
+
     float4 sum = 0;
     for (int oy = -1; oy <= 1; oy++)
     {
@@ -361,6 +336,7 @@ void Postprocess(uint3 id : SV_DispatchThreadID)
     }
     float4 blurred = sum / 9.0;
     float4 diffused = lerp(original, blurred, diffuseSpeed * deltaTime);
+
 
     float hazard = HazardMap[id.xy];
 
@@ -391,10 +367,12 @@ void Postprocess(uint3 id : SV_DispatchThreadID)
         }
     }
 
+
     float2 noiseCoord = float2(id.x, id.y) * entropyScale + gameTime * entropySpeed;
     float noiseVal = organicNoise(noiseCoord);
     float localEvapRate = evaporateSpeed * max(0.1, lerp(1.0 - entropyStrength, 1.0 + entropyStrength, noiseVal));
     float4 evaporated = max(0, diffused - localEvapRate * deltaTime);
+
 
     float density = length(evaporated.rgb);
     float normalizedDensity = saturate(density / 2.5);
