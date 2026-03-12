@@ -21,8 +21,8 @@ jobs:
 
       - name: Restore Dependencies
         # Points to your specific project folder structure
-        run: dotnet restore Game_Files/my_project/my_project.sln
+        run: dotnet restore Game-Files/my_project/my_project.sln
 
       - name: Verify Code Formatting
         # This will fail the build if code doesn't match your .editorconfig
-        run: dotnet format Game_Files/my_project/my_project.sln --verify-no-changes --verbosity diagnostic
+        run: dotnet format Game-Files/my_project/my_project.sln --verify-no-changes --verbosity diagnostic
