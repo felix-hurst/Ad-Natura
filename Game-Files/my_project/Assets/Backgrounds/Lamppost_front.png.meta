@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 61624f146a66c4e49974d887509d69ec
+guid: 78f2d4f8e5068774bac9b8894e57b494
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: -9202780481846688988
-    second: Level1Part1Background_0
+      213: -4948552566806096487
+    second: Lamppost_front_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -37,7 +37,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 0
+    filterMode: 1
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -46,12 +46,12 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 1
+  spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
-  spritePixelsToUnits: 25
+  spritePixelsToUnits: 100
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
   alphaUsage: 1
@@ -100,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: Level1Part1Background_0
+      name: Lamppost_front_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 554
-        height: 200
+        width: 48
+        height: 176
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 42341a109e7294080800000000000000
-      internalID: -9202780481846688988
+      spriteID: 995dc27b8a5335bb0800000000000000
+      internalID: -4948552566806096487
       vertices: []
       indices: 
       edges: []
@@ -125,7 +125,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 5e97eb03825dee720800000000000000
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      Level1Part1Background_0: -9202780481846688988
+      Lamppost_front_0: -4948552566806096487
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

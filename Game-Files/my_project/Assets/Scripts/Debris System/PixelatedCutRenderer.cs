@@ -14,7 +14,7 @@ public class PixelatedCutRenderer : MonoBehaviour
         {
             return vertices;
         }
-        
+
         List<Vector2> pixelatedVertices = new List<Vector2>();
 
         for (int i = 0; i < vertices.Count; i++)
@@ -25,9 +25,9 @@ public class PixelatedCutRenderer : MonoBehaviour
             bool isNextExit = Vector2.Distance(next, exitPoint) < 0.01f;
             bool isStartExit = Vector2.Distance(start, exitPoint) < 0.01f;
             bool isNextEntry = Vector2.Distance(next, entryPoint) < 0.01f;
-            
+
             bool isCutEdge = (isStartEntry && isNextExit) || (isStartExit && isNextEntry);
-            
+
             if (isCutEdge)
             {
                 List<Vector2> pixelatedEdge = PixelateCutLine(start, next);
@@ -41,7 +41,7 @@ public class PixelatedCutRenderer : MonoBehaviour
                 pixelatedVertices.Add(start);
             }
         }
-        
+
         return pixelatedVertices;
     }
 

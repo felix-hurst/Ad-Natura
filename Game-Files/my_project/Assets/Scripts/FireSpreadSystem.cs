@@ -9,88 +9,88 @@ public class FireSpreadSystem : MonoBehaviour
     [Header("Fire Spread Configuration")]
     [Tooltip("Layers that can catch fire")]
     [SerializeField] private LayerMask flammableLayerMask = -1;
-    
+
     [Tooltip("Minimum temperature to ignite objects (Celsius)")]
     [SerializeField] private float ignitionTemperature = 200f;
-    
+
     [Tooltip("How long objects burn before extinguishing (seconds)")]
     [SerializeField] private float burnDuration = 10f;
-    
+
     [Header("Fire Spread Behavior")]
     [Tooltip("Enable fire to spread to nearby objects")]
     [SerializeField] private bool enableFireSpread = true;
-    
+
     [Tooltip("Radius to check for nearby flammable objects")]
     [SerializeField] private float fireSpreadRadius = 1.5f;
-    
+
     [Tooltip("How often to check for fire spread (seconds)")]
     [SerializeField] private float spreadCheckInterval = 0.5f;
-    
+
     [Tooltip("Chance per check that fire spreads to nearby object (0-1)")]
     [Range(0f, 1f)]
     [SerializeField] private float spreadChance = 0.3f;
-    
+
     [Header("Ember Configuration")]
     [Tooltip("Embers spawned per emission")]
     [SerializeField] private int embersPerEmission = 2;
-    
+
     [Tooltip("How often to emit embers (seconds)")]
     [SerializeField] private float emberEmissionInterval = 0.25f;
-    
+
     [Tooltip("Ember size")]
     [SerializeField] private float emberSize = 0.05f;
-    
+
     [Tooltip("Ember color (bright orange/yellow)")]
     [SerializeField] private Color emberColor = new Color(1f, 0.75f, 0.2f, 1f);
-    
+
     [Tooltip("Ember rise speed")]
     [SerializeField] private float emberRiseSpeed = 0.6f;
-    
+
     [Tooltip("Ember horizontal drift")]
     [SerializeField] private float emberDrift = 0.15f;
-    
+
     [Tooltip("Ember lifetime (seconds)")]
     [SerializeField] private float emberLifetime = 1.2f;
-    
+
     [Tooltip("Enable ember twinkling effect")]
     [SerializeField] private bool enableEmberTwinkle = true;
-    
+
     [Header("Smoke Configuration")]
     [Tooltip("Enable smoke emission")]
     [SerializeField] private bool enableSmoke = true;
-    
+
     [Tooltip("Smoke particles per emission")]
     [SerializeField] private int smokePerEmission = 1;
-    
+
     [Tooltip("Smoke emission interval (seconds)")]
     [SerializeField] private float smokeEmissionInterval = 0.4f;
-    
+
     [Tooltip("Smoke size")]
     [SerializeField] private float smokeSize = 0.18f;
-    
+
     [Tooltip("Smoke color")]
     [SerializeField] private Color smokeColor = new Color(0.3f, 0.3f, 0.3f, 0.6f);
-    
+
     [Tooltip("Smoke rise speed")]
     [SerializeField] private float smokeRiseSpeed = 0.4f;
-    
+
     [Tooltip("Smoke lifetime (seconds)")]
     [SerializeField] private float smokeLifetime = 2.5f;
-    
+
     [Header("Spawn Area")]
     [Tooltip("Horizontal spread of embers/smoke around object")]
     [SerializeField] private float spawnSpread = 0.3f;
-    
+
     [Tooltip("Vertical offset from object top")]
     [SerializeField] private float spawnHeightOffset = 0.1f;
-    
+
     [Header("Performance")]
     [Tooltip("Maximum ember particles")]
     [SerializeField] private int maxEmberParticles = 200;
-    
+
     [Tooltip("Maximum smoke particles")]
     [SerializeField] private int maxSmokeParticles = 150;
-    
+
     [Header("Debug")]
     [SerializeField] private bool showDebugInfo = false;
     [SerializeField] private bool showFireSpreadRadius = false;
@@ -105,7 +105,7 @@ public class FireSpreadSystem : MonoBehaviour
 
     private Sprite emberSprite;
     private Sprite smokeSprite;
-    
+
     private class BurningObject
     {
         public GameObject gameObject;
@@ -117,7 +117,7 @@ public class FireSpreadSystem : MonoBehaviour
         public bool isFullyIgnited;
         public Bounds bounds;
     }
-    
+
     private class EmberParticle
     {
         public GameObject gameObject;
@@ -128,7 +128,7 @@ public class FireSpreadSystem : MonoBehaviour
         public float baseSize;
         public float twinklePhase;
     }
-    
+
     private class SmokeParticle
     {
         public GameObject gameObject;
@@ -139,7 +139,7 @@ public class FireSpreadSystem : MonoBehaviour
         public float baseSize;
         public float driftPhase;
     }
-    
+
     void Start()
     {
         emberSprite = CreateEmberSprite(8);
@@ -150,27 +150,27 @@ public class FireSpreadSystem : MonoBehaviour
             EmberParticle e = AllocateEmberParticle();
             e.gameObject.SetActive(false);
             emberPool.Enqueue(e);
-            
+
             SmokeParticle s = AllocateSmokeParticle();
             s.gameObject.SetActive(false);
             smokePool.Enqueue(s);
         }
     }
-    
+
     void Update()
     {
         UpdateBurningObjects();
         UpdateEmberParticles();
         UpdateSmokeParticles();
     }
-    
+
     void OnDestroy()
     {
         foreach (var e in activeEmbers)
             if (e.gameObject != null) Destroy(e.gameObject);
         foreach (var s in activeSmoke)
             if (s.gameObject != null) Destroy(s.gameObject);
-        
+
         while (emberPool.Count > 0)
         {
             var e = emberPool.Dequeue();
@@ -181,7 +181,7 @@ public class FireSpreadSystem : MonoBehaviour
             var s = smokePool.Dequeue();
             if (s.gameObject != null) Destroy(s.gameObject);
         }
-        
+
         if (emberSprite?.texture != null) Destroy(emberSprite.texture);
         if (smokeSprite?.texture != null) Destroy(smokeSprite.texture);
     }
@@ -211,14 +211,14 @@ public class FireSpreadSystem : MonoBehaviour
 
         IgniteObject(target, temperature);
     }
-    
+
     void IgniteObject(GameObject obj, float temperature)
     {
         if (showDebugInfo)
             Debug.Log($"FireSpread: Igniting {obj.name} at {temperature}°C");
-        
+
         Bounds bounds = GetObjectBounds(obj);
-        
+
         BurningObject burning = new BurningObject
         {
             gameObject = obj,
@@ -230,21 +230,21 @@ public class FireSpreadSystem : MonoBehaviour
             isFullyIgnited = false,
             bounds = bounds
         };
-        
+
         burningObjects.Add(obj, burning);
     }
-    
+
     void UpdateBurningObjects()
     {
         List<GameObject> toRemove = new List<GameObject>();
         BurningObject[] burningCopy = new BurningObject[burningObjects.Count];
         burningObjects.Values.CopyTo(burningCopy, 0);
-        
+
         foreach (BurningObject burning in burningCopy)
         {
             if (burning.gameObject == null || !burningObjects.ContainsKey(burning.gameObject))
                 continue;
-            
+
             burning.burnTimer += Time.deltaTime;
             burning.spreadCheckTimer += Time.deltaTime;
             burning.emberEmissionTimer += Time.deltaTime;
@@ -285,15 +285,15 @@ public class FireSpreadSystem : MonoBehaviour
                 burningObjects.Remove(obj);
         }
     }
-    
+
     void UpdateEmberParticles()
     {
         for (int i = activeEmbers.Count - 1; i >= 0; i--)
         {
             EmberParticle ember = activeEmbers[i];
-            
+
             ember.lifetime += Time.deltaTime;
-            
+
             if (ember.lifetime >= ember.maxLifetime)
             {
                 ReturnEmberToPool(ember, i);
@@ -310,7 +310,7 @@ public class FireSpreadSystem : MonoBehaviour
             ember.gameObject.transform.position = pos;
 
             float lifeRatio = ember.lifetime / ember.maxLifetime;
- 
+
             float brightness = 1f;
             if (enableEmberTwinkle)
             {
@@ -325,22 +325,22 @@ public class FireSpreadSystem : MonoBehaviour
             ember.gameObject.transform.localScale = Vector3.one * scale;
         }
     }
-    
+
     void UpdateSmokeParticles()
     {
         for (int i = activeSmoke.Count - 1; i >= 0; i--)
         {
             SmokeParticle smoke = activeSmoke[i];
-            
+
             smoke.lifetime += Time.deltaTime;
-            
+
             if (smoke.lifetime >= smoke.maxLifetime)
             {
                 ReturnSmokeToPool(smoke, i);
                 continue;
             }
-            
-            
+
+
             smoke.velocity.y = smokeRiseSpeed;
 
             smoke.velocity.x = Mathf.Sin(smoke.lifetime * 2f + smoke.driftPhase) * 0.15f;
@@ -359,20 +359,20 @@ public class FireSpreadSystem : MonoBehaviour
             smoke.gameObject.transform.localScale = Vector3.one * scale;
         }
     }
-    
+
     void EmitEmbers(BurningObject burning)
     {
         for (int i = 0; i < embersPerEmission; i++)
         {
             if (activeEmbers.Count >= maxEmberParticles) break;
-            
+
             EmberParticle ember = GetEmberFromPool();
             if (ember == null) break;
 
             Vector2 spawnPos = (Vector2)burning.gameObject.transform.position;
             spawnPos += Random.insideUnitCircle * spawnSpread;
             spawnPos.y += burning.bounds.extents.y + spawnHeightOffset;
-            
+
             ember.gameObject.transform.position = spawnPos;
             ember.velocity = new Vector2(
                 Random.Range(-emberDrift, emberDrift),
@@ -382,29 +382,29 @@ public class FireSpreadSystem : MonoBehaviour
             ember.maxLifetime = emberLifetime * Random.Range(0.8f, 1.3f);
             ember.baseSize = emberSize * Random.Range(0.7f, 1.4f);
             ember.twinklePhase = Random.Range(0f, Mathf.PI * 2f);
-            
+
             ember.renderer.sprite = emberSprite;
             ember.renderer.color = emberColor;
             ember.gameObject.transform.localScale = Vector3.one * ember.baseSize;
-            
+
             ember.gameObject.SetActive(true);
             activeEmbers.Add(ember);
         }
     }
-    
+
     void EmitSmoke(BurningObject burning)
     {
         for (int i = 0; i < smokePerEmission; i++)
         {
             if (activeSmoke.Count >= maxSmokeParticles) break;
-            
+
             SmokeParticle smoke = GetSmokeFromPool();
             if (smoke == null) break;
 
             Vector2 spawnPos = (Vector2)burning.gameObject.transform.position;
             spawnPos += Random.insideUnitCircle * spawnSpread * 0.7f;
             spawnPos.y += burning.bounds.extents.y + spawnHeightOffset;
-            
+
             smoke.gameObject.transform.position = spawnPos;
             smoke.velocity = new Vector2(
                 Random.Range(-0.1f, 0.1f),
@@ -414,16 +414,16 @@ public class FireSpreadSystem : MonoBehaviour
             smoke.maxLifetime = smokeLifetime * Random.Range(0.8f, 1.2f);
             smoke.baseSize = smokeSize * Random.Range(0.7f, 1.3f);
             smoke.driftPhase = Random.Range(0f, Mathf.PI * 2f);
-            
+
             smoke.renderer.sprite = smokeSprite;
             smoke.renderer.color = smokeColor;
             smoke.gameObject.transform.localScale = Vector3.one * smoke.baseSize;
-            
+
             smoke.gameObject.SetActive(true);
             activeSmoke.Add(smoke);
         }
     }
-    
+
     void TrySpreadFire(BurningObject source)
     {
         Collider2D[] nearby = Physics2D.OverlapCircleAll(
@@ -431,37 +431,37 @@ public class FireSpreadSystem : MonoBehaviour
             fireSpreadRadius,
             flammableLayerMask
         );
-        
+
         foreach (Collider2D col in nearby)
         {
             if (col.gameObject == source.gameObject) continue;
             if (burningObjects.ContainsKey(col.gameObject)) continue;
             if (Random.value > spreadChance) continue;
-            
+
             if (showDebugInfo)
                 Debug.Log($"FireSpread: Spreading from {source.gameObject.name} to {col.gameObject.name}");
-            
+
             TryIgniteObject(col.gameObject, source.temperature * 0.8f);
             break;
         }
     }
-    
+
     bool IsFlammable(GameObject obj)
     {
         return ((1 << obj.layer) & flammableLayerMask) != 0;
     }
-    
+
     Bounds GetObjectBounds(GameObject obj)
     {
         Renderer renderer = obj.GetComponent<Renderer>();
         if (renderer != null) return renderer.bounds;
-        
+
         SpriteRenderer spriteRenderer = obj.GetComponent<SpriteRenderer>();
         if (spriteRenderer != null) return spriteRenderer.bounds;
-        
+
         Collider2D collider = obj.GetComponent<Collider2D>();
         if (collider != null) return collider.bounds;
-        
+
         return new Bounds(obj.transform.position, Vector3.one * 0.1f);
     }
 
@@ -473,7 +473,7 @@ public class FireSpreadSystem : MonoBehaviour
             return AllocateEmberParticle();
         return null;
     }
-    
+
     SmokeParticle GetSmokeFromPool()
     {
         if (smokePool.Count > 0)
@@ -482,26 +482,26 @@ public class FireSpreadSystem : MonoBehaviour
             return AllocateSmokeParticle();
         return null;
     }
-    
+
     void ReturnEmberToPool(EmberParticle ember, int index)
     {
         ember.gameObject.SetActive(false);
         emberPool.Enqueue(ember);
         activeEmbers.RemoveAt(index);
     }
-    
+
     void ReturnSmokeToPool(SmokeParticle smoke, int index)
     {
         smoke.gameObject.SetActive(false);
         smokePool.Enqueue(smoke);
         activeSmoke.RemoveAt(index);
     }
-    
+
     EmberParticle AllocateEmberParticle()
     {
         GameObject obj = new GameObject("Ember");
         obj.transform.SetParent(transform);
-        
+
         SpriteRenderer sr = obj.AddComponent<SpriteRenderer>();
         sr.sprite = emberSprite;
         sr.sortingOrder = 11;
@@ -511,7 +511,7 @@ public class FireSpreadSystem : MonoBehaviour
         mat.SetInt("_SrcBlend", (int)UnityEngine.Rendering.BlendMode.SrcAlpha);
         mat.SetInt("_DstBlend", (int)UnityEngine.Rendering.BlendMode.One);
         sr.material = mat;
-        
+
         return new EmberParticle
         {
             gameObject = obj,
@@ -523,16 +523,16 @@ public class FireSpreadSystem : MonoBehaviour
             twinklePhase = 0f
         };
     }
-    
+
     SmokeParticle AllocateSmokeParticle()
     {
         GameObject obj = new GameObject("Smoke");
         obj.transform.SetParent(transform);
-        
+
         SpriteRenderer sr = obj.AddComponent<SpriteRenderer>();
         sr.sprite = smokeSprite;
         sr.sortingOrder = 9;
-        
+
         return new SmokeParticle
         {
             gameObject = obj,
@@ -544,24 +544,24 @@ public class FireSpreadSystem : MonoBehaviour
             driftPhase = 0f
         };
     }
-    
+
 
     Sprite CreateEmberSprite(int size)
     {
         Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
         tex.filterMode = FilterMode.Point;
         tex.wrapMode = TextureWrapMode.Clamp;
-        
+
         float cx = (size - 1) * 0.5f;
         float cy = (size - 1) * 0.5f;
-        
+
         for (int x = 0; x < size; x++)
         {
             for (int y = 0; y < size; y++)
             {
                 float nx = (x - cx) / (size * 0.5f);
                 float ny = (y - cy) / (size * 0.5f);
-                
+
                 float dist = Mathf.Sqrt(nx * nx + ny * ny);
 
                 float alpha = 0f;
@@ -573,51 +573,51 @@ public class FireSpreadSystem : MonoBehaviour
                 {
                     alpha = (0.9f - dist) / 0.3f;
                 }
-                
+
                 tex.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
             }
         }
-        
+
         tex.Apply();
         return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), size * 2);
     }
-    
+
     Sprite CreateSmokeSprite(int size)
     {
         Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
         tex.filterMode = FilterMode.Point;
         tex.wrapMode = TextureWrapMode.Clamp;
-        
+
         float cx = (size - 1) * 0.5f;
         float cy = (size - 1) * 0.5f;
-        
+
         for (int x = 0; x < size; x++)
         {
             for (int y = 0; y < size; y++)
             {
                 float nx = (x - cx) / (size * 0.5f);
                 float ny = (y - cy) / (size * 0.5f);
-                
+
                 float dist = Mathf.Sqrt(nx * nx + ny * ny);
                 float alpha = Mathf.Max(0f, (1f - dist) * 0.65f);
 
                 float noise = Mathf.PerlinNoise(x * 0.4f, y * 0.4f);
                 alpha *= Mathf.Lerp(0.6f, 1f, noise);
-                
+
                 tex.SetPixel(x, y, new Color(1f, 1f, 1f, Mathf.Clamp01(alpha)));
             }
         }
-        
+
         tex.Apply();
         return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), size);
     }
-    
+
     void OnDrawGizmosSelected()
     {
         if (!showFireSpreadRadius) return;
-        
+
         Gizmos.color = new Color(1f, 0.5f, 0f, 0.3f);
-        
+
         foreach (var burning in burningObjects.Values)
         {
             if (burning.gameObject != null && burning.isFullyIgnited)

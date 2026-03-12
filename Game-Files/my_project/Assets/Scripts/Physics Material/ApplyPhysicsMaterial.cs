@@ -5,24 +5,24 @@ public class ApplyPhysicsMaterial : MonoBehaviour
 {
     [Header("Physics Material Settings")]
     [SerializeField] private bool applyOnStart = true;
-    [SerializeField] private bool useMaterialTag = true; 
+    [SerializeField] private bool useMaterialTag = true;
     [SerializeField] private string overrideMaterialName = "";
-    
+
     [Header("Debug")]
     [SerializeField] private bool showDebugInfo = false;
-    
+
     private PhysicsMaterialManager physicsManager;
-    
+
     void Start()
     {
         physicsManager = FindObjectOfType<PhysicsMaterialManager>();
-        
+
         if (physicsManager == null)
         {
             Debug.LogError("PhysicsMaterialManager not found in scene! Please add one.");
             return;
         }
-        
+
         if (applyOnStart)
         {
             ApplyMaterial();
@@ -34,7 +34,7 @@ public class ApplyPhysicsMaterial : MonoBehaviour
         if (physicsManager == null)
         {
             physicsManager = FindObjectOfType<PhysicsMaterialManager>();
-            
+
             if (physicsManager == null)
             {
                 Debug.LogWarning($"Cannot apply physics material to {gameObject.name} - PhysicsMaterialManager not found");
@@ -44,7 +44,7 @@ public class ApplyPhysicsMaterial : MonoBehaviour
         string materialName = GetMaterialName();
 
         PhysicsMaterial2D physicsMaterial = physicsManager.GetPhysicsMaterial(materialName);
-        
+
         if (physicsMaterial == null)
         {
             Debug.LogError($"Failed to get physics material for: {materialName}");
@@ -56,7 +56,7 @@ public class ApplyPhysicsMaterial : MonoBehaviour
         {
             collider.sharedMaterial = physicsMaterial;
         }
-        
+
         if (showDebugInfo)
         {
             PhysicsMaterialData data = physicsManager.GetMaterialData(materialName);
@@ -94,14 +94,14 @@ public class ApplyPhysicsMaterial : MonoBehaviour
         {
             physicsManager = FindObjectOfType<PhysicsMaterialManager>();
         }
-        
+
         if (physicsManager != null)
         {
             string materialName = GetMaterialName();
             PhysicsMaterialData data = physicsManager.GetMaterialData(materialName);
             return data.friction;
         }
-        
+
         return 0.4f;
     }
 
@@ -111,14 +111,14 @@ public class ApplyPhysicsMaterial : MonoBehaviour
         {
             physicsManager = FindObjectOfType<PhysicsMaterialManager>();
         }
-        
+
         if (physicsManager != null)
         {
             string materialName = GetMaterialName();
             PhysicsMaterialData data = physicsManager.GetMaterialData(materialName);
             return data.bounciness;
         }
-        
+
         return 0f;
     }
 }
