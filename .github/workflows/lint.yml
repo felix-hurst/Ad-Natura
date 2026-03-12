@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: [ main ]
 
+permissions:
+  contents: read
+  checks: write
+
 jobs:
   check-format:
     runs-on: ubuntu-latest
@@ -15,21 +19,38 @@ jobs:
         with:
           lfs: true
 
-      #Generates the ignored .sln file on the runner
+      #cache library to reduce wait times
+      - name: Cache Library
+        uses: actions/cache@v4
+        with:
+          path: Game-Files/my_project/Library
+          key: Library-my_project-${{ hashFiles('Game-Files/my_project/Packages/packages-lock.json') }}
+          restore-keys: |
+            Library-my_project-
+
+      #generate .sln file
       - name: Generate Solution
         uses: game-ci/unity-builder@v4
         env:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+          UNITY_SERIAL: "free"
         with:
           projectPath: Game-Files/my_project
           customParameters: -batchmode -nographics -executeMethod Packages.Rider.Editor.RiderScriptEditor.SyncSolution -quit
+      #list files to debug
+      - name: List Generated Files
+        run: |
+          echo "Listing files in project directory to find the .sln:"
+          ls -R Game-Files/my_project/*.sln || echo "No .sln file found!"
 
+      #setup .NET for linter
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
 
+      #run linter
       - name: Verify Code Formatting
         run: dotnet format Game-Files/my_project/my_project.sln --verify-no-changes --verbosity diagnostic
