@@ -2,9 +2,9 @@ name: Unity C# Linter
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main,marcosChanges ]
   pull_request:
-    branches: [ main ]
+    branches: [ main,marcosChanges ]
 
 jobs:
   check-format:
@@ -19,10 +19,11 @@ jobs:
         with:
           dotnet-version: '10.0.x'
 
+      - name: List Files (Debug)
+        run: find . -maxdepth 4 -not -path '*/.*'
+
       - name: Restore Dependencies
-        # Points to your specific project folder structure
-        run: dotnet restore Game-Files/my_project/my_project.sln
+        run: dotnet restore **/my_project.sln
 
       - name: Verify Code Formatting
-        # This will fail the build if code doesn't match your .editorconfig
-        run: dotnet format Game-Files/my_project/my_project.sln --verify-no-changes --verbosity diagnostic
+        run: dotnet format **/my_project.sln --verify-no-changes --verbosity diagnostic
