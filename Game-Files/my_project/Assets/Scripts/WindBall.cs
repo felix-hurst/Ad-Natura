@@ -143,7 +143,7 @@ public class WindBall : MonoBehaviour
 
         rb = GetComponent<Rigidbody2D>();
         if (rb == null) rb = gameObject.AddComponent<Rigidbody2D>();
-        rb.gravityScale  = gravityScale;
+        rb.gravityScale = gravityScale;
         rb.linearDamping = linearDrag;
 
         SetupDebugVisual();
@@ -202,22 +202,22 @@ public class WindBall : MonoBehaviour
         Transform pivot = pivotGO.transform;
 
         TrailRenderer tr = pivotGO.AddComponent<TrailRenderer>();
-        tr.time              = trailTime;
+        tr.time = trailTime;
         tr.minVertexDistance = 0.003f;
-        tr.autodestruct      = false;
-        tr.emitting          = true;
-        tr.alignment         = LineAlignment.View;
+        tr.autodestruct = false;
+        tr.emitting = true;
+        tr.alignment = LineAlignment.View;
         tr.shadowCastingMode = UnityEngine.Rendering.ShadowCastingMode.Off;
-        tr.receiveShadows    = false;
-        tr.sortingOrder      = wispSortingOrder;
-        tr.material          = wispMaterial;
+        tr.receiveShadows = false;
+        tr.sortingOrder = wispSortingOrder;
+        tr.material = wispMaterial;
 
         AnimationCurve wc = new AnimationCurve();
-        wc.AddKey(new Keyframe(0f,    0f,               0f,            widthMax * 8f));
-        wc.AddKey(new Keyframe(0.08f, widthMax,          0f,            0f));
-        wc.AddKey(new Keyframe(0.45f, widthMax * 0.75f,  0f,            0f));
-        wc.AddKey(new Keyframe(0.78f, widthMax * 0.3f,   0f,            0f));
-        wc.AddKey(new Keyframe(1f,    0f,               -widthMax * 2f, 0f));
+        wc.AddKey(new Keyframe(0f, 0f, 0f, widthMax * 8f));
+        wc.AddKey(new Keyframe(0.08f, widthMax, 0f, 0f));
+        wc.AddKey(new Keyframe(0.45f, widthMax * 0.75f, 0f, 0f));
+        wc.AddKey(new Keyframe(0.78f, widthMax * 0.3f, 0f, 0f));
+        wc.AddKey(new Keyframe(1f, 0f, -widthMax * 2f, 0f));
         tr.widthCurve = wc;
 
         Gradient grad = new Gradient();
@@ -242,15 +242,15 @@ public class WindBall : MonoBehaviour
 
         return new WispTrail
         {
-            pivot          = pivot,
-            trail          = tr,
+            pivot = pivot,
+            trail = tr,
             orbitRadiusMin = orbitRMin,
             orbitRadiusMax = orbitRMax,
-            orbitSpeed     = orbitSpd,
-            pulseFreq      = pulseFreq,
-            pulseAmt       = pulseAmt,
-            phaseOffset    = phase,
-            smoothedPos    = (Vector2)pivot.position,
+            orbitSpeed = orbitSpd,
+            pulseFreq = pulseFreq,
+            pulseAmt = pulseAmt,
+            phaseOffset = phase,
+            smoothedPos = (Vector2)pivot.position,
             smoothVelocity = Vector2.zero
         };
     }
@@ -303,7 +303,7 @@ public class WindBall : MonoBehaviour
             Vector2 ballPos = transform.position;
 
             float expandT = Mathf.Clamp01(lifetime / wispExpandTime);
-            float eased   = 1f - Mathf.Pow(1f - expandT, 2.5f);
+            float eased = 1f - Mathf.Pow(1f - expandT, 2.5f);
 
             for (int i = 0; i < wisps.Length; i++)
             {
@@ -312,10 +312,10 @@ public class WindBall : MonoBehaviour
 
                 float currentRadius = Mathf.Lerp(w.orbitRadiusMin, w.orbitRadiusMax, eased);
 
-                float pulse  = 1f + Mathf.Sin(lifetime * w.pulseFreq * Mathf.PI * 2f + w.phaseOffset) * w.pulseAmt;
+                float pulse = 1f + Mathf.Sin(lifetime * w.pulseFreq * Mathf.PI * 2f + w.phaseOffset) * w.pulseAmt;
                 float radius = currentRadius * pulse;
 
-                float angle    = lifetime * w.orbitSpeed * Mathf.PI * 2f + w.phaseOffset;
+                float angle = lifetime * w.orbitSpeed * Mathf.PI * 2f + w.phaseOffset;
                 Vector2 target = ballPos + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
 
                 w.smoothedPos = Vector2.SmoothDamp(
@@ -353,7 +353,7 @@ public class WindBall : MonoBehaviour
         ballVisual.transform.SetParent(transform, false);
         debugRenderer = ballVisual.AddComponent<SpriteRenderer>();
         debugRenderer.sprite = circle;
-        debugRenderer.color  = debugBallColor;
+        debugRenderer.color = debugBallColor;
         debugRenderer.sortingOrder = 10;
         float d = ballRadius * 2f;
         ballVisual.transform.localScale = new Vector3(d, d, 1f);
@@ -364,7 +364,7 @@ public class WindBall : MonoBehaviour
             pushVisual.transform.SetParent(transform, false);
             debugPushRenderer = pushVisual.AddComponent<SpriteRenderer>();
             debugPushRenderer.sprite = circle;
-            debugPushRenderer.color  = debugPushColor;
+            debugPushRenderer.color = debugPushColor;
             debugPushRenderer.sortingOrder = 9;
             float pd = pushAuraRadius * 2f;
             pushVisual.transform.localScale = new Vector3(pd, pd, 1f);
@@ -375,17 +375,17 @@ public class WindBall : MonoBehaviour
     {
         Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
         tex.filterMode = FilterMode.Bilinear;
-        tex.wrapMode   = TextureWrapMode.Clamp;
-        float cx = (size-1)*0.5f, cy = (size-1)*0.5f, r = size*0.5f;
+        tex.wrapMode = TextureWrapMode.Clamp;
+        float cx = (size - 1) * 0.5f, cy = (size - 1) * 0.5f, r = size * 0.5f;
         for (int x = 0; x < size; x++)
             for (int y = 0; y < size; y++)
             {
-                float dist  = Mathf.Sqrt((x-cx)*(x-cx)+(y-cy)*(y-cy));
-                float alpha = Mathf.Clamp01((r-dist)/(r*0.1f));
-                tex.SetPixel(x, y, new Color(1f,1f,1f,alpha));
+                float dist = Mathf.Sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy));
+                float alpha = Mathf.Clamp01((r - dist) / (r * 0.1f));
+                tex.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
             }
         tex.Apply();
-        return Sprite.Create(tex, new Rect(0,0,size,size), new Vector2(0.5f,0.5f), size);
+        return Sprite.Create(tex, new Rect(0, 0, size, size), new Vector2(0.5f, 0.5f), size);
     }
 
     void ApplyProximityPush()
@@ -398,8 +398,8 @@ public class WindBall : MonoBehaviour
             Rigidbody2D otherRb = col.GetComponent<Rigidbody2D>();
             if (otherRb == null || otherRb.mass > pushMaxMass) continue;
             Vector2 pushDir = ((Vector2)col.transform.position - (Vector2)transform.position).normalized;
-            float distance  = Vector2.Distance(transform.position, col.transform.position);
-            float falloff   = 1f - Mathf.Clamp01(distance / pushAuraRadius);
+            float distance = Vector2.Distance(transform.position, col.transform.position);
+            float falloff = 1f - Mathf.Clamp01(distance / pushAuraRadius);
             otherRb.AddForce(pushDir * pushForce * falloff, ForceMode2D.Force);
         }
     }
@@ -412,10 +412,10 @@ public class WindBall : MonoBehaviour
 
         if (ShouldExcludeObject(collision.gameObject)) return;
 
-        Vector2 impactPoint    = collision.contacts.Length > 0 ? collision.contacts[0].point  : (Vector2)transform.position;
+        Vector2 impactPoint = collision.contacts.Length > 0 ? collision.contacts[0].point : (Vector2)transform.position;
         Vector2 impactVelocity = preImpactVelocity;
-        Vector2 surfaceNormal  = collision.contacts.Length > 0 ? collision.contacts[0].normal : Vector2.up;
-        GameObject hitObject   = collision.gameObject;
+        Vector2 surfaceNormal = collision.contacts.Length > 0 ? collision.contacts[0].normal : Vector2.up;
+        GameObject hitObject = collision.gameObject;
 
         if (showDebugInfo)
             Debug.Log($"[WindBall] Hit {hitObject.name} at {impactPoint}, vel={impactVelocity.magnitude:F1}");
@@ -479,8 +479,8 @@ public class WindBall : MonoBehaviour
         if (incidentDirection.magnitude < 0.1f) incidentDirection = -surfaceNormal;
 
         Vector2 entryPoint = impactPoint;
-        Vector2 exitPoint  = Vector2.zero;
-        bool foundExit     = false;
+        Vector2 exitPoint = Vector2.zero;
+        bool foundExit = false;
 
         Collider2D hitCollider = hitObject.GetComponent<Collider2D>();
         if (hitCollider != null)
@@ -501,7 +501,7 @@ public class WindBall : MonoBehaviour
 
             if (!foundExit)
             {
-                Bounds bounds    = hitCollider.bounds;
+                Bounds bounds = hitCollider.bounds;
                 Vector2 farPoint = rayOrigin + incidentDirection * (cutRaycastDistance + bounds.size.magnitude);
                 RaycastHit2D[] reverseHits = Physics2D.RaycastAll(farPoint, -incidentDirection, cutRaycastDistance + bounds.size.magnitude);
                 foreach (RaycastHit2D hit in reverseHits)

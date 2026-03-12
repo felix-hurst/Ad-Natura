@@ -106,12 +106,12 @@ public class WaterSplashSystem : MonoBehaviour
     [SerializeField] private float microSplashWaterAmount = 0.15f;
 
     [Header("Overlay Colours")]
-    [SerializeField] private Color crownParticleColor  = new Color(0.25f, 0.45f, 0.75f, 0.9f);
-    [SerializeField] private Color sprayParticleColor  = new Color(0.55f, 0.78f, 1f,    0.75f);
+    [SerializeField] private Color crownParticleColor = new Color(0.25f, 0.45f, 0.75f, 0.9f);
+    [SerializeField] private Color sprayParticleColor = new Color(0.55f, 0.78f, 1f, 0.75f);
 
     [Header("Performance")]
     [SerializeField] private int maxSplashesPerFrame = 3;
-    
+
     [Header("Performance Optimization")]
     [Tooltip("Use cached rigidbody tracking instead of FindObjectsOfType (massive performance boost)")]
     [SerializeField] private bool useCachedRigidbodies = true;
@@ -147,13 +147,13 @@ public class WaterSplashSystem : MonoBehaviour
     private Dictionary<Vector2Int, List<Collider2D>> spatialHashGrid = new Dictionary<Vector2Int, List<Collider2D>>();
     private List<Collider2D> spatialHashColliderCache = new List<Collider2D>();
     private bool spatialHashDirty = true;
-    
+
     private HashSet<Vector2Int> waterSurfaceCells = new HashSet<Vector2Int>();
     private float waterSurfaceCacheTimer = 0f;
     private bool waterSurfaceCacheDirty = true;
 
-    private List<OverlayParticle>  activeParticles = new List<OverlayParticle>();
-    private Queue<OverlayParticle> particlePool    = new Queue<OverlayParticle>();
+    private List<OverlayParticle> activeParticles = new List<OverlayParticle>();
+    private Queue<OverlayParticle> particlePool = new Queue<OverlayParticle>();
     private Sprite crownSprite;
     private Sprite spraySprite;
 
@@ -161,26 +161,26 @@ public class WaterSplashSystem : MonoBehaviour
     {
         public Vector2 lastPosition;
         public Vector2 lastVelocity;
-        public bool    wasInWater;
-        public int     waterCellsBelow;
+        public bool wasInWater;
+        public int waterCellsBelow;
     }
 
     private enum OverlayType { Crown, Spray }
 
     private class OverlayParticle
     {
-        public GameObject     gameObject;
+        public GameObject gameObject;
         public SpriteRenderer renderer;
-        public Vector2        velocity;
-        public float          lifetime;
-        public float          maxLifetime;
-        public float          initialSize;
-        public Color          baseColor;
-        public OverlayType    type;
-        
-        public float          timeSinceLastCollision;
-        public bool           hasHadInitialCollision;
-        public int            collisionCount;
+        public Vector2 velocity;
+        public float lifetime;
+        public float maxLifetime;
+        public float initialSize;
+        public Color baseColor;
+        public OverlayType type;
+
+        public float timeSinceLastCollision;
+        public bool hasHadInitialCollision;
+        public int collisionCount;
     }
 
     private class ProgressiveCrownData
@@ -223,12 +223,12 @@ public class WaterSplashSystem : MonoBehaviour
         {
             RefreshRigidbodyCache();
         }
-        
+
         if (useSpatialHashingForCollisions)
         {
             RebuildSpatialHash();
         }
-        
+
         if (cacheWaterSurfaceCells)
         {
             RefreshWaterSurfaceCache();
@@ -255,13 +255,13 @@ public class WaterSplashSystem : MonoBehaviour
                 RefreshRigidbodyCache();
             }
         }
-        
+
         if (useSpatialHashingForCollisions && spatialHashDirty)
         {
             RebuildSpatialHash();
             spatialHashDirty = false;
         }
-        
+
         if (cacheWaterSurfaceCells)
         {
             waterSurfaceCacheTimer += Time.deltaTime;
@@ -291,16 +291,16 @@ public class WaterSplashSystem : MonoBehaviour
     void RebuildSpatialHash()
     {
         spatialHashGrid.Clear();
-        
+
         if (spatialHashColliderCache.Count == 0 || spatialHashDirty)
         {
             spatialHashColliderCache.Clear();
             Collider2D[] allColliders = FindObjectsOfType<Collider2D>();
-            
+
             foreach (Collider2D col in allColliders)
             {
                 if (col == null) continue;
-                
+
                 int layerMask = 1 << col.gameObject.layer;
                 if ((layerMask & particleCollisionLayers) != 0)
                 {
@@ -308,37 +308,37 @@ public class WaterSplashSystem : MonoBehaviour
                 }
             }
         }
-        
+
         foreach (Collider2D col in spatialHashColliderCache)
         {
             if (col == null) continue;
-            
+
             Bounds bounds = col.bounds;
             Vector2Int minCell = WorldToHashCell(bounds.min);
             Vector2Int maxCell = WorldToHashCell(bounds.max);
-            
+
             for (int x = minCell.x; x <= maxCell.x; x++)
             {
                 for (int y = minCell.y; y <= maxCell.y; y++)
                 {
                     Vector2Int cellKey = new Vector2Int(x, y);
-                    
+
                     if (!spatialHashGrid.ContainsKey(cellKey))
                     {
                         spatialHashGrid[cellKey] = new List<Collider2D>();
                     }
-                    
+
                     spatialHashGrid[cellKey].Add(col);
                 }
             }
         }
-        
+
         if (showSpatialHashDebug && showDebugInfo)
         {
             Debug.Log($"Spatial hash rebuilt: {spatialHashColliderCache.Count} colliders in {spatialHashGrid.Count} cells");
         }
     }
-    
+
     Vector2Int WorldToHashCell(Vector2 worldPos)
     {
         return new Vector2Int(
@@ -346,25 +346,25 @@ public class WaterSplashSystem : MonoBehaviour
             Mathf.FloorToInt(worldPos.y / spatialHashCellSize)
         );
     }
-    
+
     List<Collider2D> QuerySpatialHash(Vector2 position, float radius)
     {
         List<Collider2D> results = new List<Collider2D>();
-        
+
         Vector2 min = position - Vector2.one * radius;
         Vector2 max = position + Vector2.one * radius;
-        
+
         Vector2Int minCell = WorldToHashCell(min);
         Vector2Int maxCell = WorldToHashCell(max);
-        
+
         HashSet<Collider2D> uniqueColliders = new HashSet<Collider2D>();
-        
+
         for (int x = minCell.x; x <= maxCell.x; x++)
         {
             for (int y = minCell.y; y <= maxCell.y; y++)
             {
                 Vector2Int cellKey = new Vector2Int(x, y);
-                
+
                 if (spatialHashGrid.TryGetValue(cellKey, out List<Collider2D> colliders))
                 {
                     foreach (Collider2D col in colliders)
@@ -378,24 +378,24 @@ public class WaterSplashSystem : MonoBehaviour
                 }
             }
         }
-        
+
         return results;
     }
 
     void RefreshWaterSurfaceCache()
     {
         waterSurfaceCells.Clear();
-        
+
         Rect bounds = liquidSim.GetWorldBounds();
         Vector2Int minGrid = liquidSim.WorldToGrid(bounds.min);
         Vector2Int maxGrid = liquidSim.WorldToGrid(bounds.max);
-        
+
         for (int x = minGrid.x; x <= maxGrid.x; x++)
         {
             for (int y = minGrid.y; y <= maxGrid.y; y++)
             {
                 if (!liquidSim.IsValidCell(x, y)) continue;
-                
+
                 float waterAmount = liquidSim.GetWater(x, y);
                 if (waterAmount > 0.1f)
                 {
@@ -406,28 +406,28 @@ public class WaterSplashSystem : MonoBehaviour
                 }
             }
         }
-        
+
         if (showDebugInfo)
         {
             Debug.Log($"Water surface cache refreshed: {waterSurfaceCells.Count} surface cells");
         }
-        
+
         waterSurfaceCacheDirty = false;
     }
-    
+
     bool IsNearWaterSurface(Vector2 worldPos, out Vector2Int surfaceCell)
     {
         surfaceCell = liquidSim.WorldToGrid(worldPos);
-        
+
         if (!liquidSim.IsValidCell(surfaceCell.x, surfaceCell.y))
             return false;
-        
+
         for (int dx = -1; dx <= 1; dx++)
         {
             for (int dy = -1; dy <= 1; dy++)
             {
                 Vector2Int checkCell = new Vector2Int(surfaceCell.x + dx, surfaceCell.y + dy);
-                
+
                 if (waterSurfaceCells.Contains(checkCell))
                 {
                     surfaceCell = checkCell;
@@ -435,56 +435,56 @@ public class WaterSplashSystem : MonoBehaviour
                 }
             }
         }
-        
+
         return false;
     }
 
     void RefreshRigidbodyCache()
     {
         cachedRigidbodies.Clear();
-        
+
         Rigidbody2D[] allRigidbodies = FindObjectsOfType<Rigidbody2D>();
         foreach (Rigidbody2D rb in allRigidbodies)
         {
             if (rb == null || rb.bodyType == RigidbodyType2D.Static) continue;
-            
+
             int layerMask = 1 << rb.gameObject.layer;
             if ((layerMask & splashLayers) != 0)
             {
                 cachedRigidbodies.Add(rb);
             }
         }
-        
+
         spatialHashDirty = true;
-        
+
         if (showDebugInfo)
         {
             Debug.Log($"Rigidbody cache refreshed: {cachedRigidbodies.Count} tracked");
         }
     }
-    
+
     public void RegisterRigidbody(Rigidbody2D rb)
     {
         if (!useCachedRigidbodies) return;
         if (rb == null || rb.bodyType == RigidbodyType2D.Static) return;
-        
+
         int layerMask = 1 << rb.gameObject.layer;
         if ((layerMask & splashLayers) != 0)
         {
             cachedRigidbodies.Add(rb);
             spatialHashDirty = true;
-            
+
             if (showDebugInfo)
             {
                 Debug.Log($"Registered rigidbody: {rb.name}");
             }
         }
     }
-    
+
     public void UnregisterRigidbody(Rigidbody2D rb)
     {
         if (!useCachedRigidbodies) return;
-        
+
         cachedRigidbodies.Remove(rb);
         trackedObjects.Remove(rb);
         spatialHashDirty = true;
@@ -495,7 +495,7 @@ public class WaterSplashSystem : MonoBehaviour
         Dictionary<Rigidbody2D, TrackedObject> newTracked = new Dictionary<Rigidbody2D, TrackedObject>();
 
         IEnumerable<Rigidbody2D> rigidbodiestoCheck;
-        
+
         if (useCachedRigidbodies)
         {
             cachedRigidbodies.RemoveWhere(rb => rb == null);
@@ -516,9 +516,9 @@ public class WaterSplashSystem : MonoBehaviour
                 if ((layerMask & splashLayers) == 0) continue;
             }
 
-            Vector2 currentPos      = rb.position;
+            Vector2 currentPos = rb.position;
             Vector2 currentVelocity = rb.linearVelocity;
-            bool    currentlyInWater = IsObjectInWater(rb, out int waterCellsBelow);
+            bool currentlyInWater = IsObjectInWater(rb, out int waterCellsBelow);
 
             TrackedObject tracked;
             if (trackedObjects.TryGetValue(rb, out tracked))
@@ -530,7 +530,7 @@ public class WaterSplashSystem : MonoBehaviour
                         StartCoroutine(CreateEnhancedSplash(rb, currentPos, currentVelocity, impactVelocity));
                     else
                         CreateSimpleSplash(rb, currentPos, currentVelocity, impactVelocity);
-                    
+
                     waterSurfaceCacheDirty = true;
                 }
 
@@ -547,9 +547,9 @@ public class WaterSplashSystem : MonoBehaviour
 
             newTracked[rb] = new TrackedObject
             {
-                lastPosition    = currentPos,
-                lastVelocity    = currentVelocity,
-                wasInWater      = currentlyInWater,
+                lastPosition = currentPos,
+                lastVelocity = currentVelocity,
+                wasInWater = currentlyInWater,
                 waterCellsBelow = waterCellsBelow
             };
         }
@@ -564,9 +564,9 @@ public class WaterSplashSystem : MonoBehaviour
         Collider2D col = rb.GetComponent<Collider2D>();
         if (col == null) return false;
 
-        Bounds     bounds       = col.bounds;
-        Vector2    bottomCenter = new Vector2(bounds.center.x, bounds.min.y);
-        Vector2Int gridPos      = liquidSim.WorldToGrid(bottomCenter);
+        Bounds bounds = col.bounds;
+        Vector2 bottomCenter = new Vector2(bounds.center.x, bounds.min.y);
+        Vector2Int gridPos = liquidSim.WorldToGrid(bottomCenter);
 
         if (!liquidSim.IsValidCell(gridPos.x, gridPos.y)) return false;
 
@@ -590,9 +590,9 @@ public class WaterSplashSystem : MonoBehaviour
 
         float intensity = Mathf.Clamp01(Mathf.InverseLerp(minSplashVelocity, maxSplashVelocity, impactVelocity));
 
-        Collider2D col             = rb.GetComponent<Collider2D>();
-        float      sizeMultiplier  = col != null ? Mathf.Clamp(col.bounds.size.magnitude, 0.5f, 3f) : 1f;
-        Vector2    splashCenter    = position + Vector2.down * (col != null ? col.bounds.extents.y : 0.5f);
+        Collider2D col = rb.GetComponent<Collider2D>();
+        float sizeMultiplier = col != null ? Mathf.Clamp(col.bounds.size.magnitude, 0.5f, 3f) : 1f;
+        Vector2 splashCenter = position + Vector2.down * (col != null ? col.bounds.extents.y : 0.5f);
 
         if (showDebugInfo)
             Debug.Log($"ENHANCED SPLASH: {rb.name} at {impactVelocity:F1} m/s, intensity {intensity:F2}");
@@ -608,7 +608,7 @@ public class WaterSplashSystem : MonoBehaviour
         {
             SpawnCrownArcs(splashCenter, velocity, intensity, sizeMultiplier, impactVelocity);
         }
-        
+
         SpawnSprayCells(splashCenter, velocity, intensity, sizeMultiplier, impactVelocity);
 
         yield return new WaitForSeconds(jetDelay);
@@ -622,9 +622,9 @@ public class WaterSplashSystem : MonoBehaviour
 
         float intensity = Mathf.Clamp01(Mathf.InverseLerp(minSplashVelocity, maxSplashVelocity, impactVelocity));
 
-        Collider2D col            = rb.GetComponent<Collider2D>();
-        float      sizeMultiplier = col != null ? Mathf.Clamp(col.bounds.size.magnitude, 0.5f, 3f) : 1f;
-        Vector2    splashCenter   = position + Vector2.down * (col != null ? col.bounds.extents.y : 0.5f);
+        Collider2D col = rb.GetComponent<Collider2D>();
+        float sizeMultiplier = col != null ? Mathf.Clamp(col.bounds.size.magnitude, 0.5f, 3f) : 1f;
+        Vector2 splashCenter = position + Vector2.down * (col != null ? col.bounds.extents.y : 0.5f);
 
         if (showDebugInfo)
             Debug.Log($"SIMPLE SPLASH: {rb.name} at {impactVelocity:F1} m/s");
@@ -635,12 +635,12 @@ public class WaterSplashSystem : MonoBehaviour
         int totalCells = Mathf.RoundToInt((sprayCellCount + crownCellCount) * intensity * sizeMultiplier);
         for (int i = 0; i < totalCells; i++)
         {
-            float angle  = Random.Range(10f, 170f);
-            float dist   = Random.Range(0.1f, crownRadius * sizeMultiplier);
+            float angle = Random.Range(10f, 170f);
+            float dist = Random.Range(0.1f, crownRadius * sizeMultiplier);
             float height = Random.Range(0.15f, sprayHeight * intensity);
 
             Vector2 landingPos = splashCenter + new Vector2(Mathf.Cos(angle * Mathf.Deg2Rad) * dist, 0f);
-            float   amount     = splashWaterAmount * intensity * splashIntensityScale * Random.Range(0.5f, 1f);
+            float amount = splashWaterAmount * intensity * splashIntensityScale * Random.Range(0.5f, 1f);
             StartCoroutine(FlyWaterCell(splashCenter, landingPos, height, amount));
         }
 
@@ -655,13 +655,13 @@ public class WaterSplashSystem : MonoBehaviour
         if (splashesThisFrame >= maxSplashesPerFrame) return;
 
         float intensity = Mathf.Clamp01(Mathf.InverseLerp(minSplashVelocity * 1.5f, maxSplashVelocity, speed) * 0.5f);
-        int   cellCount = Mathf.RoundToInt(Mathf.Lerp(1, sprayCellCount * 0.4f, intensity));
+        int cellCount = Mathf.RoundToInt(Mathf.Lerp(1, sprayCellCount * 0.4f, intensity));
         if (cellCount <= 0) return;
 
         splashesThisFrame++;
 
-        Collider2D col  = rb.GetComponent<Collider2D>();
-        float      side = Mathf.Sign(velocity.x);
+        Collider2D col = rb.GetComponent<Collider2D>();
+        float side = Mathf.Sign(velocity.x);
 
         Vector2 splashOrigin = position;
         if (col != null)
@@ -672,11 +672,11 @@ public class WaterSplashSystem : MonoBehaviour
 
         for (int i = 0; i < cellCount; i++)
         {
-            float outDist  = Random.Range(0.1f, crownRadius * 0.6f * intensity);
+            float outDist = Random.Range(0.1f, crownRadius * 0.6f * intensity);
             float upHeight = Random.Range(0.1f, sprayHeight * 0.5f * intensity);
 
             Vector2 landingPos = splashOrigin + new Vector2(side * outDist, 0f);
-            float   amount     = splashWaterAmount * intensity * splashIntensityScale * 0.6f;
+            float amount = splashWaterAmount * intensity * splashIntensityScale * 0.6f;
             StartCoroutine(FlyWaterCell(splashOrigin, landingPos, upHeight, amount));
         }
 
@@ -693,8 +693,8 @@ public class WaterSplashSystem : MonoBehaviour
             for (int i = 0; i < count; i++)
             {
                 float angle = (i / (float)count) * 360f + Random.Range(-15f, 15f);
-                cusps.Add(new CrownCusp 
-                { 
+                cusps.Add(new CrownCusp
+                {
                     angle = angle,
                     ejectionTime = 0f
                 });
@@ -704,7 +704,7 @@ public class WaterSplashSystem : MonoBehaviour
 
         float circumference = 2f * Mathf.PI * crownRadius * sizeMultiplier * intensity;
         int numberOfCusps = Mathf.Max(4, Mathf.RoundToInt(circumference / mostUnstableWavelength));
-        
+
         numberOfCusps = Mathf.RoundToInt(numberOfCusps * Mathf.Lerp(0.6f, 1f, intensity));
 
         if (showCuspDebug)
@@ -714,25 +714,25 @@ public class WaterSplashSystem : MonoBehaviour
         for (int i = 0; i < numberOfCusps; i++)
         {
             float idealAngle = i * baseAngleStep;
-            
+
             float noise = Random.Range(-cuspNoiseAngle, cuspNoiseAngle);
             float finalAngle = idealAngle + noise;
-            
+
             while (finalAngle < 0f) finalAngle += 360f;
             while (finalAngle >= 360f) finalAngle -= 360f;
-            
+
             float normalizedPosition = i / (float)numberOfCusps;
             float ejectionTime = normalizedPosition * crownEjectionDuration;
-            
-            cusps.Add(new CrownCusp 
-            { 
+
+            cusps.Add(new CrownCusp
+            {
                 angle = finalAngle,
                 ejectionTime = ejectionTime
             });
 
             if (showCuspDebug)
-                Debug.DrawRay(transform.position, 
-                             new Vector2(Mathf.Cos(finalAngle * Mathf.Deg2Rad), 
+                Debug.DrawRay(transform.position,
+                             new Vector2(Mathf.Cos(finalAngle * Mathf.Deg2Rad),
                                         Mathf.Sin(finalAngle * Mathf.Deg2Rad)) * crownRadius,
                              Color.yellow, 2f);
         }
@@ -743,77 +743,77 @@ public class WaterSplashSystem : MonoBehaviour
     IEnumerator SpawnProgressiveCrown(Vector2 center, Vector2 velocity, float intensity, float sizeMultiplier, float impactVelocity)
     {
         List<CrownCusp> cusps = CalculateRayleighPlateauCusps(crownRadius, intensity, sizeMultiplier);
-        
+
         float radius = crownRadius * sizeMultiplier * intensity;
         float height = crownHeight * intensity;
-        
+
         cusps.Sort((a, b) => a.ejectionTime.CompareTo(b.ejectionTime));
-        
+
         int particlesEjected = 0;
         int overlayParticlesEjected = 0;
         int totalOverlayParticles = Mathf.RoundToInt(crownParticlesPerSplash * intensity * sizeMultiplier);
-        
+
         float elapsedTime = 0f;
         int lastCuspIndex = 0;
-        
+
         while (elapsedTime < crownEjectionDuration && lastCuspIndex < cusps.Count)
         {
             while (lastCuspIndex < cusps.Count && cusps[lastCuspIndex].ejectionTime <= elapsedTime)
             {
                 CrownCusp cusp = cusps[lastCuspIndex];
-                
+
                 float rad = cusp.angle * Mathf.Deg2Rad;
                 float jitterDist = radius * Random.Range(0.8f, 1.2f);
-                
+
                 Vector2 landingPos = center + new Vector2(Mathf.Cos(rad) * jitterDist, 0f);
                 landingPos.x += velocity.x * 0.1f;
-                
+
                 float heightMultiplier = 0.6f + 0.4f * (elapsedTime / crownEjectionDuration);
                 float arcPeak = height * heightMultiplier * Random.Range(0.9f, 1.1f);
                 float amount = splashWaterAmount * intensity * splashIntensityScale * Random.Range(0.7f, 1f);
-                
+
                 StartCoroutine(FlyWaterCell(center, landingPos, arcPeak, amount));
                 particlesEjected++;
-                
+
                 if (overlayParticlesEjected < totalOverlayParticles)
                 {
-                    SpawnSingleCrownOverlayParticle(center, velocity, intensity, sizeMultiplier, 
+                    SpawnSingleCrownOverlayParticle(center, velocity, intensity, sizeMultiplier,
                                                    impactVelocity, cusp.angle, heightMultiplier);
                     overlayParticlesEjected++;
                 }
-                
+
                 lastCuspIndex++;
             }
-            
+
             elapsedTime += Time.deltaTime;
             yield return null;
         }
-        
+
         while (lastCuspIndex < cusps.Count)
         {
             CrownCusp cusp = cusps[lastCuspIndex];
-            
+
             float rad = cusp.angle * Mathf.Deg2Rad;
             float jitterDist = radius * Random.Range(0.8f, 1.2f);
-            
+
             Vector2 landingPos = center + new Vector2(Mathf.Cos(rad) * jitterDist, 0f);
             landingPos.x += velocity.x * 0.1f;
-            
+
             float arcPeak = height * Random.Range(0.6f, 1f);
             float amount = splashWaterAmount * intensity * splashIntensityScale * Random.Range(0.7f, 1f);
-            
+
             StartCoroutine(FlyWaterCell(center, landingPos, arcPeak, amount));
-            
+
             if (overlayParticlesEjected < totalOverlayParticles)
             {
-                SpawnSingleCrownOverlayParticle(center, velocity, intensity, sizeMultiplier, 
+                SpawnSingleCrownOverlayParticle(center, velocity, intensity, sizeMultiplier,
                                                impactVelocity, cusp.angle, 1f);
                 overlayParticlesEjected++;
             }
-            
+
             lastCuspIndex++;
         }
-        
+
         if (showDebugInfo)
             Debug.Log($"Progressive crown complete: {particlesEjected} grid cells, {overlayParticlesEjected} overlay particles");
     }
@@ -821,7 +821,7 @@ public class WaterSplashSystem : MonoBehaviour
     void SpawnCrownArcs(Vector2 center, Vector2 velocity, float intensity, float sizeMultiplier, float impactVelocity)
     {
         List<CrownCusp> cusps = CalculateRayleighPlateauCusps(crownRadius, intensity, sizeMultiplier);
-        
+
         float radius = crownRadius * sizeMultiplier * intensity;
         float height = crownHeight * intensity;
 
@@ -834,7 +834,7 @@ public class WaterSplashSystem : MonoBehaviour
             landingPos.x += velocity.x * 0.1f;
 
             float arcPeak = height * Random.Range(0.6f, 1f);
-            float amount  = splashWaterAmount * intensity * splashIntensityScale * Random.Range(0.7f, 1f);
+            float amount = splashWaterAmount * intensity * splashIntensityScale * Random.Range(0.7f, 1f);
 
             StartCoroutine(FlyWaterCell(center, landingPos, arcPeak, amount));
         }
@@ -845,17 +845,17 @@ public class WaterSplashSystem : MonoBehaviour
 
     void SpawnJetColumn(Vector2 center, float intensity, float sizeMultiplier)
     {
-        int   count       = Mathf.RoundToInt(jetCellCount * Mathf.Clamp(intensity, 0.5f, 1f));
+        int count = Mathf.RoundToInt(jetCellCount * Mathf.Clamp(intensity, 0.5f, 1f));
         float totalHeight = jetHeight * intensity * sizeMultiplier;
 
         for (int i = 0; i < count; i++)
         {
             float heightFraction = (i + 1f) / count;
-            float peakHeight     = totalHeight * heightFraction;
-            float wobbleX        = Random.Range(-0.08f, 0.08f) * sizeMultiplier;
+            float peakHeight = totalHeight * heightFraction;
+            float wobbleX = Random.Range(-0.08f, 0.08f) * sizeMultiplier;
 
             Vector2 landingPos = center + new Vector2(wobbleX, 0f);
-            float   amount     = splashWaterAmount * intensity * splashIntensityScale * Random.Range(0.8f, 1f);
+            float amount = splashWaterAmount * intensity * splashIntensityScale * Random.Range(0.8f, 1f);
 
             StartCoroutine(FlyWaterCell(center, landingPos, peakHeight, amount));
         }
@@ -867,8 +867,8 @@ public class WaterSplashSystem : MonoBehaviour
 
         for (int i = 0; i < count; i++)
         {
-            float angle  = Random.Range(20f, 160f) * Mathf.Deg2Rad;
-            float dist   = Random.Range(0.05f, sprayRadius * intensity * sizeMultiplier);
+            float angle = Random.Range(20f, 160f) * Mathf.Deg2Rad;
+            float dist = Random.Range(0.05f, sprayRadius * intensity * sizeMultiplier);
             float height = Random.Range(0.1f, sprayHeight * intensity);
 
             float dirSign = (Random.value > 0.5f) ? 1f : -1f;
@@ -876,7 +876,7 @@ public class WaterSplashSystem : MonoBehaviour
                 dirSign = -Mathf.Sign(velocity.x) * (Random.value > 0.3f ? 1f : -1f);
 
             Vector2 landingPos = center + new Vector2(dirSign * dist, 0f);
-            float   amount     = splashWaterAmount * intensity * splashIntensityScale * Random.Range(0.3f, 0.7f);
+            float amount = splashWaterAmount * intensity * splashIntensityScale * Random.Range(0.3f, 0.7f);
 
             StartCoroutine(FlyWaterCell(center, landingPos, height, amount));
         }
@@ -887,8 +887,8 @@ public class WaterSplashSystem : MonoBehaviour
 
     IEnumerator FlyWaterCell(Vector2 start, Vector2 end, float peakHeight, float amount)
     {
-        Vector2Int prevCell   = new Vector2Int(-1, -1);
-        float      prevPlaced = 0f;
+        Vector2Int prevCell = new Vector2Int(-1, -1);
+        float prevPlaced = 0f;
 
         for (int step = 0; step <= arcSteps; step++)
         {
@@ -919,7 +919,7 @@ public class WaterSplashSystem : MonoBehaviour
                 float existing = liquidSim.GetWater(cell.x, cell.y);
                 liquidSim.SetWater(cell.x, cell.y, existing + amount);
 
-                prevCell   = cell;
+                prevCell = cell;
                 prevPlaced = amount;
 
                 yield return new WaitForSeconds(arcStepInterval);
@@ -936,37 +936,37 @@ public class WaterSplashSystem : MonoBehaviour
         liquidSim.SetWater(cell.x, cell.y, Mathf.Max(0f, current - amountWeAdded));
     }
 
-    void SpawnSingleCrownOverlayParticle(Vector2 center, Vector2 velocity, float intensity, 
-                                        float sizeMultiplier, float impactVelocity, 
+    void SpawnSingleCrownOverlayParticle(Vector2 center, Vector2 velocity, float intensity,
+                                        float sizeMultiplier, float impactVelocity,
                                         float angle, float heightMultiplier)
     {
         if (activeParticles.Count >= maxActiveParticles) return;
 
         float rad = angle * Mathf.Deg2Rad;
-        
+
         float parentDropletSize = sizeMultiplier;
-        float secondarySize = particleSize * 
-                            Random.Range(secondaryDropletMinSize, secondaryDropletMaxSize) * 
+        float secondarySize = particleSize *
+                            Random.Range(secondaryDropletMinSize, secondaryDropletMaxSize) *
                             parentDropletSize;
-        
+
         float baseSpeed = Random.Range(3f, 7f) * intensity * sizeMultiplier;
         float velocityMultiplier = Random.Range(secondaryVelocityMin, secondaryVelocityMax);
         float enhancedSpeed = baseSpeed * velocityMultiplier;
-        
+
         Vector2 particleVelocity = new Vector2(
             Mathf.Cos(rad) * enhancedSpeed,
             Mathf.Abs(Mathf.Sin(rad)) * enhancedSpeed * 0.4f * heightMultiplier
         );
-        
+
         particleVelocity.x += velocity.x * 0.15f;
-        
+
         float lifetime = particleLifetime * Random.Range(0.5f, 0.8f);
-        
+
         Vector2 spawnPos = center + new Vector2(Random.Range(-0.15f, 0.15f), Random.Range(0f, 0.08f));
         EmitOverlayParticle(spawnPos, particleVelocity, secondarySize, crownParticleColor, lifetime, OverlayType.Crown);
     }
 
-    void SpawnOverlayParticles(Vector2 center, Vector2 velocity, float intensity, float sizeMultiplier, 
+    void SpawnOverlayParticles(Vector2 center, Vector2 velocity, float intensity, float sizeMultiplier,
                                float impactVelocity, int count, OverlayType type)
     {
         count = Mathf.RoundToInt(count * intensity * sizeMultiplier);
@@ -976,50 +976,50 @@ public class WaterSplashSystem : MonoBehaviour
             if (activeParticles.Count >= maxActiveParticles) break;
 
             Vector2 particleVelocity;
-            float   size;
-            Color   color;
-            float   lifetime;
+            float size;
+            Color color;
+            float lifetime;
 
             float parentDropletSize = sizeMultiplier;
 
             if (type == OverlayType.Crown)
             {
                 float angle = Random.Range(15f, 165f) * Mathf.Deg2Rad;
-                
+
                 size = particleSize * Random.Range(secondaryDropletMinSize, secondaryDropletMaxSize) * parentDropletSize;
-                
+
                 float baseSpeed = Random.Range(3f, 7f) * intensity * sizeMultiplier;
                 float velocityMultiplier = Random.Range(secondaryVelocityMin, secondaryVelocityMax);
                 float enhancedSpeed = baseSpeed * velocityMultiplier;
-                
+
                 particleVelocity = new Vector2(
                     Mathf.Cos(angle) * enhancedSpeed,
                     Mathf.Abs(Mathf.Sin(angle)) * enhancedSpeed * 0.4f
                 );
-                
+
                 particleVelocity.x += velocity.x * 0.15f;
-                
-                color    = crownParticleColor;
+
+                color = crownParticleColor;
                 lifetime = particleLifetime * Random.Range(0.5f, 0.8f);
             }
             else
             {
                 float angle = Random.Range(30f, 150f) * Mathf.Deg2Rad;
-                
+
                 size = particleSize * Random.Range(secondaryDropletMinSize * 0.7f, secondaryDropletMaxSize * 0.9f);
-                
+
                 float baseSpeed = Random.Range(4f, 10f) * intensity;
                 float velocityMultiplier = Random.Range(secondaryVelocityMin, secondaryVelocityMax);
                 float enhancedSpeed = baseSpeed * velocityMultiplier;
-                
+
                 particleVelocity = new Vector2(
                     Mathf.Cos(angle) * enhancedSpeed * Random.Range(0.7f, 1.3f),
                     Mathf.Abs(Mathf.Sin(angle)) * enhancedSpeed
                 );
-                
+
                 particleVelocity.x -= velocity.x * 0.12f;
-                
-                color    = sprayParticleColor;
+
+                color = sprayParticleColor;
                 lifetime = particleLifetime * Random.Range(0.6f, 1.1f);
             }
 
@@ -1036,12 +1036,12 @@ public class WaterSplashSystem : MonoBehaviour
         {
             if (activeParticles.Count >= maxActiveParticles) break;
 
-            float upSpeed   = Random.Range(2f, 5f) * intensity;
+            float upSpeed = Random.Range(2f, 5f) * intensity;
             float sideSpeed = Random.Range(1f, 4f) * intensity * side;
             float velocityMultiplier = Random.Range(secondaryVelocityMin, secondaryVelocityMax) * 0.7f;
-            
+
             Vector2 particleVelocity = new Vector2(sideSpeed, upSpeed) * velocityMultiplier;
-            
+
             float size = particleSize * Random.Range(secondaryDropletMinSize, secondaryDropletMaxSize * 0.8f);
 
             Vector2 spawnPos = center + new Vector2(side * Random.Range(0f, 0.1f), Random.Range(0f, 0.05f));
@@ -1062,19 +1062,19 @@ public class WaterSplashSystem : MonoBehaviour
             return;
 
         p.gameObject.transform.position = position;
-        p.velocity                      = velocity;
-        p.lifetime                      = 0f;
-        p.maxLifetime                   = lifetime;
-        p.initialSize                   = size;
-        p.baseColor                     = color;
-        p.type                          = type;
-        
-        p.timeSinceLastCollision        = 0f;
-        p.hasHadInitialCollision        = false;
-        p.collisionCount                = 0;
+        p.velocity = velocity;
+        p.lifetime = 0f;
+        p.maxLifetime = lifetime;
+        p.initialSize = size;
+        p.baseColor = color;
+        p.type = type;
+
+        p.timeSinceLastCollision = 0f;
+        p.hasHadInitialCollision = false;
+        p.collisionCount = 0;
 
         p.renderer.sprite = (type == OverlayType.Crown) ? crownSprite : spraySprite;
-        p.renderer.color  = color;
+        p.renderer.color = color;
         p.gameObject.transform.localScale = Vector3.one * size;
 
         OrientParticle(p);
@@ -1086,19 +1086,19 @@ public class WaterSplashSystem : MonoBehaviour
     void UpdateOverlayParticlesOptimized()
     {
         int particleCount = activeParticles.Count;
-        
+
         if (useBatchedParticleUpdates)
         {
             for (int batchStart = 0; batchStart < particleCount; batchStart += particleBatchSize)
             {
                 int batchEnd = Mathf.Min(batchStart + particleBatchSize, particleCount);
-                
+
                 for (int i = batchEnd - 1; i >= batchStart; i--)
                 {
                     if (i >= activeParticles.Count) continue;
-                    
+
                     OverlayParticle p = activeParticles[i];
-                    
+
                     if (!UpdateSingleParticle(p, i))
                     {
                         continue;
@@ -1115,7 +1115,7 @@ public class WaterSplashSystem : MonoBehaviour
             }
         }
     }
-    
+
     bool UpdateSingleParticle(OverlayParticle p, int index)
     {
         p.lifetime += Time.deltaTime;
@@ -1130,7 +1130,7 @@ public class WaterSplashSystem : MonoBehaviour
         Vector2 oldPos = p.gameObject.transform.position;
 
         p.velocity.y += particleGravity * Time.deltaTime;
-        p.velocity   *= particleDamping;
+        p.velocity *= particleDamping;
 
         Vector2 newPos = oldPos + p.velocity * Time.deltaTime;
 
@@ -1142,12 +1142,12 @@ public class WaterSplashSystem : MonoBehaviour
                 p.velocity = newVelocity;
                 p.timeSinceLastCollision = 0f;
                 p.collisionCount++;
-                
+
                 if (!p.hasHadInitialCollision)
                 {
                     p.hasHadInitialCollision = true;
                 }
-                
+
                 if (showCollisionDebug)
                 {
                     Debug.Log($"Particle collision #{p.collisionCount} at {correctedPos}, velocity: {newVelocity.magnitude:F2}");
@@ -1172,7 +1172,7 @@ public class WaterSplashSystem : MonoBehaviour
             float shrink = 1f - ((lifeRatio - 0.7f) / 0.3f) * 0.5f;
             p.gameObject.transform.localScale = Vector3.one * (p.initialSize * shrink);
         }
-        
+
         return true;
     }
 
@@ -1180,11 +1180,11 @@ public class WaterSplashSystem : MonoBehaviour
     {
         if (!p.hasHadInitialCollision)
             return true;
-        
+
         return p.timeSinceLastCollision >= minTimeBeforeSecondaryCollision;
     }
 
-    bool CheckParticleCollisionOptimized(OverlayParticle p, Vector2 from, Vector2 to, 
+    bool CheckParticleCollisionOptimized(OverlayParticle p, Vector2 from, Vector2 to,
                                          out Vector2 correctedPos, out Vector2 newVelocity)
     {
         correctedPos = to;
@@ -1209,24 +1209,24 @@ public class WaterSplashSystem : MonoBehaviour
         {
             Vector2 direction = (to - from).normalized;
             float distance = Vector2.Distance(from, to);
-            
+
             List<Collider2D> nearbyColliders = QuerySpatialHash(from, distance + particleCollisionRadius);
-            
+
             RaycastHit2D closestHit = new RaycastHit2D();
             float closestDistance = float.MaxValue;
             bool foundHit = false;
-            
+
             foreach (Collider2D col in nearbyColliders)
             {
                 if (col == null) continue;
-                
+
                 Bounds bounds = col.bounds;
                 if (!bounds.Intersects(new Bounds((from + to) * 0.5f, Vector3.one * (distance + particleCollisionRadius * 2))))
                     continue;
-                
-                RaycastHit2D hit = Physics2D.CircleCast(from, particleCollisionRadius, direction, 
+
+                RaycastHit2D hit = Physics2D.CircleCast(from, particleCollisionRadius, direction,
                                                          distance, 1 << col.gameObject.layer);
-                
+
                 if (hit.collider != null && hit.distance < closestDistance)
                 {
                     closestHit = hit;
@@ -1234,7 +1234,7 @@ public class WaterSplashSystem : MonoBehaviour
                     foundHit = true;
                 }
             }
-            
+
             if (foundHit)
             {
                 correctedPos = closestHit.point + closestHit.normal * particleCollisionRadius;
@@ -1251,7 +1251,7 @@ public class WaterSplashSystem : MonoBehaviour
         }
         else
         {
-            RaycastHit2D hit = Physics2D.CircleCast(from, particleCollisionRadius, (to - from).normalized, 
+            RaycastHit2D hit = Physics2D.CircleCast(from, particleCollisionRadius, (to - from).normalized,
                                                      Vector2.Distance(from, to), particleCollisionLayers);
 
             if (hit.collider != null)
@@ -1272,7 +1272,7 @@ public class WaterSplashSystem : MonoBehaviour
         return false;
     }
 
-    bool CheckWaterSurfaceCollisionOptimized(OverlayParticle p, Vector2 from, Vector2 to, 
+    bool CheckWaterSurfaceCollisionOptimized(OverlayParticle p, Vector2 from, Vector2 to,
                                               out Vector2 correctedPos, out Vector2 newVelocity)
     {
         correctedPos = to;
@@ -1281,11 +1281,11 @@ public class WaterSplashSystem : MonoBehaviour
         if (IsNearWaterSurface(to, out Vector2Int surfaceCell))
         {
             Vector2 surfaceWorldPos = liquidSim.GridToWorld(surfaceCell.x, surfaceCell.y);
-            
+
             if (from.y > surfaceWorldPos.y && to.y <= surfaceWorldPos.y)
             {
                 correctedPos = new Vector2(to.x, surfaceWorldPos.y);
-                
+
                 float impactSpeed = p.velocity.magnitude;
 
                 if (impactSpeed >= minMicroSplashVelocity)
@@ -1384,7 +1384,7 @@ public class WaterSplashSystem : MonoBehaviour
 
         float currentWater = liquidSim.GetWater(gridPos.x, gridPos.y);
         liquidSim.SetWater(gridPos.x, gridPos.y, currentWater + microSplashWaterAmount * intensity);
-        
+
         waterSurfaceCacheDirty = true;
 
         int microParticleCount = Mathf.RoundToInt(2 * intensity);
@@ -1430,21 +1430,21 @@ public class WaterSplashSystem : MonoBehaviour
         GameObject obj = new GameObject("OverlayParticle");
         obj.transform.SetParent(transform);
 
-        SpriteRenderer sr  = obj.AddComponent<SpriteRenderer>();
-        sr.sprite          = spraySprite;
-        sr.color           = Color.white;
-        sr.sortingOrder    = 10;
+        SpriteRenderer sr = obj.AddComponent<SpriteRenderer>();
+        sr.sprite = spraySprite;
+        sr.color = Color.white;
+        sr.sortingOrder = 10;
 
         return new OverlayParticle
         {
-            gameObject  = obj,
-            renderer    = sr,
-            velocity    = Vector2.zero,
-            lifetime    = 0f,
+            gameObject = obj,
+            renderer = sr,
+            velocity = Vector2.zero,
+            lifetime = 0f,
             maxLifetime = particleLifetime,
             initialSize = particleSize,
-            baseColor   = Color.white,
-            type        = OverlayType.Spray,
+            baseColor = Color.white,
+            type = OverlayType.Spray,
             timeSinceLastCollision = 0f,
             hasHadInitialCollision = false,
             collisionCount = 0
@@ -1462,16 +1462,16 @@ public class WaterSplashSystem : MonoBehaviour
     {
         Texture2D tex = new Texture2D(width, height, TextureFormat.RGBA32, false);
         tex.filterMode = FilterMode.Point;
-        tex.wrapMode   = TextureWrapMode.Clamp;
+        tex.wrapMode = TextureWrapMode.Clamp;
 
-        float cx = (width  - 1) * 0.5f;
+        float cx = (width - 1) * 0.5f;
         float cy = (height - 1) * 0.5f;
 
         for (int x = 0; x < width; x++)
         {
             for (int y = 0; y < height; y++)
             {
-                float nx = (x - cx) / (width  * 0.5f);
+                float nx = (x - cx) / (width * 0.5f);
                 float ny = (y - cy) / (height * 0.5f);
 
                 float alpha = isFleck ? EvalFleck(nx, ny) : EvalTeardrop(nx, ny);
@@ -1508,7 +1508,7 @@ public class WaterSplashSystem : MonoBehaviour
 
     void RemoveWaterForSplash(Vector2 center, float totalAmount, float width)
     {
-        int   cellsWide     = Mathf.Max(Mathf.CeilToInt(width / 0.1f), 1);
+        int cellsWide = Mathf.Max(Mathf.CeilToInt(width / 0.1f), 1);
         float amountPerCell = totalAmount / cellsWide;
 
         Vector2Int centerGrid = liquidSim.WorldToGrid(center);
@@ -1548,21 +1548,21 @@ public class WaterSplashSystem : MonoBehaviour
             int totalCells = Mathf.RoundToInt((sprayCellCount + crownCellCount) * intensity);
             for (int i = 0; i < totalCells; i++)
             {
-                float dist   = Random.Range(0.1f, crownRadius);
+                float dist = Random.Range(0.1f, crownRadius);
                 float height = Random.Range(0.15f, sprayHeight * intensity);
-                float angle  = Random.Range(0f, 360f) * Mathf.Deg2Rad;
+                float angle = Random.Range(0f, 360f) * Mathf.Deg2Rad;
 
                 Vector2 landingPos = position + new Vector2(Mathf.Cos(angle) * dist, 0f);
-                float   amount     = splashWaterAmount * intensity * splashIntensityScale * Random.Range(0.5f, 1f);
+                float amount = splashWaterAmount * intensity * splashIntensityScale * Random.Range(0.5f, 1f);
                 StartCoroutine(FlyWaterCell(position, landingPos, height, amount));
             }
 
-            SpawnOverlayParticles(position, direction, intensity, 1f, impactVelocity, 
+            SpawnOverlayParticles(position, direction, intensity, 1f, impactVelocity,
                                 crownParticlesPerSplash, OverlayType.Crown);
             SpawnOverlayParticles(position, direction, intensity, 1f, impactVelocity,
                                 sprayParticlesPerSplash, OverlayType.Spray);
         }
-        
+
         waterSurfaceCacheDirty = true;
     }
 
@@ -1576,7 +1576,7 @@ public class WaterSplashSystem : MonoBehaviour
         {
             SpawnCrownArcs(position, direction, intensity, 1f, impactVelocity);
         }
-        
+
         SpawnSprayCells(position, direction, intensity, 1f, impactVelocity);
 
         yield return new WaitForSeconds(jetDelay);
@@ -1593,7 +1593,7 @@ public class WaterSplashSystem : MonoBehaviour
 
         Gizmos.color = new Color(0.3f, 0.8f, 1f, 0.2f);
         Gizmos.DrawWireSphere(transform.position, sprayRadius);
-        
+
         if (showSpatialHashDebug && useSpatialHashingForCollisions)
         {
             Gizmos.color = new Color(1f, 1f, 0f, 0.1f);

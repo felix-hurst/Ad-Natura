@@ -36,7 +36,7 @@ public class CheckpointUI : MonoBehaviour
         {
             canvasGroup = popupPanel.AddComponent<CanvasGroup>();
         }
-        
+
         popupPanel.SetActive(false);
     }
 

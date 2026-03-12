@@ -244,6 +244,7 @@ public class Slime : MonoBehaviour
         shader.SetFloat("evaporateSpeed", evaporateSpeed);
         shader.SetFloat("diffuseSpeed", diffuseSpeed);
         shader.SetTexture(kernelPostprocess, "TrailMap", readBuffer);
+        //shader.SetTexture(kernelPostprocess, "TrailMap", waterMap);
         shader.SetTexture(kernelPostprocess, "TrailMapProcessed", writeBuffer);
         shader.SetTexture(kernelPostprocess, "HazardMap", hazMap);
         shader.Dispatch(kernelPostprocess, width / 8, height / 8, 1);

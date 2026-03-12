@@ -17,7 +17,7 @@ float trailWeight;
 float idleSpeed;
 float attractedSpeedMultiplier;
 
-RWTexture2D<float> WaterAttractionMap;
+RWTexture2D<float4> WaterAttractionMap;
 float waterAttractionStrength;
 
 Texture2D<float> HazardMap;
@@ -107,24 +107,70 @@ void Update(uint3 id : SV_DispatchThreadID)
     uint seed = uint(agent.pos.y * width + agent.pos.x) + id.x + uint(gameTime * 1000);
     float random01 = randomValue(seed);
 
-    // Sense water attraction in three directions
+    // Calculate sensor positions
     float2 fwdDir = float2(cos(agent.angle), sin(agent.angle));
     float2 leftDir = float2(cos(agent.angle + sensorAngleSpacing), sin(agent.angle + sensorAngleSpacing));
     float2 rightDir = float2(cos(agent.angle - sensorAngleSpacing), sin(agent.angle - sensorAngleSpacing));
 
-    // Clamp sensor positions to bounds (so agents can sense water at edges)
     int2 fwdPos = int2(clamp(agent.pos + fwdDir * sensorLength, float2(0,0), float2(width-1, height-1)));
     int2 leftPos = int2(clamp(agent.pos + leftDir * sensorLength, float2(0,0), float2(width-1, height-1)));
     int2 rightPos = int2(clamp(agent.pos + rightDir * sensorLength, float2(0,0), float2(width-1, height-1)));
 
-    float waterFwd = WaterAttractionMap[fwdPos];
-    float waterLeft = WaterAttractionMap[leftPos];
-    float waterRight = WaterAttractionMap[rightPos];
+    //Channel g is for attraction, channel r is for repulsion
+    float3 waterValues = float3(
+        WaterAttractionMap[fwdPos].g,
+        WaterAttractionMap[leftPos].g,
+        WaterAttractionMap[rightPos].g
+    );
 
-    // Sense trails
-    float trailFwd = sense(agent, 0);
-    float trailLeft = sense(agent, sensorAngleSpacing);
-    float trailRight = sense(agent, -sensorAngleSpacing);
+    int2 currentPos = int2(clamp(agent.pos, float2(0,0), float2(width-1, height-1)));
+    float currentFear = WaterAttractionMap[currentPos].r; 
+    
+    float totalFwd, totalLeft, totalRight;
+    float speed = idleSpeed;
+    float attractionLevel = 0; // For trail depositing later
+
+    //currentFear is a measure of how much repulsion strength the light has at the slime molds position
+    if (currentFear > 0.1)
+    {
+        //Move away from areas of high repulsion and towards areas of low repulsion
+        totalFwd = 1.0 - WaterAttractionMap[fwdPos].r;
+        totalLeft = 1.0 - WaterAttractionMap[leftPos].r;
+        totalRight = 1.0 - WaterAttractionMap[rightPos].r;
+
+        speed = moveSpeed * attractedSpeedMultiplier;
+    }
+    else
+    {
+        //If not in fear of light, sense normal water attraction
+        float trailFwd = sense(agent, 0);
+        float trailLeft = sense(agent, sensorAngleSpacing);
+        float trailRight = sense(agent, -sensorAngleSpacing);
+
+        // Calculate water influence using the strength
+        float waterFwd = waterValues.x * waterAttractionStrength;
+        float waterLeft = waterValues.y * waterAttractionStrength;
+        float waterRight = waterValues.z * waterAttractionStrength;
+
+        // Combine for turning logic
+        totalFwd = waterFwd + (trailFwd * trailWeight);
+        totalLeft = waterLeft + (trailLeft * trailWeight);
+        totalRight = waterRight + (trailRight * trailWeight);
+
+        //Speed
+        float maxWaterSensed = max(waterFwd, max(waterLeft, waterRight));
+        float maxTrailSensed = trailFwd * trailWeight;
+        
+        if (maxWaterSensed > 0.01) {
+            // Speed up when near water
+            speed = moveSpeed * attractedSpeedMultiplier;
+        } else if (maxTrailSensed > 0.01) {
+            // Move normal speed on trails
+            speed = moveSpeed;
+        } else {
+            // Truly nothing around
+            speed = idleSpeed;
+        }
 
     float hazFwd = senseHazard(agent, 0);
     float hazLeft = senseHazard(agent, sensorAngleSpacing);
@@ -134,20 +180,16 @@ void Update(uint3 id : SV_DispatchThreadID)
     float totalLeft = waterLeft * waterAttractionStrength + trailLeft * trailWeight - hazLeft * hazardAvoidanceStrength;
     float totalRight = waterRight * waterAttractionStrength + trailRight * trailWeight - hazRight * hazardAvoidanceStrength;
 
-    // Turning decision
+    //Turning
     float turnAmount = turnSpeed * deltaTime;
     float randomTurn = (random01 - 0.5) * turnAmount * 0.5;
 
     if (totalFwd >= totalLeft && totalFwd >= totalRight)
     {
         agents[id.x].angle += randomTurn * 0.3;
-    }
-    else if (totalLeft > totalRight)
-    {
+    } else if (totalLeft > totalRight) {
         agents[id.x].angle += turnAmount + randomTurn;
-    }
-    else
-    {
+    } else {
         agents[id.x].angle -= turnAmount + randomTurn;
     }
 
