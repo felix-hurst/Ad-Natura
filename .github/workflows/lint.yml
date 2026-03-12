@@ -2,9 +2,9 @@ name: Unity C# Linter
 
 on:
   push:
-    branches: [ main,marcosChanges ]
+    branches: [ main, marcoschanges ]
   pull_request:
-    branches: [ main,marcosChanges ]
+    branches: [ main ]
 
 jobs:
   check-format:
@@ -17,13 +17,8 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '10.0.x'
-
-      - name: List Files (Debug)
-        run: find . -maxdepth 4 -not -path '*/.*'
-
-      - name: Restore Dependencies
-        run: dotnet restore **/my_project.sln
+          dotnet-version: '10.0.x' 
 
       - name: Verify Code Formatting
-        run: dotnet format **/my_project.sln --verify-no-changes --verbosity diagnostic
+        #since .sln is in the gitignore, i am just running it here
+        run: dotnet format Game-Files/my_project --verify-no-changes --verbosity diagnostic
