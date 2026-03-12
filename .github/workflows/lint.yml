@@ -4,7 +4,7 @@ on:
   push:
     branches: [ main,marcoschanges ]
   pull_request:
-    branches: [ main ]
+    branches: [ main,marcoschanges ]
 
 jobs:
   check-format:
