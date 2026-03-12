@@ -20,18 +20,17 @@ float attractedSpeedMultiplier;
 RWTexture2D<float> WaterAttractionMap;
 float waterAttractionStrength;
 
+Texture2D<float> HazardMap;
+float spawnCenterX;
+float spawnCenterY;
+float spawnRadius;
+
+float hazardAvoidanceStrength; 
+float4 decayColor;           
+float hazardCorrosionRate; 
+float hazardTrailDampen;       
+
 float4 slimeColor;
-
-// Pulse (cytoplasmic streaming)
-float pulseAmplitude;
-float pulseMinFreq;
-float pulseMaxFreq;
-float pulseWaveScale;
-
-// Entropic Decay
-float entropyScale;
-float entropySpeed;
-float entropyStrength;
 
 struct Agent {
     float2 pos;
@@ -78,6 +77,27 @@ float sense(Agent agent, float angle)
     return sum;
 }
 
+
+float senseHazard(Agent agent, float angle)
+{
+    float2 sensorDir = float2(cos(agent.angle + angle), sin(agent.angle + angle));
+    float2 sensorPos = agent.pos + sensorDir * sensorLength;
+
+    float sum = 0;
+    for (int oy = -1; oy <= 1; oy++)
+    {
+        for (int ox = -1; ox <= 1; ox++)
+        {
+            int2 pos = int2(sensorPos) + int2(ox, oy);
+            if (pos.x >= 0 && pos.x < width && pos.y >= 0 && pos.y < height)
+            {
+                sum += HazardMap[pos];
+            }
+        }
+    }
+    return sum;
+}
+
 [numthreads(16, 1, 1)]
 void Update(uint3 id : SV_DispatchThreadID)
 {
@@ -106,20 +126,20 @@ void Update(uint3 id : SV_DispatchThreadID)
     float trailLeft = sense(agent, sensorAngleSpacing);
     float trailRight = sense(agent, -sensorAngleSpacing);
 
-    // Combined weights
-    float totalFwd = waterFwd * waterAttractionStrength + trailFwd * trailWeight;
-    float totalLeft = waterLeft * waterAttractionStrength + trailLeft * trailWeight;
-    float totalRight = waterRight * waterAttractionStrength + trailRight * trailWeight;
+    float hazFwd = senseHazard(agent, 0);
+    float hazLeft = senseHazard(agent, sensorAngleSpacing);
+    float hazRight = senseHazard(agent, -sensorAngleSpacing);
+
+    float totalFwd = waterFwd * waterAttractionStrength + trailFwd * trailWeight - hazFwd * hazardAvoidanceStrength;
+    float totalLeft = waterLeft * waterAttractionStrength + trailLeft * trailWeight - hazLeft * hazardAvoidanceStrength;
+    float totalRight = waterRight * waterAttractionStrength + trailRight * trailWeight - hazRight * hazardAvoidanceStrength;
 
     // Turning decision
     float turnAmount = turnSpeed * deltaTime;
-
-    // Standard physarum turning logic
     float randomTurn = (random01 - 0.5) * turnAmount * 0.5;
 
     if (totalFwd >= totalLeft && totalFwd >= totalRight)
     {
-        // Forward is best - small random adjustment
         agents[id.x].angle += randomTurn * 0.3;
     }
     else if (totalLeft > totalRight)
@@ -134,13 +154,16 @@ void Update(uint3 id : SV_DispatchThreadID)
     // Speed: idle when no attraction, fast when sensing water/trails
     float maxWater = max(max(waterFwd, waterLeft), waterRight);
     float attractionLevel = saturate(maxWater * waterAttractionStrength * 0.5);
-    float speed = lerp(idleSpeed, moveSpeed * attractedSpeedMultiplier, attractionLevel);
+
+    float maxHazard = max(max(hazFwd, hazLeft), hazRight) / 9.0; 
+    float hazardSlowdown = saturate(1.0 - maxHazard * 0.7);
+
+    float speed = lerp(idleSpeed, moveSpeed * attractedSpeedMultiplier, attractionLevel) * hazardSlowdown;
 
     // Movement
     float2 dir = float2(cos(agents[id.x].angle), sin(agents[id.x].angle));
     float2 newPos = agent.pos + dir * speed * deltaTime;
 
-    // Boundary handling - spread along edge if water nearby, otherwise bounce
     bool hitLeft = newPos.x < 0;
     bool hitRight = newPos.x >= width;
     bool hitBottom = newPos.y < 0;
@@ -151,36 +174,97 @@ void Update(uint3 id : SV_DispatchThreadID)
         newPos.x = clamp(newPos.x, 0, width - 1);
         newPos.y = clamp(newPos.y, 0, height - 1);
 
-        // Check if there's water attraction at this edge
         bool hasWaterAtEdge = maxWater > 0.01;
 
         if (hasWaterAtEdge)
         {
-            // Water at edge - spread ALONG the edge instead of bouncing back
             float random02 = randomValue(seed + 7919u);
             if (hitTop || hitBottom)
             {
-                // Deflect to horizontal (left or right randomly)
                 agents[id.x].angle = (random01 > 0.5) ? 0.0 : PI;
             }
             else
             {
-                // Deflect to vertical (up or down randomly)
                 agents[id.x].angle = (random01 > 0.5) ? PI * 0.5 : -PI * 0.5;
             }
-            // Add some randomness for natural spread
             agents[id.x].angle += (random02 - 0.5) * 0.8;
         }
         else
         {
-            // No water - normal bounce back
             agents[id.x].angle += PI + (random01 - 0.5) * 0.5;
         }
     }
 
     agents[id.x].pos = newPos;
 
-    // Deposit trail - stronger when near water (creates highways)
+
+    int2 hazardPos = int2(clamp(newPos, float2(0,0), float2(width-1, height-1)));
+    float hazard = HazardMap[hazardPos];
+
+    if (hazard >= 0.5)
+    {
+
+        int2 deathPos = int2(newPos.x, newPos.y);
+        for (int oy = -1; oy <= 1; oy++)
+        {
+            for (int ox = -1; ox <= 1; ox++)
+            {
+                int2 clearPos = deathPos + int2(ox, oy);
+                if (clearPos.x >= 0 && clearPos.x < width && clearPos.y >= 0 && clearPos.y < height)
+                {
+
+                    if (HazardMap[clearPos] > 0.3)
+                    {
+                        float4 existing = TrailMap[clearPos];
+                        float br = length(existing.rgb);
+                        if (br > 0.01)
+                        {
+                            TrailMap[clearPos] = lerp(existing, decayColor * br * 0.5, 0.6);
+                        }
+                    }
+                }
+            }
+        }
+
+        TrailMap[deathPos] = decayColor * 0.2;
+
+        uint respawnSeed = hash(seed + 31337u);
+        float respawnAngle = randomValue(respawnSeed) * 2.0 * PI;
+        float respawnDist = randomValue(hash(respawnSeed + 1u)) * spawnRadius;
+
+        float2 respawnPos = float2(
+            clamp(spawnCenterX + cos(respawnAngle) * respawnDist, 1, width - 2),
+            clamp(spawnCenterY + sin(respawnAngle) * respawnDist, 1, height - 2)
+        );
+
+        int2 respawnCheck = int2(respawnPos);
+        if (HazardMap[respawnCheck] < 0.5)
+        {
+            agents[id.x].pos = respawnPos;
+            agents[id.x].angle = randomValue(hash(respawnSeed + 2u)) * 2.0 * PI;
+        }
+        else
+        {
+            agents[id.x].pos = newPos;
+        }
+        return; 
+    }
+
+    if (hazard > 0.1)
+    {
+        float decayFactor = saturate((hazard - 0.1) / 0.4); 
+        float dampened = 1.0 - decayFactor * hazardTrailDampen;
+
+        float trailStrength = (1.0 + attractionLevel * 2.0) * dampened;
+
+        float4 depositColor = lerp(slimeColor, decayColor, decayFactor * 0.6);
+        TrailMap[int2(newPos.x, newPos.y)] = depositColor * trailStrength;
+
+        float jitter = (randomValue(seed + 4231u) - 0.5) * decayFactor * 2.0;
+        agents[id.x].angle += jitter;
+        return;
+    }
+
     float trailStrength = 1.0 + attractionLevel * 2.0;
     TrailMap[int2(newPos.x, newPos.y)] = slimeColor * trailStrength;
 }
@@ -189,46 +273,11 @@ RWTexture2D<float4> TrailMapProcessed;
 float evaporateSpeed;
 float diffuseSpeed;
 
-// --- Value noise (integer hash, no trig, safe on all GPUs) ---
-float hashNoise(float2 p)
-{
-    uint2 ip = uint2(uint(abs(p.x)), uint(abs(p.y)));
-    uint h = ip.x * 1597334677u ^ ip.y * 3812015801u;
-    h = h * 2654435769u;
-    h ^= h >> 16;
-    h *= 2246822519u;
-    h ^= h >> 13;
-    return float(h) / 4294967295.0;
-}
-
-float valueNoise(float2 p)
-{
-    float2 i = floor(p);
-    float2 f = frac(p);
-    float2 u = f * f * (3.0 - 2.0 * f);
-
-    float a = hashNoise(i);
-    float b = hashNoise(i + float2(1, 0));
-    float c = hashNoise(i + float2(0, 1));
-    float d = hashNoise(i + float2(1, 1));
-
-    return lerp(lerp(a, b, u.x), lerp(c, d, u.x), u.y);
-}
-
-// Layered noise — two octaves for organic variation
-float organicNoise(float2 p)
-{
-    float n = valueNoise(p) * 0.65;
-    n += valueNoise(p * 3.7 + 42.0) * 0.35;
-    return n;
-}
-
 [numthreads(8, 8, 1)]
 void Postprocess(uint3 id : SV_DispatchThreadID)
 {
     float4 original = TrailMap[id.xy];
 
-    // Diffusion: 3x3 blur
     float4 sum = 0;
     for (int oy = -1; oy <= 1; oy++)
     {
@@ -240,40 +289,42 @@ void Postprocess(uint3 id : SV_DispatchThreadID)
         }
     }
     float4 blurred = sum / 9.0;
+
     float4 diffused = lerp(original, blurred, diffuseSpeed * deltaTime);
 
-    // --- Entropic Decay ---
-    // Two-octave noise makes evaporation non-uniform at multiple scales.
-    // Large patches of persistence with fine-grain variation on top.
-    // The network develops organic asymmetry — thick veins beside thin wisps,
-    // unexpected gaps, trails that survive where they shouldn't.
-    float2 noiseCoord = float2(id.x, id.y) * entropyScale + gameTime * entropySpeed;
-    float noiseVal = organicNoise(noiseCoord);
-    float localEvapRate = evaporateSpeed * max(0.1, lerp(1.0 - entropyStrength, 1.0 + entropyStrength, noiseVal));
-    float4 evaporated = max(0, diffused - localEvapRate * deltaTime);
+    float hazard = HazardMap[id.xy];
 
-    // --- Pulse (cytoplasmic streaming) ---
-    // Real Physarum has pressure waves that TRAVEL through the network.
-    // The pulse phase varies spatially so different parts of the organism
-    // breathe at different moments — fluid visibly flows through veins.
-    // Water proximity controls frequency: near water = excited rapid streaming,
-    // far from water = slow meditative breathing.
-    float density = length(evaporated.rgb);
-    float normalizedDensity = saturate(density / 2.5);
+    if (hazard > 0.05)
+    {
+        float brightness = length(diffused.rgb);
 
-    float waterHere = WaterAttractionMap[id.xy];
-    float waterInfluence = saturate(waterHere * waterAttractionStrength);
-    float freq = lerp(pulseMinFreq, pulseMaxFreq, waterInfluence);
+        if (hazard >= 0.5)
+        {
 
-    // Spatial phase offset: when pulseWaveScale > 0 the wave travels across
-    // the organism like real cytoplasmic streaming. At 0 the colony breathes in unison.
-    float spatialPhase = (float(id.x) + float(id.y)) * pulseWaveScale;
+            if (brightness > 0.01)
+            {
+                diffused = lerp(diffused, decayColor * brightness, 0.4);
 
-    // Only pulse on dense slime pixels (the living organism), not on fading trail wisps.
-    // smoothstep creates a soft threshold: below 0.3 density = no pulse, above 0.6 = full pulse
-    float pulseWeight = smoothstep(0.3, 0.6, normalizedDensity);
-    float pulse = 1.0 + sin(gameTime * freq * 2.0 * PI + spatialPhase) * pulseAmplitude * pulseWeight;
-    evaporated.rgb *= pulse;
+                diffused *= saturate(1.0 - hazardCorrosionRate * deltaTime);
+            }
+        }
+        else
+        {
 
-    TrailMapProcessed[id.xy] = max(evaporated, 0.0);
+            float decayIntensity = (hazard - 0.05) / 0.45; 
+
+            if (brightness > 0.01)
+            {
+
+                float colorBlend = decayIntensity * 0.15;
+                diffused = lerp(diffused, decayColor * brightness, colorBlend);
+            }
+
+            float extraEvaporate = decayIntensity * hazardCorrosionRate * 0.3;
+            diffused = max(0, diffused - extraEvaporate * deltaTime);
+        }
+    }
+
+    float4 evaporated = max(0, diffused - evaporateSpeed * deltaTime);
+    TrailMapProcessed[id.xy] = evaporated;
 }

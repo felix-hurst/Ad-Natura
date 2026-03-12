@@ -50,32 +50,28 @@ public class Slime : MonoBehaviour
     [SerializeField] private GameObject boundingObject;
     [SerializeField] private Rect worldBounds = new Rect(-10f, -7.5f, 20f, 15f);
 
-    [Header("Pulse (Cytoplasmic Streaming)")]
-    [Tooltip("How strongly trails brighten and dim. 0 = no pulse, 0.3 = subtle breathing, 0.6 = dramatic")]
-    [SerializeField, Range(0f, 0.8f)] private float pulseAmplitude = 0.2f;
-    [Tooltip("Pulse frequency when far from water (Hz). Low = slow, meditative breathing")]
-    [SerializeField, Range(0.1f, 2f)] private float pulseMinFreq = 0.3f;
-    [Tooltip("Pulse frequency when near water (Hz). Higher = excited, rapid streaming")]
-    [SerializeField, Range(1f, 6f)] private float pulseMaxFreq = 1.5f;
-    [Tooltip("Wave spatial scale. Controls how fast the pulse phase shifts across the organism. Higher = tighter ripples")]
-    [SerializeField, Range(0f, 1f)] private float pulseWaveScale = 0f;
-
-    [Header("Entropic Decay")]
-    [Tooltip("Spatial scale of decay noise. Lower = larger patches of persistence, higher = fine grain")]
-    [SerializeField, Range(0.005f, 0.2f)] private float entropyScale = 0.05f;
-    [Tooltip("How fast the noise pattern drifts over time")]
-    [SerializeField, Range(0f, 1f)] private float entropySpeed = 0.15f;
-    [Tooltip("How much evaporation varies. 0 = uniform (original), 1 = some pixels barely evaporate at all")]
-    [SerializeField, Range(0f, 1f)] private float entropyStrength = 0.4f;
-
     [Header("Visual")]
     [Tooltip("Slime color. Golden yellow is classic Physarum")]
     [SerializeField] private Color slimeColor = new Color(1f, 0.9f, 0.2f, 1f);
     [SerializeField] private int sortingOrder = 5;
 
+    [Header("Hazard Death Visuals")]
+    [Tooltip("How strongly agents steer away from hazards. Higher = wider avoidance zone")]
+    [SerializeField, Range(0f, 20f)] private float hazardAvoidanceStrength = 8f;
+    [Tooltip("Color of decaying/dying slime trails")]
+    [SerializeField] private Color decayColor = new Color(0.25f, 0.15f, 0.05f, 1f);
+    [Tooltip("How fast hazard zones corrode existing trails. Higher = faster dissolution")]
+    [SerializeField, Range(0f, 15f)] private float hazardCorrosionRate = 6f;
+    [Tooltip("Trail deposit reduction in decay zone (0=full trails, 1=no trails)")]
+    [SerializeField, Range(0f, 1f)] private float hazardTrailDampen = 0.85f;
+
     private RenderTexture trailMapA;
     private RenderTexture trailMapB;
     private bool useBufferA = true;
+
+    private Texture2D externalHazardMap;
+    private Texture2D defaultHazardMap;
+    private bool hasExternalHazard;
 
     private RenderTexture defaultAttractionMap;
     private ComputeBuffer agentsBuffer;
@@ -122,10 +118,15 @@ public class Slime : MonoBehaviour
 
         InitializeAgents();
 
-        defaultAttractionMap = new RenderTexture(width, height, 0, RenderTextureFormat.RFloat);
+        defaultAttractionMap = new RenderTexture(width, height, 0);
         defaultAttractionMap.enableRandomWrite = true;
         defaultAttractionMap.Create();
         ClearTexture(defaultAttractionMap);
+
+        defaultHazardMap = new Texture2D(width, height, TextureFormat.RFloat, false);
+        var clearPixels = new Color[width * height];
+        defaultHazardMap.SetPixels(clearPixels);
+        defaultHazardMap.Apply();
 
         SetupDisplay();
     }
@@ -227,26 +228,24 @@ public class Slime : MonoBehaviour
         shader.SetTexture(kernelUpdate, "WaterAttractionMap", waterMap);
         shader.SetFloat("waterAttractionStrength", waterStrength);
 
+        var hazMap = hasExternalHazard && externalHazardMap != null ? externalHazardMap : defaultHazardMap;
+        shader.SetTexture(kernelUpdate, "HazardMap", hazMap);
+        shader.SetFloat("spawnCenterX", width * spawnX);
+        shader.SetFloat("spawnCenterY", height * spawnY);
+        shader.SetFloat("spawnRadius", Mathf.Min(width, height) * spawnRadius);
+        shader.SetFloat("hazardAvoidanceStrength", hazardAvoidanceStrength);
+        shader.SetVector("decayColor", new Vector4(decayColor.r, decayColor.g, decayColor.b, decayColor.a));
+        shader.SetFloat("hazardCorrosionRate", hazardCorrosionRate);
+        shader.SetFloat("hazardTrailDampen", hazardTrailDampen);
+
         shader.SetBuffer(kernelUpdate, "agents", agentsBuffer);
         shader.Dispatch(kernelUpdate, numAgents / 16, 1, 1);
 
         shader.SetFloat("evaporateSpeed", evaporateSpeed);
         shader.SetFloat("diffuseSpeed", diffuseSpeed);
-
-        // Pulse parameters
-        shader.SetFloat("pulseAmplitude", pulseAmplitude);
-        shader.SetFloat("pulseMinFreq", pulseMinFreq);
-        shader.SetFloat("pulseMaxFreq", pulseMaxFreq);
-        shader.SetFloat("pulseWaveScale", pulseWaveScale);
-
-        // Entropic Decay parameters
-        shader.SetFloat("entropyScale", entropyScale);
-        shader.SetFloat("entropySpeed", entropySpeed);
-        shader.SetFloat("entropyStrength", entropyStrength);
         shader.SetTexture(kernelPostprocess, "TrailMap", readBuffer);
         shader.SetTexture(kernelPostprocess, "TrailMapProcessed", writeBuffer);
-        // Postprocess also needs water map for pulse frequency
-        shader.SetTexture(kernelPostprocess, "WaterAttractionMap", waterMap);
+        shader.SetTexture(kernelPostprocess, "HazardMap", hazMap);
         shader.Dispatch(kernelPostprocess, width / 8, height / 8, 1);
 
         useBufferA = !useBufferA;
@@ -262,6 +261,7 @@ public class Slime : MonoBehaviour
         trailMapA?.Release();
         trailMapB?.Release();
         defaultAttractionMap?.Release();
+        if (defaultHazardMap != null) Destroy(defaultHazardMap);
         agentsBuffer?.Release();
         if (displayTexture != null) Destroy(displayTexture);
         if (displaySprite != null) Destroy(displaySprite);
@@ -275,12 +275,17 @@ public class Slime : MonoBehaviour
         hasExternalAttraction = true;
     }
 
+    public void SetHazardMap(Texture2D hazardMap)
+    {
+        externalHazardMap = hazardMap;
+        hasExternalHazard = true;
+    }
+
     public Rect GetWorldBounds() => worldBounds;
 
     public void SetWorldBounds(Rect bounds)
     {
         worldBounds = bounds;
-        // Update display transform if already initialized
         if (targetRenderer != null)
         {
             float scaleX = worldBounds.width / (width / 100f);
@@ -314,11 +319,9 @@ public class Slime : MonoBehaviour
             }
         }
 
-        // World bounds
         Gizmos.color = new Color(1f, 0.9f, 0.2f, 0.6f);
         Gizmos.DrawWireCube(bounds.center, new Vector3(bounds.width, bounds.height, 0));
 
-        // Spawn area
         Vector2 spawnCenter = new Vector2(bounds.x + bounds.width * spawnX, bounds.y + bounds.height * spawnY);
         float radius = Mathf.Min(bounds.width, bounds.height) * spawnRadius;
         Gizmos.color = new Color(1f, 0.5f, 0f, 0.8f);
