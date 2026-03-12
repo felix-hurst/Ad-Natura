@@ -10,15 +10,18 @@ TagManager:
   - Ground
   - Debris
   - Fragment
+  - Wall
+  - Dirt
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - Ground
+  - 
   - Water
   - UI
   - Decompose
   - 
+  - Climbable
   - 
   - 
   - 

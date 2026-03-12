@@ -77,6 +77,10 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float armLength = 0.5f;
     [SerializeField] private Texture2D dashTexture;
 
+    [Header("Wall Climb")]
+    [SerializeField] private float slowFall = -0.5f;
+    private bool canClimb = false;
+
     private Animator anim;
     private Rigidbody2D rb;
     private bool isGrounded;
@@ -207,6 +211,18 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    public int GetCurrentTool()
+        { return currentToolIndex; }
+
+    public int GetWaterAmmo()
+        { return waterAmmo; }
+
+    public int GetIncendiaryAmmo()
+        { return incendiaryAmmo; }
+
+    public int GetWindAmmo()
+        { return windAmmo; }
+
     public void SwitchTool(int toolIndex)
     {
         Debug.Log("SwitchTool called with: " + toolIndex);
@@ -262,6 +278,7 @@ public class PlayerController : MonoBehaviour
             Debug.Log("Player switched to: " + currentTool.ToString());
         }
     }
+
     public bool RequestAmmoUse(ToolType tool)
     {
         if (!HasAmmo(tool)) return false;
@@ -422,8 +439,10 @@ public class PlayerController : MonoBehaviour
 
     public void OnJump(InputValue value)
     {
-        if (!isAiming && isGrounded && value.isPressed)
+        if (!isAiming && (isGrounded || canClimb) && value.isPressed)
         {
+            if (canClimb)               // Debug
+                Debug.Log("Wall Jump"); // Debug
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
             isGrounded = false;
         }
@@ -463,6 +482,19 @@ public class PlayerController : MonoBehaviour
                     isGrounded = true;
                 }
             }
+        }
+
+        if (collision.gameObject.layer == 7)
+        {
+            // Bool to allow jumping while on wall
+            // Slow fall
+            canClimb = true;
+            if (rb.linearVelocityY < slowFall)
+                rb.linearVelocityY = slowFall;
+        }
+        else
+        {
+            canClimb = false;
         }
     }
 

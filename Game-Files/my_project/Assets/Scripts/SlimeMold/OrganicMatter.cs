@@ -1,3 +1,4 @@
+using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -55,6 +56,8 @@ public class OrganicMatter : MonoBehaviour
     private SpriteRenderer mainRenderer;
     private float damagePercent;
 
+    [SerializeField] private Sprite climbableWallSprite;
+
     void Start()
     {
         currentHealth = maxHealth;
@@ -104,16 +107,27 @@ public class OrganicMatter : MonoBehaviour
             currentHealth = 0;
             isDecomposed = true;
 
-            // Try to trigger debris spawner
-            if (triggerDebrisSpawner)
+            // Split by if statement on whether this is Wood or Wall
+            if (this.CompareTag("Wood"))
             {
-                TriggerDebris();
+                // Try to trigger debris spawner
+                if (triggerDebrisSpawner)
+                {
+                    TriggerDebris();
+                }
+
+                onDecomposed?.Invoke();
+
+                // Delay destroy so debris/effects can spawn
+                Destroy(gameObject, destroyDelay);
             }
-
-            onDecomposed?.Invoke();
-
-            // Delay destroy so debris/effects can spawn
-            Destroy(gameObject, destroyDelay);
+            else // if Wall
+            {
+                this.GameObject().layer = LayerMask.NameToLayer("Climbable");
+                overlayRenderer.color = new Color(0f,0f,0f,0f);
+                this.GameObject().GetComponent<SpriteRenderer>().sprite = climbableWallSprite;
+            }
+            
         }
     }
 

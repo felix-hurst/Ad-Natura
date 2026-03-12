@@ -12,16 +12,16 @@ public class SlimeMoldManager : MonoBehaviour
     [Header("Water Attraction")]
     [Tooltip("Global multiplier for water attraction. Higher = slime responds faster to water")]
     [Range(0f, 100f)]
-    public float waterAttractionStrength = 40f;
+    [SerializeField] private float waterAttractionStrength = 40f;
 
     [Header("Source Detection")]
     [Tooltip("Automatically find all WaterSource components in scene")]
-    public bool autoFindSources = true;
+    [SerializeField] private bool autoFindSources = true;
     [Tooltip("How often to scan for new water sources (seconds)")]
     [Range(0.1f, 2f)]
-    public float sourceRefreshInterval = 0.5f;
+    [SerializeField] private float sourceRefreshInterval = 0.5f;
     [Tooltip("Manual list of water sources (used when autoFindSources is false)")]
-    public List<WaterSource> manualWaterSources = new List<WaterSource>();
+    [SerializeField] private List<WaterSource> manualWaterSources = new List<WaterSource>();
 
     [Header("Light Aversion")]
     public bool enableLightAversion = true;
@@ -30,21 +30,21 @@ public class SlimeMoldManager : MonoBehaviour
     [Header("Performance")]
     [Tooltip("How often to update attraction map (seconds). Lower = more responsive")]
     [Range(0.016f, 0.5f)]
-    public float mapUpdateInterval = 0.066f; // ~15 updates/sec
+    [SerializeField] private float mapUpdateInterval = 0.066f; // ~15 updates/sec
 
     [Header("Liquid Simulation Integration")]
     [Tooltip("Reference to CellularLiquidSimulation (auto-finds if not set)")]
-    public CellularLiquidSimulation liquidSimulation;
+    [SerializeField] private CellularLiquidSimulation liquidSimulation;
     [Tooltip("Enable attraction from liquid simulation water")]
-    public bool useLiquidSimulation = true;
+    [SerializeField] private bool useLiquidSimulation = true;
     [Tooltip("Auto-sync slime bounds to match liquid simulation area")]
-    public bool autoSyncBounds = true;
+    [SerializeField] private bool autoSyncBounds = true;
     [Tooltip("Strength multiplier for liquid simulation water attraction")]
     [Range(0f, 2f)]
-    public float liquidAttractionMultiplier = 1f;
+    [SerializeField] private float liquidAttractionMultiplier = 1f;
     [Tooltip("Minimum water amount to create attraction (filters noise)")]
     [Range(0f, 0.5f)]
-    public float minWaterThreshold = 0.1f;
+    [SerializeField] private float minWaterThreshold = 0.1f;
 
     private Slime slimeSimulation;
     private SlimeDecomposer slimeDecomposer;
@@ -461,7 +461,7 @@ public class SlimeMoldManager : MonoBehaviour
                 float worldX = worldBounds.x + (texX / (float)w) * worldBounds.width;
                 float totalWater = 0f;
 
-                for (float scanY = scanYMin; scanY < scanYMax; scanY += liquidSimulation.cellSize)
+                for (float scanY = scanYMin; scanY < scanYMax; scanY += liquidSimulation.CellSize)
                 {
                     Vector2Int gridPos = liquidSimulation.WorldToGrid(new Vector2(worldX, scanY));
                     if (liquidSimulation.IsValidCell(gridPos.x, gridPos.y))
@@ -501,7 +501,7 @@ public class SlimeMoldManager : MonoBehaviour
                 float worldX = worldBounds.x + (texX / (float)w) * worldBounds.width;
                 float totalWater = 0f;
 
-                for (float scanY = scanYMin; scanY < scanYMax; scanY += liquidSimulation.cellSize)
+                for (float scanY = scanYMin; scanY < scanYMax; scanY += liquidSimulation.CellSize)
                 {
                     Vector2Int gridPos = liquidSimulation.WorldToGrid(new Vector2(worldX, scanY));
                     if (liquidSimulation.IsValidCell(gridPos.x, gridPos.y))
@@ -542,7 +542,7 @@ public class SlimeMoldManager : MonoBehaviour
                 float worldY = worldBounds.y + (texY / (float)h) * worldBounds.height;
                 float totalWater = 0f;
 
-                for (float scanX = scanXMin; scanX < scanXMax; scanX += liquidSimulation.cellSize)
+                for (float scanX = scanXMin; scanX < scanXMax; scanX += liquidSimulation.CellSize)
                 {
                     Vector2Int gridPos = liquidSimulation.WorldToGrid(new Vector2(scanX, worldY));
                     if (liquidSimulation.IsValidCell(gridPos.x, gridPos.y))
@@ -583,7 +583,7 @@ public class SlimeMoldManager : MonoBehaviour
                 float worldY = worldBounds.y + (texY / (float)h) * worldBounds.height;
                 float totalWater = 0f;
 
-                for (float scanX = scanXMin; scanX < scanXMax; scanX += liquidSimulation.cellSize)
+                for (float scanX = scanXMin; scanX < scanXMax; scanX += liquidSimulation.CellSize)
                 {
                     Vector2Int gridPos = liquidSimulation.WorldToGrid(new Vector2(scanX, worldY));
                     if (liquidSimulation.IsValidCell(gridPos.x, gridPos.y))
