@@ -2,9 +2,9 @@ name: Unity C# Linter
 
 on:
   push:
-    branches: [ main,marcoschanges ]
+    branches: [ main,marcosChanges ]
   pull_request:
-    branches: [ main,marcoschanges ]
+    branches: [ main,marcosChanges ]
 
 jobs:
   check-format:
