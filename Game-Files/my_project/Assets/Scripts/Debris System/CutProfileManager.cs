@@ -7,7 +7,7 @@ public class CutProfile
     public string materialName;
     [Range(0f, 1f)] public float softness = 0.5f;  // 0 = very jagged, 1 = smooth curves
     [Range(0f, 1f)] public float strength = 0.3f;  // 0 = no extra cutting, 1 = maxextra cutting
-    
+
     public CutProfile(string name, float soft, float str)
     {
         materialName = name;
@@ -27,14 +27,14 @@ public class CutProfileManager : MonoBehaviour
     [Header("Cut Profile Settings")]
     [SerializeField] private TextAsset profileJsonFile;
     [SerializeField] private CutProfile defaultProfile = new CutProfile("Default", 0.5f, 0.3f);
-    
+
     private Dictionary<string, CutProfile> profileDictionary = new Dictionary<string, CutProfile>();
-    
+
     void Awake()
     {
         LoadProfiles();
     }
-    
+
     void LoadProfiles()
     {
         if (profileJsonFile != null)
@@ -42,7 +42,7 @@ public class CutProfileManager : MonoBehaviour
             try
             {
                 CutProfileList profileList = JsonUtility.FromJson<CutProfileList>(profileJsonFile.text);
-                
+
                 foreach (CutProfile profile in profileList.profiles)
                 {
                     profileDictionary[profile.materialName] = profile;
@@ -59,14 +59,14 @@ public class CutProfileManager : MonoBehaviour
             profileDictionary["Default"] = defaultProfile;
         }
     }
-    
+
     public CutProfile GetProfile(string materialName)
     {
         if (profileDictionary.ContainsKey(materialName))
         {
             return profileDictionary[materialName];
         }
-        
+
         Debug.LogWarning($"No cut profile found for '{materialName}', using default");
         return defaultProfile;
     }
@@ -77,7 +77,7 @@ public class CutProfileManager : MonoBehaviour
         {
             return originalShape;
         }
-        
+
         List<Vector2> irregularShape = new List<Vector2>();
 
         int entryIndex = FindClosestVertexIndex(originalShape, entryPoint);
@@ -94,7 +94,7 @@ public class CutProfileManager : MonoBehaviour
                             (isExitEdge && Vector2.Distance(nextVertex, entryPoint) < 0.1f) ||
                             (Vector2.Distance(currentVertex, entryPoint) < 0.1f && Vector2.Distance(nextVertex, exitPoint) < 0.1f) ||
                             (Vector2.Distance(currentVertex, exitPoint) < 0.1f && Vector2.Distance(nextVertex, entryPoint) < 0.1f);
-            
+
             if (isCutEdge)
             {
                 List<Vector2> irregularEdge = GenerateIrregularEdge(currentVertex, nextVertex, profile);
@@ -105,7 +105,7 @@ public class CutProfileManager : MonoBehaviour
                 irregularShape.Add(currentVertex);
             }
         }
-        
+
         return irregularShape;
     }
 
@@ -113,11 +113,11 @@ public class CutProfileManager : MonoBehaviour
     {
         List<Vector2> points = new List<Vector2>();
         points.Add(start);
-        
+
         float edgeLength = Vector2.Distance(start, end);
         Vector2 direction = (end - start).normalized;
         Vector2 perpendicular = new Vector2(-direction.y, direction.x);
-        
+
         int minSegments = 3;
         int maxSegments = 15;
         int numSegments = Mathf.RoundToInt(Mathf.Lerp(maxSegments, minSegments, profile.softness));
@@ -145,24 +145,24 @@ public class CutProfileManager : MonoBehaviour
             {
                 offset = Random.Range(-maxOffset, maxOffset);
             }
-            
+
             float cutBias = Random.Range(-1f, 0.3f);
             offset *= cutBias;
-            
+
             Vector2 irregularPoint = basePoint + perpendicular * offset;
             points.Add(irregularPoint);
         }
-        
+
         points.Add(end);
-        
+
         return points;
     }
-    
+
     int FindClosestVertexIndex(List<Vector2> vertices, Vector2 point)
     {
         int closestIndex = 0;
         float closestDistance = Vector2.Distance(vertices[0], point);
-        
+
         for (int i = 1; i < vertices.Count; i++)
         {
             float distance = Vector2.Distance(vertices[i], point);
@@ -172,7 +172,7 @@ public class CutProfileManager : MonoBehaviour
                 closestIndex = i;
             }
         }
-        
+
         return closestIndex;
     }
 }
@@ -182,7 +182,7 @@ public static class CutProfileExtensions
     public static CutProfile GetCutProfileForObject(GameObject obj)
     {
         CutProfileManager manager = Object.FindObjectOfType<CutProfileManager>();
-        
+
         if (manager == null)
         {
             Debug.LogWarning("No CutProfileManager found in scene!");
@@ -194,7 +194,7 @@ public static class CutProfileExtensions
         {
             profileKey = obj.name;
         }
-        
+
         return manager.GetProfile(profileKey);
     }
 }

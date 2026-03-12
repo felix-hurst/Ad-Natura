@@ -244,6 +244,7 @@ public class Slime : MonoBehaviour
         shader.SetFloat("entropySpeed", entropySpeed);
         shader.SetFloat("entropyStrength", entropyStrength);
         shader.SetTexture(kernelPostprocess, "TrailMap", readBuffer);
+        //shader.SetTexture(kernelPostprocess, "TrailMap", waterMap);
         shader.SetTexture(kernelPostprocess, "TrailMapProcessed", writeBuffer);
         // Postprocess also needs water map for pulse frequency
         shader.SetTexture(kernelPostprocess, "WaterAttractionMap", waterMap);

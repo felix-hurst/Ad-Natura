@@ -17,7 +17,7 @@ float trailWeight;
 float idleSpeed;
 float attractedSpeedMultiplier;
 
-RWTexture2D<float> WaterAttractionMap;
+RWTexture2D<float4> WaterAttractionMap;
 float waterAttractionStrength;
 
 float4 slimeColor;
@@ -87,100 +87,101 @@ void Update(uint3 id : SV_DispatchThreadID)
     uint seed = uint(agent.pos.y * width + agent.pos.x) + id.x + uint(gameTime * 1000);
     float random01 = randomValue(seed);
 
-    // Sense water attraction in three directions
+    // Calculate sensor positions
     float2 fwdDir = float2(cos(agent.angle), sin(agent.angle));
     float2 leftDir = float2(cos(agent.angle + sensorAngleSpacing), sin(agent.angle + sensorAngleSpacing));
     float2 rightDir = float2(cos(agent.angle - sensorAngleSpacing), sin(agent.angle - sensorAngleSpacing));
 
-    // Clamp sensor positions to bounds (so agents can sense water at edges)
     int2 fwdPos = int2(clamp(agent.pos + fwdDir * sensorLength, float2(0,0), float2(width-1, height-1)));
     int2 leftPos = int2(clamp(agent.pos + leftDir * sensorLength, float2(0,0), float2(width-1, height-1)));
     int2 rightPos = int2(clamp(agent.pos + rightDir * sensorLength, float2(0,0), float2(width-1, height-1)));
 
-    float waterFwd = WaterAttractionMap[fwdPos];
-    float waterLeft = WaterAttractionMap[leftPos];
-    float waterRight = WaterAttractionMap[rightPos];
+    //Channel g is for attraction, channel r is for repulsion
+    float3 waterValues = float3(
+        WaterAttractionMap[fwdPos].g,
+        WaterAttractionMap[leftPos].g,
+        WaterAttractionMap[rightPos].g
+    );
 
-    // Sense trails
-    float trailFwd = sense(agent, 0);
-    float trailLeft = sense(agent, sensorAngleSpacing);
-    float trailRight = sense(agent, -sensorAngleSpacing);
+    int2 currentPos = int2(clamp(agent.pos, float2(0,0), float2(width-1, height-1)));
+    float currentFear = WaterAttractionMap[currentPos].r; 
+    
+    float totalFwd, totalLeft, totalRight;
+    float speed = idleSpeed;
+    float attractionLevel = 0; // For trail depositing later
 
-    // Combined weights
-    float totalFwd = waterFwd * waterAttractionStrength + trailFwd * trailWeight;
-    float totalLeft = waterLeft * waterAttractionStrength + trailLeft * trailWeight;
-    float totalRight = waterRight * waterAttractionStrength + trailRight * trailWeight;
-
-    // Turning decision
-    float turnAmount = turnSpeed * deltaTime;
-
-    // Standard physarum turning logic
-    float randomTurn = (random01 - 0.5) * turnAmount * 0.5;
-
-    if (totalFwd >= totalLeft && totalFwd >= totalRight)
+    //currentFear is a measure of how much repulsion strength the light has at the slime molds position
+    if (currentFear > 0.1)
     {
-        // Forward is best - small random adjustment
-        agents[id.x].angle += randomTurn * 0.3;
-    }
-    else if (totalLeft > totalRight)
-    {
-        agents[id.x].angle += turnAmount + randomTurn;
+        //Move away from areas of high repulsion and towards areas of low repulsion
+        totalFwd = 1.0 - WaterAttractionMap[fwdPos].r;
+        totalLeft = 1.0 - WaterAttractionMap[leftPos].r;
+        totalRight = 1.0 - WaterAttractionMap[rightPos].r;
+
+        speed = moveSpeed * attractedSpeedMultiplier;
     }
     else
     {
+        //If not in fear of light, sense normal water attraction
+        float trailFwd = sense(agent, 0);
+        float trailLeft = sense(agent, sensorAngleSpacing);
+        float trailRight = sense(agent, -sensorAngleSpacing);
+
+        // Calculate water influence using the strength
+        float waterFwd = waterValues.x * waterAttractionStrength;
+        float waterLeft = waterValues.y * waterAttractionStrength;
+        float waterRight = waterValues.z * waterAttractionStrength;
+
+        // Combine for turning logic
+        totalFwd = waterFwd + (trailFwd * trailWeight);
+        totalLeft = waterLeft + (trailLeft * trailWeight);
+        totalRight = waterRight + (trailRight * trailWeight);
+
+        //Speed
+        float maxWaterSensed = max(waterFwd, max(waterLeft, waterRight));
+        float maxTrailSensed = trailFwd * trailWeight;
+        
+        if (maxWaterSensed > 0.01) {
+            // Speed up when near water
+            speed = moveSpeed * attractedSpeedMultiplier;
+        } else if (maxTrailSensed > 0.01) {
+            // Move normal speed on trails
+            speed = moveSpeed;
+        } else {
+            // Truly nothing around
+            speed = idleSpeed;
+        }
+
+        attractionLevel = saturate(maxWaterSensed);
+    }
+
+    //Turning
+    float turnAmount = turnSpeed * deltaTime;
+    float randomTurn = (random01 - 0.5) * turnAmount * 0.5;
+
+    if (totalFwd >= totalLeft && totalFwd >= totalRight) {
+        agents[id.x].angle += randomTurn * 0.3;
+    } else if (totalLeft > totalRight) {
+        agents[id.x].angle += turnAmount + randomTurn;
+    } else {
         agents[id.x].angle -= turnAmount + randomTurn;
     }
 
-    // Speed: idle when no attraction, fast when sensing water/trails
-    float maxWater = max(max(waterFwd, waterLeft), waterRight);
-    float attractionLevel = saturate(maxWater * waterAttractionStrength * 0.5);
-    float speed = lerp(idleSpeed, moveSpeed * attractedSpeedMultiplier, attractionLevel);
-
-    // Movement
+    //Moving
     float2 dir = float2(cos(agents[id.x].angle), sin(agents[id.x].angle));
     float2 newPos = agent.pos + dir * speed * deltaTime;
 
-    // Boundary handling - spread along edge if water nearby, otherwise bounce
-    bool hitLeft = newPos.x < 0;
-    bool hitRight = newPos.x >= width;
-    bool hitBottom = newPos.y < 0;
-    bool hitTop = newPos.y >= height;
-
-    if (hitLeft || hitRight || hitBottom || hitTop)
+    //Handling the boundaries of the slime mold
+    if (newPos.x < 0 || newPos.x >= width || newPos.y < 0 || newPos.y >= height)
     {
         newPos.x = clamp(newPos.x, 0, width - 1);
         newPos.y = clamp(newPos.y, 0, height - 1);
-
-        // Check if there's water attraction at this edge
-        bool hasWaterAtEdge = maxWater > 0.01;
-
-        if (hasWaterAtEdge)
-        {
-            // Water at edge - spread ALONG the edge instead of bouncing back
-            float random02 = randomValue(seed + 7919u);
-            if (hitTop || hitBottom)
-            {
-                // Deflect to horizontal (left or right randomly)
-                agents[id.x].angle = (random01 > 0.5) ? 0.0 : PI;
-            }
-            else
-            {
-                // Deflect to vertical (up or down randomly)
-                agents[id.x].angle = (random01 > 0.5) ? PI * 0.5 : -PI * 0.5;
-            }
-            // Add some randomness for natural spread
-            agents[id.x].angle += (random02 - 0.5) * 0.8;
-        }
-        else
-        {
-            // No water - normal bounce back
-            agents[id.x].angle += PI + (random01 - 0.5) * 0.5;
-        }
+        agents[id.x].angle += PI + (random01 - 0.5) * 0.5;
     }
 
     agents[id.x].pos = newPos;
 
-    // Deposit trail - stronger when near water (creates highways)
+    //Deposit trail
     float trailStrength = 1.0 + attractionLevel * 2.0;
     TrailMap[int2(newPos.x, newPos.y)] = slimeColor * trailStrength;
 }
@@ -261,7 +262,7 @@ void Postprocess(uint3 id : SV_DispatchThreadID)
     float density = length(evaporated.rgb);
     float normalizedDensity = saturate(density / 2.5);
 
-    float waterHere = WaterAttractionMap[id.xy];
+    float waterHere = WaterAttractionMap[id.xy].g;
     float waterInfluence = saturate(waterHere * waterAttractionStrength);
     float freq = lerp(pulseMinFreq, pulseMaxFreq, waterInfluence);
 

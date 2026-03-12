@@ -7,7 +7,7 @@ public class PhysicsMaterialData
     public string materialName;
     [Range(0f, 1f)] public float friction = 0.4f;
     [Range(0f, 1f)] public float bounciness = 0f;
-    
+
     public PhysicsMaterialData(string name, float frict, float bounce)
     {
         materialName = name;
@@ -27,10 +27,10 @@ public class PhysicsMaterialManager : MonoBehaviour
     [Header("Physics Material Settings")]
     [SerializeField] private TextAsset physicsMaterialJson;
     [SerializeField] private PhysicsMaterialData defaultMaterial = new PhysicsMaterialData("Default", 0.4f, 0f);
-    
+
     private Dictionary<string, PhysicsMaterialData> materialDataDictionary = new Dictionary<string, PhysicsMaterialData>();
     private Dictionary<string, PhysicsMaterial2D> physicsMaterialCache = new Dictionary<string, PhysicsMaterial2D>();
-    
+
     void Awake()
     {
         LoadMaterialData();
@@ -42,7 +42,7 @@ public class PhysicsMaterialManager : MonoBehaviour
             try
             {
                 PhysicsMaterialList materialList = JsonUtility.FromJson<PhysicsMaterialList>(physicsMaterialJson.text);
-                
+
                 foreach (PhysicsMaterialData data in materialList.materials)
                 {
                     materialDataDictionary[data.materialName] = data;
@@ -67,7 +67,7 @@ public class PhysicsMaterialManager : MonoBehaviour
         {
             return materialDataDictionary[materialName];
         }
-        
+
         Debug.LogWarning($"No physics material data found for '{materialName}', using default");
         return defaultMaterial;
     }
@@ -86,9 +86,9 @@ public class PhysicsMaterialManager : MonoBehaviour
         physicsMaterial.bounciness = data.bounciness;
 
         physicsMaterialCache[materialName] = physicsMaterial;
-        
+
         Debug.Log($"Created PhysicsMaterial2D for {materialName}: Friction={data.friction}, Bounciness={data.bounciness}");
-        
+
         return physicsMaterial;
     }
 
@@ -102,19 +102,19 @@ public class PhysicsMaterialManager : MonoBehaviour
         {
             collider.sharedMaterial = physicsMaterial;
         }
-        
+
         Debug.Log($"Applied physics material '{materialName}' to {obj.name}");
     }
 
     string GetMaterialNameFromObject(GameObject obj)
     {
         string materialName = obj.tag;
-        
+
         if (string.IsNullOrEmpty(materialName) || materialName == "Untagged")
         {
             materialName = obj.name;
         }
-        
+
         return materialName;
     }
 
@@ -130,31 +130,31 @@ public static class PhysicsMaterialExtensions
     public static void ApplyMaterialPhysics(this GameObject obj)
     {
         PhysicsMaterialManager manager = Object.FindObjectOfType<PhysicsMaterialManager>();
-        
+
         if (manager == null)
         {
             Debug.LogWarning("No PhysicsMaterialManager found in scene!");
             return;
         }
-        
+
         manager.ApplyPhysicsMaterial(obj);
     }
 
     public static float GetMaterialFriction(this GameObject obj)
     {
         PhysicsMaterialManager manager = Object.FindObjectOfType<PhysicsMaterialManager>();
-        
+
         if (manager == null)
         {
             return 0.4f;
         }
-        
+
         string materialName = obj.tag;
         if (string.IsNullOrEmpty(materialName) || materialName == "Untagged")
         {
             materialName = obj.name;
         }
-        
+
         PhysicsMaterialData data = manager.GetMaterialData(materialName);
         return data.friction;
     }

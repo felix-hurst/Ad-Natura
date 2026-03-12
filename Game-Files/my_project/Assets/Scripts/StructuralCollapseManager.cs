@@ -83,135 +83,135 @@ public class StructuralCollapseManager : MonoBehaviour
             warningColor));
     }
 
-IEnumerator DelayedExplosionCoroutine(
-    GameObject target,
-    Vector2 explosionOrigin,
-    float delay,
-    int minRayCount,
-    int maxRayCount,
-    float rayDistance,
-    float minAngle,
-    float maxAngle,
-    bool showRays,
-    float rayVisualizationDuration,
-    Color rayColor,
-    bool showWarning,
-    float warningDuration,
-    Color warningColor)
-{
-    Bounds originalBounds = GetObjectBounds(target);
-    float originalArea = originalBounds.size.x * originalBounds.size.y;
-    string materialTag = target.tag;
-    
-    if (string.IsNullOrEmpty(materialTag) || materialTag == "Untagged")
+    IEnumerator DelayedExplosionCoroutine(
+        GameObject target,
+        Vector2 explosionOrigin,
+        float delay,
+        int minRayCount,
+        int maxRayCount,
+        float rayDistance,
+        float minAngle,
+        float maxAngle,
+        bool showRays,
+        float rayVisualizationDuration,
+        Color rayColor,
+        bool showWarning,
+        float warningDuration,
+        Color warningColor)
     {
-        materialTag = target.name;
-    }
+        Bounds originalBounds = GetObjectBounds(target);
+        float originalArea = originalBounds.size.x * originalBounds.size.y;
+        string materialTag = target.tag;
 
-    ExplosionFragment marker = target.GetComponent<ExplosionFragment>();
-    if (marker == null)
-    {
-        marker = target.AddComponent<ExplosionFragment>();
-    }
-    marker.Initialize(materialTag);
-
-    GameObject warningVis = null;
-    if (showWarning && warningDuration > 0)
-    {
-        float warningStart = delay - warningDuration;
-        if (warningStart > 0)
+        if (string.IsNullOrEmpty(materialTag) || materialTag == "Untagged")
         {
-            yield return new WaitForSeconds(warningStart);
+            materialTag = target.name;
+        }
 
-            if (target != null)
+        ExplosionFragment marker = target.GetComponent<ExplosionFragment>();
+        if (marker == null)
+        {
+            marker = target.AddComponent<ExplosionFragment>();
+        }
+        marker.Initialize(materialTag);
+
+        GameObject warningVis = null;
+        if (showWarning && warningDuration > 0)
+        {
+            float warningStart = delay - warningDuration;
+            if (warningStart > 0)
             {
-                warningVis = CreateWarningVisualization(target, warningColor, warningDuration);
+                yield return new WaitForSeconds(warningStart);
+
+                if (target != null)
+                {
+                    warningVis = CreateWarningVisualization(target, warningColor, warningDuration);
+                }
+                yield return new WaitForSeconds(warningDuration);
             }
-            yield return new WaitForSeconds(warningDuration);
+            else
+            {
+                yield return new WaitForSeconds(delay);
+            }
         }
         else
         {
             yield return new WaitForSeconds(delay);
         }
-    }
-    else
-    {
-        yield return new WaitForSeconds(delay);
-    }
 
-    if (warningVis != null)
-    {
-        Destroy(warningVis);
-    }
-
-    if (target == null)
-    {
-        yield break;
-    }
-
-    ExplosionFragment targetFragment = target.GetComponent<ExplosionFragment>();
-    
-    if (targetFragment == null || targetFragment.gameObject == null)
-    {
-        Debug.LogWarning($"[StructuralCollapseManager] Target {target.name} has no ExplosionFragment, aborting explosion");
-        yield break;
-    }
-
-    int currentMinRays = startingMinRays;
-    int currentMaxRays = startingMaxRays;
-
-    for (int round = 1; round <= numberOfExplosionRounds; round++)
-    {
-        if (targetFragment == null || targetFragment.gameObject == null)
+        if (warningVis != null)
         {
-            break;
+            Destroy(warningVis);
         }
 
-        GameObject fragmentObj = targetFragment.gameObject;
-        Bounds fragmentBounds = GetObjectBounds(fragmentObj);
-        Vector2 fragmentCenter = fragmentBounds.center;
-
-        int rayCount = Random.Range(currentMinRays, currentMaxRays + 1);
-        List<float> angles = GenerateRandomAngles(rayCount, minAngle, maxAngle);
-
-        int totalCuts = 0;
-        foreach (float angle in angles)
+        if (target == null)
         {
-            Vector2 direction = new Vector2(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad));
-            Color roundColor = round == 1 ? rayColor : Color.Lerp(rayColor, Color.red, (round - 1) / (float)numberOfExplosionRounds);
+            yield break;
+        }
 
-            bool cutMade = PerformExplosionRaycast(fragmentObj, fragmentCenter, direction, explosionRayDistance,
-                                                showRays, rayVisualizationDuration, roundColor);
-            if (cutMade)
+        ExplosionFragment targetFragment = target.GetComponent<ExplosionFragment>();
+
+        if (targetFragment == null || targetFragment.gameObject == null)
+        {
+            Debug.LogWarning($"[StructuralCollapseManager] Target {target.name} has no ExplosionFragment, aborting explosion");
+            yield break;
+        }
+
+        int currentMinRays = startingMinRays;
+        int currentMaxRays = startingMaxRays;
+
+        for (int round = 1; round <= numberOfExplosionRounds; round++)
+        {
+            if (targetFragment == null || targetFragment.gameObject == null)
             {
-                totalCuts++;
-                yield return new WaitForFixedUpdate();
-                yield return new WaitForFixedUpdate();
-                yield return new WaitForFixedUpdate();
+                break;
+            }
+
+            GameObject fragmentObj = targetFragment.gameObject;
+            Bounds fragmentBounds = GetObjectBounds(fragmentObj);
+            Vector2 fragmentCenter = fragmentBounds.center;
+
+            int rayCount = Random.Range(currentMinRays, currentMaxRays + 1);
+            List<float> angles = GenerateRandomAngles(rayCount, minAngle, maxAngle);
+
+            int totalCuts = 0;
+            foreach (float angle in angles)
+            {
+                Vector2 direction = new Vector2(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad));
+                Color roundColor = round == 1 ? rayColor : Color.Lerp(rayColor, Color.red, (round - 1) / (float)numberOfExplosionRounds);
+
+                bool cutMade = PerformExplosionRaycast(fragmentObj, fragmentCenter, direction, explosionRayDistance,
+                                                    showRays, rayVisualizationDuration, roundColor);
+                if (cutMade)
+                {
+                    totalCuts++;
+                    yield return new WaitForFixedUpdate();
+                    yield return new WaitForFixedUpdate();
+                    yield return new WaitForFixedUpdate();
+                }
+            }
+
+            yield return new WaitForFixedUpdate();
+            yield return new WaitForFixedUpdate();
+
+            currentMinRays = Mathf.Max(1, Mathf.RoundToInt(currentMinRays * rayReductionPerRound));
+            currentMaxRays = Mathf.Max(2, Mathf.RoundToInt(currentMaxRays * rayReductionPerRound));
+
+            if (round < numberOfExplosionRounds)
+            {
+                yield return new WaitForSeconds(delayBetweenRounds);
             }
         }
 
-        yield return new WaitForFixedUpdate();
-        yield return new WaitForFixedUpdate();
-
-        currentMinRays = Mathf.Max(1, Mathf.RoundToInt(currentMinRays * rayReductionPerRound));
-        currentMaxRays = Mathf.Max(2, Mathf.RoundToInt(currentMaxRays * rayReductionPerRound));
-
-        if (round < numberOfExplosionRounds)
+        if (destroyFragmentsAfterExplosion)
         {
-            yield return new WaitForSeconds(delayBetweenRounds);
+            yield return new WaitForSeconds(fragmentCleanupDelay);
+            if (target != null)
+            {
+                Destroy(target);
+            }
         }
     }
-
-    if (destroyFragmentsAfterExplosion)
-    {
-        yield return new WaitForSeconds(fragmentCleanupDelay);
-        if (target != null)
-        {
-            Destroy(target);
-        }
-    }
-}
 
     public void ScheduleSingleRoundExplosion(
         GameObject target,
@@ -263,7 +263,7 @@ IEnumerator DelayedExplosionCoroutine(
         Color warningColor)
     {
         string materialTag = target.tag;
-        
+
         if (string.IsNullOrEmpty(materialTag) || materialTag == "Untagged")
         {
             materialTag = target.name;
@@ -351,7 +351,7 @@ IEnumerator DelayedExplosionCoroutine(
     void DestroyAllFragments()
     {
         ExplosionFragment[] allFragments = FindObjectsOfType<ExplosionFragment>();
-        
+
         foreach (ExplosionFragment fragment in allFragments)
         {
             if (fragment != null && fragment.gameObject != null)

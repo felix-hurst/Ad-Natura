@@ -34,13 +34,13 @@ public class MaterialTextureProfile
     public ColorData lightColor = new ColorData();
     public ColorData darkColor = new ColorData();
     public List<ClusterDefinition> clusters = new List<ClusterDefinition>();
-    
+
     [Range(1f, 64f)] public float noiseScale = 12f;
     [Range(0f, 1f)] public float noiseStrength = 0.2f;
-    
+
     public bool enableShading = true;
     [Range(0f, 1f)] public float shadingStrength = 0.35f;
-    
+
     [Range(0f, 1f)] public float smoothness = 0f;
     public string patternType = "MinecraftSimple";
 }
@@ -56,15 +56,15 @@ public class MaterialTextureGenerator : MonoBehaviour
     [Header("Texture Settings")]
     [SerializeField] private TextAsset materialTexturesJson;
     [SerializeField] private MaterialTextureProfile defaultProfile = new MaterialTextureProfile();
-    
+
     private Dictionary<string, MaterialTextureProfile> profileDictionary = new Dictionary<string, MaterialTextureProfile>();
     private Dictionary<string, Texture2D> generatedTextures = new Dictionary<string, Texture2D>();
-    
+
     void Awake()
     {
         LoadProfiles();
     }
-    
+
     void LoadProfiles()
     {
         if (materialTexturesJson != null)
@@ -72,7 +72,7 @@ public class MaterialTextureGenerator : MonoBehaviour
             try
             {
                 MaterialTextureList profileList = JsonUtility.FromJson<MaterialTextureList>(materialTexturesJson.text);
-                
+
                 foreach (MaterialTextureProfile profile in profileList.materials)
                 {
                     profileDictionary[profile.materialName] = profile;
@@ -83,36 +83,36 @@ public class MaterialTextureGenerator : MonoBehaviour
                 Debug.LogError($"Failed to load material texture profiles: {e.Message}");
             }
         }
-        
+
         if (!profileDictionary.ContainsKey("Default"))
         {
             profileDictionary["Default"] = defaultProfile;
         }
     }
-    
+
     public MaterialTextureProfile GetProfile(string materialName)
     {
         if (profileDictionary.ContainsKey(materialName))
         {
             return profileDictionary[materialName];
         }
-        
+
         Debug.LogWarning($"No texture profile found for '{materialName}', using default");
         return defaultProfile;
     }
-    
+
     public Texture2D GetTexture(string materialName)
     {
         if (generatedTextures.ContainsKey(materialName))
         {
             return generatedTextures[materialName];
         }
-        
+
         MaterialTextureProfile profile = GetProfile(materialName);
         Texture2D texture = GenerateMinecraftTexture(profile);
-        
+
         generatedTextures[materialName] = texture;
-        
+
         return texture;
     }
     Texture2D GenerateMinecraftTexture(MaterialTextureProfile profile)
@@ -121,7 +121,7 @@ public class MaterialTextureGenerator : MonoBehaviour
         Texture2D texture = new Texture2D(size, size, TextureFormat.RGBA32, false);
         texture.filterMode = FilterMode.Point;
         texture.wrapMode = TextureWrapMode.Repeat;
-        
+
         Color baseColor = profile.baseColor.ToColor();
         Color lightColor = profile.lightColor.ToColor();
         Color darkColor = profile.darkColor.ToColor();
@@ -159,9 +159,9 @@ public class MaterialTextureGenerator : MonoBehaviour
             {
                 Color pixelColor;
                 bool applyShading = false;
-                
+
                 int clusterIndex = clusterMap[x, y];
-                
+
                 if (clusterIndex >= 0)
                 {
                     PixelCluster cluster = clusters[clusterIndex];
@@ -186,14 +186,14 @@ public class MaterialTextureGenerator : MonoBehaviour
                 if (applyShading)
                 {
                     float lighting = lightingMap[x, y];
-                    
+
                     if (clusterIndex >= 0)
                     {
                         Color clusterLight = pixelColor * 1.3f;
                         clusterLight.a = pixelColor.a;
                         Color clusterDark = pixelColor * 0.7f;
                         clusterDark.a = pixelColor.a;
-                        
+
                         if (lighting > 0.5f)
                         {
                             float lightAmount = (lighting - 0.5f) * 2f;
@@ -219,11 +219,11 @@ public class MaterialTextureGenerator : MonoBehaviour
                         }
                     }
                 }
-                
+
                 texture.SetPixel(x, y, pixelColor);
             }
         }
-        
+
         texture.Apply();
         return texture;
     }
@@ -231,7 +231,7 @@ public class MaterialTextureGenerator : MonoBehaviour
     List<PixelCluster> GeneratePixelClusters(int size, List<ClusterDefinition> definitions)
     {
         List<PixelCluster> clusters = new List<PixelCluster>();
-        
+
         foreach (ClusterDefinition def in definitions)
         {
             for (int i = 0; i < def.count; i++)
@@ -248,16 +248,16 @@ public class MaterialTextureGenerator : MonoBehaviour
 
                 Queue<Vector2Int> toProcess = new Queue<Vector2Int>();
                 HashSet<Vector2Int> processed = new HashSet<Vector2Int>();
-                
+
                 toProcess.Enqueue(new Vector2Int(startX, startY));
-                
+
                 while (toProcess.Count > 0 && cluster.pixels.Count < clusterSize * clusterSize)
                 {
                     Vector2Int current = toProcess.Dequeue();
-                    
+
                     if (processed.Contains(current)) continue;
                     if (current.x < 0 || current.x >= size || current.y < 0 || current.y >= size) continue;
-                    
+
                     processed.Add(current);
                     cluster.pixels.Add(current);
 
@@ -270,7 +270,7 @@ public class MaterialTextureGenerator : MonoBehaviour
                             new Vector2Int(current.x, current.y + 1),
                             new Vector2Int(current.x, current.y - 1),
                         };
-                        
+
                         foreach (Vector2Int neighbor in neighbors)
                         {
                             if (!processed.Contains(neighbor) && Random.value > 0.4f)
@@ -280,64 +280,64 @@ public class MaterialTextureGenerator : MonoBehaviour
                         }
                     }
                 }
-                
+
                 clusters.Add(cluster);
             }
         }
-        
+
         return clusters;
     }
 
     float[,] GenerateMinecraftLighting(int size, float strength)
     {
         float[,] lightingMap = new float[size, size];
-        
+
         for (int y = 0; y < size; y++)
         {
             for (int x = 0; x < size; x++)
             {
                 float nx = x / (float)size;
                 float ny = y / (float)size;
-                
+
                 // Top-right = light, bottom-left = dark
                 float lighting = (nx + ny) / 2f;
-                
+
                 lighting = Mathf.Lerp(0.5f, lighting, strength);
-                
+
                 // Add noise for variation
                 float lightNoise = Mathf.PerlinNoise(x * 0.1f, y * 0.1f) * 0.1f;
                 lighting += lightNoise;
-                
+
                 lighting = Mathf.Clamp01(lighting);
                 lightingMap[x, y] = lighting;
             }
         }
-        
+
         return lightingMap;
     }
 
     float[,] GenerateNoiseMap(int size, float scale)
     {
         float[,] noiseMap = new float[size, size];
-        
+
         float offsetX = Random.Range(0f, 1000f);
         float offsetY = Random.Range(0f, 1000f);
-        
+
         for (int y = 0; y < size; y++)
         {
             for (int x = 0; x < size; x++)
             {
                 float sampleX = (x / (float)size * scale) + offsetX;
                 float sampleY = (y / (float)size * scale) + offsetY;
-                
+
                 float noise = Mathf.PerlinNoise(sampleX, sampleY);
                 noiseMap[x, y] = noise;
             }
         }
-        
+
         return noiseMap;
     }
-    
+
     public void ClearCache()
     {
         foreach (var texture in generatedTextures.Values)
@@ -363,21 +363,21 @@ public static class MaterialTextureExtensions
     public static void ApplyProceduralTexture(GameObject obj)
     {
         MaterialTextureGenerator generator = Object.FindObjectOfType<MaterialTextureGenerator>();
-        
+
         if (generator == null)
         {
             Debug.LogWarning("No MaterialTextureGenerator found in scene!");
             return;
         }
-        
+
         string materialName = obj.tag;
         if (materialName == "Untagged" || string.IsNullOrEmpty(materialName))
         {
             materialName = obj.name;
         }
-        
+
         Texture2D texture = generator.GetTexture(materialName);
-        
+
         SpriteRenderer spriteRenderer = obj.GetComponent<SpriteRenderer>();
         if (spriteRenderer != null)
         {
@@ -386,14 +386,14 @@ public static class MaterialTextureExtensions
             {
                 spriteRenderer.color = new Color(1f, 1f, 1f, profile.baseColor.a);
             }
-            
+
             Sprite sprite = Sprite.Create(
                 texture,
                 new Rect(0, 0, texture.width, texture.height),
                 new Vector2(0.5f, 0.5f),
                 texture.width
             );
-            
+
             spriteRenderer.sprite = sprite;
         }
         else

@@ -8,17 +8,17 @@ public class CellularLiquidSimulation : MonoBehaviour
     [SerializeField] private int gridHeight = 150;
     [SerializeField] private float cellSize = 0.1f;
     [SerializeField] private Vector2 gridOrigin = new Vector2(-10f, -7.5f);
-    
+
     [Header("Simulation Settings")]
     [SerializeField] private int simulationStepsPerFrame = 4;
     [SerializeField] private bool enableSimulation = true;
-    
+
     [Header("Water Properties")]
     [SerializeField] private float maxWaterPerCell = 1.0f;
     [SerializeField] private float minWaterTransfer = 0.01f;
     [SerializeField] private float waterFlowSpeed = 0.7f;
     [SerializeField] private float waterSpreadRate = 0.5f;
-    
+
     [Header("Advanced Simulation")]
     [Tooltip("Enable pressure-based water (water pushes up when compressed)")]
     [SerializeField] private bool enablePressure = true;
@@ -31,13 +31,13 @@ public class CellularLiquidSimulation : MonoBehaviour
     [Tooltip("Speed of diagonal flow (relative to vertical)")]
     [Range(0f, 1f)]
     [SerializeField] private float diagonalFlowRate = 0.3f;
-    
+
     [Header("Visual Settings - Colors")]
     [SerializeField] private Color waterColorDeep = new Color(0.08f, 0.22f, 0.55f, 0.95f);
     [SerializeField] private Color waterColorMid = new Color(0.18f, 0.4f, 0.8f, 0.9f);
     [SerializeField] private Color waterColorShallow = new Color(0.3f, 0.55f, 0.9f, 0.85f);
     [SerializeField] private Color surfaceHighlightColor = new Color(0.6f, 0.8f, 1f, 0.9f);
-    
+
     [Header("Visual Settings - Shading")]
     [SerializeField] private bool enableDepthShading = true;
     [SerializeField] private bool enableSurfaceHighlight = true;
@@ -46,7 +46,7 @@ public class CellularLiquidSimulation : MonoBehaviour
     [SerializeField] private Material waterMaterial;
     [Tooltip("Should match 1/cellSize for pixel-perfect rendering. If cellSize=0.1, this should be 10")]
     [SerializeField] private int pixelsPerUnit = 10;
-    
+
     [Header("Physics Interaction")]
     [SerializeField] private LayerMask solidLayer;
     [SerializeField] private float physicsCheckRadius = 0.05f;
@@ -54,7 +54,7 @@ public class CellularLiquidSimulation : MonoBehaviour
     [SerializeField] private bool dynamicSolidUpdate = true;
     [Tooltip("How often to check for moved objects (seconds). 0 = every frame")]
     [SerializeField] private float solidUpdateInterval = 0.5f;
-    
+
     [Header("Water Displacement")]
     [Tooltip("Enable automatic water displacement for moving rigidbodies")]
     [SerializeField] private bool enableDisplacement = true;
@@ -111,12 +111,12 @@ public class CellularLiquidSimulation : MonoBehaviour
     private bool hasVisualChanges = false;
 
     private int textureUpdateFrameCounter = 0;
-    private Color[] pixelArrayPool; 
+    private Color[] pixelArrayPool;
     private List<Vector2Int> activeCellsList;
 
     private Color[] depthColorCache;
     private const int DEPTH_CACHE_SIZE = 32;
-    
+
     void Awake()
     {
         InitializeGrid();
@@ -128,7 +128,7 @@ public class CellularLiquidSimulation : MonoBehaviour
             RefreshDisplacementCache();
         }
     }
-    
+
     void InitializeOptimizations()
     {
         if (usePixelArrayPool)
@@ -141,7 +141,7 @@ public class CellularLiquidSimulation : MonoBehaviour
         for (int i = 0; i < DEPTH_CACHE_SIZE; i++)
         {
             float depthRatio = Mathf.Clamp01((float)i / maxShadingDepth);
-            
+
             if (depthRatio < 0.4f)
             {
                 float t = depthRatio / 0.4f;
@@ -154,7 +154,7 @@ public class CellularLiquidSimulation : MonoBehaviour
             }
         }
     }
-    
+
     void InitializeGrid()
     {
         water = new float[gridWidth, gridHeight];
@@ -165,27 +165,27 @@ public class CellularLiquidSimulation : MonoBehaviour
         isSurfaceCell = new bool[gridWidth, gridHeight];
 
         UpdateSolidCells();
-        
+
         Debug.Log($"Liquid simulation initialized: {gridWidth}x{gridHeight} cells ({gridWidth * gridHeight} total)");
     }
-    
+
     void InitializeRendering()
     {
         waterTexture = new Texture2D(gridWidth, gridHeight, TextureFormat.RGBA32, false);
-        waterTexture.filterMode = FilterMode.Point; 
+        waterTexture.filterMode = FilterMode.Point;
         waterTexture.wrapMode = TextureWrapMode.Clamp;
 
         Sprite waterSprite = Sprite.Create(
             waterTexture,
             new Rect(0, 0, gridWidth, gridHeight),
-            new Vector2(0f, 0f), 
+            new Vector2(0f, 0f),
             pixelsPerUnit
         );
 
         waterVisualObject = new GameObject("WaterVisualization");
         waterVisualObject.transform.SetParent(transform);
         waterVisualObject.transform.position = new Vector3(gridOrigin.x, gridOrigin.y, 0);
-        
+
         waterRenderer = waterVisualObject.AddComponent<SpriteRenderer>();
         waterRenderer.sprite = waterSprite;
         waterRenderer.sortingOrder = 5;
@@ -194,7 +194,7 @@ public class CellularLiquidSimulation : MonoBehaviour
         {
             waterRenderer.sprite.texture.filterMode = FilterMode.Point;
         }
-        
+
         if (waterMaterial != null)
         {
             waterRenderer.material = waterMaterial;
@@ -202,7 +202,7 @@ public class CellularLiquidSimulation : MonoBehaviour
 
         UpdateWaterTextureOptimized();
     }
-    
+
     void Update()
     {
         if (!enableSimulation) return;
@@ -251,7 +251,7 @@ public class CellularLiquidSimulation : MonoBehaviour
 
         textureUpdateFrameCounter++;
         bool shouldUpdateTexture = textureUpdateFrameCounter > textureUpdateFrameSkip;
-        
+
         if (shouldUpdateTexture)
         {
             textureUpdateFrameCounter = 0;
@@ -262,7 +262,7 @@ public class CellularLiquidSimulation : MonoBehaviour
             }
         }
     }
-    
+
     void SimulationStep()
     {
         System.Array.Copy(water, newWater, water.Length);
@@ -283,10 +283,10 @@ public class CellularLiquidSimulation : MonoBehaviour
             Vector2Int cell = activeCellsList[i];
             int x = cell.x;
             int y = cell.y;
-            
+
             if (x < 0 || x >= gridWidth || y < 0 || y >= gridHeight) continue;
             if (solid[x, y]) continue;
-            
+
             float currentWater = water[x, y];
             if (currentWater < minWaterTransfer) continue;
 
@@ -305,20 +305,20 @@ public class CellularLiquidSimulation : MonoBehaviour
                 float below = water[x, y - 1];
                 float belowPressure = enablePressure ? CalculatePressure(x, y - 1) : 0f;
                 float belowEffectiveMax = maxWaterPerCell + (belowPressure * maxCompression);
-                
+
                 if (below < belowEffectiveMax)
                 {
                     float flow = Mathf.Min(currentWater * waterFlowSpeed, belowEffectiveMax - below);
                     flow = Mathf.Max(flow, 0f);
-                    
+
                     newWater[x, y] -= flow;
                     newWater[x, y - 1] += flow;
                     currentWater -= flow;
-                    
+
                     nextActiveCells.Add(new Vector2Int(x, y - 1));
                     settled[x, y] = false;
                     settled[x, y - 1] = false;
-                    
+
                     MarkCellDirty(x, y);
                     MarkCellDirty(x, y - 1);
                 }
@@ -327,20 +327,20 @@ public class CellularLiquidSimulation : MonoBehaviour
             if (enableDiagonalFlow && currentWater > minWaterTransfer && y > 0)
             {
                 bool blockedBelow = solid[x, y - 1] || water[x, y - 1] >= maxWaterPerCell * 0.95f;
-                
+
                 if (blockedBelow)
                 {
                     bool canFlowDiagLeft = x > 0 && !solid[x - 1, y - 1] && !solid[x - 1, y];
                     bool canFlowDiagRight = x < gridWidth - 1 && !solid[x + 1, y - 1] && !solid[x + 1, y];
-                    
+
                     float flowAmount = currentWater * diagonalFlowRate;
-                    
+
                     if (canFlowDiagLeft && canFlowDiagRight)
                     {
                         float leftWater = water[x - 1, y - 1];
                         float rightWater = water[x + 1, y - 1];
                         float halfFlow = flowAmount * 0.5f;
-                        
+
                         if (leftWater < maxWaterPerCell)
                         {
                             float flowLeft = Mathf.Min(halfFlow, maxWaterPerCell - leftWater);
@@ -352,7 +352,7 @@ public class CellularLiquidSimulation : MonoBehaviour
                             MarkCellDirty(x, y);
                             MarkCellDirty(x - 1, y - 1);
                         }
-                        
+
                         if (rightWater < maxWaterPerCell)
                         {
                             float flowRight = Mathf.Min(halfFlow, maxWaterPerCell - rightWater);
@@ -402,7 +402,7 @@ public class CellularLiquidSimulation : MonoBehaviour
             {
                 bool canSpreadLeft = x > 0 && !solid[x - 1, y];
                 bool canSpreadRight = x < gridWidth - 1 && !solid[x + 1, y];
-                
+
                 if (canSpreadLeft || canSpreadRight)
                 {
                     float leftWater = canSpreadLeft ? water[x - 1, y] : maxWaterPerCell;
@@ -413,7 +413,7 @@ public class CellularLiquidSimulation : MonoBehaviour
                         float flow = (currentWater - leftWater) * waterSpreadRate * 0.5f;
                         flow = Mathf.Min(flow, maxWaterPerCell - leftWater);
                         flow = Mathf.Max(flow, 0f);
-                        
+
                         if (flow > minWaterTransfer)
                         {
                             newWater[x, y] -= flow;
@@ -425,13 +425,13 @@ public class CellularLiquidSimulation : MonoBehaviour
                             MarkCellDirty(x - 1, y);
                         }
                     }
-                    
+
                     if (canSpreadRight && rightWater < currentWater)
                     {
                         float flow = (currentWater - rightWater) * waterSpreadRate * 0.5f;
                         flow = Mathf.Min(flow, maxWaterPerCell - rightWater);
                         flow = Mathf.Max(flow, 0f);
-                        
+
                         if (flow > minWaterTransfer)
                         {
                             newWater[x, y] -= flow;
@@ -457,7 +457,7 @@ public class CellularLiquidSimulation : MonoBehaviour
                     {
                         float pushUp = (pressure - abovePressure) * pressureStrength * currentWater;
                         pushUp = Mathf.Min(pushUp, maxWaterPerCell - above, currentWater * 0.25f);
-                        
+
                         if (pushUp > minWaterTransfer)
                         {
                             newWater[x, y] -= pushUp;
@@ -476,7 +476,7 @@ public class CellularLiquidSimulation : MonoBehaviour
         float[,] temp = water;
         water = newWater;
         newWater = temp;
-        
+
         activeCells = nextActiveCells;
     }
 
@@ -485,18 +485,18 @@ public class CellularLiquidSimulation : MonoBehaviour
         float pressure = 0f;
         int checkY = y + 1;
         int maxCheck = Mathf.Min(y + 15, gridHeight);
-        
+
         while (checkY < maxCheck)
         {
             if (solid[x, checkY]) break;
-            
+
             float waterAbove = water[x, checkY];
             if (waterAbove < minWaterTransfer) break;
-            
+
             pressure += waterAbove;
             checkY++;
         }
-        
+
         return pressure;
     }
 
@@ -518,10 +518,10 @@ public class CellularLiquidSimulation : MonoBehaviour
                     inWater = false;
                     continue;
                 }
-                
+
                 float waterAmount = water[x, y];
                 bool hasWater = waterAmount > minWaterTransfer;
-                
+
                 if (hasWater)
                 {
                     if (!inWater)
@@ -533,7 +533,7 @@ public class CellularLiquidSimulation : MonoBehaviour
                     {
                         currentDepth++;
                     }
-                    
+
                     waterDepth[x, y] = currentDepth;
                     inWater = true;
                 }
@@ -551,13 +551,13 @@ public class CellularLiquidSimulation : MonoBehaviour
             {
                 if (water[x, y] <= minWaterTransfer) continue;
 
-                bool exposedAbove = (y >= gridHeight - 1) || 
+                bool exposedAbove = (y >= gridHeight - 1) ||
                                    (water[x, y + 1] <= minWaterTransfer && !solid[x, y + 1]);
-                bool exposedLeft = (x <= 0) || 
+                bool exposedLeft = (x <= 0) ||
                                   (water[x - 1, y] <= minWaterTransfer && !solid[x - 1, y]);
-                bool exposedRight = (x >= gridWidth - 1) || 
+                bool exposedRight = (x >= gridWidth - 1) ||
                                    (water[x + 1, y] <= minWaterTransfer && !solid[x + 1, y]);
-                
+
                 if (exposedAbove || exposedLeft || exposedRight)
                 {
                     isSurfaceCell[x, y] = true;
@@ -565,7 +565,7 @@ public class CellularLiquidSimulation : MonoBehaviour
             }
         }
     }
-    
+
     void FindAllWaterCells()
     {
         activeCells.Clear();
@@ -589,18 +589,18 @@ public class CellularLiquidSimulation : MonoBehaviour
         dirtyMaxY = int.MinValue;
         hasVisualChanges = false;
     }
-    
+
     void MarkCellDirty(int x, int y)
     {
         if (!useDirtyRectOptimization) return;
-        
+
         hasVisualChanges = true;
 
         int minX = Mathf.Max(0, x - dirtyRectPadding);
         int minY = Mathf.Max(0, y - dirtyRectPadding);
         int maxX = Mathf.Min(gridWidth - 1, x + dirtyRectPadding);
         int maxY = Mathf.Min(gridHeight - 1, y + dirtyRectPadding);
-        
+
         dirtyMinX = Mathf.Min(dirtyMinX, minX);
         dirtyMinY = Mathf.Min(dirtyMinY, minY);
         dirtyMaxX = Mathf.Max(dirtyMaxX, maxX);
@@ -613,12 +613,12 @@ public class CellularLiquidSimulation : MonoBehaviour
         {
             pixelArrayPool = new Color[gridWidth * gridHeight];
         }
-        
+
         if (useDirtyRectOptimization && hasVisualChanges)
         {
             int width = (dirtyMaxX - dirtyMinX) + 1;
             int height = (dirtyMaxY - dirtyMinY) + 1;
-            
+
             if (width <= 0 || height <= 0) return;
 
             Color[] pixels;
@@ -630,7 +630,7 @@ public class CellularLiquidSimulation : MonoBehaviour
             {
                 pixels = new Color[width * height];
             }
- 
+
             int index = 0;
             for (int y = dirtyMinY; y <= dirtyMaxY; y++)
             {
@@ -657,12 +657,12 @@ public class CellularLiquidSimulation : MonoBehaviour
             }
 
             waterTexture.SetPixels(dirtyMinX, dirtyMinY, width, height, pixels);
-            waterTexture.Apply(false); 
+            waterTexture.Apply(false);
         }
         else if (!useDirtyRectOptimization)
         {
             Color[] pixels = usePixelArrayPool ? pixelArrayPool : new Color[gridWidth * gridHeight];
-            
+
             int index = 0;
             for (int y = 0; y < gridHeight; y++)
             {
@@ -687,7 +687,7 @@ public class CellularLiquidSimulation : MonoBehaviour
                     index++;
                 }
             }
-            
+
             waterTexture.SetPixels(pixels);
             waterTexture.Apply(false);
         }
@@ -719,9 +719,9 @@ public class CellularLiquidSimulation : MonoBehaviour
 
         if (enableSurfaceHighlight && isSurfaceCell[x, y])
         {
-            bool isTopSurface = (y >= gridHeight - 1) || 
+            bool isTopSurface = (y >= gridHeight - 1) ||
                                (water[x, y + 1] <= minWaterTransfer && !solid[x, y + 1]);
-            
+
             if (isTopSurface)
             {
                 baseColor = Color.Lerp(baseColor, surfaceHighlightColor, 0.5f);
@@ -731,19 +731,19 @@ public class CellularLiquidSimulation : MonoBehaviour
                 baseColor = Color.Lerp(baseColor, surfaceHighlightColor, 0.2f);
             }
         }
-        
+
         float alphaRatio = Mathf.Clamp01(amount / maxWaterPerCell);
         float minAlpha = 0.2f;
         float alpha = Mathf.Lerp(minAlpha, 1f, alphaRatio) * baseColor.a;
-        
+
         return new Color(baseColor.r, baseColor.g, baseColor.b, alpha);
     }
-    
+
     public void UpdateSolidCells()
     {
         bool[,] oldSolid = new bool[gridWidth, gridHeight];
         System.Array.Copy(solid, oldSolid, solid.Length);
-        
+
         for (int x = 0; x < gridWidth; x++)
         {
             for (int y = 0; y < gridHeight; y++)
@@ -773,7 +773,7 @@ public class CellularLiquidSimulation : MonoBehaviour
     public void CleanUpStuckWater()
     {
         int cleanedCells = 0;
-        
+
         for (int x = 0; x < gridWidth; x++)
         {
             for (int y = 0; y < gridHeight; y++)
@@ -786,7 +786,7 @@ public class CellularLiquidSimulation : MonoBehaviour
                 }
             }
         }
-        
+
         Debug.Log($"Cleaned up {cleanedCells} stuck water cells");
     }
 
@@ -807,7 +807,7 @@ public class CellularLiquidSimulation : MonoBehaviour
         if (worldVertices == null || worldVertices.Count < 3) return;
         Vector2 min = worldVertices[0];
         Vector2 max = worldVertices[0];
-        
+
         foreach (Vector2 v in worldVertices)
         {
             min.x = Mathf.Min(min.x, v.x);
@@ -834,10 +834,10 @@ public class CellularLiquidSimulation : MonoBehaviour
                 }
             }
         }
-        
+
         if (validCells == 0) return;
         float waterPerCell = totalAmount / validCells;
-        
+
         for (int x = gridMin.x; x <= gridMax.x; x++)
         {
             for (int y = gridMin.y; y <= gridMax.y; y++)
@@ -880,30 +880,30 @@ public class CellularLiquidSimulation : MonoBehaviour
         dirtyMaxX = gridWidth - 1;
         dirtyMaxY = gridHeight - 1;
         hasVisualChanges = true;
-        
+
         UpdateWaterTextureOptimized();
     }
-    
+
     bool IsPointInPolygon(Vector2 point, List<Vector2> polygon)
     {
         bool inside = false;
         int n = polygon.Count;
-        
+
         for (int i = 0, j = n - 1; i < n; j = i++)
         {
             if (((polygon[i].y > point.y) != (polygon[j].y > point.y)) &&
-                (point.x < (polygon[j].x - polygon[i].x) * (point.y - polygon[i].y) / 
+                (point.x < (polygon[j].x - polygon[i].x) * (point.y - polygon[i].y) /
                 (polygon[j].y - polygon[i].y) + polygon[i].x))
             {
                 inside = !inside;
             }
         }
-        
+
         return inside;
     }
 
     public int ActiveCellCount => activeCells.Count;
-  
+
     public int TotalWaterCells
     {
         get
@@ -978,19 +978,19 @@ public class CellularLiquidSimulation : MonoBehaviour
     void RefreshDisplacementCache()
     {
         cachedDisplacementRigidbodies.Clear();
-        
+
         Rigidbody2D[] allRigidbodies = FindObjectsOfType<Rigidbody2D>();
         foreach (Rigidbody2D rb in allRigidbodies)
         {
             if (rb == null || rb.bodyType == RigidbodyType2D.Static) continue;
-            
+
             int layerMask = 1 << rb.gameObject.layer;
             if ((layerMask & displacementLayers) != 0)
             {
                 cachedDisplacementRigidbodies.Add(rb);
             }
         }
-        
+
         Debug.Log($"Displacement rigidbody cache refreshed: {cachedDisplacementRigidbodies.Count} tracked");
     }
 
@@ -998,7 +998,7 @@ public class CellularLiquidSimulation : MonoBehaviour
     {
         if (!useCachedDisplacementRigidbodies) return;
         if (rb == null || rb.bodyType == RigidbodyType2D.Static) return;
-        
+
         int layerMask = 1 << rb.gameObject.layer;
         if ((layerMask & displacementLayers) != 0)
         {
@@ -1009,7 +1009,7 @@ public class CellularLiquidSimulation : MonoBehaviour
     public void UnregisterDisplacementRigidbody(Rigidbody2D rb)
     {
         if (!useCachedDisplacementRigidbodies) return;
-        
+
         cachedDisplacementRigidbodies.Remove(rb);
         trackedRigidbodies.Remove(rb);
     }
@@ -1019,7 +1019,7 @@ public class CellularLiquidSimulation : MonoBehaviour
         Dictionary<Rigidbody2D, Vector2> currentRigidbodies = new Dictionary<Rigidbody2D, Vector2>();
 
         IEnumerable<Rigidbody2D> rigidbodiestoCheck;
-        
+
         if (useCachedDisplacementRigidbodies)
         {
             cachedDisplacementRigidbodies.RemoveWhere(rb => rb == null);
@@ -1029,7 +1029,7 @@ public class CellularLiquidSimulation : MonoBehaviour
         {
             rigidbodiestoCheck = FindObjectsOfType<Rigidbody2D>();
         }
-        
+
         foreach (Rigidbody2D rb in rigidbodiestoCheck)
         {
             if (rb == null || rb.bodyType == RigidbodyType2D.Static) continue;
@@ -1039,63 +1039,63 @@ public class CellularLiquidSimulation : MonoBehaviour
                 int layerMask = 1 << rb.gameObject.layer;
                 if ((layerMask & displacementLayers) == 0) continue;
             }
-            
+
             Vector2 currentPos = rb.position;
             Vector2 velocity = rb.linearVelocity;
             float speed = velocity.magnitude;
-            
+
             if (speed < minDisplacementVelocity) continue;
-            
+
             Vector2 previousPos = currentPos;
             if (trackedRigidbodies.ContainsKey(rb))
             {
                 previousPos = trackedRigidbodies[rb];
             }
-            
+
             DisplaceWaterForRigidbody(rb, currentPos, previousPos, velocity, speed);
             currentRigidbodies[rb] = currentPos;
         }
-        
+
         trackedRigidbodies = currentRigidbodies;
     }
-    
+
     bool DisplaceWaterForRigidbody(Rigidbody2D rb, Vector2 currentPos, Vector2 previousPos, Vector2 velocity, float speed)
     {
         Collider2D col = rb.GetComponent<Collider2D>();
         if (col == null) return false;
-        
+
         Bounds bounds = col.bounds;
         float objectArea = bounds.size.x * bounds.size.y;
         float baseDisplacement = objectArea * displacementStrength;
-        
+
         float velocityMultiplier = 1f + (speed / 10f) * pushForce;
         velocityMultiplier = Mathf.Clamp(velocityMultiplier, 1f, 5f);
-        
+
         List<Vector2Int> overlappingCells = new List<Vector2Int>();
         float totalWaterInCells = 0f;
-        
+
         Vector2 min = bounds.min;
         Vector2 max = bounds.max;
-        
+
         int samplesX = Mathf.Max(3, Mathf.CeilToInt(bounds.size.x / (cellSize * 1.5f)));
         int samplesY = Mathf.Max(3, Mathf.CeilToInt(bounds.size.y / (cellSize * 1.5f)));
-        
+
         for (int ix = 0; ix < samplesX; ix++)
         {
             for (int iy = 0; iy < samplesY; iy++)
             {
-                float t_x = ix / (float)(samplesX - 1);
-                float t_y = iy / (float)(samplesY - 1);
-                
+                float tX = ix / (float)(samplesX - 1);
+                float tY = iy / (float)(samplesY - 1);
+
                 Vector2 samplePoint = new Vector2(
-                    Mathf.Lerp(min.x, max.x, t_x),
-                    Mathf.Lerp(min.y, max.y, t_y)
+                    Mathf.Lerp(min.x, max.x, tX),
+                    Mathf.Lerp(min.y, max.y, tY)
                 );
-                
+
                 if (col.OverlapPoint(samplePoint))
                 {
                     Vector2Int gridPos = WorldToGrid(samplePoint);
-                    
+
                     if (IsValidCell(gridPos.x, gridPos.y) && !solid[gridPos.x, gridPos.y])
                     {
                         float waterHere = water[gridPos.x, gridPos.y];
@@ -1111,38 +1111,38 @@ public class CellularLiquidSimulation : MonoBehaviour
                 }
             }
         }
-        
+
         if (overlappingCells.Count == 0) return false;
-        
+
         float waterPerCell = totalWaterInCells / overlappingCells.Count;
         float waterToDisplace = 0f;
-        
+
         foreach (Vector2Int cell in overlappingCells)
         {
             float waterToRemove = Mathf.Min(waterPerCell * 0.85f, water[cell.x, cell.y]);
             water[cell.x, cell.y] -= waterToRemove;
             waterToDisplace += waterToRemove;
-            
+
             if (water[cell.x, cell.y] < minWaterTransfer)
             {
                 water[cell.x, cell.y] = 0f;
             }
-            
+
             MarkCellDirty(cell.x, cell.y);
         }
-        
+
         if (waterToDisplace > minWaterTransfer)
         {
             PushWaterAround(overlappingCells, waterToDisplace, velocity);
         }
-        
+
         return true;
     }
-    
+
     void PushWaterAround(List<Vector2Int> sourceCells, float waterAmount, Vector2 velocity)
     {
         HashSet<Vector2Int> targetCells = new HashSet<Vector2Int>();
-        
+
         foreach (Vector2Int sourceCell in sourceCells)
         {
             for (int dy = 1; dy <= 5; dy++)
@@ -1153,7 +1153,7 @@ public class CellularLiquidSimulation : MonoBehaviour
                     targetCells.Add(above);
                 }
             }
-            
+
             int sidewaysDir = velocity.x > 0.1f ? 1 : (velocity.x < -0.1f ? -1 : 0);
             if (sidewaysDir != 0)
             {
@@ -1168,7 +1168,7 @@ public class CellularLiquidSimulation : MonoBehaviour
                         }
                     }
                 }
-                
+
                 for (int dx = 0; dx <= 2; dx++)
                 {
                     Vector2Int opposite = new Vector2Int(sourceCell.x - sidewaysDir * dx, sourceCell.y);
@@ -1179,18 +1179,18 @@ public class CellularLiquidSimulation : MonoBehaviour
                 }
             }
         }
-        
+
         if (targetCells.Count == 0) return;
-        
+
         float waterPerTarget = waterAmount / targetCells.Count;
-        
+
         foreach (Vector2Int targetCell in targetCells)
         {
             water[targetCell.x, targetCell.y] = Mathf.Min(
-                water[targetCell.x, targetCell.y] + waterPerTarget, 
+                water[targetCell.x, targetCell.y] + waterPerTarget,
                 maxWaterPerCell
             );
-            
+
             activeCells.Add(targetCell);
             settled[targetCell.x, targetCell.y] = false;
             MarkCellDirty(targetCell.x, targetCell.y);

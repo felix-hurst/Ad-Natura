@@ -1,0 +1,58 @@
+# Remove the line below if you want to inherit .editorconfig settings from higher directories
+root = true
+
+# C# files
+[*.cs]
+
+#### Core EditorConfig Options ####
+indent_size = 4
+indent_style = space
+tab_width = 4
+end_of_line = crlf
+
+#### C# Formatting Rules (Allman Style) ####
+
+# Allman style means braces go on a NEW line
+csharp_new_line_before_open_brace = all
+csharp_new_line_before_catch = true
+csharp_new_line_before_else = true
+csharp_new_line_before_finally = true
+csharp_new_line_before_members_in_anonymous_types = true
+csharp_new_line_before_members_in_object_initializers = true
+
+# Indentation
+csharp_indent_block_contents = true
+csharp_indent_braces = false
+csharp_indent_case_contents = true
+csharp_indent_switch_labels = true
+
+#### Naming Styles ####
+
+#Constants can be PascalCase or SCREAMING_SNAKE_CASE
+dotnet_naming_rule.constants_should_be_pascal_or_screaming.severity = suggestion
+dotnet_naming_rule.constants_should_be_pascal_or_screaming.symbols = constants
+dotnet_naming_rule.constants_should_be_pascal_or_screaming.style = screaming_snake_case_style
+
+dotnet_naming_symbols.constants.applicable_kinds = field
+dotnet_naming_symbols.constants.required_modifiers = const
+dotnet_naming_style.screaming_snake_case_style.capitalization = all_upper
+
+#Classes, Methods (Functions), and Structs must be PascalCase
+dotnet_naming_rule.types_and_members_should_be_pascal_case.severity = warning
+dotnet_naming_rule.types_and_members_should_be_pascal_case.symbols = types_and_members_symbols
+dotnet_naming_rule.types_and_members_should_be_pascal_case.style = pascal_case_style
+
+dotnet_naming_symbols.types_and_members_symbols.applicable_kinds = class, method, struct, enum, property, event
+dotnet_naming_symbols.types_and_members_symbols.applicable_accessibilities = *
+
+#Variables (Fields, Locals, Parameters) must be camelCase
+dotnet_naming_rule.locals_should_be_camel_case.severity = warning
+dotnet_naming_rule.locals_should_be_camel_case.symbols = locals_symbols
+dotnet_naming_rule.locals_should_be_camel_case.style = camel_case_style
+
+dotnet_naming_symbols.locals_symbols.applicable_kinds = local, parameter
+dotnet_naming_symbols.locals_symbols.applicable_accessibilities = *
+
+# Define the styles
+dotnet_naming_style.pascal_case_style.capitalization = pascal_case
+dotnet_naming_style.camel_case_style.capitalization = camel_case

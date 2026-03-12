@@ -7,248 +7,248 @@ public class SporeDispersal : MonoBehaviour
 
     [Header("References")]
     [Tooltip("The LeafDetectionZone to read cluster data from.")]
-    public LeafDetectionZone DetectionZone;
+    public LeafDetectionZone detectionZone;
 
     [Tooltip("Prefab that has the Slime (+ optional SlimeMoldManager) component on it. " +
              "Will be instantiated once per qualifying leaf cluster.")]
-    public GameObject SlimePrefab;
+    public GameObject slimePrefab;
 
     [Header("Spawn Thresholds")]
     [Tooltip("Minimum number of grounded leaves in a cluster bucket to trigger a spawn.")]
     [Min(1)]
-    public int MinLeavesPerCluster = 10;
+    public int minLeavesPerCluster = 10;
 
     [Tooltip("Maximum number of slime entities alive at the same time.")]
     [Min(1)]
-    public int MaxSimultaneousSlimes = 8;
+    public int maxSimultaneousSlimes = 8;
 
     [Tooltip("Seconds to wait before re-evaluating after a spawn. Prevents rapid re-spawning.")]
     [Min(0f)]
-    public float SpawnCooldown = 3f;
+    public float spawnCooldown = 3f;
 
     [Header("Spawn Position")]
     [Tooltip("Y world position where slime entities are placed. " +
              "Should match the ground surface inside your detection zone.")]
-    public float ZoneFloorY = 0f;
+    public float zoneFloorY = 0f;
 
     [Tooltip("Small random X jitter applied at spawn so overlapping clusters look natural (world units).")]
     [Min(0f)]
-    public float SpawnXJitter = 0.1f;
+    public float spawnXJitter = 0.1f;
 
     [Header("Slime Sizing")]
     [Tooltip("When true, the spawned slime's world bounds width scales with the cluster's leaf count. " +
              "A bigger pile = a wider slime.")]
-    public bool ScaleWithClusterSize = true;
+    public bool scaleWithClusterSize = true;
 
     [Tooltip("Minimum world-space width for a spawned slime.")]
     [Min(0.1f)]
-    public float MinSlimeWidth = 1f;
+    public float minSlimeWidth = 1f;
 
     [Tooltip("Maximum world-space width for a spawned slime. " +
              "Reached when a bucket is at 100% density.")]
     [Min(0.1f)]
-    public float MaxSlimeWidth = 5f;
+    public float maxSlimeWidth = 5f;
 
     [Tooltip("Fixed height for all spawned slime instances.")]
     [Min(0.1f)]
-    public float SlimeHeight = 2f;
+    public float slimeHeight = 2f;
 
     [Header("Lifetime / Fade")]
-    [Tooltip("If true, slimes despawn when their source cluster drops below MinLeavesPerCluster.")]
-    public bool DespawnWhenLeavesGone = true;
+    [Tooltip("If true, slimes despawn when their source cluster drops below minLeavesPerCluster.")]
+    public bool despawnWhenLeavesGone = true;
 
     [Tooltip("How long a slime fades out before being destroyed (seconds).")]
     [Min(0f)]
-    public float FadeOutDuration = 2f;
+    public float fadeOutDuration = 2f;
 
     [Tooltip("If > 0, slimes also have a maximum lifetime in seconds, regardless of leaf count.")]
     [Min(0f)]
-    public float MaxSlimeLifetime = 0f;
+    public float maxSlimeLifetime = 0f;
 
     [Header("Polling")]
     [Tooltip("How often to check cluster data for new spawns / despawns (seconds).")]
     [Min(0.05f)]
-    public float PollInterval = 0.5f;
+    public float pollInterval = 0.5f;
 
     [Header("Debug")]
-    public bool ShowDebugGizmos = true;
-    public bool LogSpawns = true;
+    public bool showDebugGizmos = true;
+    public bool logSpawns = true;
 
 
     private struct SpawnedSlime
     {
-        public GameObject Instance;
-        public Slime SlimeComponent;
-        public int BucketIndex;
-        public float SpawnTime;
-        public bool IsFadingOut;
-        public float FadeStartTime;
+        public GameObject instance;
+        public Slime slimeComponent;
+        public int bucketIndex;
+        public float spawnTime;
+        public bool isFadingOut;
+        public float fadeStartTime;
     }
 
-    private readonly List<SpawnedSlime> _activeSlimes = new List<SpawnedSlime>();
-    private float _cooldownTimer;
-    private float _pollTimer;
+    private readonly List<SpawnedSlime> activeSlimes = new List<SpawnedSlime>();
+    private float cooldownTimer;
+    private float pollTimer;
 
 
     void Start()
     {
-        if (DetectionZone == null)
+        if (detectionZone == null)
         {
-            Debug.LogError("[SporeDispersal] DetectionZone is not assigned!", this);
+            Debug.LogError("[SporeDispersal] detectionZone is not assigned!", this);
             enabled = false;
             return;
         }
-        if (SlimePrefab == null)
+        if (slimePrefab == null)
         {
-            Debug.LogError("[SporeDispersal] SlimePrefab is not assigned!", this);
+            Debug.LogError("[SporeDispersal] slimePrefab is not assigned!", this);
             enabled = false;
             return;
         }
 
-        if (SlimePrefab.GetComponent<Slime>() == null)
-            Debug.LogWarning("[SporeDispersal] SlimePrefab doesn't have a Slime component! " +
+        if (slimePrefab.GetComponent<Slime>() == null)
+            Debug.LogWarning("[SporeDispersal] slimePrefab doesn't have a Slime component! " +
                              "Spawning will still work but SetWorldBounds won't be called.");
     }
 
     void Update()
     {
-        _cooldownTimer -= Time.deltaTime;
+        cooldownTimer -= Time.deltaTime;
 
-        _pollTimer += Time.deltaTime;
-        if (_pollTimer < PollInterval) return;
-        _pollTimer = 0f;
+        pollTimer += Time.deltaTime;
+        if (pollTimer < pollInterval) return;
+        pollTimer = 0f;
 
         UpdateExistingSlimes();
 
-        if (_cooldownTimer <= 0f)
+        if (cooldownTimer <= 0f)
             EvaluateClusters();
     }
 
 
     void UpdateExistingSlimes()
     {
-        var clusters = DetectionZone.Clusters;
+        var clusters = detectionZone.Clusters;
 
-        for (int i = _activeSlimes.Count - 1; i >= 0; i--)
+        for (int i = activeSlimes.Count - 1; i >= 0; i--)
         {
-            var s = _activeSlimes[i];
+            var s = activeSlimes[i];
 
-            if (s.Instance == null)
+            if (s.instance == null)
             {
-                _activeSlimes.RemoveAt(i);
+                activeSlimes.RemoveAt(i);
                 continue;
             }
 
-            bool lifetimeExpired = MaxSlimeLifetime > 0f &&
-                                   (Time.time - s.SpawnTime) >= MaxSlimeLifetime;
+            bool lifetimeExpired = maxSlimeLifetime > 0f &&
+                                   (Time.time - s.spawnTime) >= maxSlimeLifetime;
 
             bool clusterDied = false;
-            if (DespawnWhenLeavesGone && s.BucketIndex < clusters.Count)
-                clusterDied = clusters[s.BucketIndex].Count < MinLeavesPerCluster;
+            if (despawnWhenLeavesGone && s.bucketIndex < clusters.Count)
+                clusterDied = clusters[s.bucketIndex].Count < minLeavesPerCluster;
 
-            bool shouldFade = (lifetimeExpired || clusterDied) && !s.IsFadingOut;
+            bool shouldFade = (lifetimeExpired || clusterDied) && !s.isFadingOut;
 
             if (shouldFade)
             {
-                s.IsFadingOut = true;
-                s.FadeStartTime = Time.time;
-                _activeSlimes[i] = s;
-                StartCoroutine(FadeOutAndDestroy(s.Instance, FadeOutDuration));
+                s.isFadingOut = true;
+                s.fadeStartTime = Time.time;
+                activeSlimes[i] = s;
+                StartCoroutine(FadeOutAndDestroy(s.instance, fadeOutDuration));
 
-                if (LogSpawns)
-                    Debug.Log($"[SporeDispersal] Slime at bucket {s.BucketIndex} beginning fade out " +
+                if (logSpawns)
+                    Debug.Log($"[SporeDispersal] Slime at bucket {s.bucketIndex} beginning fade out " +
                               $"(leaves gone: {clusterDied}, lifetime: {lifetimeExpired})");
                 continue;
             }
 
-            if (s.IsFadingOut && s.Instance == null)
-                _activeSlimes.RemoveAt(i);
+            if (s.isFadingOut && s.instance == null)
+                activeSlimes.RemoveAt(i);
         }
     }
 
 
     void EvaluateClusters()
     {
-        if (_activeSlimes.Count >= MaxSimultaneousSlimes) return;
-        if (!DetectionZone.HasLeaves) return;
+        if (activeSlimes.Count >= maxSimultaneousSlimes) return;
+        if (!detectionZone.HasLeaves) return;
 
-        var clusters = DetectionZone.Clusters;
+        var clusters = detectionZone.Clusters;
 
         for (int b = 0; b < clusters.Count; b++)
         {
-            if (_activeSlimes.Count >= MaxSimultaneousSlimes) break;
+            if (activeSlimes.Count >= maxSimultaneousSlimes) break;
 
             var cluster = clusters[b];
 
-            if (cluster.Count < MinLeavesPerCluster) continue;
+            if (cluster.Count < minLeavesPerCluster) continue;
 
             if (BucketHasActiveSlime(b)) continue;
 
             SpawnSlimeForCluster(b, cluster);
-            _cooldownTimer = SpawnCooldown;
+            cooldownTimer = spawnCooldown;
         }
     }
 
     bool BucketHasActiveSlime(int bucketIndex)
     {
-        foreach (var s in _activeSlimes)
+        foreach (var s in activeSlimes)
         {
-            if (s.BucketIndex == bucketIndex && s.Instance != null && !s.IsFadingOut)
+            if (s.bucketIndex == bucketIndex && s.instance != null && !s.isFadingOut)
                 return true;
         }
         return false;
     }
 
 
-void SpawnSlimeForCluster(int bucketIndex, LeafDetectionZone.LeafCluster cluster)
-{
-    float spawnX = cluster.WorldX + Random.Range(-SpawnXJitter, SpawnXJitter);
-    Vector3 spawnPos = new Vector3(spawnX, ZoneFloorY, 0f);
-
-    GameObject instance = Instantiate(SlimePrefab, spawnPos, Quaternion.identity);
-    instance.name = $"SlimeMold_Bucket{bucketIndex}";
-
-    Slime slimeComp = instance.GetComponent<Slime>();
-
-    _activeSlimes.Add(new SpawnedSlime
+    void SpawnSlimeForCluster(int bucketIndex, LeafDetectionZone.LeafCluster cluster)
     {
-        Instance       = instance,
-        SlimeComponent = slimeComp,
-        BucketIndex    = bucketIndex,
-        SpawnTime      = Time.time,
-        IsFadingOut    = false,
-        FadeStartTime  = -1f
-    });
+        float spawnX = cluster.worldX + Random.Range(-spawnXJitter, spawnXJitter);
+        Vector3 spawnPos = new Vector3(spawnX, zoneFloorY, 0f);
 
-    StartCoroutine(ApplyBoundsNextFrame(slimeComp, cluster));
+        GameObject instance = Instantiate(slimePrefab, spawnPos, Quaternion.identity);
+        instance.name = $"SlimeMold_Bucket{bucketIndex}";
 
-    if (LogSpawns)
-        Debug.Log($"[SporeDispersal] Spawned slime for bucket {bucketIndex} " +
-                  $"at ({spawnX:F2}, {ZoneFloorY:F2}) | " +
-                  $"Leaves: {cluster.Count} | Density: {cluster.Density:P0}");
-}
+        Slime slimeComp = instance.GetComponent<Slime>();
 
-IEnumerator ApplyBoundsNextFrame(Slime slimeComp, LeafDetectionZone.LeafCluster cluster)
-{
-    yield return null;
+        activeSlimes.Add(new SpawnedSlime
+        {
+            instance = instance,
+            slimeComponent = slimeComp,
+            bucketIndex = bucketIndex,
+            spawnTime = Time.time,
+            isFadingOut = false,
+            fadeStartTime = -1f
+        });
 
-    if (slimeComp == null) yield break;
+        StartCoroutine(ApplyBoundsNextFrame(slimeComp, cluster));
 
-    float width = ScaleWithClusterSize
-        ? Mathf.Lerp(MinSlimeWidth, MaxSlimeWidth, cluster.Density)
-        : (MinSlimeWidth + MaxSlimeWidth) * 0.5f;
+        if (logSpawns)
+            Debug.Log($"[SporeDispersal] Spawned slime for bucket {bucketIndex} " +
+                      $"at ({spawnX:F2}, {zoneFloorY:F2}) | " +
+                      $"Leaves: {cluster.Count} | density: {cluster.density:P0}");
+    }
 
-    width = Mathf.Clamp(width, MinSlimeWidth, MaxSlimeWidth);
+    IEnumerator ApplyBoundsNextFrame(Slime slimeComp, LeafDetectionZone.LeafCluster cluster)
+    {
+        yield return null;
 
-    Rect bounds = new Rect(
-        slimeComp.transform.position.x - width * 0.5f,
-        ZoneFloorY,
-        width,
-        SlimeHeight
-    );
+        if (slimeComp == null) yield break;
 
-    slimeComp.SetWorldBounds(bounds);
-}
+        float width = scaleWithClusterSize
+            ? Mathf.Lerp(minSlimeWidth, maxSlimeWidth, cluster.density)
+            : (minSlimeWidth + maxSlimeWidth) * 0.5f;
+
+        width = Mathf.Clamp(width, minSlimeWidth, maxSlimeWidth);
+
+        Rect bounds = new Rect(
+            slimeComp.transform.position.x - width * 0.5f,
+            zoneFloorY,
+            width,
+            slimeHeight
+        );
+
+        slimeComp.SetWorldBounds(bounds);
+    }
 
 
     IEnumerator FadeOutAndDestroy(GameObject target, float duration)
@@ -293,51 +293,51 @@ IEnumerator ApplyBoundsNextFrame(Slime slimeComp, LeafDetectionZone.LeafCluster 
 
     public void DespawnAll()
     {
-        foreach (var s in _activeSlimes)
+        foreach (var s in activeSlimes)
         {
-            if (s.Instance != null && !s.IsFadingOut)
-                StartCoroutine(FadeOutAndDestroy(s.Instance, FadeOutDuration));
+            if (s.instance != null && !s.isFadingOut)
+                StartCoroutine(FadeOutAndDestroy(s.instance, fadeOutDuration));
         }
-        _activeSlimes.Clear();
+        activeSlimes.Clear();
     }
 
-    public int ActiveSlimeCount => _activeSlimes.Count;
+    public int ActiveSlimeCount => activeSlimes.Count;
 
 
     void OnDrawGizmos()
     {
-        if (!ShowDebugGizmos || DetectionZone == null) return;
+        if (!showDebugGizmos || detectionZone == null) return;
 
         Gizmos.color = new Color(0.6f, 1f, 0.6f, 0.5f);
         Vector3 floorL = new Vector3(
-            DetectionZone.transform.position.x - DetectionZone.ZoneSize.x * 0.5f, ZoneFloorY, 0);
+            detectionZone.transform.position.x - detectionZone.zoneSize.x * 0.5f, zoneFloorY, 0);
         Vector3 floorR = new Vector3(
-            DetectionZone.transform.position.x + DetectionZone.ZoneSize.x * 0.5f, ZoneFloorY, 0);
+            detectionZone.transform.position.x + detectionZone.zoneSize.x * 0.5f, zoneFloorY, 0);
         Gizmos.DrawLine(floorL, floorR);
 
         if (!Application.isPlaying) return;
 
-        foreach (var s in _activeSlimes)
+        foreach (var s in activeSlimes)
         {
-            if (s.Instance == null) continue;
-            Gizmos.color = s.IsFadingOut
+            if (s.instance == null) continue;
+            Gizmos.color = s.isFadingOut
                 ? new Color(1f, 0.4f, 0.1f, 0.6f)
                 : new Color(0.2f, 0.9f, 1f, 0.7f);
-            Gizmos.DrawWireSphere(s.Instance.transform.position, 0.25f);
+            Gizmos.DrawWireSphere(s.instance.transform.position, 0.25f);
         }
     }
 
 #if UNITY_EDITOR
     void OnDrawGizmosSelected()
     {
-        if (!ShowDebugGizmos) return;
+        if (!showDebugGizmos) return;
 
         UnityEditor.Handles.color = new Color(0.5f, 1f, 0.5f, 0.8f);
         Vector3 labelPos = transform.position + Vector3.up * 0.5f;
         UnityEditor.Handles.Label(labelPos,
             Application.isPlaying
-                ? $"Slimes active: {ActiveSlimeCount} / {MaxSimultaneousSlimes}"
-                : $"SporeDispersal | Min leaves/cluster: {MinLeavesPerCluster} | Max slimes: {MaxSimultaneousSlimes}");
+                ? $"Slimes active: {ActiveSlimeCount} / {maxSimultaneousSlimes}"
+                : $"SporeDispersal | Min leaves/cluster: {minLeavesPerCluster} | Max slimes: {maxSimultaneousSlimes}");
     }
 #endif
 }

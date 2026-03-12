@@ -7,37 +7,38 @@ public class WaterAbsorptionSystem : MonoBehaviour
     [Header("Absorption Settings")]
     [Tooltip("How often to check for absorption (seconds)")]
     [SerializeField] private float absorptionCheckInterval = 0.1f;
-    
+
     [Tooltip("Enable/disable absorption globally")]
     [SerializeField] private bool enableAbsorption = true;
-    
+
     [Header("Material Absorption Rates")]
     [Tooltip("Water cells absorbed per second for each tag")]
-    [SerializeField] private List<MaterialAbsorption> materialAbsorptions = new List<MaterialAbsorption>()
+    [SerializeField]
+    private List<MaterialAbsorption> materialAbsorptions = new List<MaterialAbsorption>()
     {
 
         new MaterialAbsorption("Wood", 1.0f),
         new MaterialAbsorption("Dirt", 2.0f),
         new MaterialAbsorption("Sand", 1.5f)
     };
-    
+
     [Header("Wood Decomposition")]
     [Tooltip("Enable automatic layer change for Wood objects in water")]
     [SerializeField] private bool enableWoodDecomposition = true;
     [Tooltip("Name of the layer to change Wood objects to when in water")]
     [SerializeField] private string decomposeLayerName = "Decompose";
-    
+
     [Header("Absorption Effects")]
     [Tooltip("Visual effect when water is absorbed")]
     [SerializeField] private bool showAbsorptionParticles = true;
     [SerializeField] private Color absorptionParticleColor = new Color(0.3f, 0.6f, 1f, 0.5f);
-    
+
     [Header("Saturation")]
     [Tooltip("Enable saturation - objects stop absorbing when full")]
     [SerializeField] private bool enableSaturation = true;
     [Tooltip("Maximum water an object can absorb per unit area")]
     [SerializeField] private float saturationCapacity = 50f;
-    
+
     [Header("Debug")]
     [SerializeField] private bool showDebugInfo = false;
     [SerializeField] private bool showAbsorptionGizmos = false;
@@ -45,7 +46,7 @@ public class WaterAbsorptionSystem : MonoBehaviour
     [SerializeField] private bool showCellChecks = false;
     [SerializeField] private bool showAbsorptionRays = true;
     [SerializeField] private float debugLineDuration = 0.2f;
-    
+
     private CellularLiquidSimulation liquidSim;
     private float absorptionTimer = 0f;
 
@@ -54,26 +55,26 @@ public class WaterAbsorptionSystem : MonoBehaviour
     private Dictionary<string, float> absorptionRateCache = new Dictionary<string, float>();
 
     private HashSet<GameObject> decomposedWoodObjects = new HashSet<GameObject>();
-    
+
     private int decomposeLayer = -1;
-    
+
     [System.Serializable]
     public class MaterialAbsorption
     {
         public string tag;
         public float absorptionRate;
-        
+
         public MaterialAbsorption(string tag, float rate)
         {
             this.tag = tag;
             this.absorptionRate = rate;
         }
     }
-    
+
     void Start()
     {
         liquidSim = GetComponent<CellularLiquidSimulation>();
-        
+
         if (liquidSim == null)
         {
             Debug.LogError("WaterAbsorptionSystem requires CellularLiquidSimulation on the same GameObject!");
@@ -88,14 +89,14 @@ public class WaterAbsorptionSystem : MonoBehaviour
         {
             Debug.LogWarning($"Layer '{decomposeLayerName}' not found! Please create this layer in Project Settings > Tags and Layers.");
         }
-        
+
         Debug.Log($"Water Absorption System initialized with {materialAbsorptions.Count} material types");
         if (enableWoodDecomposition && decomposeLayer != -1)
         {
             Debug.Log($"Wood decomposition enabled - will change to layer '{decomposeLayerName}' (index {decomposeLayer})");
         }
     }
-    
+
     void BuildAbsorptionCache()
     {
         absorptionRateCache.Clear();
@@ -107,33 +108,33 @@ public class WaterAbsorptionSystem : MonoBehaviour
             }
         }
     }
-    
+
     void Update()
     {
         if (!enableAbsorption) return;
-        
+
         absorptionTimer += Time.deltaTime;
-        
+
         if (absorptionTimer >= absorptionCheckInterval)
         {
             absorptionTimer = 0f;
             ProcessAbsorption();
         }
     }
-    
+
     void ProcessAbsorption()
     {
         Collider2D[] allColliders = FindObjectsOfType<Collider2D>();
-        
+
         int totalAbsorbed = 0;
         int objectsChecked = 0;
         int objectsWithAbsorption = 0;
         int objectsInWater = 0;
-        
+
         foreach (Collider2D col in allColliders)
         {
             float absorptionRate = GetAbsorptionRate(col.gameObject);
-            
+
             if (absorptionRate <= 0f)
             {
                 if (showDebugInfo)
@@ -146,7 +147,7 @@ public class WaterAbsorptionSystem : MonoBehaviour
                 }
                 continue;
             }
-            
+
             objectsChecked++;
 
             if (showDebugLines)
@@ -174,7 +175,7 @@ public class WaterAbsorptionSystem : MonoBehaviour
             }
             int absorbed = AbsorbWaterFromCollider(col, absorptionRate);
             totalAbsorbed += absorbed;
-            
+
             if (absorbed > 0)
             {
                 objectsWithAbsorption++;
@@ -184,7 +185,7 @@ public class WaterAbsorptionSystem : MonoBehaviour
                 {
                     ConvertToDecomposeLayer(col.gameObject);
                 }
-                
+
                 if (showDebugInfo)
                 {
                     Debug.Log($"{col.gameObject.name} ({col.tag}) absorbed {absorbed} water cells @ {absorptionRate} cells/s");
@@ -213,7 +214,7 @@ public class WaterAbsorptionSystem : MonoBehaviour
                 }
             }
         }
-        
+
         if (showDebugInfo)
         {
             if (totalAbsorbed > 0)
@@ -226,7 +227,7 @@ public class WaterAbsorptionSystem : MonoBehaviour
             }
         }
     }
-    
+
     void ConvertToDecomposeLayer(GameObject woodObject)
     {
         if (decomposedWoodObjects.Contains(woodObject))
@@ -243,10 +244,10 @@ public class WaterAbsorptionSystem : MonoBehaviour
         woodObject.layer = decomposeLayer;
 
         decomposedWoodObjects.Add(woodObject);
-        
+
         Debug.Log($"Converted {woodObject.name} from layer {LayerMask.LayerToName(oldLayer)} to {decomposeLayerName}");
     }
-    
+
     int AbsorbWaterFromCollider(Collider2D collider, float absorptionRate)
     {
         Bounds bounds = collider.bounds;
@@ -269,7 +270,7 @@ public class WaterAbsorptionSystem : MonoBehaviour
         }
 
         List<Vector2Int> waterCells = FindWaterCellsInBounds(bounds, collider);
-        
+
         if (waterCells.Count == 0)
         {
             if (showDebugInfo)
@@ -278,7 +279,7 @@ public class WaterAbsorptionSystem : MonoBehaviour
             }
             return 0;
         }
-        
+
         if (showDebugInfo)
         {
             Debug.Log($"Found {waterCells.Count} water cells overlapping {collider.gameObject.name}");
@@ -297,11 +298,11 @@ public class WaterAbsorptionSystem : MonoBehaviour
         int cellsAbsorbed = 0;
         float totalAbsorbed = 0f;
         float waterPerCell = waterToAbsorb / waterCells.Count;
-        
+
         foreach (Vector2Int cell in waterCells)
         {
             float waterInCell = liquidSim.GetWater(cell.x, cell.y);
-            
+
             if (waterInCell > 0f)
             {
                 float absorbAmount = Mathf.Min(waterPerCell, waterInCell);
@@ -311,13 +312,13 @@ public class WaterAbsorptionSystem : MonoBehaviour
                     float currentSaturation = GetSaturation(collider.gameObject);
                     float remainingCapacity = GetMaxSaturation(collider.gameObject) - currentSaturation;
                     absorbAmount = Mathf.Min(absorbAmount, remainingCapacity);
-                    
+
                     if (showDebugInfo && absorbAmount < waterPerCell)
                     {
                         Debug.Log($"Saturation limiting absorption: {currentSaturation:F1}/{GetMaxSaturation(collider.gameObject):F1}");
                     }
                 }
-                
+
                 if (absorbAmount > 0f)
                 {
                     liquidSim.SetWater(cell.x, cell.y, waterInCell - absorbAmount);
@@ -341,7 +342,7 @@ public class WaterAbsorptionSystem : MonoBehaviour
                 }
             }
         }
-        
+
         if (showDebugInfo && cellsAbsorbed > 0)
         {
             Debug.Log($"Absorbed {totalAbsorbed:F2} water from {cellsAbsorbed} cells");
@@ -351,10 +352,10 @@ public class WaterAbsorptionSystem : MonoBehaviour
         {
             Debug.DrawRay(bounds.center, Vector2.up * 0.3f, Color.magenta, debugLineDuration);
         }
-        
+
         return cellsAbsorbed;
     }
-    
+
     List<Vector2Int> FindWaterCellsInBounds(Bounds bounds, Collider2D collider)
     {
         List<Vector2Int> waterCells = new List<Vector2Int>();
@@ -402,7 +403,7 @@ public class WaterAbsorptionSystem : MonoBehaviour
                     Debug.DrawLine(worldPos + Vector2.left * 0.02f, worldPos + Vector2.right * 0.02f, checkColor, debugLineDuration);
                     Debug.DrawLine(worldPos + Vector2.up * 0.02f, worldPos + Vector2.down * 0.02f, checkColor, debugLineDuration);
                 }
-                
+
                 if (isNearSurface)
                 {
                     waterCells.Add(new Vector2Int(x, y));
@@ -416,10 +417,10 @@ public class WaterAbsorptionSystem : MonoBehaviour
                 }
             }
         }
-        
+
         return waterCells;
     }
-    
+
     float GetAbsorptionRate(GameObject obj)
     {
         if (absorptionRateCache.ContainsKey(obj.tag))
@@ -428,7 +429,7 @@ public class WaterAbsorptionSystem : MonoBehaviour
         }
         return 0f;
     }
-    
+
     float GetSaturation(GameObject obj)
     {
         if (objectSaturation.ContainsKey(obj))
@@ -437,7 +438,7 @@ public class WaterAbsorptionSystem : MonoBehaviour
         }
         return 0f;
     }
-    
+
     void AddSaturation(GameObject obj, float amount)
     {
         if (!objectSaturation.ContainsKey(obj))
@@ -446,7 +447,7 @@ public class WaterAbsorptionSystem : MonoBehaviour
         }
         objectSaturation[obj] += amount;
     }
-    
+
     float GetMaxSaturation(GameObject obj)
     {
         Collider2D col = obj.GetComponent<Collider2D>();
@@ -457,7 +458,7 @@ public class WaterAbsorptionSystem : MonoBehaviour
         }
         return saturationCapacity;
     }
-    
+
     bool IsSaturated(GameObject obj)
     {
         return GetSaturation(obj) >= GetMaxSaturation(obj);
@@ -477,7 +478,7 @@ public class WaterAbsorptionSystem : MonoBehaviour
         objectSaturation.Clear();
         Debug.Log("Reset all object saturation levels");
     }
-    
+
     [ContextMenu("Reset Decomposed Objects")]
     public void ResetDecomposedObjects()
     {
@@ -489,16 +490,16 @@ public class WaterAbsorptionSystem : MonoBehaviour
     public void ListAllObjectsAndTags()
     {
         Collider2D[] allColliders = FindObjectsOfType<Collider2D>();
-        
+
         Debug.Log("=== ALL OBJECTS IN SCENE ===");
-        
+
         int withAbsorption = 0;
         int withoutAbsorption = 0;
-        
+
         foreach (Collider2D col in allColliders)
         {
             float rate = GetAbsorptionRate(col.gameObject);
-            
+
             if (rate > 0f)
             {
                 withAbsorption++;
@@ -540,7 +541,7 @@ public class WaterAbsorptionSystem : MonoBehaviour
         float percentage = (current / max) * 100f;
         return $"{current:F1}/{max:F1} ({percentage:F0}%)";
     }
-    
+
     void ShowAbsorptionEffect(Vector2 position)
     {
         if (showDebugLines)
@@ -550,7 +551,7 @@ public class WaterAbsorptionSystem : MonoBehaviour
             Debug.DrawLine(position + Vector2.up * 0.15f, position + new Vector2(0.03f, 0.12f), absorptionParticleColor, debugLineDuration * 2f);
         }
     }
-    
+
     void OnDrawGizmos()
     {
         if (!showAbsorptionGizmos || !Application.isPlaying)
@@ -559,10 +560,10 @@ public class WaterAbsorptionSystem : MonoBehaviour
         foreach (var kvp in objectSaturation)
         {
             if (kvp.Key == null) continue;
-            
+
             Collider2D col = kvp.Key.GetComponent<Collider2D>();
             if (col == null) continue;
-            
+
             float saturationPercent = kvp.Value / GetMaxSaturation(kvp.Key);
 
             Gizmos.color = Color.Lerp(
@@ -570,39 +571,39 @@ public class WaterAbsorptionSystem : MonoBehaviour
                 new Color(0.1f, 0.2f, 0.4f, 0.6f),
                 saturationPercent
             );
-            
+
             Gizmos.DrawWireCube(col.bounds.center, col.bounds.size);
 
             Vector3 barPos = col.bounds.center + Vector3.up * (col.bounds.size.y * 0.5f + 0.2f);
             float barWidth = col.bounds.size.x;
             float filledWidth = barWidth * saturationPercent;
-            
+
             Gizmos.color = Color.gray;
             Gizmos.DrawLine(barPos - Vector3.right * barWidth * 0.5f, barPos + Vector3.right * barWidth * 0.5f);
-            
+
             Gizmos.color = Color.blue;
             Gizmos.DrawLine(barPos - Vector3.right * barWidth * 0.5f, barPos - Vector3.right * barWidth * 0.5f + Vector3.right * filledWidth);
         }
     }
-    
+
     void OnGUI()
     {
         if (!showDebugInfo || !Application.isPlaying)
             return;
-        
+
         GUILayout.BeginArea(new Rect(10, 200, 300, 450));
         GUILayout.Label("=== Water Absorption Debug ===");
         GUILayout.Label($"Absorption: {(enableAbsorption ? "ON" : "OFF")}");
         GUILayout.Label($"Saturated Objects: {objectSaturation.Count}");
         GUILayout.Label($"Decomposed Wood: {decomposedWoodObjects.Count}");
-        
+
         GUILayout.Space(10);
         GUILayout.Label("Material Rates:");
         foreach (var mat in materialAbsorptions)
         {
             GUILayout.Label($"  {mat.tag}: {mat.absorptionRate:F1} cells/s");
         }
-        
+
         if (objectSaturation.Count > 0)
         {
             GUILayout.Space(10);
@@ -615,7 +616,7 @@ public class WaterAbsorptionSystem : MonoBehaviour
                 }
             }
         }
-        
+
         GUILayout.EndArea();
     }
 }

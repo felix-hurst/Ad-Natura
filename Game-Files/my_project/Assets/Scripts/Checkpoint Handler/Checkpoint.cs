@@ -9,13 +9,13 @@ public class Checkpoint : MonoBehaviour
     [SerializeField] private string checkpointMessage = "You found a checkpoint!";
     [SerializeField] private bool saveGameOnCheckpoint = false;
     [SerializeField] private string checkpointID = "Checkpoint_1";
-    
+
     [Header("Visual Feedback")]
     [SerializeField] private Color activatedColor = Color.green;
     [SerializeField] private Color inactiveColor = Color.white;
     [SerializeField] private float fadeOutDuration = 2f;
     [SerializeField] private float cooldownDuration = 1f;
-    
+
     private SpriteRenderer spriteRenderer;
     private bool isActivated = false;
     private bool isOnCooldown = false;
@@ -52,7 +52,7 @@ public class Checkpoint : MonoBehaviour
         }
 
         CheckpointUI.Instance?.ShowCheckpointMessage(checkpointTitle, checkpointMessage);
-        
+
         Debug.Log($"Checkpoint {checkpointID} activated!");
 
         StartCoroutine(FadeOutAndReset());
@@ -64,7 +64,7 @@ public class Checkpoint : MonoBehaviour
 
         float elapsedTime = 0f;
         float fadeDuration = fadeOutDuration * 0.7f;
-        
+
         while (elapsedTime < fadeDuration && spriteRenderer != null)
         {
             elapsedTime += Time.deltaTime;
