@@ -35,7 +35,6 @@ jobs:
           UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
-          UNITY_SERIAL: "free"
         with:
           projectPath: Game-Files/my_project
           customParameters: -batchmode -nographics -executeMethod Packages.Rider.Editor.RiderScriptEditor.SyncSolution -quit
