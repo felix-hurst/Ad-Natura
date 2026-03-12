@@ -30,7 +30,7 @@ public class SlimeMoldManager : MonoBehaviour
     [Header("Performance")]
     [Tooltip("How often to update attraction map (seconds). Lower = more responsive")]
     [Range(0.016f, 0.5f)]
-    [SerializeField] private float mapUpdateInterval = 0.066f; // ~15 updates/sec
+    [SerializeField] private float mapUpdateInterval = 0.066f;
 
     [Header("Liquid Simulation Integration")]
     [Tooltip("Reference to CellularLiquidSimulation (auto-finds if not set)")]
@@ -45,6 +45,25 @@ public class SlimeMoldManager : MonoBehaviour
     [Tooltip("Minimum water amount to create attraction (filters noise)")]
     [Range(0f, 0.5f)]
     [SerializeField] private float minWaterThreshold = 0.1f;
+
+    [Header("Hazard (Calamity Objects)")]
+    [Tooltip("Kill slime agents that touch objects tagged 'Calamity'")]
+    public bool enableCalamityHazard = true;
+    [Tooltip("How often to refresh the hazard map (seconds)")]
+    [Range(0.1f, 2f)]
+    public float hazardRefreshInterval = 0.25f;
+    [Tooltip("Width of the decay gradient around hazard edges (in world units)")]
+    [Range(0.1f, 3f)]
+    public float hazardGradientWidth = 0.8f;
+    [Tooltip("Minimum solid hazard radius in pixels. Thin objects get dilated so agents can't slip through")]
+    [Range(1, 6)]
+    public int minimumHazardPixelRadius = 3;
+
+    private Texture2D hazardTextureCPU;
+    private Color[] hazardPixelBuffer;
+    private float[] hazardRawBuffer;
+    private float timeSinceHazardRefresh;
+    private Collider2D[] cachedCalamityColliders;
 
     private Slime slimeSimulation;
     private SlimeDecomposer slimeDecomposer;
@@ -63,13 +82,11 @@ public class SlimeMoldManager : MonoBehaviour
         worldBounds = slimeSimulation.GetWorldBounds();
         resolution = slimeSimulation.GetSimulationResolution();
 
-        // Auto-find liquid simulation if not assigned
         if (liquidSimulation == null && useLiquidSimulation)
         {
             liquidSimulation = FindAnyObjectByType<CellularLiquidSimulation>();
         }
 
-        // Auto-sync bounds to match liquid simulation area
         if (autoSyncBounds && liquidSimulation != null)
         {
             Rect liquidBounds = liquidSimulation.GetWorldBounds();
@@ -77,15 +94,15 @@ public class SlimeMoldManager : MonoBehaviour
             worldBounds = liquidBounds;
         }
 
-        // Refresh resolution in case bounds changed
         resolution = slimeSimulation.GetSimulationResolution();
-
-        // Find SlimeDecomposer if present
         slimeDecomposer = GetComponent<SlimeDecomposer>();
 
         CreateAttractionMap();
         RefreshSources();
         UpdateAttractionMap();
+        CreateHazardMap();
+        RefreshCalamityColliders();
+        UpdateHazardMap();
     }
 
     private void Update()
@@ -107,6 +124,22 @@ public class SlimeMoldManager : MonoBehaviour
         if (slimeSimulation != null && waterAttractionMap != null)
         {
             slimeSimulation.SetAttractionMaps(waterAttractionMap, waterAttractionStrength);
+        }
+
+        if (enableCalamityHazard)
+        {
+            timeSinceHazardRefresh += Time.deltaTime;
+            if (timeSinceHazardRefresh >= hazardRefreshInterval)
+            {
+                RefreshCalamityColliders();
+                UpdateHazardMap();
+                timeSinceHazardRefresh = 0f;
+            }
+
+            if (slimeSimulation != null && hazardTextureCPU != null)
+            {
+                slimeSimulation.SetHazardMap(hazardTextureCPU);
+            }
         }
     }
 
@@ -144,7 +177,6 @@ public class SlimeMoldManager : MonoBehaviour
         int w = resolution.x;
         int h = resolution.y;
 
-        // Clear buffer
         for (int i = 0; i < pixelBuffer.Length; i++)
             pixelBuffer[i] = Color.black;
 
@@ -156,7 +188,6 @@ public class SlimeMoldManager : MonoBehaviour
             float radius = source.attractionRadius;
             float strength = source.attractionStrength;
 
-            // Check if source is outside bounds
             bool outsideLeft = sourcePos.x < worldBounds.xMin;
             bool outsideRight = sourcePos.x > worldBounds.xMax;
             bool outsideBottom = sourcePos.y < worldBounds.yMin;
@@ -165,7 +196,6 @@ public class SlimeMoldManager : MonoBehaviour
 
             if (isOutside)
             {
-                // Source is outside bounds - create LOCALIZED attraction at nearest edge
                 float distToEdge = 0f;
                 if (outsideTop) distToEdge = sourcePos.y - worldBounds.yMax;
                 else if (outsideBottom) distToEdge = worldBounds.yMin - sourcePos.y;
@@ -177,13 +207,11 @@ public class SlimeMoldManager : MonoBehaviour
 
                 float edgeAttraction = strength * (1f - distToEdge / maxSenseRange);
 
-                // Calculate the horizontal/vertical position on the edge closest to water
                 float normSourceX = (sourcePos.x - worldBounds.x) / worldBounds.width;
                 float normSourceY = (sourcePos.y - worldBounds.y) / worldBounds.height;
                 int sourcePosX = Mathf.Clamp(Mathf.RoundToInt(normSourceX * w), 0, w - 1);
                 int sourcePosY = Mathf.Clamp(Mathf.RoundToInt(normSourceY * h), 0, h - 1);
 
-                // Use correct axis for gradient depth and spread based on which edge
                 bool isVerticalEdge = outsideLeft || outsideRight;
                 int gradientDepth = isVerticalEdge
                     ? Mathf.CeilToInt((radius / worldBounds.width) * w)
@@ -259,7 +287,6 @@ public class SlimeMoldManager : MonoBehaviour
             }
             else
             {
-                // Source is inside bounds - use normal radial attraction
                 float normX = (sourcePos.x - worldBounds.x) / worldBounds.width;
                 float normY = (sourcePos.y - worldBounds.y) / worldBounds.height;
                 int centerX = Mathf.RoundToInt(normX * w);
@@ -290,7 +317,6 @@ public class SlimeMoldManager : MonoBehaviour
             }
         }
 
-        // Inside UpdateAttractionMap()
         if (enableLightAversion)
         {
             cachedLightSources.Clear();
@@ -299,20 +325,15 @@ public class SlimeMoldManager : MonoBehaviour
             foreach (LightSource light in cachedLightSources)
             {
                 if (!light.isActive) continue;
-
-                // Draw attraction ONLY within the bounds of the light
-                // This ensures agents outside the light don't 'see' the repulsion
                 DrawLocalizedRepulsion(light, w, h);
             }
         }
 
-        // Sample from CellularLiquidSimulation if enabled
         if (useLiquidSimulation && liquidSimulation != null)
         {
             SampleLiquidSimulation(w, h);
         }
 
-        // Add attraction from decomposable objects if SlimeDecomposer is present
         if (slimeDecomposer != null)
         {
             slimeDecomposer.GetDecomposableAttractions(pixelBuffer, w, h, worldBounds);
@@ -357,7 +378,6 @@ public class SlimeMoldManager : MonoBehaviour
                     normDist = Mathf.Clamp01(Mathf.Max(dx, dy));
                 }
 
-                // Create a gradient of repulsion, meaning repulsion is stronger the closer one is to center of light.
                 float hill = Mathf.Pow(1.0f - normDist, 3);
                 int idx = y * w + x;
                 pixelBuffer[idx].r = Mathf.Max(pixelBuffer[idx].r, hill * strength);
@@ -367,14 +387,9 @@ public class SlimeMoldManager : MonoBehaviour
 
     private int WorldToTextureX(float worldX)
     {
-        // Use the bounds assigned to the slime simulation
         Rect bounds = slimeSimulation.GetWorldBounds();
         Vector2Int res = slimeSimulation.GetSimulationResolution();
-
-        // Map world position to a 0.0 - 1.0 range
         float t = (worldX - bounds.xMin) / bounds.width;
-
-        // Convert to pixel index [0, width-1]
         return Mathf.Clamp(Mathf.FloorToInt(t * res.x), 0, res.x - 1);
     }
 
@@ -382,45 +397,33 @@ public class SlimeMoldManager : MonoBehaviour
     {
         Rect bounds = slimeSimulation.GetWorldBounds();
         Vector2Int res = slimeSimulation.GetSimulationResolution();
-
         float t = (worldY - bounds.yMin) / bounds.height;
-
         return Mathf.Clamp(Mathf.FloorToInt(t * res.y), 0, res.y - 1);
     }
 
-
     private void SampleLiquidSimulation(int w, int h)
     {
-        // Early exit if no water in simulation
         if (liquidSimulation.TotalWaterCells == 0) return;
 
         Rect liquidBounds = liquidSimulation.GetWorldBounds();
-
-        // Sample overlapping region (water inside slime bounds)
         SampleLiquidOverlap(w, h, liquidBounds);
-
-        // Sample edge attraction (water outside slime bounds)
         SampleLiquidEdgeAttraction(w, h, liquidBounds);
     }
 
     private void SampleLiquidOverlap(int w, int h, Rect liquidBounds)
     {
-        // Calculate overlap in texture space
         float overlapMinX = Mathf.Max(worldBounds.xMin, liquidBounds.xMin);
         float overlapMaxX = Mathf.Min(worldBounds.xMax, liquidBounds.xMax);
         float overlapMinY = Mathf.Max(worldBounds.yMin, liquidBounds.yMin);
         float overlapMaxY = Mathf.Min(worldBounds.yMax, liquidBounds.yMax);
 
-        // No overlap - skip
         if (overlapMinX >= overlapMaxX || overlapMinY >= overlapMaxY) return;
 
-        // Convert overlap to pixel coordinates
         int startX = Mathf.Max(0, Mathf.FloorToInt((overlapMinX - worldBounds.x) / worldBounds.width * w));
         int endX = Mathf.Min(w, Mathf.CeilToInt((overlapMaxX - worldBounds.x) / worldBounds.width * w));
         int startY = Mathf.Max(0, Mathf.FloorToInt((overlapMinY - worldBounds.y) / worldBounds.height * h));
         int endY = Mathf.Min(h, Mathf.CeilToInt((overlapMaxY - worldBounds.y) / worldBounds.height * h));
 
-        // Sample only the overlapping region
         for (int y = startY; y < endY; y++)
         {
             for (int x = startX; x < endX; x++)
@@ -445,12 +448,9 @@ public class SlimeMoldManager : MonoBehaviour
 
     private void SampleLiquidEdgeAttraction(int w, int h, Rect liquidBounds)
     {
-        // How far outside the slime bounds to sense water (in world units)
         float senseRange = Mathf.Min(worldBounds.width, worldBounds.height) * 0.5f;
-        // How deep into the slime bounds to create the attraction gradient
         int gradientDepth = Mathf.Max(4, h / 8);
 
-        // Check for water ABOVE slime bounds (most common case - water falling down)
         if (liquidBounds.yMax > worldBounds.yMax)
         {
             float scanYMin = worldBounds.yMax;
@@ -490,7 +490,6 @@ public class SlimeMoldManager : MonoBehaviour
             }
         }
 
-        // Check for water BELOW slime bounds
         if (liquidBounds.yMin < worldBounds.yMin)
         {
             float scanYMin = Mathf.Max(liquidBounds.yMin, worldBounds.yMin - senseRange);
@@ -530,7 +529,6 @@ public class SlimeMoldManager : MonoBehaviour
             }
         }
 
-        // Check for water to the LEFT of slime bounds
         if (liquidBounds.xMin < worldBounds.xMin)
         {
             float scanXMin = Mathf.Max(liquidBounds.xMin, worldBounds.xMin - senseRange);
@@ -571,7 +569,6 @@ public class SlimeMoldManager : MonoBehaviour
             }
         }
 
-        // Check for water to the RIGHT of slime bounds
         if (liquidBounds.xMax > worldBounds.xMax)
         {
             float scanXMin = worldBounds.xMax;
@@ -613,6 +610,215 @@ public class SlimeMoldManager : MonoBehaviour
         }
     }
 
+
+    private void CreateHazardMap()
+    {
+        int w = resolution.x;
+        int h = resolution.y;
+
+        hazardTextureCPU = new Texture2D(w, h, TextureFormat.RFloat, false);
+        hazardTextureCPU.filterMode = FilterMode.Bilinear;
+        hazardPixelBuffer = new Color[w * h];
+        hazardRawBuffer = new float[w * h];
+    }
+
+    private void RefreshCalamityColliders()
+    {
+        List<Collider2D> colliders = new List<Collider2D>();
+
+        GameObject[] calamityObjects = null;
+        try
+        {
+            calamityObjects = GameObject.FindGameObjectsWithTag("Calamity");
+        }
+        catch (UnityException)
+        {
+            Debug.LogError("SlimeMoldManager: Tag 'Calamity' is not defined in Project Settings > Tags & Layers. Add it there first.");
+            enableCalamityHazard = false;
+            cachedCalamityColliders = new Collider2D[0];
+            return;
+        }
+
+        foreach (GameObject obj in calamityObjects)
+        {
+            Collider2D[] cols = obj.GetComponents<Collider2D>();
+            foreach (Collider2D col in cols)
+            {
+                if (col.enabled)
+                    colliders.Add(col);
+            }
+        }
+
+        cachedCalamityColliders = colliders.ToArray();
+    }
+
+    private void UpdateHazardMap()
+    {
+        if (hazardTextureCPU == null || hazardRawBuffer == null) return;
+
+        int w = resolution.x;
+        int h = resolution.y;
+
+        for (int i = 0; i < hazardRawBuffer.Length; i++)
+            hazardRawBuffer[i] = 0f;
+
+        if (cachedCalamityColliders == null || cachedCalamityColliders.Length == 0)
+        {
+            WriteHazardToGPU(w, h);
+            return;
+        }
+
+        bool hasAnyPixels = false;
+
+        foreach (Collider2D col in cachedCalamityColliders)
+        {
+            if (col == null || !col.enabled) continue;
+
+            Bounds colBounds = col.bounds;
+
+            float minX = Mathf.Max(colBounds.min.x, worldBounds.xMin);
+            float maxX = Mathf.Min(colBounds.max.x, worldBounds.xMax);
+            float minY = Mathf.Max(colBounds.min.y, worldBounds.yMin);
+            float maxY = Mathf.Min(colBounds.max.y, worldBounds.yMax);
+
+            if (minX >= maxX || minY >= maxY) continue;
+
+            int pxMinX = Mathf.Max(0, Mathf.FloorToInt((minX - worldBounds.x) / worldBounds.width * w));
+            int pxMaxX = Mathf.Min(w - 1, Mathf.CeilToInt((maxX - worldBounds.x) / worldBounds.width * w));
+            int pxMinY = Mathf.Max(0, Mathf.FloorToInt((minY - worldBounds.y) / worldBounds.height * h));
+            int pxMaxY = Mathf.Min(h - 1, Mathf.CeilToInt((maxY - worldBounds.y) / worldBounds.height * h));
+
+            for (int py = pxMinY; py <= pxMaxY; py++)
+            {
+                for (int px = pxMinX; px <= pxMaxX; px++)
+                {
+                    Vector2 worldPos = TextureToWorld(px, py);
+                    if (col.OverlapPoint(worldPos))
+                    {
+                        hazardRawBuffer[py * w + px] = 1f;
+                        hasAnyPixels = true;
+                    }
+                }
+            }
+        }
+
+        if (!hasAnyPixels)
+        {
+            WriteHazardToGPU(w, h);
+            return;
+        }
+
+        if (minimumHazardPixelRadius > 1)
+        {
+            float[] dilated = new float[w * h];
+            System.Array.Copy(hazardRawBuffer, dilated, hazardRawBuffer.Length);
+
+            int dilateR = minimumHazardPixelRadius;
+            int dilateRSq = dilateR * dilateR;
+
+            for (int py = 0; py < h; py++)
+            {
+                for (int px = 0; px < w; px++)
+                {
+                    if (hazardRawBuffer[py * w + px] < 1f) continue;
+
+                    int dMinY = Mathf.Max(0, py - dilateR);
+                    int dMaxY = Mathf.Min(h - 1, py + dilateR);
+                    int dMinX = Mathf.Max(0, px - dilateR);
+                    int dMaxX = Mathf.Min(w - 1, px + dilateR);
+
+                    for (int dy = dMinY; dy <= dMaxY; dy++)
+                    {
+                        for (int dx = dMinX; dx <= dMaxX; dx++)
+                        {
+                            int distX = dx - px;
+                            int distY = dy - py;
+                            if (distX * distX + distY * distY <= dilateRSq)
+                            {
+                                dilated[dy * w + dx] = 1f;
+                            }
+                        }
+                    }
+                }
+            }
+
+            hazardRawBuffer = dilated;
+        }
+
+        float gradientPixelsX = (hazardGradientWidth / worldBounds.width) * w;
+        float gradientPixelsY = (hazardGradientWidth / worldBounds.height) * h;
+        int gradientRadius = Mathf.CeilToInt(Mathf.Max(gradientPixelsX, gradientPixelsY));
+
+        if (gradientRadius > 0)
+        {
+            float[] expanded = new float[w * h];
+            System.Array.Copy(hazardRawBuffer, expanded, hazardRawBuffer.Length);
+
+            for (int py = 0; py < h; py++)
+            {
+                for (int px = 0; px < w; px++)
+                {
+                    if (hazardRawBuffer[py * w + px] >= 1f) continue;
+
+                    int searchMinX = Mathf.Max(0, px - gradientRadius);
+                    int searchMaxX = Mathf.Min(w - 1, px + gradientRadius);
+                    int searchMinY = Mathf.Max(0, py - gradientRadius);
+                    int searchMaxY = Mathf.Min(h - 1, py + gradientRadius);
+
+                    float closestDistSq = float.MaxValue;
+                    bool foundSolid = false;
+
+                    for (int sy = searchMinY; sy <= searchMaxY; sy++)
+                    {
+                        for (int sx = searchMinX; sx <= searchMaxX; sx++)
+                        {
+                            if (hazardRawBuffer[sy * w + sx] >= 1f)
+                            {
+                                float ddx = px - sx;
+                                float ddy = py - sy;
+                                float distSq = ddx * ddx + ddy * ddy;
+                                if (distSq < closestDistSq)
+                                {
+                                    closestDistSq = distSq;
+                                    foundSolid = true;
+                                }
+                            }
+                        }
+                    }
+
+                    if (foundSolid)
+                    {
+                        float dist = Mathf.Sqrt(closestDistSq);
+                        float gradientRadiusF = Mathf.Max(gradientPixelsX, gradientPixelsY);
+
+                        if (dist <= gradientRadiusF)
+                        {
+                            float t = dist / gradientRadiusF;
+                            float smoothT = t * t * (3f - 2f * t);
+                            float value = Mathf.Lerp(0.49f, 0.05f, smoothT);
+                            expanded[py * w + px] = Mathf.Max(expanded[py * w + px], value);
+                        }
+                    }
+                }
+            }
+
+            hazardRawBuffer = expanded;
+        }
+
+        WriteHazardToGPU(w, h);
+    }
+
+    private void WriteHazardToGPU(int w, int h)
+    {
+        for (int i = 0; i < hazardRawBuffer.Length; i++)
+        {
+            hazardPixelBuffer[i].r = hazardRawBuffer[i];
+        }
+
+        hazardTextureCPU.SetPixels(hazardPixelBuffer);
+        hazardTextureCPU.Apply();
+    }
+
     private Vector2 TextureToWorld(int x, int y)
     {
         float normX = (float)x / resolution.x;
@@ -627,13 +833,13 @@ public class SlimeMoldManager : MonoBehaviour
     {
         if (waterAttractionMap != null) waterAttractionMap.Release();
         if (waterAttractionTextureCPU != null) Destroy(waterAttractionTextureCPU);
+        if (hazardTextureCPU != null) Destroy(hazardTextureCPU);
     }
 
     void OnDrawGizmosSelected()
     {
         if (waterAttractionTextureCPU == null) return;
 
-        // Draws a semi-transparent overlay of the attraction map in the scene
         Gizmos.color = new Color(1, 1, 1, 0.2f);
         Gizmos.DrawGUITexture(new Rect(worldBounds.x, worldBounds.y, worldBounds.width, worldBounds.height), waterAttractionTextureCPU);
     }
