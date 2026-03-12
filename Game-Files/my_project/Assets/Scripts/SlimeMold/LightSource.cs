@@ -19,8 +19,8 @@ public class LightSource : MonoBehaviour
     public float ghostPointOffset = 10f;
 
     [Tooltip("How strongly agents are attracted to the shadow (0-1)")]
-    [Range(0f, 100f)]
-    public float repulsionStrength = 60f;
+    [Range(0f, 50f)]
+    public float repulsionStrength = 2f;
 
     public Vector2 GetPosition() => transform.position;
 

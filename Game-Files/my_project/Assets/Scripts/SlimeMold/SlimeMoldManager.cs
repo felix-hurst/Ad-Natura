@@ -112,12 +112,12 @@ public class SlimeMoldManager : MonoBehaviour
 
     private void CreateAttractionMap()
     {
-        waterAttractionMap = new RenderTexture(resolution.x, resolution.y, 0, RenderTextureFormat.RFloat);
+        waterAttractionMap = new RenderTexture(resolution.x, resolution.y, 0, RenderTextureFormat.ARGBFloat);
         waterAttractionMap.enableRandomWrite = true;
         waterAttractionMap.filterMode = FilterMode.Bilinear;
         waterAttractionMap.Create();
 
-        waterAttractionTextureCPU = new Texture2D(resolution.x, resolution.y, TextureFormat.RFloat, false);
+        waterAttractionTextureCPU = new Texture2D(resolution.x, resolution.y, TextureFormat.RGBAFloat, false);
         pixelBuffer = new Color[resolution.x * resolution.y];
     }
 
@@ -204,7 +204,7 @@ public class SlimeMoldManager : MonoBehaviour
                             float horizDist = Mathf.Abs(x - sourcePosX) / (float)spreadPixels;
                             float horizFalloff = 1f - horizDist;
                             int idx = y * w + x;
-                            pixelBuffer[idx].r = Mathf.Min(1f, pixelBuffer[idx].r + edgeAttraction * depthFalloff * horizFalloff);
+                            pixelBuffer[idx].g = Mathf.Min(1f, pixelBuffer[idx].g + edgeAttraction * depthFalloff * horizFalloff);
                         }
                     }
                 }
@@ -220,7 +220,7 @@ public class SlimeMoldManager : MonoBehaviour
                             float horizDist = Mathf.Abs(x - sourcePosX) / (float)spreadPixels;
                             float horizFalloff = 1f - horizDist;
                             int idx = y * w + x;
-                            pixelBuffer[idx].r = Mathf.Min(1f, pixelBuffer[idx].r + edgeAttraction * depthFalloff * horizFalloff);
+                            pixelBuffer[idx].g = Mathf.Min(1f, pixelBuffer[idx].g + edgeAttraction * depthFalloff * horizFalloff);
                         }
                     }
                 }
@@ -236,7 +236,7 @@ public class SlimeMoldManager : MonoBehaviour
                             float vertDist = Mathf.Abs(y - sourcePosY) / (float)spreadPixels;
                             float vertFalloff = 1f - vertDist;
                             int idx = y * w + x;
-                            pixelBuffer[idx].r = Mathf.Min(1f, pixelBuffer[idx].r + edgeAttraction * depthFalloff * vertFalloff);
+                            pixelBuffer[idx].g = Mathf.Min(1f, pixelBuffer[idx].g + edgeAttraction * depthFalloff * vertFalloff);
                         }
                     }
                 }
@@ -252,7 +252,7 @@ public class SlimeMoldManager : MonoBehaviour
                             float vertDist = Mathf.Abs(y - sourcePosY) / (float)spreadPixels;
                             float vertFalloff = 1f - vertDist;
                             int idx = y * w + x;
-                            pixelBuffer[idx].r = Mathf.Min(1f, pixelBuffer[idx].r + edgeAttraction * depthFalloff * vertFalloff);
+                            pixelBuffer[idx].g = Mathf.Min(1f, pixelBuffer[idx].g + edgeAttraction * depthFalloff * vertFalloff);
                         }
                     }
                 }
@@ -283,7 +283,7 @@ public class SlimeMoldManager : MonoBehaviour
                         if (attraction > 0)
                         {
                             int idx = y * w + x;
-                            pixelBuffer[idx].r = Mathf.Min(1f, pixelBuffer[idx].r + attraction);
+                            pixelBuffer[idx].g = Mathf.Min(1f, pixelBuffer[idx].g + attraction);
                         }
                     }
                 }
@@ -326,39 +326,66 @@ public class SlimeMoldManager : MonoBehaviour
     private void DrawLocalizedRepulsion(LightSource light, int w, int h)
     {
         Vector2 center = light.GetPosition();
-        Vector2 halfSize = light.rectSize / 2f;
+        float strength = light.repulsionStrength;
+        float margin = light.ghostPointOffset;
 
-        // We remove the outer edgeThickness to stop attracting outside agents
-        int minX = Mathf.Clamp(Mathf.RoundToInt(((center.x - halfSize.x) - worldBounds.x) / worldBounds.width * w), 0, w - 1);
-        int maxX = Mathf.Clamp(Mathf.RoundToInt(((center.x + halfSize.x) - worldBounds.x) / worldBounds.width * w), 0, w - 1);
-        int minY = Mathf.Clamp(Mathf.RoundToInt(((center.y - halfSize.y) - worldBounds.y) / worldBounds.height * h), 0, h - 1);
-        int maxY = Mathf.Clamp(Mathf.RoundToInt(((center.y + halfSize.y) - worldBounds.y) / worldBounds.height * h), 0, h - 1);
+        bool isCircle = light.shape == LightSource.LightShape.Circle;
+
+        float rX = isCircle ? light.fearRadius : (light.rectSize.x * 0.5f);
+        float rY = isCircle ? light.fearRadius : (light.rectSize.y * 0.5f);
+
+        int minX = WorldToTextureX(center.x - rX - margin);
+        int maxX = WorldToTextureX(center.x + rX + margin);
+        int minY = WorldToTextureY(center.y - rY - margin);
+        int maxY = WorldToTextureY(center.y + rY + margin);
 
         for (int y = minY; y <= maxY; y++)
         {
             for (int x = minX; x <= maxX; x++)
             {
                 Vector2 worldPos = TextureToWorld(x, y);
+                float normDist = 0;
 
-                // Signed distance: negative is inside, positive is outside
-                float dx = Mathf.Abs(worldPos.x - center.x) - halfSize.x;
-                float dy = Mathf.Abs(worldPos.y - center.y) - halfSize.y;
-                float distToEdge = Mathf.Max(dx, dy);
-
-                // ONLY process pixels that are strictly INSIDE the light
-                if (distToEdge <= 0)
+                if (isCircle)
                 {
-                    int idx = y * w + x;
-
-                    // InverseLerp creates a ramp from the center (0) to the edge (1)
-                    // We use a small epsilon (like -0.1f) to ensure the peak is 
-                    // right at the exit boundary.
-                    float internalRamp = Mathf.InverseLerp(-Mathf.Max(halfSize.x, halfSize.y), 0f, distToEdge);
-
-                    pixelBuffer[idx].r = Mathf.Min(1f, pixelBuffer[idx].r + internalRamp * light.repulsionStrength);
+                    normDist = Mathf.Clamp01(Vector2.Distance(worldPos, center) / (light.fearRadius + margin));
                 }
+                else
+                {
+                    float dx = Mathf.Abs(worldPos.x - center.x) / (rX + margin);
+                    float dy = Mathf.Abs(worldPos.y - center.y) / (rY + margin);
+                    normDist = Mathf.Clamp01(Mathf.Max(dx, dy));
+                }
+
+                // Create a gradient of repulsion, meaning repulsion is stronger the closer one is to center of light.
+                float hill = Mathf.Pow(1.0f - normDist, 3);
+                int idx = y * w + x;
+                pixelBuffer[idx].r = Mathf.Max(pixelBuffer[idx].r, hill * strength);
             }
         }
+    }
+
+    private int WorldToTextureX(float worldX)
+    {
+        // Use the bounds assigned to the slime simulation
+        Rect bounds = slimeSimulation.GetWorldBounds();
+        Vector2Int res = slimeSimulation.GetSimulationResolution();
+
+        // Map world position to a 0.0 - 1.0 range
+        float t = (worldX - bounds.xMin) / bounds.width;
+
+        // Convert to pixel index [0, width-1]
+        return Mathf.Clamp(Mathf.FloorToInt(t * res.x), 0, res.x - 1);
+    }
+
+    private int WorldToTextureY(float worldY)
+    {
+        Rect bounds = slimeSimulation.GetWorldBounds();
+        Vector2Int res = slimeSimulation.GetSimulationResolution();
+
+        float t = (worldY - bounds.yMin) / bounds.height;
+
+        return Mathf.Clamp(Mathf.FloorToInt(t * res.y), 0, res.y - 1);
     }
 
 
@@ -409,7 +436,7 @@ public class SlimeMoldManager : MonoBehaviour
                     {
                         float attraction = Mathf.Clamp01(waterAmount) * liquidAttractionMultiplier;
                         int idx = y * w + x;
-                        pixelBuffer[idx].r = Mathf.Min(1f, pixelBuffer[idx].r + attraction);
+                        pixelBuffer[idx].g = Mathf.Min(1f, pixelBuffer[idx].g + attraction);
                     }
                 }
             }
@@ -457,7 +484,7 @@ public class SlimeMoldManager : MonoBehaviour
                         if (texY < 0) break;
                         float depthFalloff = 1f - (float)depth / gradientDepth;
                         int idx = texY * w + texX;
-                        pixelBuffer[idx].r = Mathf.Min(1f, pixelBuffer[idx].r + attraction * depthFalloff);
+                        pixelBuffer[idx].g = Mathf.Min(1f, pixelBuffer[idx].g + attraction * depthFalloff);
                     }
                 }
             }
@@ -497,7 +524,7 @@ public class SlimeMoldManager : MonoBehaviour
                         if (texY >= h) break;
                         float depthFalloff = 1f - (float)depth / gradientDepth;
                         int idx = texY * w + texX;
-                        pixelBuffer[idx].r = Mathf.Min(1f, pixelBuffer[idx].r + attraction * depthFalloff);
+                        pixelBuffer[idx].g = Mathf.Min(1f, pixelBuffer[idx].g + attraction * depthFalloff);
                     }
                 }
             }
@@ -538,7 +565,7 @@ public class SlimeMoldManager : MonoBehaviour
                         if (texX >= w) break;
                         float depthFalloff = 1f - (float)depth / horizGradient;
                         int idx = texY * w + texX;
-                        pixelBuffer[idx].r = Mathf.Min(1f, pixelBuffer[idx].r + attraction * depthFalloff);
+                        pixelBuffer[idx].g = Mathf.Min(1f, pixelBuffer[idx].g + attraction * depthFalloff);
                     }
                 }
             }
@@ -579,7 +606,7 @@ public class SlimeMoldManager : MonoBehaviour
                         if (texX < 0) break;
                         float depthFalloff = 1f - (float)depth / horizGradient;
                         int idx = texY * w + texX;
-                        pixelBuffer[idx].r = Mathf.Min(1f, pixelBuffer[idx].r + attraction * depthFalloff);
+                        pixelBuffer[idx].g = Mathf.Min(1f, pixelBuffer[idx].g + attraction * depthFalloff);
                     }
                 }
             }
