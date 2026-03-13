@@ -124,10 +124,9 @@ public class OrganicMatter : MonoBehaviour
             else // if Wall
             {
                 this.GameObject().layer = LayerMask.NameToLayer("Climbable");
-                overlayRenderer.color = new Color(0f,0f,0f,0f);
+                overlayRenderer.color = new Color(0f, 0f, 0f, 0f);
                 this.GameObject().GetComponent<SpriteRenderer>().sprite = climbableWallSprite;
             }
-            
         }
     }
 

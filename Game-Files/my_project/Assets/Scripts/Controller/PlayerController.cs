@@ -212,16 +212,24 @@ public class PlayerController : MonoBehaviour
     }
 
     public int GetCurrentTool()
-        { return currentToolIndex; }
+    {
+        return currentToolIndex;
+    }
 
     public int GetWaterAmmo()
-        { return waterAmmo; }
+    {
+        return waterAmmo;
+    }
 
     public int GetIncendiaryAmmo()
-        { return incendiaryAmmo; }
+    {
+        return incendiaryAmmo;
+    }
 
     public int GetWindAmmo()
-        { return windAmmo; }
+    {
+        return windAmmo;
+    }
 
     public void SwitchTool(int toolIndex)
     {

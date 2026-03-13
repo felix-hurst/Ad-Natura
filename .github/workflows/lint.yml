@@ -2,27 +2,58 @@ name: Unity C# Linter
 
 on:
   push:
-    branches: [ main ]
+    branches: [ main, marcosChanges ]
   pull_request:
     branches: [ main ]
+
+permissions:
+  contents: read
+  checks: write
 
 jobs:
   check-format:
     runs-on: ubuntu-latest
-
     steps:
       - name: Checkout Code
         uses: actions/checkout@v4
+        with:
+          lfs: true
+
+      - name: Cache Library
+        uses: actions/cache@v4
+        with:
+          path: Game-Files/my_project/Library
+          key: Library-my_project-${{ hashFiles('Game-Files/my_project/Packages/packages-lock.json') }}
+          restore-keys: |
+            Library-my_project-
+
+      - name: Generate Solution
+        uses: game-ci/unity-test-runner@v4
+        env:
+          UNITY_LICENSE: ${{ secrets.UNITY_LICENSE }}
+          UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
+          UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
+        with:
+          projectPath: Game-Files/my_project
+          customParameters: -executeMethod Packages.Rider.Editor.RiderScriptEditor.SyncSolution -quit
 
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
 
-      - name: Restore Dependencies
-        # Points to your specific project folder structure
-        run: dotnet restore Game-Files/my_project/my_project.sln
-
       - name: Verify Code Formatting
-        # This will fail the build if code doesn't match your .editorconfig
-        run: dotnet format Game-Files/my_project/my_project.sln --verify-no-changes --verbosity diagnostic
+        shell: bash
+        run: |
+          # Dynamically find the .sln file
+          SLN_PATH=$(find Game-Files/my_project -maxdepth 1 -name "*.sln" | head -n 1)
+          
+          if [ -z "$SLN_PATH" ]; then
+            echo "::error::No .sln file found! Unity failed to generate the solution."
+            exit 1
+          fi
+
+          echo "Found solution at: $SLN_PATH"
+          
+          # Run the formatter
+          dotnet format "$SLN_PATH" --verify-no-changes --verbosity diagnostic
