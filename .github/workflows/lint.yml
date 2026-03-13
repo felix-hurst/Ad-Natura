@@ -19,7 +19,6 @@ jobs:
         with:
           lfs: true
 
-      #cache library to reduce wait times
       - name: Cache Library
         uses: actions/cache@v4
         with:
@@ -28,7 +27,6 @@ jobs:
           restore-keys: |
             Library-my_project-
 
-      #generate .sln file
       - name: Generate Solution
         uses: game-ci/unity-test-runner@v4
         env:
@@ -38,18 +36,24 @@ jobs:
         with:
           projectPath: Game-Files/my_project
           customParameters: -executeMethod Packages.Rider.Editor.RiderScriptEditor.SyncSolution -quit
-      #list files to debug
-      - name: List Generated Files
-        run: |
-          echo "Listing files in project directory to find the .sln:"
-          ls -R Game-Files/my_project/*.sln || echo "No .sln file found!"
 
-      #setup .NET for linter
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.x'
 
-      #run linter
       - name: Verify Code Formatting
-        run: dotnet format Game-Files/my_project/my_project.sln --verify-no-changes --verbosity diagnostic
+        shell: bash
+        run: |
+          # Dynamically find the .sln file
+          SLN_PATH=$(find Game-Files/my_project -maxdepth 1 -name "*.sln" | head -n 1)
+          
+          if [ -z "$SLN_PATH" ]; then
+            echo "::error::No .sln file found! Unity failed to generate the solution."
+            exit 1
+          fi
+
+          echo "Found solution at: $SLN_PATH"
+          
+          # Run the formatter
+          dotnet format "$SLN_PATH" --verify-no-changes --verbosity diagnostic
