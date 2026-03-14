@@ -41,16 +41,16 @@ public class AmmoUI : MonoBehaviour
         // Check current tool of the player
         // Check ammo of the current tool
         // Display information
-        
+
         int currentTool = playerCon.GetCurrentTool();
         var ammoCount = currentTool switch
-                {
-                    0 => playerCon.GetWaterAmmo(), // Water shooter tool
-                    1 => playerCon.GetIncendiaryAmmo(), // Impact round tool
-                    2 => playerCon.GetWindAmmo(), // Wind fan tool
-                    _ => 0,
-                };
-        
+        {
+            0 => playerCon.GetWaterAmmo(), // Water shooter tool
+            1 => playerCon.GetIncendiaryAmmo(), // Impact round tool
+            2 => playerCon.GetWindAmmo(), // Wind fan tool
+            _ => 0,
+        };
+
         string toolName;
         if (currentTool >= 0)
             toolName = toolNames[currentTool];
