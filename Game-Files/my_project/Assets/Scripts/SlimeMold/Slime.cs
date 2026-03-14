@@ -275,7 +275,6 @@ public class Slime : MonoBehaviour
         shader.SetFloat("entropyStrength", entropyStrength);
 
         shader.SetTexture(kernelPostprocess, "TrailMap", readBuffer);
-        //shader.SetTexture(kernelPostprocess, "TrailMap", waterMap);
         shader.SetTexture(kernelPostprocess, "TrailMapProcessed", writeBuffer);
         shader.SetTexture(kernelPostprocess, "WaterAttractionMap", waterMap);
         shader.SetTexture(kernelPostprocess, "HazardMap", hazMap);
