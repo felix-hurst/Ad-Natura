@@ -166,7 +166,7 @@ void Update(uint3 id : SV_DispatchThreadID)
     // Speed: continuous blend from idle to attracted.
     // Smooth transitions produce organic movement; discrete states feel mechanical.
     float speed = lerp(idleSpeed, moveSpeed * attractedSpeedMultiplier, saturate(max(attractionLevel, currentFear)));
-
+    // Standard physarum turning logic — emergent path-following from local rules
     float turnAmount = turnSpeed * deltaTime;
     float randomTurn = (random01 - 0.5) * turnAmount * 0.5;
 
