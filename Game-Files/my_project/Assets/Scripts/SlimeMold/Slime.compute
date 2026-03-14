@@ -21,16 +21,11 @@ float attractedSpeedMultiplier;
 RWTexture2D<float4> WaterAttractionMap;
 float waterAttractionStrength;
 
-// Hazard (calamity) system — kills agents on contact, corrodes trails
+// Hazard (calamity) system — binary: solid contact corrodes trails, bounces agents
 Texture2D<float> HazardMap;
-float spawnCenterX;
-float spawnCenterY;
-float spawnRadius;
 
-float hazardAvoidanceStrength;
 float4 decayColor;
 float hazardCorrosionRate;
-float hazardTrailDampen;
 
 float4 slimeColor;
 
@@ -46,10 +41,6 @@ float pulseMaxFreq;
 float pulseWaveScale;
 
 // Entropic Decay
-// Two-octave noise makes evaporation non-uniform at multiple scales.
-// Large patches of persistence with fine-grain variation on top.
-// The network develops organic asymmetry — thick veins beside thin wisps,
-// unexpected gaps, trails that survive where they shouldn't.
 float entropyScale;
 float entropySpeed;
 float entropyStrength;
@@ -93,31 +84,7 @@ float sense(Agent agent, float angle)
         {
             int2 pos = int2(sensorPos) + int2(ox, oy);
             if (pos.x >= 0 && pos.x < width && pos.y >= 0 && pos.y < height)
-            {
                 sum += length(TrailMap[pos].rgb);
-            }
-        }
-    }
-    return sum;
-}
-
-// Sense hazard intensity — same 3x3 pattern but reads from HazardMap.
-// Agents steer away from high hazard values to avoid calamity objects.
-float senseHazard(Agent agent, float angle)
-{
-    float2 sensorDir = float2(cos(agent.angle + angle), sin(agent.angle + angle));
-    float2 sensorPos = agent.pos + sensorDir * sensorLength;
-
-    float sum = 0;
-    for (int oy = -1; oy <= 1; oy++)
-    {
-        for (int ox = -1; ox <= 1; ox++)
-        {
-            int2 pos = int2(sensorPos) + int2(ox, oy);
-            if (pos.x >= 0 && pos.x < width && pos.y >= 0 && pos.y < height)
-            {
-                sum += HazardMap[pos];
-            }
         }
     }
     return sum;
@@ -129,8 +96,19 @@ void Update(uint3 id : SV_DispatchThreadID)
     if (id.x >= numAgents) return;
 
     Agent agent = agents[id.x];
-    uint seed = uint(agent.pos.y * width + agent.pos.x) + id.x + uint(gameTime * 1000);
+    uint  seed = uint(agent.pos.y * width + agent.pos.x) + id.x + uint(gameTime * 1000);
     float random01 = randomValue(seed);
+
+    // If agent is inside a calamity object bounce away no deposit.
+    int2  currentTexPos = int2(clamp(agent.pos, float2(0,0), float2(width-1, height-1)));
+    if (HazardMap[currentTexPos] >= 0.5)
+    {
+        agents[id.x].angle += PI + (random01 - 0.5) * 1.2;
+        float2 escapeDir  = float2(cos(agents[id.x].angle), sin(agents[id.x].angle));
+        agents[id.x].pos  = clamp(agent.pos + escapeDir * moveSpeed * deltaTime * 2.0,
+                                   float2(0,0), float2(width-1, height-1));
+        return;
+    }
 
     // Calculate sensor positions for all three directions
     float2 fwdDir = float2(cos(agent.angle), sin(agent.angle));
@@ -142,22 +120,9 @@ void Update(uint3 id : SV_DispatchThreadID)
     int2 leftPos = int2(clamp(agent.pos + leftDir * sensorLength, float2(0,0), float2(width-1, height-1)));
     int2 rightPos = int2(clamp(agent.pos + rightDir * sensorLength, float2(0,0), float2(width-1, height-1)));
 
-    // Sample water attraction (G channel) and light fear (R channel)
-    float3 waterValues = float3(
-        WaterAttractionMap[fwdPos].g,
-        WaterAttractionMap[leftPos].g,
-        WaterAttractionMap[rightPos].g
-    );
+    float currentFear = WaterAttractionMap[currentTexPos].r;
 
-    int2 currentPos = int2(clamp(agent.pos, float2(0,0), float2(width-1, height-1)));
-    float currentFear = WaterAttractionMap[currentPos].r;
-
-    // Sense hazards in all three directions
-    float hazFwd = senseHazard(agent, 0);
-    float hazLeft = senseHazard(agent, sensorAngleSpacing);
-    float hazRight = senseHazard(agent, -sensorAngleSpacing);
-
-    // Sense trails — always, even in fear mode.
+    // Trail sensing — always active, even in fear mode.
     // The organism retains self-organization under light; it resists rather than
     // becoming a pure reflex machine. This preserves emergent behavior (Keller:
     // no external governor) while still responding to environmental pressure.
@@ -165,9 +130,9 @@ void Update(uint3 id : SV_DispatchThreadID)
     float trailLeft = sense(agent, sensorAngleSpacing);
     float trailRight = sense(agent, -sensorAngleSpacing);
 
-    float waterFwd = waterValues.x * waterAttractionStrength;
-    float waterLeft = waterValues.y * waterAttractionStrength;
-    float waterRight = waterValues.z * waterAttractionStrength;
+    float waterFwd = WaterAttractionMap[fwdPos].g   * waterAttractionStrength;
+    float waterLeft = WaterAttractionMap[leftPos].g  * waterAttractionStrength;
+    float waterRight = WaterAttractionMap[rightPos].g * waterAttractionStrength;
 
     float totalFwd, totalLeft, totalRight;
     float attractionLevel = 0;
@@ -198,20 +163,10 @@ void Update(uint3 id : SV_DispatchThreadID)
     float maxWaterSensed = max(waterFwd, max(waterLeft, waterRight));
     attractionLevel = saturate(maxWaterSensed);
 
-    // Hazard avoidance — subtract hazard signal from combined weights
-    totalFwd -= hazFwd * hazardAvoidanceStrength;
-    totalLeft -= hazLeft * hazardAvoidanceStrength;
-    totalRight -= hazRight * hazardAvoidanceStrength;
-
-    float maxHazard = max(max(hazFwd, hazLeft), hazRight) / 9.0;
-    float hazardSlowdown = saturate(1.0 - maxHazard * 0.7);
-
     // Speed: continuous blend from idle to attracted.
     // Smooth transitions produce organic movement; discrete states feel mechanical.
     float speed = lerp(idleSpeed, moveSpeed * attractedSpeedMultiplier, saturate(max(attractionLevel, currentFear)));
-    speed *= hazardSlowdown;
 
-    // Standard physarum turning logic — emergent path-following from local rules
     float turnAmount = turnSpeed * deltaTime;
     float randomTurn = (random01 - 0.5) * turnAmount * 0.5;
 
@@ -271,89 +226,19 @@ void Update(uint3 id : SV_DispatchThreadID)
 
     agents[id.x].pos = newPos;
 
-    // --- Hazard death and respawn ---
-    // Agents that touch a calamity object (hazard >= 0.5) die: their surrounding
-    // trails are tinted with decay color, and the agent respawns at the colony center.
-    int2 hazardPos = int2(clamp(newPos, float2(0,0), float2(width-1, height-1)));
-    float hazard = HazardMap[hazardPos];
+    // No deposit inside calamity objects
+    int2 depositPos = int2(clamp(newPos, float2(0,0), float2(width-1, height-1)));
+    if (HazardMap[depositPos] >= 0.5) return;
 
-    if (hazard >= 0.5)
-    {
-        // Death — tint surrounding trails with decay color
-        int2 deathPos = int2(newPos.x, newPos.y);
-        for (int oy = -1; oy <= 1; oy++)
-        {
-            for (int ox = -1; ox <= 1; ox++)
-            {
-                int2 clearPos = deathPos + int2(ox, oy);
-                if (clearPos.x >= 0 && clearPos.x < width && clearPos.y >= 0 && clearPos.y < height)
-                {
-                    if (HazardMap[clearPos] > 0.3)
-                    {
-                        float4 existing = TrailMap[clearPos];
-                        float br = length(existing.rgb);
-                        if (br > 0.01)
-                        {
-                            TrailMap[clearPos] = lerp(existing, decayColor * br * 0.5, 0.6);
-                        }
-                    }
-                }
-            }
-        }
-
-        TrailMap[deathPos] = decayColor * 0.2;
-
-        // Respawn at colony center with random position and heading
-        uint respawnSeed = hash(seed + 31337u);
-        float respawnAngle = randomValue(respawnSeed) * 2.0 * PI;
-        float respawnDist = randomValue(hash(respawnSeed + 1u)) * spawnRadius;
-
-        float2 respawnPos = float2(
-            clamp(spawnCenterX + cos(respawnAngle) * respawnDist, 1, width - 2),
-            clamp(spawnCenterY + sin(respawnAngle) * respawnDist, 1, height - 2)
-        );
-
-        int2 respawnCheck = int2(respawnPos);
-        if (HazardMap[respawnCheck] < 0.5)
-        {
-            agents[id.x].pos = respawnPos;
-            agents[id.x].angle = randomValue(hash(respawnSeed + 2u)) * 2.0 * PI;
-        }
-        else
-        {
-            agents[id.x].pos = newPos;
-        }
-        return;
-    }
-
-    // Hazard proximity — agents near (but not touching) hazards deposit weakened,
-    // discolored trails and jitter erratically
-    if (hazard > 0.1)
-    {
-        float decayFactor = saturate((hazard - 0.1) / 0.4);
-        float dampened = 1.0 - decayFactor * hazardTrailDampen;
-
-        float trailStr = (1.0 + attractionLevel * 2.0) * dampened;
-        float4 depositColor = lerp(slimeColor, decayColor, decayFactor * 0.6);
-        TrailMap[int2(newPos.x, newPos.y)] = depositColor * trailStr;
-
-        float jitter = (randomValue(seed + 4231u) - 0.5) * decayFactor * 2.0;
-        agents[id.x].angle += jitter;
-        return;
-    }
-
-    // Deposit trail — stronger when near water (creates highways to moisture)
-    float trailStr = 1.0 + attractionLevel * 2.0;
-    TrailMap[int2(newPos.x, newPos.y)] = slimeColor * trailStr;
+    float trailStrength = 1.0 + attractionLevel * 2.0;
+    TrailMap[depositPos] = slimeColor * trailStrength;
 }
+
 
 RWTexture2D<float4> TrailMapProcessed;
 float evaporateSpeed;
 float diffuseSpeed;
 
-// --- Value noise (integer hash, no trig, safe on all GPUs) ---
-// Standard sin()-based noise suffers from precision banding on some GPU
-// architectures. Integer hash avoids this entirely at no performance cost.
 float hashNoise(float2 p)
 {
     uint2 ip = uint2(uint(abs(p.x)), uint(abs(p.y)));
@@ -370,12 +255,10 @@ float valueNoise(float2 p)
     float2 i = floor(p);
     float2 f = frac(p);
     float2 u = f * f * (3.0 - 2.0 * f);
-
     float a = hashNoise(i);
     float b = hashNoise(i + float2(1, 0));
     float c = hashNoise(i + float2(0, 1));
     float d = hashNoise(i + float2(1, 1));
-
     return lerp(lerp(a, b, u.x), lerp(c, d, u.x), u.y);
 }
 
@@ -407,36 +290,80 @@ void Postprocess(uint3 id : SV_DispatchThreadID)
     float4 blurred = sum / 9.0;
     float4 diffused = lerp(original, blurred, diffuseSpeed * deltaTime);
 
-    // --- Hazard zone corrosion ---
-    // Calamity objects corrode existing trails. The corrosion is modulated by
-    // organic noise so damage looks biological — patchy, uneven, like real
-    // environmental degradation rather than a uniform color wipe.
-    float hazard = HazardMap[id.xy];
-
-    if (hazard > 0.05)
+    // Solid hazard zone: immediate wither on contact
+    // Scoped so 'brightness' doesn't conflict with the spreading stain block below.
     {
-        float brightness = length(diffused.rgb);
-        float2 hazNoiseCoord = float2(id.x, id.y) * 0.08 + gameTime * 0.1;
-        float hazNoise = organicNoise(hazNoiseCoord);
-
-        if (hazard >= 0.5)
+        if (HazardMap[id.xy] >= 0.5)
         {
-            if (brightness > 0.01)
+            float brightness = length(diffused.rgb);
+            if (brightness > 0.001)
+                diffused = lerp(diffused, decayColor * brightness, 0.5);
+            diffused *= saturate(1.0 - hazardCorrosionRate * deltaTime);
+            diffused  = max(0, diffused);
+        }
+    }
+
+    //  Spreading death stain
+    // Radiates a brown/black zone outward from the contact point.
+    // Pass 2 chains through already decay pixels so the stain propagates further over time, creating a spreading rot effect.
+    if (HazardMap[id.xy] < 0.5)
+    {
+        float closestHazardDist = 9999.0;
+        for (int ny = -12; ny <= 12; ny++)
+        {
+            for (int nx = -12; nx <= 12; nx++)
             {
-                // Noise-modulated corrosion — some spots corrode faster than others
-                float noiseModulation = lerp(0.6, 1.0, hazNoise);
-                diffused = lerp(diffused, decayColor * brightness, 0.4 * noiseModulation);
-                diffused *= saturate(1.0 - hazardCorrosionRate * deltaTime * noiseModulation);
+                int2 npos = int2(id.xy) + int2(nx, ny);
+                if (npos.x >= 0 && npos.x < width && npos.y >= 0 && npos.y < height)
+                {
+                    if (HazardMap[npos] >= 0.5)
+                    {
+                        float d = length(float2(nx, ny));
+                        closestHazardDist = min(closestHazardDist, d);
+                    }
+                }
             }
         }
-        else
-        {
-            float decayIntensity = (hazard - 0.05) / 0.45;
 
-            if (brightness > 0.01)
+        // Pass 2: find nearest already-decaying trail pixel.
+        // Decaying pixels have red dominating over green
+        // (slimeColor is yellow = high R+G; decayColor is brown = high R, low G+B).
+        float closestDecayDist = 9999.0;
+        for (int dy = -6; dy <= 6; dy++)
+        {
+            for (int dx = -6; dx <= 6; dx++)
             {
-                float colorBlend = decayIntensity * 0.15 * lerp(0.7, 1.0, hazNoise);
-                diffused = lerp(diffused, decayColor * brightness, colorBlend);
+                int2  dpos          = int2(id.xy) + int2(dx, dy);
+                if (dpos.x >= 0 && dpos.x < width && dpos.y >= 0 && dpos.y < height)
+                {
+                    float4 neighbourTrail = TrailMap[dpos];
+                    float  nBrightness    = length(neighbourTrail.rgb);
+                    bool   isDecaying     = nBrightness > 0.05 &&
+                                           neighbourTrail.r > neighbourTrail.g * 1.8 &&
+                                           neighbourTrail.b < 0.15;
+                    if (isDecaying)
+                    {
+                        float d = length(float2(dx, dy));
+                        closestDecayDist = min(closestDecayDist, d);
+                    }
+                }
+            }
+        }
+
+        float closestDist = min(closestHazardDist, closestDecayDist);
+        float decayRadius = 12.0;
+
+        if (closestDist < decayRadius)
+        {
+            float t          = 1.0 - (closestDist / decayRadius);
+            float falloff    = t * t; // quadratic: strong near source, soft at edge
+            float brightness = length(diffused.rgb);
+
+            if (brightness > 0.001)
+            {
+                diffused = lerp(diffused, decayColor * brightness, falloff * 0.6);
+                // Darken toward black
+                diffused *= saturate(1.0 - falloff * 0.3);
             }
 
             float extraEvaporate = decayIntensity * hazardCorrosionRate * 0.3;

@@ -68,15 +68,11 @@ public class Slime : MonoBehaviour
     [Tooltip("How much evaporation varies. 0 = uniform (original), 1 = some pixels barely evaporate at all")]
     [SerializeField, Range(0f, 1f)] private float entropyStrength = 0.4f;
 
-    [Header("Hazard Death Visuals")]
-    [Tooltip("How strongly agents steer away from hazards. Higher = wider avoidance zone")]
-    [SerializeField, Range(0f, 20f)] private float hazardAvoidanceStrength = 8f;
-    [Tooltip("Color of decaying/dying slime trails")]
-    [SerializeField] private Color decayColor = new Color(0.25f, 0.15f, 0.05f, 1f);
-    [Tooltip("How fast hazard zones corrode existing trails. Higher = faster dissolution")]
-    [SerializeField, Range(0f, 15f)] private float hazardCorrosionRate = 6f;
-    [Tooltip("Trail deposit reduction in decay zone (0=full trails, 1=no trails)")]
-    [SerializeField, Range(0f, 1f)] private float hazardTrailDampen = 0.85f;
+    [Header("Hazard (Calamity) Visuals")]
+    [Tooltip("Color of decaying/dying slime trails on contact with calamity objects")]
+    [SerializeField] private Color decayColor = new Color(0.3f, 0.1f, 0.0f, 1f);
+    [Tooltip("How fast calamity objects corrode trail pixels. Higher = faster wither")]
+    [SerializeField, Range(0f, 15f)] private float hazardCorrosionRate = 8f;
 
     [Header("Visual")]
     [Tooltip("Slime color. Golden yellow is classic Physarum")]
@@ -125,7 +121,7 @@ public class Slime : MonoBehaviour
             CalculateBoundsFromObject();
 
         numAgents = Mathf.Max(16, (numAgents / 16) * 16);
-        width = Mathf.Max(8, (width / 8) * 8);
+        width = Mathf.Max(8, (width  / 8) * 8);
         height = Mathf.Max(8, (height / 8) * 8);
 
         kernelUpdate = shader.FindKernel("Update");
@@ -249,13 +245,8 @@ public class Slime : MonoBehaviour
         // Hazard map + death visual parameters
         var hazMap = hasExternalHazard && externalHazardMap != null ? externalHazardMap : defaultHazardMap;
         shader.SetTexture(kernelUpdate, "HazardMap", hazMap);
-        shader.SetFloat("spawnCenterX", width * spawnX);
-        shader.SetFloat("spawnCenterY", height * spawnY);
-        shader.SetFloat("spawnRadius", Mathf.Min(width, height) * spawnRadius);
-        shader.SetFloat("hazardAvoidanceStrength", hazardAvoidanceStrength);
         shader.SetVector("decayColor", new Vector4(decayColor.r, decayColor.g, decayColor.b, decayColor.a));
         shader.SetFloat("hazardCorrosionRate", hazardCorrosionRate);
-        shader.SetFloat("hazardTrailDampen", hazardTrailDampen);
 
         shader.SetBuffer(kernelUpdate, "agents", agentsBuffer);
         shader.Dispatch(kernelUpdate, numAgents / 16, 1, 1);
@@ -263,13 +254,11 @@ public class Slime : MonoBehaviour
         shader.SetFloat("evaporateSpeed", evaporateSpeed);
         shader.SetFloat("diffuseSpeed", diffuseSpeed);
 
-        // Pulse parameters
         shader.SetFloat("pulseAmplitude", pulseAmplitude);
         shader.SetFloat("pulseMinFreq", pulseMinFreq);
         shader.SetFloat("pulseMaxFreq", pulseMaxFreq);
         shader.SetFloat("pulseWaveScale", pulseWaveScale);
 
-        // Entropic Decay parameters
         shader.SetFloat("entropyScale", entropyScale);
         shader.SetFloat("entropySpeed", entropySpeed);
         shader.SetFloat("entropyStrength", entropyStrength);

@@ -47,17 +47,11 @@ public class SlimeMoldManager : MonoBehaviour
     [SerializeField] private float minWaterThreshold = 0.1f;
 
     [Header("Hazard (Calamity Objects)")]
-    [Tooltip("Kill slime agents that touch objects tagged 'Calamity'")]
+    [Tooltip("Wither trail pixels that touch objects tagged 'Calamity'")]
     public bool enableCalamityHazard = true;
     [Tooltip("How often to refresh the hazard map (seconds)")]
     [Range(0.1f, 2f)]
     public float hazardRefreshInterval = 0.25f;
-    [Tooltip("Width of the decay gradient around hazard edges (in world units)")]
-    [Range(0.1f, 3f)]
-    public float hazardGradientWidth = 0.8f;
-    [Tooltip("Minimum solid hazard radius in pixels. Thin objects get dilated so agents can't slip through")]
-    [Range(1, 6)]
-    public int minimumHazardPixelRadius = 3;
 
     private Texture2D hazardTextureCPU;
     private Color[] hazardPixelBuffer;
@@ -107,6 +101,10 @@ public class SlimeMoldManager : MonoBehaviour
 
     private void Update()
     {
+        // Re-read bounds every frame — SporeDispersal sets them one frame after
+        // spawn via ApplyBoundsNextFrame so must stay in sync.
+        worldBounds = slimeSimulation.GetWorldBounds();
+
         timeSinceSourceRefresh += Time.deltaTime;
         if (timeSinceSourceRefresh >= sourceRefreshInterval)
         {
@@ -157,11 +155,8 @@ public class SlimeMoldManager : MonoBehaviour
     private void RefreshSources()
     {
         cachedWaterSources.Clear();
-
         if (autoFindSources)
-        {
             cachedWaterSources.AddRange(FindObjectsByType<WaterSource>(FindObjectsSortMode.None));
-        }
         else
         {
             cachedWaterSources.AddRange(manualWaterSources);
@@ -365,12 +360,10 @@ public class SlimeMoldManager : MonoBehaviour
             for (int x = minX; x <= maxX; x++)
             {
                 Vector2 worldPos = TextureToWorld(x, y);
-                float normDist = 0;
+                float normDist;
 
                 if (isCircle)
-                {
                     normDist = Mathf.Clamp01(Vector2.Distance(worldPos, center) / (light.fearRadius + margin));
-                }
                 else
                 {
                     float dx = Mathf.Abs(worldPos.x - center.x) / (rX + margin);
@@ -404,7 +397,6 @@ public class SlimeMoldManager : MonoBehaviour
     private void SampleLiquidSimulation(int w, int h)
     {
         if (liquidSimulation.TotalWaterCells == 0) return;
-
         Rect liquidBounds = liquidSimulation.GetWorldBounds();
         SampleLiquidOverlap(w, h, liquidBounds);
         SampleLiquidEdgeAttraction(w, h, liquidBounds);
@@ -610,27 +602,24 @@ public class SlimeMoldManager : MonoBehaviour
         }
     }
 
+    // Hazard map — binary only, solid collider pixels = 1.0, everything else = 0
 
     private void CreateHazardMap()
     {
         int w = resolution.x;
         int h = resolution.y;
-
         hazardTextureCPU = new Texture2D(w, h, TextureFormat.RFloat, false);
-        hazardTextureCPU.filterMode = FilterMode.Bilinear;
+        hazardTextureCPU.filterMode = FilterMode.Point;
         hazardPixelBuffer = new Color[w * h];
         hazardRawBuffer = new float[w * h];
     }
 
     private void RefreshCalamityColliders()
     {
-        List<Collider2D> colliders = new List<Collider2D>();
+        var colliders = new List<Collider2D>();
 
         GameObject[] calamityObjects = null;
-        try
-        {
-            calamityObjects = GameObject.FindGameObjectsWithTag("Calamity");
-        }
+        try { calamityObjects = GameObject.FindGameObjectsWithTag("Calamity"); }
         catch (UnityException)
         {
             Debug.LogError("SlimeMoldManager: Tag 'Calamity' is not defined in Project Settings > Tags & Layers. Add it there first.");
@@ -640,14 +629,8 @@ public class SlimeMoldManager : MonoBehaviour
         }
 
         foreach (GameObject obj in calamityObjects)
-        {
-            Collider2D[] cols = obj.GetComponents<Collider2D>();
-            foreach (Collider2D col in cols)
-            {
-                if (col.enabled)
-                    colliders.Add(col);
-            }
-        }
+            foreach (Collider2D col in obj.GetComponents<Collider2D>())
+                if (col.enabled) colliders.Add(col);
 
         cachedCalamityColliders = colliders.ToArray();
     }
@@ -668,7 +651,6 @@ public class SlimeMoldManager : MonoBehaviour
             return;
         }
 
-        bool hasAnyPixels = false;
 
         foreach (Collider2D col in cachedCalamityColliders)
         {
@@ -689,120 +671,9 @@ public class SlimeMoldManager : MonoBehaviour
             int pxMaxY = Mathf.Min(h - 1, Mathf.CeilToInt((maxY - worldBounds.y) / worldBounds.height * h));
 
             for (int py = pxMinY; py <= pxMaxY; py++)
-            {
                 for (int px = pxMinX; px <= pxMaxX; px++)
-                {
-                    Vector2 worldPos = TextureToWorld(px, py);
-                    if (col.OverlapPoint(worldPos))
-                    {
+                    if (col.OverlapPoint(TextureToWorld(px, py)))
                         hazardRawBuffer[py * w + px] = 1f;
-                        hasAnyPixels = true;
-                    }
-                }
-            }
-        }
-
-        if (!hasAnyPixels)
-        {
-            WriteHazardToGPU(w, h);
-            return;
-        }
-
-        if (minimumHazardPixelRadius > 1)
-        {
-            float[] dilated = new float[w * h];
-            System.Array.Copy(hazardRawBuffer, dilated, hazardRawBuffer.Length);
-
-            int dilateR = minimumHazardPixelRadius;
-            int dilateRSq = dilateR * dilateR;
-
-            for (int py = 0; py < h; py++)
-            {
-                for (int px = 0; px < w; px++)
-                {
-                    if (hazardRawBuffer[py * w + px] < 1f) continue;
-
-                    int dMinY = Mathf.Max(0, py - dilateR);
-                    int dMaxY = Mathf.Min(h - 1, py + dilateR);
-                    int dMinX = Mathf.Max(0, px - dilateR);
-                    int dMaxX = Mathf.Min(w - 1, px + dilateR);
-
-                    for (int dy = dMinY; dy <= dMaxY; dy++)
-                    {
-                        for (int dx = dMinX; dx <= dMaxX; dx++)
-                        {
-                            int distX = dx - px;
-                            int distY = dy - py;
-                            if (distX * distX + distY * distY <= dilateRSq)
-                            {
-                                dilated[dy * w + dx] = 1f;
-                            }
-                        }
-                    }
-                }
-            }
-
-            hazardRawBuffer = dilated;
-        }
-
-        float gradientPixelsX = (hazardGradientWidth / worldBounds.width) * w;
-        float gradientPixelsY = (hazardGradientWidth / worldBounds.height) * h;
-        int gradientRadius = Mathf.CeilToInt(Mathf.Max(gradientPixelsX, gradientPixelsY));
-
-        if (gradientRadius > 0)
-        {
-            float[] expanded = new float[w * h];
-            System.Array.Copy(hazardRawBuffer, expanded, hazardRawBuffer.Length);
-
-            for (int py = 0; py < h; py++)
-            {
-                for (int px = 0; px < w; px++)
-                {
-                    if (hazardRawBuffer[py * w + px] >= 1f) continue;
-
-                    int searchMinX = Mathf.Max(0, px - gradientRadius);
-                    int searchMaxX = Mathf.Min(w - 1, px + gradientRadius);
-                    int searchMinY = Mathf.Max(0, py - gradientRadius);
-                    int searchMaxY = Mathf.Min(h - 1, py + gradientRadius);
-
-                    float closestDistSq = float.MaxValue;
-                    bool foundSolid = false;
-
-                    for (int sy = searchMinY; sy <= searchMaxY; sy++)
-                    {
-                        for (int sx = searchMinX; sx <= searchMaxX; sx++)
-                        {
-                            if (hazardRawBuffer[sy * w + sx] >= 1f)
-                            {
-                                float ddx = px - sx;
-                                float ddy = py - sy;
-                                float distSq = ddx * ddx + ddy * ddy;
-                                if (distSq < closestDistSq)
-                                {
-                                    closestDistSq = distSq;
-                                    foundSolid = true;
-                                }
-                            }
-                        }
-                    }
-
-                    if (foundSolid)
-                    {
-                        float dist = Mathf.Sqrt(closestDistSq);
-                        float gradientRadiusF = Mathf.Max(gradientPixelsX, gradientPixelsY);
-
-                        if (dist <= gradientRadiusF)
-                        {
-                            float t = dist / gradientRadiusF;
-                            float smoothT = t * t * (3f - 2f * t);
-                            float value = Mathf.Lerp(0.49f, 0.05f, smoothT);
-                            expanded[py * w + px] = Mathf.Max(expanded[py * w + px], value);
-                        }
-                    }
-                }
-            }
-
-            hazardRawBuffer = expanded;
         }
 
         WriteHazardToGPU(w, h);
@@ -840,7 +711,7 @@ public class SlimeMoldManager : MonoBehaviour
     {
         if (waterAttractionTextureCPU == null) return;
 
-        Gizmos.color = new Color(1, 1, 1, 0.2f);
+        Gizmos.color = new Color(1f, 1f, 1f, 0.2f);
         Gizmos.DrawGUITexture(new Rect(worldBounds.x, worldBounds.y, worldBounds.width, worldBounds.height), waterAttractionTextureCPU);
     }
 }
