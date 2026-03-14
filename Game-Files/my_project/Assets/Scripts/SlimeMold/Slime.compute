@@ -41,6 +41,10 @@ float pulseMaxFreq;
 float pulseWaveScale;
 
 // Entropic Decay
+// Two-octave noise makes evaporation non-uniform at multiple scales.
+// Large patches of persistence with fine-grain variation on top.
+// The network develops organic asymmetry — thick veins beside thin wisps,
+// unexpected gaps, trails that survive where they shouldn't.
 float entropyScale;
 float entropySpeed;
 float entropyStrength;
@@ -230,6 +234,7 @@ void Update(uint3 id : SV_DispatchThreadID)
     int2 depositPos = int2(clamp(newPos, float2(0,0), float2(width-1, height-1)));
     if (HazardMap[depositPos] >= 0.5) return;
 
+   // Deposit trail — stronger when near water (creates highways to moisture)
     float trailStrength = 1.0 + attractionLevel * 2.0;
     TrailMap[depositPos] = slimeColor * trailStrength;
 }
@@ -239,6 +244,9 @@ RWTexture2D<float4> TrailMapProcessed;
 float evaporateSpeed;
 float diffuseSpeed;
 
+// --- Value noise (integer hash, no trig, safe on all GPUs) ---
+// Standard sin()-based noise suffers from precision banding on some GPU
+// architectures. Integer hash avoids this entirely at no performance cost.
 float hashNoise(float2 p)
 {
     uint2 ip = uint2(uint(abs(p.x)), uint(abs(p.y)));
