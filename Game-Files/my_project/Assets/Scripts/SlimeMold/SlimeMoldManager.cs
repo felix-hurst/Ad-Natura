@@ -47,21 +47,16 @@ public class SlimeMoldManager : MonoBehaviour
     [SerializeField] private float minWaterThreshold = 0.1f;
 
     [Header("Hazard (Calamity Objects)")]
-    [Tooltip("Kill slime agents that touch objects tagged 'Calamity'")]
+    [Tooltip("Wither trail pixels that touch objects tagged 'Calamity'")]
     public bool enableCalamityHazard = true;
     [Tooltip("How often to refresh the hazard map (seconds)")]
     [Range(0.1f, 2f)]
     public float hazardRefreshInterval = 0.25f;
-    [Tooltip("Width of the decay gradient around hazard edges (in world units)")]
-    [Range(0.1f, 3f)]
-    public float hazardGradientWidth = 0.8f;
-    [Tooltip("Minimum solid hazard radius in pixels. Thin objects get dilated so agents can't slip through")]
-    [Range(1, 6)]
-    public int minimumHazardPixelRadius = 3;
 
     private Texture2D hazardTextureCPU;
     private Color[] hazardPixelBuffer;
     private float[] hazardRawBuffer;
+    private float[]  stainBuffer;          // CPU-baked stain falloff, uploaded to HazardMap G channel
     private float timeSinceHazardRefresh;
     private Collider2D[] cachedCalamityColliders;
 
@@ -107,6 +102,10 @@ public class SlimeMoldManager : MonoBehaviour
 
     private void Update()
     {
+        // Re-read bounds every frame — SporeDispersal sets them one frame after
+        // spawn via ApplyBoundsNextFrame so must stay in sync.
+        worldBounds = slimeSimulation.GetWorldBounds();
+
         timeSinceSourceRefresh += Time.deltaTime;
         if (timeSinceSourceRefresh >= sourceRefreshInterval)
         {
@@ -157,11 +156,8 @@ public class SlimeMoldManager : MonoBehaviour
     private void RefreshSources()
     {
         cachedWaterSources.Clear();
-
         if (autoFindSources)
-        {
             cachedWaterSources.AddRange(FindObjectsByType<WaterSource>(FindObjectsSortMode.None));
-        }
         else
         {
             cachedWaterSources.AddRange(manualWaterSources);
@@ -365,12 +361,10 @@ public class SlimeMoldManager : MonoBehaviour
             for (int x = minX; x <= maxX; x++)
             {
                 Vector2 worldPos = TextureToWorld(x, y);
-                float normDist = 0;
+                float normDist;
 
                 if (isCircle)
-                {
                     normDist = Mathf.Clamp01(Vector2.Distance(worldPos, center) / (light.fearRadius + margin));
-                }
                 else
                 {
                     float dx = Mathf.Abs(worldPos.x - center.x) / (rX + margin);
@@ -404,7 +398,6 @@ public class SlimeMoldManager : MonoBehaviour
     private void SampleLiquidSimulation(int w, int h)
     {
         if (liquidSimulation.TotalWaterCells == 0) return;
-
         Rect liquidBounds = liquidSimulation.GetWorldBounds();
         SampleLiquidOverlap(w, h, liquidBounds);
         SampleLiquidEdgeAttraction(w, h, liquidBounds);
@@ -420,9 +413,9 @@ public class SlimeMoldManager : MonoBehaviour
         if (overlapMinX >= overlapMaxX || overlapMinY >= overlapMaxY) return;
 
         int startX = Mathf.Max(0, Mathf.FloorToInt((overlapMinX - worldBounds.x) / worldBounds.width * w));
-        int endX = Mathf.Min(w, Mathf.CeilToInt((overlapMaxX - worldBounds.x) / worldBounds.width * w));
+        int endX = Mathf.Min(w, Mathf.CeilToInt ((overlapMaxX - worldBounds.x) / worldBounds.width * w));
         int startY = Mathf.Max(0, Mathf.FloorToInt((overlapMinY - worldBounds.y) / worldBounds.height * h));
-        int endY = Mathf.Min(h, Mathf.CeilToInt((overlapMaxY - worldBounds.y) / worldBounds.height * h));
+        int endY = Mathf.Min(h, Mathf.CeilToInt ((overlapMaxY - worldBounds.y) / worldBounds.height * h));
 
         for (int y = startY; y < endY; y++)
         {
@@ -434,7 +427,6 @@ public class SlimeMoldManager : MonoBehaviour
                 if (liquidSimulation.IsValidCell(gridPos.x, gridPos.y))
                 {
                     float waterAmount = liquidSimulation.GetWater(gridPos.x, gridPos.y);
-
                     if (waterAmount > minWaterThreshold)
                     {
                         float attraction = Mathf.Clamp01(waterAmount) * liquidAttractionMultiplier;
@@ -610,27 +602,36 @@ public class SlimeMoldManager : MonoBehaviour
         }
     }
 
+    // -------------------------------------------------------------------------
+    // Hazard map
+    // Two channels:
+    //   R = solid hazard (binary 0/1): rasterised from Calamity colliders
+    //   G = spreading stain falloff (0-1): CPU-baked quadratic gradient, radius 12px
+    //       Replaces the old 25x25 + 13x13 per-pixel GPU neighbor search in Postprocess
+    //       which was ~1,225 texture reads per pixel. CPU version only iterates outward
+    //       from actual hazard pixels so cost is O(hazardPixels × stainRadius²) instead
+    //       of O(allPixels × stainRadius²).
+    // -------------------------------------------------------------------------
 
     private void CreateHazardMap()
     {
         int w = resolution.x;
         int h = resolution.y;
 
-        hazardTextureCPU = new Texture2D(w, h, TextureFormat.RFloat, false);
-        hazardTextureCPU.filterMode = FilterMode.Bilinear;
+        // RGFloat: R = solid hazard (binary), G = CPU-baked stain falloff
+        hazardTextureCPU       = new Texture2D(w, h, TextureFormat.RGFloat, false);
+        hazardTextureCPU.filterMode = FilterMode.Point;
         hazardPixelBuffer = new Color[w * h];
         hazardRawBuffer = new float[w * h];
+        stainBuffer = new float[w * h];
     }
 
     private void RefreshCalamityColliders()
     {
-        List<Collider2D> colliders = new List<Collider2D>();
+        var colliders = new List<Collider2D>();
 
         GameObject[] calamityObjects = null;
-        try
-        {
-            calamityObjects = GameObject.FindGameObjectsWithTag("Calamity");
-        }
+        try { calamityObjects = GameObject.FindGameObjectsWithTag("Calamity"); }
         catch (UnityException)
         {
             Debug.LogError("SlimeMoldManager: Tag 'Calamity' is not defined in Project Settings > Tags & Layers. Add it there first.");
@@ -640,14 +641,8 @@ public class SlimeMoldManager : MonoBehaviour
         }
 
         foreach (GameObject obj in calamityObjects)
-        {
-            Collider2D[] cols = obj.GetComponents<Collider2D>();
-            foreach (Collider2D col in cols)
-            {
-                if (col.enabled)
-                    colliders.Add(col);
-            }
-        }
+            foreach (Collider2D col in obj.GetComponents<Collider2D>())
+                if (col.enabled) colliders.Add(col);
 
         cachedCalamityColliders = colliders.ToArray();
     }
@@ -664,11 +659,12 @@ public class SlimeMoldManager : MonoBehaviour
 
         if (cachedCalamityColliders == null || cachedCalamityColliders.Length == 0)
         {
+            // Still need to clear stain and write, so GPU sees zeroes
+            ComputeStainFalloff(w, h);
             WriteHazardToGPU(w, h);
             return;
         }
 
-        bool hasAnyPixels = false;
 
         foreach (Collider2D col in cachedCalamityColliders)
         {
@@ -689,130 +685,67 @@ public class SlimeMoldManager : MonoBehaviour
             int pxMaxY = Mathf.Min(h - 1, Mathf.CeilToInt((maxY - worldBounds.y) / worldBounds.height * h));
 
             for (int py = pxMinY; py <= pxMaxY; py++)
-            {
                 for (int px = pxMinX; px <= pxMaxX; px++)
-                {
-                    Vector2 worldPos = TextureToWorld(px, py);
-                    if (col.OverlapPoint(worldPos))
-                    {
+                    if (col.OverlapPoint(TextureToWorld(px, py)))
                         hazardRawBuffer[py * w + px] = 1f;
-                        hasAnyPixels = true;
-                    }
-                }
-            }
         }
 
-        if (!hasAnyPixels)
-        {
-            WriteHazardToGPU(w, h);
-            return;
-        }
-
-        if (minimumHazardPixelRadius > 1)
-        {
-            float[] dilated = new float[w * h];
-            System.Array.Copy(hazardRawBuffer, dilated, hazardRawBuffer.Length);
-
-            int dilateR = minimumHazardPixelRadius;
-            int dilateRSq = dilateR * dilateR;
-
-            for (int py = 0; py < h; py++)
-            {
-                for (int px = 0; px < w; px++)
-                {
-                    if (hazardRawBuffer[py * w + px] < 1f) continue;
-
-                    int dMinY = Mathf.Max(0, py - dilateR);
-                    int dMaxY = Mathf.Min(h - 1, py + dilateR);
-                    int dMinX = Mathf.Max(0, px - dilateR);
-                    int dMaxX = Mathf.Min(w - 1, px + dilateR);
-
-                    for (int dy = dMinY; dy <= dMaxY; dy++)
-                    {
-                        for (int dx = dMinX; dx <= dMaxX; dx++)
-                        {
-                            int distX = dx - px;
-                            int distY = dy - py;
-                            if (distX * distX + distY * distY <= dilateRSq)
-                            {
-                                dilated[dy * w + dx] = 1f;
-                            }
-                        }
-                    }
-                }
-            }
-
-            hazardRawBuffer = dilated;
-        }
-
-        float gradientPixelsX = (hazardGradientWidth / worldBounds.width) * w;
-        float gradientPixelsY = (hazardGradientWidth / worldBounds.height) * h;
-        int gradientRadius = Mathf.CeilToInt(Mathf.Max(gradientPixelsX, gradientPixelsY));
-
-        if (gradientRadius > 0)
-        {
-            float[] expanded = new float[w * h];
-            System.Array.Copy(hazardRawBuffer, expanded, hazardRawBuffer.Length);
-
-            for (int py = 0; py < h; py++)
-            {
-                for (int px = 0; px < w; px++)
-                {
-                    if (hazardRawBuffer[py * w + px] >= 1f) continue;
-
-                    int searchMinX = Mathf.Max(0, px - gradientRadius);
-                    int searchMaxX = Mathf.Min(w - 1, px + gradientRadius);
-                    int searchMinY = Mathf.Max(0, py - gradientRadius);
-                    int searchMaxY = Mathf.Min(h - 1, py + gradientRadius);
-
-                    float closestDistSq = float.MaxValue;
-                    bool foundSolid = false;
-
-                    for (int sy = searchMinY; sy <= searchMaxY; sy++)
-                    {
-                        for (int sx = searchMinX; sx <= searchMaxX; sx++)
-                        {
-                            if (hazardRawBuffer[sy * w + sx] >= 1f)
-                            {
-                                float ddx = px - sx;
-                                float ddy = py - sy;
-                                float distSq = ddx * ddx + ddy * ddy;
-                                if (distSq < closestDistSq)
-                                {
-                                    closestDistSq = distSq;
-                                    foundSolid = true;
-                                }
-                            }
-                        }
-                    }
-
-                    if (foundSolid)
-                    {
-                        float dist = Mathf.Sqrt(closestDistSq);
-                        float gradientRadiusF = Mathf.Max(gradientPixelsX, gradientPixelsY);
-
-                        if (dist <= gradientRadiusF)
-                        {
-                            float t = dist / gradientRadiusF;
-                            float smoothT = t * t * (3f - 2f * t);
-                            float value = Mathf.Lerp(0.49f, 0.05f, smoothT);
-                            expanded[py * w + px] = Mathf.Max(expanded[py * w + px], value);
-                        }
-                    }
-                }
-            }
-
-            hazardRawBuffer = expanded;
-        }
-
+        ComputeStainFalloff(w, h);
         WriteHazardToGPU(w, h);
+    }
+
+    /// <summary>
+    /// For every solid hazard pixel, paints a quadratic falloff into stainBuffer
+    /// within stainRadius pixels. Runs in O(hazardPixels × stainRadius²) — cheap
+    /// for sparse hazard objects — rather than the old GPU approach of
+    /// O(allPixels × searchRadius²) (~1,225 reads per pixel in Postprocess).
+    /// Result is uploaded to HazardMap G channel and read in the Postprocess kernel.
+    /// </summary>
+    private void ComputeStainFalloff(int w, int h)
+    {
+        const int stainRadius = 12; // must match the old GPU decayRadius value
+
+        System.Array.Clear(stainBuffer, 0, stainBuffer.Length);
+
+        for (int py = 0; py < h; py++)
+        {
+            for (int px = 0; px < w; px++)
+            {
+                if (hazardRawBuffer[py * w + px] < 0.5f) continue;
+
+                // This pixel is solid hazard — paint stain outward
+                int yMin = Mathf.Max(0,     py - stainRadius);
+                int yMax = Mathf.Min(h - 1, py + stainRadius);
+                int xMin = Mathf.Max(0,     px - stainRadius);
+                int xMax = Mathf.Min(w - 1, px + stainRadius);
+
+                for (int ny = yMin; ny <= yMax; ny++)
+                {
+                    int dy = ny - py;
+                    for (int nx = xMin; nx <= xMax; nx++)
+                    {
+                        int   dx      = nx - px;
+                        float dist    = Mathf.Sqrt(dx * dx + dy * dy);
+                        if (dist >= stainRadius) continue;
+
+                        float t       = 1f - (dist / stainRadius);
+                        float falloff = t * t; // quadratic: strong near source, soft at edge
+
+                        int idx = ny * w + nx;
+                        if (falloff > stainBuffer[idx])
+                            stainBuffer[idx] = falloff; // keep max so overlapping hazards accumulate correctly
+                    }
+                }
+            }
+        }
     }
 
     private void WriteHazardToGPU(int w, int h)
     {
         for (int i = 0; i < hazardRawBuffer.Length; i++)
         {
-            hazardPixelBuffer[i].r = hazardRawBuffer[i];
+            hazardPixelBuffer[i].r = hazardRawBuffer[i]; // solid hazard (binary)
+            hazardPixelBuffer[i].g = stainBuffer[i];     // spreading stain falloff
         }
 
         hazardTextureCPU.SetPixels(hazardPixelBuffer);
@@ -840,7 +773,10 @@ public class SlimeMoldManager : MonoBehaviour
     {
         if (waterAttractionTextureCPU == null) return;
 
-        Gizmos.color = new Color(1, 1, 1, 0.2f);
-        Gizmos.DrawGUITexture(new Rect(worldBounds.x, worldBounds.y, worldBounds.width, worldBounds.height), waterAttractionTextureCPU);
+        Gizmos.color = new Color(1f, 1f, 1f, 0.2f);
+        Gizmos.DrawGUITexture(
+            new Rect(worldBounds.x, worldBounds.y, worldBounds.width, worldBounds.height),
+            waterAttractionTextureCPU
+        );
     }
 }
