@@ -68,11 +68,15 @@ public class Slime : MonoBehaviour
     [Tooltip("How much evaporation varies. 0 = uniform (original), 1 = some pixels barely evaporate at all")]
     [SerializeField, Range(0f, 1f)] private float entropyStrength = 0.4f;
 
-    [Header("Hazard (Calamity) Visuals")]
-    [Tooltip("Color of decaying/dying slime trails on contact with calamity objects")]
-    [SerializeField] private Color decayColor = new Color(0.3f, 0.1f, 0.0f, 1f);
-    [Tooltip("How fast calamity objects corrode trail pixels. Higher = faster wither")]
-    [SerializeField, Range(0f, 15f)] private float hazardCorrosionRate = 8f;
+    [Header("Hazard Death Visuals")]
+    [Tooltip("How strongly agents steer away from hazards. Higher = wider avoidance zone")]
+    [SerializeField, Range(0f, 20f)] private float hazardAvoidanceStrength = 8f;
+    [Tooltip("Color of decaying/dying slime trails")]
+    [SerializeField] private Color decayColor = new Color(0.25f, 0.15f, 0.05f, 1f);
+    [Tooltip("How fast hazard zones corrode existing trails. Higher = faster dissolution")]
+    [SerializeField, Range(0f, 15f)] private float hazardCorrosionRate = 6f;
+    [Tooltip("Trail deposit reduction in decay zone (0=full trails, 1=no trails)")]
+    [SerializeField, Range(0f, 1f)] private float hazardTrailDampen = 0.85f;
 
     [Header("Visual")]
     [Tooltip("Slime color. Golden yellow is classic Physarum")]
@@ -83,6 +87,7 @@ public class Slime : MonoBehaviour
     private RenderTexture trailMapB;
     private bool useBufferA = true;
 
+    private Texture2D cpuSampleTexture;
     private Texture2D externalHazardMap;
     private Texture2D defaultHazardMap;
     private bool hasExternalHazard;
@@ -108,6 +113,9 @@ public class Slime : MonoBehaviour
         public Vector4 type;
     }
 
+    public float GetSpawnX() => spawnX;
+    public float GetSpawnY() => spawnY;
+
     void Start()
     {
         if (shader == null)
@@ -121,7 +129,7 @@ public class Slime : MonoBehaviour
             CalculateBoundsFromObject();
 
         numAgents = Mathf.Max(16, (numAgents / 16) * 16);
-        width = Mathf.Max(8, (width  / 8) * 8);
+        width = Mathf.Max(8, (width / 8) * 8);
         height = Mathf.Max(8, (height / 8) * 8);
 
         kernelUpdate = shader.FindKernel("Update");
@@ -147,7 +155,7 @@ public class Slime : MonoBehaviour
 
     RenderTexture CreateTrailTexture()
     {
-        var rt = new RenderTexture(width, height, 0);
+        var rt = new RenderTexture(width, height, 0, RenderTextureFormat.ARGBFloat);
         rt.enableRandomWrite = true;
         rt.filterMode = FilterMode.Point;
         rt.Create();
@@ -202,6 +210,10 @@ public class Slime : MonoBehaviour
         displayTexture = new Texture2D(width, height, TextureFormat.RGBA32, false);
         displayTexture.filterMode = FilterMode.Point;
 
+        // Separate texture purely for CPU sampling — never touched by sprite system
+        cpuSampleTexture = new Texture2D(width, height, TextureFormat.RGBAFloat, false);
+        cpuSampleTexture.filterMode = FilterMode.Point;
+
         slimeQuad = new GameObject("SlimeDisplay");
         targetRenderer = slimeQuad.AddComponent<SpriteRenderer>();
         targetRenderer.sortingOrder = sortingOrder;
@@ -241,25 +253,29 @@ public class Slime : MonoBehaviour
         var waterStrength = hasExternalAttraction ? externalWaterStrength : 0f;
         shader.SetTexture(kernelUpdate, "WaterAttractionMap", waterMap);
         shader.SetFloat("waterAttractionStrength", waterStrength);
-
         // Hazard map + death visual parameters
         var hazMap = hasExternalHazard && externalHazardMap != null ? externalHazardMap : defaultHazardMap;
         shader.SetTexture(kernelUpdate, "HazardMap", hazMap);
+        shader.SetFloat("spawnCenterX", width * spawnX);
+        shader.SetFloat("spawnCenterY", height * spawnY);
+        shader.SetFloat("spawnRadius", Mathf.Min(width, height) * spawnRadius);
+        shader.SetFloat("hazardAvoidanceStrength", hazardAvoidanceStrength);
         shader.SetVector("decayColor", new Vector4(decayColor.r, decayColor.g, decayColor.b, decayColor.a));
         shader.SetFloat("hazardCorrosionRate", hazardCorrosionRate);
+        shader.SetFloat("hazardTrailDampen", hazardTrailDampen);
 
         shader.SetBuffer(kernelUpdate, "agents", agentsBuffer);
         shader.Dispatch(kernelUpdate, numAgents / 16, 1, 1);
 
         shader.SetFloat("evaporateSpeed", evaporateSpeed);
         shader.SetFloat("diffuseSpeed", diffuseSpeed);
-
+      
         // Pulse parameters
         shader.SetFloat("pulseAmplitude", pulseAmplitude);
         shader.SetFloat("pulseMinFreq", pulseMinFreq);
         shader.SetFloat("pulseMaxFreq", pulseMaxFreq);
         shader.SetFloat("pulseWaveScale", pulseWaveScale);
-
+   
         // Entropic Decay parameters
         shader.SetFloat("entropyScale", entropyScale);
         shader.SetFloat("entropySpeed", entropySpeed);
@@ -273,10 +289,21 @@ public class Slime : MonoBehaviour
 
         useBufferA = !useBufferA;
 
-        RenderTexture.active = writeBuffer;
+        // Blit to a plain non-compute RT first — ReadPixels from enableRandomWrite
+        // textures silently fails on many platforms
+        RenderTexture blitTarget = RenderTexture.GetTemporary(
+            width, height, 0, RenderTextureFormat.ARGBFloat);
+
+        Graphics.Blit(writeBuffer, blitTarget);
+
+        RenderTexture.active = blitTarget;
         displayTexture.ReadPixels(new Rect(0, 0, width, height), 0, 0);
-        displayTexture.Apply();
+        cpuSampleTexture.ReadPixels(new Rect(0, 0, width, height), 0, 0);
         RenderTexture.active = null;
+
+        RenderTexture.ReleaseTemporary(blitTarget);
+        displayTexture.Apply();
+        cpuSampleTexture.Apply(false);
     }
 
     void OnDestroy()
@@ -287,6 +314,7 @@ public class Slime : MonoBehaviour
         if (defaultHazardMap != null) Destroy(defaultHazardMap);
         agentsBuffer?.Release();
         if (displayTexture != null) Destroy(displayTexture);
+        if (cpuSampleTexture != null) Destroy(cpuSampleTexture);
         if (displaySprite != null) Destroy(displaySprite);
         if (slimeQuad != null) Destroy(slimeQuad);
     }
@@ -324,7 +352,7 @@ public class Slime : MonoBehaviour
     /// Get the current trail texture for sampling slime density.
     /// Used by SlimeDecomposer to determine decomposition damage.
     /// </summary>
-    public Texture2D GetTrailTexture() => displayTexture;
+    public Texture2D GetTrailTexture() => cpuSampleTexture;
 
     void OnDrawGizmos()
     {
