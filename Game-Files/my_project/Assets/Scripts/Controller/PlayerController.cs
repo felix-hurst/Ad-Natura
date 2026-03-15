@@ -231,6 +231,11 @@ public class PlayerController : MonoBehaviour
         return windAmmo;
     }
 
+    public bool IsRunning()
+    {
+        return isRunning;
+    }
+
     public void SwitchTool(int toolIndex)
     {
         Debug.Log("SwitchTool called with: " + toolIndex);
