@@ -17,9 +17,10 @@ public class WaterAbsorptionSystem : MonoBehaviour
     private List<MaterialAbsorption> materialAbsorptions = new List<MaterialAbsorption>()
     {
 
-        new MaterialAbsorption("Wood", 1.0f),
-        new MaterialAbsorption("Dirt", 2.0f),
-        new MaterialAbsorption("Sand", 1.5f)
+        new MaterialAbsorption("Wood", 0.1f),
+        new MaterialAbsorption("Stone", 0.1f),
+        new MaterialAbsorption("Dirt", 0.1f),
+        new MaterialAbsorption("Sand", 0.1f)
     };
 
     [Header("Wood Decomposition")]
@@ -228,25 +229,32 @@ public class WaterAbsorptionSystem : MonoBehaviour
         }
     }
 
-    void ConvertToDecomposeLayer(GameObject woodObject)
+void ConvertToDecomposeLayer(GameObject woodObject)
+{
+    // Don't convert cut pieces — they should stay on CutPiece layer
+    if (woodObject.layer == LayerMask.NameToLayer("CutPiece"))
     {
-        if (decomposedWoodObjects.Contains(woodObject))
-            return;
-
-        if (decomposeLayer == -1)
-        {
-            if (showDebugInfo)
-                Debug.LogWarning($"Cannot convert {woodObject.name} - Decompose layer not found!");
-            return;
-        }
-
-        int oldLayer = woodObject.layer;
-        woodObject.layer = decomposeLayer;
-
-        decomposedWoodObjects.Add(woodObject);
-
-        Debug.Log($"Converted {woodObject.name} from layer {LayerMask.LayerToName(oldLayer)} to {decomposeLayerName}");
+        Debug.Log($"[WaterAbsorptionSystem] Skipping '{woodObject.name}' — already on CutPiece layer");
+        return;
     }
+
+    if (decomposedWoodObjects.Contains(woodObject))
+        return;
+
+    if (decomposeLayer == -1)
+    {
+        if (showDebugInfo)
+            Debug.LogWarning($"Cannot convert {woodObject.name} - Decompose layer not found!");
+        return;
+    }
+
+    int oldLayer = woodObject.layer;
+    woodObject.layer = decomposeLayer;
+
+    decomposedWoodObjects.Add(woodObject);
+
+    Debug.Log($"Converted {woodObject.name} from layer {LayerMask.LayerToName(oldLayer)} to {decomposeLayerName}");
+}
 
     int AbsorbWaterFromCollider(Collider2D collider, float absorptionRate)
     {
