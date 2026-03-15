@@ -56,6 +56,7 @@ public class SlimeMoldManager : MonoBehaviour
     private Texture2D hazardTextureCPU;
     private Color[] hazardPixelBuffer;
     private float[] hazardRawBuffer;
+    private float[]  stainBuffer;          // CPU-baked stain falloff, uploaded to HazardMap G channel
     private float timeSinceHazardRefresh;
     private Collider2D[] cachedCalamityColliders;
 
@@ -412,9 +413,9 @@ public class SlimeMoldManager : MonoBehaviour
         if (overlapMinX >= overlapMaxX || overlapMinY >= overlapMaxY) return;
 
         int startX = Mathf.Max(0, Mathf.FloorToInt((overlapMinX - worldBounds.x) / worldBounds.width * w));
-        int endX = Mathf.Min(w, Mathf.CeilToInt((overlapMaxX - worldBounds.x) / worldBounds.width * w));
+        int endX = Mathf.Min(w, Mathf.CeilToInt ((overlapMaxX - worldBounds.x) / worldBounds.width * w));
         int startY = Mathf.Max(0, Mathf.FloorToInt((overlapMinY - worldBounds.y) / worldBounds.height * h));
-        int endY = Mathf.Min(h, Mathf.CeilToInt((overlapMaxY - worldBounds.y) / worldBounds.height * h));
+        int endY = Mathf.Min(h, Mathf.CeilToInt ((overlapMaxY - worldBounds.y) / worldBounds.height * h));
 
         for (int y = startY; y < endY; y++)
         {
@@ -426,7 +427,6 @@ public class SlimeMoldManager : MonoBehaviour
                 if (liquidSimulation.IsValidCell(gridPos.x, gridPos.y))
                 {
                     float waterAmount = liquidSimulation.GetWater(gridPos.x, gridPos.y);
-
                     if (waterAmount > minWaterThreshold)
                     {
                         float attraction = Mathf.Clamp01(waterAmount) * liquidAttractionMultiplier;
@@ -602,16 +602,28 @@ public class SlimeMoldManager : MonoBehaviour
         }
     }
 
-    // Hazard map — binary only, solid collider pixels = 1.0, everything else = 0
+    // -------------------------------------------------------------------------
+    // Hazard map
+    // Two channels:
+    //   R = solid hazard (binary 0/1): rasterised from Calamity colliders
+    //   G = spreading stain falloff (0-1): CPU-baked quadratic gradient, radius 12px
+    //       Replaces the old 25x25 + 13x13 per-pixel GPU neighbor search in Postprocess
+    //       which was ~1,225 texture reads per pixel. CPU version only iterates outward
+    //       from actual hazard pixels so cost is O(hazardPixels × stainRadius²) instead
+    //       of O(allPixels × stainRadius²).
+    // -------------------------------------------------------------------------
 
     private void CreateHazardMap()
     {
         int w = resolution.x;
         int h = resolution.y;
-        hazardTextureCPU = new Texture2D(w, h, TextureFormat.RFloat, false);
+
+        // RGFloat: R = solid hazard (binary), G = CPU-baked stain falloff
+        hazardTextureCPU       = new Texture2D(w, h, TextureFormat.RGFloat, false);
         hazardTextureCPU.filterMode = FilterMode.Point;
         hazardPixelBuffer = new Color[w * h];
         hazardRawBuffer = new float[w * h];
+        stainBuffer = new float[w * h];
     }
 
     private void RefreshCalamityColliders()
@@ -647,6 +659,8 @@ public class SlimeMoldManager : MonoBehaviour
 
         if (cachedCalamityColliders == null || cachedCalamityColliders.Length == 0)
         {
+            // Still need to clear stain and write, so GPU sees zeroes
+            ComputeStainFalloff(w, h);
             WriteHazardToGPU(w, h);
             return;
         }
@@ -676,14 +690,62 @@ public class SlimeMoldManager : MonoBehaviour
                         hazardRawBuffer[py * w + px] = 1f;
         }
 
+        ComputeStainFalloff(w, h);
         WriteHazardToGPU(w, h);
+    }
+
+    /// <summary>
+    /// For every solid hazard pixel, paints a quadratic falloff into stainBuffer
+    /// within stainRadius pixels. Runs in O(hazardPixels × stainRadius²) — cheap
+    /// for sparse hazard objects — rather than the old GPU approach of
+    /// O(allPixels × searchRadius²) (~1,225 reads per pixel in Postprocess).
+    /// Result is uploaded to HazardMap G channel and read in the Postprocess kernel.
+    /// </summary>
+    private void ComputeStainFalloff(int w, int h)
+    {
+        const int stainRadius = 12; // must match the old GPU decayRadius value
+
+        System.Array.Clear(stainBuffer, 0, stainBuffer.Length);
+
+        for (int py = 0; py < h; py++)
+        {
+            for (int px = 0; px < w; px++)
+            {
+                if (hazardRawBuffer[py * w + px] < 0.5f) continue;
+
+                // This pixel is solid hazard — paint stain outward
+                int yMin = Mathf.Max(0,     py - stainRadius);
+                int yMax = Mathf.Min(h - 1, py + stainRadius);
+                int xMin = Mathf.Max(0,     px - stainRadius);
+                int xMax = Mathf.Min(w - 1, px + stainRadius);
+
+                for (int ny = yMin; ny <= yMax; ny++)
+                {
+                    int dy = ny - py;
+                    for (int nx = xMin; nx <= xMax; nx++)
+                    {
+                        int   dx      = nx - px;
+                        float dist    = Mathf.Sqrt(dx * dx + dy * dy);
+                        if (dist >= stainRadius) continue;
+
+                        float t       = 1f - (dist / stainRadius);
+                        float falloff = t * t; // quadratic: strong near source, soft at edge
+
+                        int idx = ny * w + nx;
+                        if (falloff > stainBuffer[idx])
+                            stainBuffer[idx] = falloff; // keep max so overlapping hazards accumulate correctly
+                    }
+                }
+            }
+        }
     }
 
     private void WriteHazardToGPU(int w, int h)
     {
         for (int i = 0; i < hazardRawBuffer.Length; i++)
         {
-            hazardPixelBuffer[i].r = hazardRawBuffer[i];
+            hazardPixelBuffer[i].r = hazardRawBuffer[i]; // solid hazard (binary)
+            hazardPixelBuffer[i].g = stainBuffer[i];     // spreading stain falloff
         }
 
         hazardTextureCPU.SetPixels(hazardPixelBuffer);
@@ -712,6 +774,9 @@ public class SlimeMoldManager : MonoBehaviour
         if (waterAttractionTextureCPU == null) return;
 
         Gizmos.color = new Color(1f, 1f, 1f, 0.2f);
-        Gizmos.DrawGUITexture(new Rect(worldBounds.x, worldBounds.y, worldBounds.width, worldBounds.height), waterAttractionTextureCPU);
+        Gizmos.DrawGUITexture(
+            new Rect(worldBounds.x, worldBounds.y, worldBounds.width, worldBounds.height),
+            waterAttractionTextureCPU
+        );
     }
 }

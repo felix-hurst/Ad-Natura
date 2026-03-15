@@ -21,8 +21,11 @@ float attractedSpeedMultiplier;
 RWTexture2D<float4> WaterAttractionMap;
 float waterAttractionStrength;
 
-// Hazard (calamity) system — binary: solid contact corrodes trails, bounces agents
-Texture2D<float> HazardMap;
+// Hazard (calamity) system — two-channel:
+//   R = solid contact (binary 0/1): corrodes trails, bounces agents
+//   G = CPU-baked stain falloff radius (quadratic, pre-computed by SlimeMoldManager.ComputeStainFalloff)
+//       Replaces the old 25x25 + 13x13 per-pixel GPU neighbor search (~1,225 reads/px).
+Texture2D<float2> HazardMap;
 
 float4 decayColor;
 float hazardCorrosionRate;
@@ -105,7 +108,7 @@ void Update(uint3 id : SV_DispatchThreadID)
 
     // If agent is inside a calamity object bounce away no deposit.
     int2  currentTexPos = int2(clamp(agent.pos, float2(0,0), float2(width-1, height-1)));
-    if (HazardMap[currentTexPos] >= 0.5)
+    if (HazardMap[currentTexPos].r >= 0.5)
     {
         agents[id.x].angle += PI + (random01 - 0.5) * 1.2;
         float2 escapeDir  = float2(cos(agents[id.x].angle), sin(agents[id.x].angle));
@@ -190,7 +193,7 @@ void Update(uint3 id : SV_DispatchThreadID)
     // Boundary handling — spread along edge if water nearby, otherwise bounce.
     // When water attracts at edges, agents deflect ALONG the boundary instead
     // of bouncing back. This prevents corner clustering and creates organic
-    // edge-following behavior — the organism flows, it doesn't ricochet.
+    // edge-following behaviour — the organism flows, it doesn't ricochet.
     bool hitLeft = newPos.x < 0;
     bool hitRight = newPos.x >= width;
     bool hitBottom = newPos.y < 0;
@@ -232,7 +235,7 @@ void Update(uint3 id : SV_DispatchThreadID)
 
     // No deposit inside calamity objects
     int2 depositPos = int2(clamp(newPos, float2(0,0), float2(width-1, height-1)));
-    if (HazardMap[depositPos] >= 0.5) return;
+    if (HazardMap[depositPos].r >= 0.5) return;
 
    // Deposit trail — stronger when near water (creates highways to moisture)
     float trailStrength = 1.0 + attractionLevel * 2.0;
@@ -298,83 +301,45 @@ void Postprocess(uint3 id : SV_DispatchThreadID)
     float4 blurred = sum / 9.0;
     float4 diffused = lerp(original, blurred, diffuseSpeed * deltaTime);
 
-    // Solid hazard zone: immediate wither on contact
-    // Scoped so 'brightness' doesn't conflict with the spreading stain block below.
+    // Solid hazard zone: immediate wither with noise-modulated corrosion.
+    // organicNoise makes decay visually non-uniform — thick rot beside thin wisps —
+    // instead of a flat uniform wither that reads as artificial.
+    // Uses 2x entropyScale for tighter spatial variation and 0.5x drift so the
+    // hazard pattern shifts independently of the entropy layer.
     {
-        if (HazardMap[id.xy] >= 0.5)
+        if (HazardMap[id.xy].r >= 0.5)
         {
             float brightness = length(diffused.rgb);
             if (brightness > 0.001)
                 diffused = lerp(diffused, decayColor * brightness, 0.5);
-            diffused *= saturate(1.0 - hazardCorrosionRate * deltaTime);
+
+            float2 hazardNoiseCoord = float2(id.x, id.y) * entropyScale * 2.0
+                                      + gameTime * entropySpeed * 0.5;
+            float corrosionNoise  = organicNoise(hazardNoiseCoord);
+            float modulatedRate   = hazardCorrosionRate * lerp(0.5, 1.5, corrosionNoise);
+            diffused *= saturate(1.0 - modulatedRate * deltaTime);
             diffused  = max(0, diffused);
         }
     }
 
-    //  Spreading death stain
-    // Radiates a brown/black zone outward from the contact point.
-    // Pass 2 chains through already decay pixels so the stain propagates further over time, creating a spreading rot effect.
-    if (HazardMap[id.xy] < 0.5)
+    // Spreading death stain — falloff pre-baked CPU-side (SlimeMoldManager.ComputeStainFalloff)
+    // and stored in HazardMap G channel. Replaces the old 25x25 + 13x13 per-pixel GPU neighbor
+    // search which was ~1,225 texture reads per pixel and tanked framerate. The CPU pass runs in
+    // O(hazardPixels × stainRadius²) rather than O(allPixels × stainRadius²), cheap for sparse
+    // hazard objects, and the result is identical in appearance.
+    if (HazardMap[id.xy].r < 0.5)
     {
-        float closestHazardDist = 9999.0;
-        for (int ny = -12; ny <= 12; ny++)
+        float stainInfluence = HazardMap[id.xy].g;
+        if (stainInfluence > 0.01)
         {
-            for (int nx = -12; nx <= 12; nx++)
-            {
-                int2 npos = int2(id.xy) + int2(nx, ny);
-                if (npos.x >= 0 && npos.x < width && npos.y >= 0 && npos.y < height)
-                {
-                    if (HazardMap[npos] >= 0.5)
-                    {
-                        float d = length(float2(nx, ny));
-                        closestHazardDist = min(closestHazardDist, d);
-                    }
-                }
-            }
-        }
-
-        // Pass 2: find nearest already-decaying trail pixel.
-        // Decaying pixels have red dominating over green
-        // (slimeColor is yellow = high R+G; decayColor is brown = high R, low G+B).
-        float closestDecayDist = 9999.0;
-        for (int dy = -6; dy <= 6; dy++)
-        {
-            for (int dx = -6; dx <= 6; dx++)
-            {
-                int2  dpos          = int2(id.xy) + int2(dx, dy);
-                if (dpos.x >= 0 && dpos.x < width && dpos.y >= 0 && dpos.y < height)
-                {
-                    float4 neighbourTrail = TrailMap[dpos];
-                    float  nBrightness    = length(neighbourTrail.rgb);
-                    bool   isDecaying     = nBrightness > 0.05 &&
-                                           neighbourTrail.r > neighbourTrail.g * 1.8 &&
-                                           neighbourTrail.b < 0.15;
-                    if (isDecaying)
-                    {
-                        float d = length(float2(dx, dy));
-                        closestDecayDist = min(closestDecayDist, d);
-                    }
-                }
-            }
-        }
-
-        float closestDist = min(closestHazardDist, closestDecayDist);
-        float decayRadius = 12.0;
-
-        if (closestDist < decayRadius)
-        {
-            float t          = 1.0 - (closestDist / decayRadius);
-            float falloff    = t * t; // quadratic: strong near source, soft at edge
             float brightness = length(diffused.rgb);
-
             if (brightness > 0.001)
             {
-                diffused = lerp(diffused, decayColor * brightness, falloff * 0.6);
+                diffused = lerp(diffused, decayColor * brightness, stainInfluence * 0.6);
                 // Darken toward black
-                diffused *= saturate(1.0 - falloff * 0.3);
+                diffused *= saturate(1.0 - stainInfluence * 0.3);
             }
-
-            float extraEvaporate = decayIntensity * hazardCorrosionRate * 0.3;
+            float extraEvaporate = stainInfluence * hazardCorrosionRate * 0.3;
             diffused = max(0, diffused - extraEvaporate * deltaTime);
         }
     }
