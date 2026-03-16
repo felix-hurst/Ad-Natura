@@ -7,10 +7,13 @@ TagManager:
   - Stone
   - Glass
   - Wood
-  - Ground
   - Debris
   - Fragment
-  - Wall
+  - Ground
+  - Cloth
+  - Fuel
+  - Calamity
+  - BurstLeaf
   - Dirt
   layers:
   - Default
@@ -19,18 +22,17 @@ TagManager:
   - 
   - Water
   - UI
+  - Player
+  - Ignore
+  - Ground
+  - TerrainLayers
+  - Rope
   - Decompose
-  - 
-  - Climbable
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - WaterCollider
+  - SlimeBoundary
+  - CutPiece
+  - SlimeObstacle
+  - Background
   - 
   - 
   - 
