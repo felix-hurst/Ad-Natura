@@ -7,11 +7,11 @@ public class StructuralCollapseManager : MonoBehaviour
     private static StructuralCollapseManager instance;
 
     [Header("Successive Explosions")]
-    [SerializeField] private int numberOfExplosionRounds = 3;
-    [SerializeField] private float delayBetweenRounds = 0.8f;
-    [SerializeField] private int startingMinRays = 4;
-    [SerializeField] private int startingMaxRays = 9;
-    [SerializeField] private float rayReductionPerRound = 0.5f;
+    [SerializeField] private int numberOfExplosionRounds = 6;
+    [SerializeField] private float delayBetweenRounds = 0.6f;
+    [SerializeField] private int startingMinRays = 5;
+    [SerializeField] private int startingMaxRays = 10;
+    [SerializeField] private float rayReductionPerRound = 0.7f;
     [SerializeField] private float explosionRayDistance = 5f;
 
     [Header("Anti-Sliver Settings")]
@@ -22,9 +22,11 @@ public class StructuralCollapseManager : MonoBehaviour
     [SerializeField] private float minFragmentArea = 0.1f;
     [SerializeField] private bool validateFragmentSize = true;
 
-    [Header("Fragment Cleanup")]
-    [SerializeField] private bool destroyFragmentsAfterExplosion = false;
+    [Header("Fragment Cleanup (Defaults — overridden per call)")]
+    [SerializeField] private bool destroyFragmentsAfterExplosion = true;
     [SerializeField] private float fragmentCleanupDelay = 3f;
+    [SerializeField] private bool destroyParentAfterExplosion = true;
+    [SerializeField] private float parentCleanupDelay = 0.5f;
 
     public static StructuralCollapseManager Instance
     {
@@ -50,6 +52,9 @@ public class StructuralCollapseManager : MonoBehaviour
         instance = this;
     }
 
+    /// <summary>
+    /// Schedule a delayed multi-round explosion with full control over cleanup.
+    /// </summary>
     public void ScheduleDelayedExplosion(
         GameObject target,
         Vector2 explosionOrigin,
@@ -64,7 +69,11 @@ public class StructuralCollapseManager : MonoBehaviour
         Color rayColor,
         bool showWarning,
         float warningDuration,
-        Color warningColor)
+        Color warningColor,
+        bool destroyParent = true,
+        float parentDestroyDelay = 0.5f,
+        bool destroyFragments = true,
+        float fragmentDestroyDelay = 3f)
     {
         StartCoroutine(DelayedExplosionCoroutine(
             target,
@@ -80,7 +89,11 @@ public class StructuralCollapseManager : MonoBehaviour
             rayColor,
             showWarning,
             warningDuration,
-            warningColor));
+            warningColor,
+            destroyParent,
+            parentDestroyDelay,
+            destroyFragments,
+            fragmentDestroyDelay));
     }
 
     IEnumerator DelayedExplosionCoroutine(
@@ -97,24 +110,24 @@ public class StructuralCollapseManager : MonoBehaviour
         Color rayColor,
         bool showWarning,
         float warningDuration,
-        Color warningColor)
+        Color warningColor,
+        bool destroyParent,
+        float parentDestroyDelay,
+        bool destroyFragments,
+        float fragmentDestroyDelay)
     {
-        Bounds originalBounds = GetObjectBounds(target);
-        float originalArea = originalBounds.size.x * originalBounds.size.y;
-        string materialTag = target.tag;
+        if (target == null) yield break;
 
+        string materialTag = target.tag;
         if (string.IsNullOrEmpty(materialTag) || materialTag == "Untagged")
-        {
             materialTag = target.name;
-        }
 
         ExplosionFragment marker = target.GetComponent<ExplosionFragment>();
         if (marker == null)
-        {
             marker = target.AddComponent<ExplosionFragment>();
-        }
         marker.Initialize(materialTag);
 
+        // --- Warning visualization ---
         GameObject warningVis = null;
         if (showWarning && warningDuration > 0)
         {
@@ -122,11 +135,8 @@ public class StructuralCollapseManager : MonoBehaviour
             if (warningStart > 0)
             {
                 yield return new WaitForSeconds(warningStart);
-
                 if (target != null)
-                {
                     warningVis = CreateWarningVisualization(target, warningColor, warningDuration);
-                }
                 yield return new WaitForSeconds(warningDuration);
             }
             else
@@ -139,49 +149,62 @@ public class StructuralCollapseManager : MonoBehaviour
             yield return new WaitForSeconds(delay);
         }
 
-        if (warningVis != null)
-        {
-            Destroy(warningVis);
-        }
+if (warningVis != null) Destroy(warningVis);
+if (target == null) yield break;
 
-        if (target == null)
+// Move parent to CutPiece layer before any cuts begin
+int cutPieceLayer = LayerMask.NameToLayer("CutPiece");
+if (cutPieceLayer != -1)
+    target.layer = cutPieceLayer;
+
+ExplosionFragment targetFragment = target.GetComponent<ExplosionFragment>();
+        if (targetFragment == null)
         {
+            Debug.LogWarning($"[StructuralCollapseManager] Target {target.name} has no ExplosionFragment, aborting");
             yield break;
         }
 
-        ExplosionFragment targetFragment = target.GetComponent<ExplosionFragment>();
-
-        if (targetFragment == null || targetFragment.gameObject == null)
-        {
-            Debug.LogWarning($"[StructuralCollapseManager] Target {target.name} has no ExplosionFragment, aborting explosion");
-            yield break;
-        }
-
+        // --- Multi-round cutting ---
         int currentMinRays = startingMinRays;
         int currentMaxRays = startingMaxRays;
+
+        // Use the per-call ray counts for round 1, then scale down
+        int callMinRays = minRayCount;
+        int callMaxRays = maxRayCount;
 
         for (int round = 1; round <= numberOfExplosionRounds; round++)
         {
             if (targetFragment == null || targetFragment.gameObject == null)
-            {
                 break;
-            }
 
             GameObject fragmentObj = targetFragment.gameObject;
             Bounds fragmentBounds = GetObjectBounds(fragmentObj);
             Vector2 fragmentCenter = fragmentBounds.center;
 
-            int rayCount = Random.Range(currentMinRays, currentMaxRays + 1);
+            // Round 1 uses caller-specified ray counts, subsequent rounds use manager defaults scaled down
+            int roundMin = round == 1 ? callMinRays : currentMinRays;
+            int roundMax = round == 1 ? callMaxRays : currentMaxRays;
+
+            int rayCount = Random.Range(roundMin, roundMax + 1);
             List<float> angles = GenerateRandomAngles(rayCount, minAngle, maxAngle);
+
+            Debug.Log($"[SCM] Round {round}/{numberOfExplosionRounds}: {rayCount} rays on '{fragmentObj.name}'");
 
             int totalCuts = 0;
             foreach (float angle in angles)
             {
-                Vector2 direction = new Vector2(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad));
-                Color roundColor = round == 1 ? rayColor : Color.Lerp(rayColor, Color.red, (round - 1) / (float)numberOfExplosionRounds);
+                Vector2 direction = new Vector2(
+                    Mathf.Cos(angle * Mathf.Deg2Rad),
+                    Mathf.Sin(angle * Mathf.Deg2Rad));
 
-                bool cutMade = PerformExplosionRaycast(fragmentObj, fragmentCenter, direction, explosionRayDistance,
-                                                    showRays, rayVisualizationDuration, roundColor);
+                Color roundColor = round == 1
+                    ? rayColor
+                    : Color.Lerp(rayColor, Color.red, (round - 1) / (float)numberOfExplosionRounds);
+
+                bool cutMade = PerformExplosionRaycast(
+                    fragmentObj, fragmentCenter, direction, explosionRayDistance,
+                    showRays, rayVisualizationDuration, roundColor);
+
                 if (cutMade)
                 {
                     totalCuts++;
@@ -191,25 +214,34 @@ public class StructuralCollapseManager : MonoBehaviour
                 }
             }
 
+            Debug.Log($"[SCM] Round {round} complete: {totalCuts} cuts made");
+
             yield return new WaitForFixedUpdate();
             yield return new WaitForFixedUpdate();
 
+            // Scale down rays each round
             currentMinRays = Mathf.Max(1, Mathf.RoundToInt(currentMinRays * rayReductionPerRound));
             currentMaxRays = Mathf.Max(2, Mathf.RoundToInt(currentMaxRays * rayReductionPerRound));
 
             if (round < numberOfExplosionRounds)
-            {
                 yield return new WaitForSeconds(delayBetweenRounds);
+        }
+
+        // --- Cleanup ---
+        if (destroyParent && target != null)
+        {
+            yield return new WaitForSeconds(parentDestroyDelay);
+            if (target != null)
+            {
+                Debug.Log($"[SCM] Destroying parent '{target.name}' after explosion");
+                Destroy(target);
             }
         }
 
-        if (destroyFragmentsAfterExplosion)
+        if (destroyFragments)
         {
-            yield return new WaitForSeconds(fragmentCleanupDelay);
-            if (target != null)
-            {
-                Destroy(target);
-            }
+            yield return new WaitForSeconds(fragmentDestroyDelay);
+            DestroyAllFragments();
         }
     }
 
@@ -227,7 +259,11 @@ public class StructuralCollapseManager : MonoBehaviour
         Color rayColor,
         bool showWarning,
         float warningDuration,
-        Color warningColor)
+        Color warningColor,
+        bool destroyParent = true,
+        float parentDestroyDelay = 0.5f,
+        bool destroyFragments = true,
+        float fragmentDestroyDelay = 3f)
     {
         StartCoroutine(SingleRoundExplosionCoroutine(
             target,
@@ -243,7 +279,11 @@ public class StructuralCollapseManager : MonoBehaviour
             rayColor,
             showWarning,
             warningDuration,
-            warningColor));
+            warningColor,
+            destroyParent,
+            parentDestroyDelay,
+            destroyFragments,
+            fragmentDestroyDelay));
     }
 
     IEnumerator SingleRoundExplosionCoroutine(
@@ -260,20 +300,21 @@ public class StructuralCollapseManager : MonoBehaviour
         Color rayColor,
         bool showWarning,
         float warningDuration,
-        Color warningColor)
+        Color warningColor,
+        bool destroyParent,
+        float parentDestroyDelay,
+        bool destroyFragments,
+        float fragmentDestroyDelay)
     {
-        string materialTag = target.tag;
+        if (target == null) yield break;
 
+        string materialTag = target.tag;
         if (string.IsNullOrEmpty(materialTag) || materialTag == "Untagged")
-        {
             materialTag = target.name;
-        }
 
         ExplosionFragment marker = target.GetComponent<ExplosionFragment>();
         if (marker == null)
-        {
             marker = target.AddComponent<ExplosionFragment>();
-        }
         marker.Initialize(materialTag);
 
         GameObject warningVis = null;
@@ -283,11 +324,8 @@ public class StructuralCollapseManager : MonoBehaviour
             if (warningStart > 0)
             {
                 yield return new WaitForSeconds(warningStart);
-
                 if (target != null)
-                {
                     warningVis = CreateWarningVisualization(target, warningColor, warningDuration);
-                }
                 yield return new WaitForSeconds(warningDuration);
             }
             else
@@ -300,17 +338,15 @@ public class StructuralCollapseManager : MonoBehaviour
             yield return new WaitForSeconds(delay);
         }
 
-        if (warningVis != null)
-        {
-            Destroy(warningVis);
-        }
+if (warningVis != null) Destroy(warningVis);
+if (target == null) yield break;
 
-        if (target == null)
-        {
-            yield break;
-        }
+// Move parent to CutPiece layer before any cuts begin
+int cutPieceLayer = LayerMask.NameToLayer("CutPiece");
+if (cutPieceLayer != -1)
+    target.layer = cutPieceLayer;
 
-        ExplosionFragment[] fragments = FindObjectsOfType<ExplosionFragment>();
+ExplosionFragment[] fragments = FindObjectsOfType<ExplosionFragment>();
 
         foreach (ExplosionFragment fragment in fragments)
         {
@@ -325,10 +361,14 @@ public class StructuralCollapseManager : MonoBehaviour
 
             foreach (float angle in angles)
             {
-                Vector2 direction = new Vector2(Mathf.Cos(angle * Mathf.Deg2Rad), Mathf.Sin(angle * Mathf.Deg2Rad));
+                Vector2 direction = new Vector2(
+                    Mathf.Cos(angle * Mathf.Deg2Rad),
+                    Mathf.Sin(angle * Mathf.Deg2Rad));
 
-                bool cutMade = PerformExplosionRaycast(fragmentObj, fragmentCenter, direction, rayDistance,
-                                                    showRays, rayVisualizationDuration, rayColor);
+                bool cutMade = PerformExplosionRaycast(
+                    fragmentObj, fragmentCenter, direction, rayDistance,
+                    showRays, rayVisualizationDuration, rayColor);
+
                 if (cutMade)
                 {
                     yield return new WaitForFixedUpdate();
@@ -341,9 +381,15 @@ public class StructuralCollapseManager : MonoBehaviour
 
         yield return new WaitForFixedUpdate();
 
-        if (destroyFragmentsAfterExplosion)
+        if (destroyParent && target != null)
         {
-            yield return new WaitForSeconds(fragmentCleanupDelay);
+            yield return new WaitForSeconds(parentDestroyDelay);
+            if (target != null) Destroy(target);
+        }
+
+        if (destroyFragments)
+        {
+            yield return new WaitForSeconds(fragmentDestroyDelay);
             DestroyAllFragments();
         }
     }
@@ -351,24 +397,17 @@ public class StructuralCollapseManager : MonoBehaviour
     void DestroyAllFragments()
     {
         ExplosionFragment[] allFragments = FindObjectsOfType<ExplosionFragment>();
-
         foreach (ExplosionFragment fragment in allFragments)
         {
             if (fragment != null && fragment.gameObject != null)
-            {
                 Destroy(fragment.gameObject);
-            }
         }
     }
 
     GameObject CreateWarningVisualization(GameObject target, Color warningColor, float warningDuration)
     {
         Bounds bounds = GetObjectBounds(target);
-
-        if (bounds.size.x < 0.1f || bounds.size.y < 0.1f)
-        {
-            return null;
-        }
+        if (bounds.size.x < 0.1f || bounds.size.y < 0.1f) return null;
 
         GameObject warningObj = new GameObject($"{target.name}_Warning");
         LineRenderer lineRenderer = warningObj.AddComponent<LineRenderer>();
@@ -400,18 +439,14 @@ public class StructuralCollapseManager : MonoBehaviour
     IEnumerator PulseWarning(LineRenderer lineRenderer, Color warningColor, float warningDuration)
     {
         float elapsed = 0f;
-        Color originalColor = warningColor;
-
         while (lineRenderer != null && elapsed < warningDuration)
         {
             elapsed += Time.deltaTime;
             float alpha = Mathf.PingPong(elapsed * 4f, 1f);
-            Color pulseColor = originalColor;
+            Color pulseColor = warningColor;
             pulseColor.a = Mathf.Lerp(0.3f, 1f, alpha);
-
             lineRenderer.startColor = pulseColor;
             lineRenderer.endColor = pulseColor;
-
             yield return null;
         }
     }
@@ -419,7 +454,6 @@ public class StructuralCollapseManager : MonoBehaviour
     List<float> GenerateRandomAngles(int count, float minAngle, float maxAngle)
     {
         List<float> angles = new List<float>();
-
         if (count <= 0) return angles;
 
         float angleRange = maxAngle - minAngle;
@@ -427,12 +461,10 @@ public class StructuralCollapseManager : MonoBehaviour
 
         for (int i = 0; i < count; i++)
         {
-            float sectorStart = minAngle + (sectorSize * i);
+            float sectorStart = minAngle + sectorSize * i;
             float sectorEnd = sectorStart + sectorSize;
             float margin = sectorSize * 0.15f;
-            float randomAngle = Random.Range(sectorStart + margin, sectorEnd - margin);
-
-            angles.Add(randomAngle);
+            angles.Add(Random.Range(sectorStart + margin, sectorEnd - margin));
         }
 
         return angles;
@@ -441,37 +473,26 @@ public class StructuralCollapseManager : MonoBehaviour
     List<float> EnsureMinimumAngleSeparation(List<float> angles, float minSeparation)
     {
         if (angles.Count <= 1) return angles;
-
         angles.Sort();
 
-        List<float> validAngles = new List<float>();
-        validAngles.Add(angles[0]);
-
+        List<float> validAngles = new List<float> { angles[0] };
         for (int i = 1; i < angles.Count; i++)
         {
-            float lastAngle = validAngles[validAngles.Count - 1];
-            float currentAngle = angles[i];
-            float separation = currentAngle - lastAngle;
-
-            if (separation >= minSeparation)
-            {
-                validAngles.Add(currentAngle);
-            }
+            if (angles[i] - validAngles[validAngles.Count - 1] >= minSeparation)
+                validAngles.Add(angles[i]);
         }
 
         return validAngles;
     }
 
     bool PerformExplosionRaycast(GameObject target, Vector2 origin, Vector2 direction,
-                                float rayDistance, bool showRays, float rayVisualizationDuration,
-                                Color rayColor)
+                                 float rayDistance, bool showRays, float rayVisualizationDuration,
+                                 Color rayColor)
     {
         RaycastHit2D[] hits = Physics2D.RaycastAll(origin, direction, rayDistance);
 
         if (showRays)
-        {
             Debug.DrawRay(origin, direction * rayDistance, rayColor, rayVisualizationDuration);
-        }
 
         RaycastHit2D targetHit = default;
         bool foundTarget = false;
@@ -486,17 +507,13 @@ public class StructuralCollapseManager : MonoBehaviour
             }
         }
 
-        if (!foundTarget)
-        {
-            return false;
-        }
+        if (!foundTarget) return false;
 
         Vector2 entryPoint = targetHit.point;
         Collider2D targetCollider = targetHit.collider;
 
         Bounds bounds = targetCollider.bounds;
         Vector2 farPoint = origin + direction * (rayDistance + bounds.size.magnitude);
-
         RaycastHit2D[] reverseHits = Physics2D.RaycastAll(farPoint, -direction, rayDistance + bounds.size.magnitude);
 
         Vector2 exitPoint = Vector2.zero;
@@ -526,6 +543,10 @@ public class StructuralCollapseManager : MonoBehaviour
                 receiver.ExecuteCutDirect(entryPoint, exitPoint, null);
                 return true;
             }
+            else
+            {
+                Debug.LogWarning($"[SCM] No RaycastReceiver on '{target.name}' — cut skipped");
+            }
         }
 
         return false;
@@ -534,40 +555,23 @@ public class StructuralCollapseManager : MonoBehaviour
     Bounds GetObjectBounds(GameObject obj)
     {
         Renderer renderer = obj.GetComponent<Renderer>();
-        if (renderer != null)
-        {
-            return renderer.bounds;
-        }
+        if (renderer != null) return renderer.bounds;
 
         renderer = obj.GetComponentInChildren<Renderer>();
-        if (renderer != null)
-        {
-            return renderer.bounds;
-        }
+        if (renderer != null) return renderer.bounds;
 
         Collider2D collider = obj.GetComponent<Collider2D>();
-        if (collider != null)
-        {
-            return collider.bounds;
-        }
+        if (collider != null) return collider.bounds;
 
         return new Bounds(obj.transform.position, Vector3.one);
     }
 
     void DrawExplosionCutPoint(Vector2 point, Color color, float duration)
     {
-        Debug.DrawLine(
-            new Vector3(point.x - 0.1f, point.y - 0.1f, 0),
-            new Vector3(point.x + 0.1f, point.y + 0.1f, 0),
-            color,
-            duration
-        );
-        Debug.DrawLine(
-            new Vector3(point.x - 0.1f, point.y + 0.1f, 0),
-            new Vector3(point.x + 0.1f, point.y - 0.1f, 0),
-            color,
-            duration
-        );
+        Debug.DrawLine(new Vector3(point.x - 0.1f, point.y - 0.1f, 0),
+                       new Vector3(point.x + 0.1f, point.y + 0.1f, 0), color, duration);
+        Debug.DrawLine(new Vector3(point.x - 0.1f, point.y + 0.1f, 0),
+                       new Vector3(point.x + 0.1f, point.y - 0.1f, 0), color, duration);
     }
 
     public class ExplosionFragment : MonoBehaviour

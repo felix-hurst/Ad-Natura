@@ -1,4 +1,3 @@
-using Unity.VisualScripting;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -26,8 +25,6 @@ public class OrganicMatter : MonoBehaviour
     [Header("Decomposition Effects")]
     [Tooltip("Try to trigger DebrisSpawner component when decomposed")]
     [SerializeField] private bool triggerDebrisSpawner = true;
-    [Tooltip("Delay before destroying object (allows debris/effects to spawn)")]
-    [SerializeField] private float destroyDelay = 0.1f;
 
     [Header("Events")]
     [Tooltip("Called when fully decomposed (health reaches 0)")]
@@ -50,6 +47,16 @@ public class OrganicMatter : MonoBehaviour
     [SerializeField] private float warningDuration = 0.4f;
     [SerializeField] private Color warningColor = new Color(1f, 0.3f, 0.1f);
 
+    [Header("Collapse Cleanup")]
+    [Tooltip("Destroy the original parent object after all cuts are done")]
+    [SerializeField] private bool destroyParentAfterCollapse = true;
+    [Tooltip("Delay before destroying the parent (seconds after last cut round)")]
+    [SerializeField] private float parentDestroyDelay = 0.5f;
+    [Tooltip("Destroy all spawned fragment pieces after collapse")]
+    [SerializeField] private bool destroyFragmentsAfterCollapse = true;
+    [Tooltip("Delay before destroying fragments (seconds after parent destroy)")]
+    [SerializeField] private float fragmentDestroyDelay = 4f;
+
     private float currentHealth;
     private bool isDecomposed;
     private SpriteRenderer overlayRenderer;
@@ -63,9 +70,7 @@ public class OrganicMatter : MonoBehaviour
         currentHealth = maxHealth;
 
         if (enableSlimeOverlay)
-        {
             CreateSlimeOverlay();
-        }
     }
 
     void CreateSlimeOverlay()
@@ -96,9 +101,11 @@ public class OrganicMatter : MonoBehaviour
     {
         if (isDecomposed) return;
 
+        float previousHealth = currentHealth;
         currentHealth -= amount;
         damagePercent = 1f - (currentHealth / maxHealth);
 
+        Debug.Log($"[Decomp Step 4 - HEALTH] '{name}': health {previousHealth:F1} → {currentHealth:F1} / {maxHealth} ({damagePercent * 100:F1}% damaged)");
         // Update slime overlay
         UpdateSlimeOverlay();
 
@@ -106,26 +113,29 @@ public class OrganicMatter : MonoBehaviour
         {
             currentHealth = 0;
             isDecomposed = true;
-
             // Split by if statement on whether this is Wood or Wall
-            if (this.CompareTag("Wood"))
+            if (CompareTag("Wood") || CompareTag("Rock"))
             {
-                // Try to trigger debris spawner
+                if (overlayRenderer != null) { Destroy(overlayRenderer.gameObject); overlayRenderer = null; }
+
+                var sr = GetComponent<SpriteRenderer>();
+                if (sr != null) sr.enabled = false;
+
                 if (triggerDebrisSpawner)
-                {
-                    TriggerDebris();
-                }
+                    TriggerDebris(useDelay: false); // sprite is hidden, start cuts immediately
 
                 onDecomposed?.Invoke();
-
-                // Delay destroy so debris/effects can spawn
-                Destroy(gameObject, destroyDelay);
+                enabled = false;
             }
-            else // if Wall
+            else // Wall
             {
-                this.GameObject().layer = LayerMask.NameToLayer("Climbable");
-                overlayRenderer.color = new Color(0f, 0f, 0f, 0f);
-                this.GameObject().GetComponent<SpriteRenderer>().sprite = climbableWallSprite;
+                Debug.Log($"[Decomp Step 5 - COLLAPSE] '{name}': fully decomposed (Wall). Converting to Climbable.");
+                gameObject.layer = LayerMask.NameToLayer("Climbable");
+                if (overlayRenderer != null)
+                    overlayRenderer.color = new Color(0f, 0f, 0f, 0f);
+                var sr = GetComponent<SpriteRenderer>();
+                if (sr != null && climbableWallSprite != null)
+                    sr.sprite = climbableWallSprite;
             }
         }
     }
@@ -133,7 +143,6 @@ public class OrganicMatter : MonoBehaviour
     void UpdateSlimeOverlay()
     {
         if (overlayRenderer == null) return;
-
         // Calculate overlay alpha based on damage
         // Starts showing after overlayStartThreshold damage
         float overlayAlpha = 0f;
@@ -152,25 +161,47 @@ public class OrganicMatter : MonoBehaviour
 
     public float GetHealthPercent() => currentHealth / maxHealth;
 
-    void TriggerDebris()
-    {
-        StructuralCollapseManager.Instance.ScheduleDelayedExplosion(
-                    new GameObject(),
-                    new Vector2(transform.position.x, transform.position.y),
-                    weaknessDelay,
-                    minRayCount,
-                    maxRayCount,
-                    explosionRayDistance,
-                    minAngle,
-                    maxAngle,
-                    showExplosionRays,
-                    rayVisualizationDuration,
-                    explosionRayColor,
-                    showFractureWarning,
-                    warningDuration,
-                    warningColor
-                );
-    }
+        void TriggerDebris(bool useDelay = true)
+        {
+            if (StructuralCollapseManager.Instance == null)
+            {
+                Debug.LogError($"[TriggerDebris] '{name}': StructuralCollapseManager.Instance is null!");
+                return;
+            }
+
+            var receiver = GetComponent<RaycastReceiver>();
+            if (receiver == null)
+            {
+                Debug.LogError($"[TriggerDebris] '{name}': Missing RaycastReceiver — cuts will silently fail!");
+                return;
+            }
+
+
+            float delay = useDelay ? weaknessDelay : 0f;
+
+            bool doWarning = useDelay && showFractureWarning;
+
+            StructuralCollapseManager.Instance.ScheduleDelayedExplosion(
+                gameObject,
+                new Vector2(transform.position.x, transform.position.y),
+                delay,
+                minRayCount,
+                maxRayCount,
+                explosionRayDistance,
+                minAngle,
+                maxAngle,
+                showExplosionRays,
+                rayVisualizationDuration,
+                explosionRayColor,
+                doWarning,
+                warningDuration,
+                warningColor,
+                destroyParentAfterCollapse,
+                parentDestroyDelay,
+                destroyFragmentsAfterCollapse,
+                fragmentDestroyDelay
+            );
+        }
 
     [ContextMenu("Debug: Take 50 Damage")]
     void DebugTakeDecompositionDamage()
