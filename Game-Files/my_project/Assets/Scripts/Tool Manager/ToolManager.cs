@@ -67,6 +67,7 @@ public class ToolManager : MonoBehaviour
         if (visibilityTimer > 0)
         {
             visibilityTimer -= Time.deltaTime;
+            if  (player.IsRunning()) visibilityTimer = 0;
             if (visibilityTimer <= 0 && hudGroup != null)
             {
                 hudGroup.alpha = 0;

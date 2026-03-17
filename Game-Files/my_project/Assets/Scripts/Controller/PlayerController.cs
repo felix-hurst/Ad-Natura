@@ -79,7 +79,7 @@ public class PlayerController : MonoBehaviour
 
     [Header("Wall Climb")]
     [SerializeField] private float slowFall = -0.5f;
-    private bool canClimb = false;
+    private bool isWallClimbing = false;
 
     private Animator anim;
     private Rigidbody2D rb;
@@ -231,6 +231,11 @@ public class PlayerController : MonoBehaviour
         return windAmmo;
     }
 
+    public bool IsRunning()
+    {
+        return isRunning;
+    }
+
     public void SwitchTool(int toolIndex)
     {
         Debug.Log("SwitchTool called with: " + toolIndex);
@@ -316,7 +321,7 @@ public class PlayerController : MonoBehaviour
 
     private void HandleSpriteFlipping()
     {
-        if (!isRunning)
+        if (!isRunning && !isWallClimbing)
         {
             if (gameCamera != null)
             {
@@ -447,9 +452,9 @@ public class PlayerController : MonoBehaviour
 
     public void OnJump(InputValue value)
     {
-        if (!isAiming && (isGrounded || canClimb) && value.isPressed)
+        if (!isAiming && (isGrounded || isWallClimbing) && value.isPressed)
         {
-            if (canClimb)               // Debug
+            if (isWallClimbing)               // Debug
                 Debug.Log("Wall Jump"); // Debug
             rb.linearVelocity = new Vector2(rb.linearVelocity.x, jumpForce);
             isGrounded = false;
@@ -496,19 +501,23 @@ public class PlayerController : MonoBehaviour
         {
             // Bool to allow jumping while on wall
             // Slow fall
-            canClimb = true;
+            isWallClimbing = true;
+            anim.SetBool("isWallClimbing", isWallClimbing);
             if (rb.linearVelocityY < slowFall)
                 rb.linearVelocityY = slowFall;
         }
         else
         {
-            canClimb = false;
+            isWallClimbing = false;
+            anim.SetBool("isWallClimbing", isWallClimbing);
         }
     }
 
     private void OnCollisionExit2D(Collision2D collision)
     {
         isGrounded = false;
+        isWallClimbing = false;
+        anim.SetBool("isWallClimbing", isWallClimbing);
     }
 
 }
