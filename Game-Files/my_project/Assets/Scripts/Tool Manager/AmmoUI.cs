@@ -61,7 +61,9 @@ public class AmmoUI : MonoBehaviour
         toolNameText.text = "Tool: " + toolName;
 
         // Display ammo count
-        if (ammoCount > 0 && currentTool >= 0 || currentTool < 0)
+        if (currentTool < 0)
+            ammoCountText.text = "Ammo: -";
+        else if (ammoCount > 0 && currentTool >= 0)
             ammoCountText.text = "Ammo:";
         else
             ammoCountText.text = "Press R to Reload";
