@@ -4,6 +4,9 @@ root = true
 # C# files
 [*.cs]
 
+dotnet_diagnostic.IDE0055.severity = suggestion
+trim_trailing_whitespace = true
+
 #### Core EditorConfig Options ####
 indent_size = 4
 indent_style = space
