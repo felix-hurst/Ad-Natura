@@ -269,13 +269,13 @@ public class Slime : MonoBehaviour
 
         shader.SetFloat("evaporateSpeed", evaporateSpeed);
         shader.SetFloat("diffuseSpeed", diffuseSpeed);
-      
+
         // Pulse parameters
         shader.SetFloat("pulseAmplitude", pulseAmplitude);
         shader.SetFloat("pulseMinFreq", pulseMinFreq);
         shader.SetFloat("pulseMaxFreq", pulseMaxFreq);
         shader.SetFloat("pulseWaveScale", pulseWaveScale);
-   
+
         // Entropic Decay parameters
         shader.SetFloat("entropyScale", entropyScale);
         shader.SetFloat("entropySpeed", entropySpeed);

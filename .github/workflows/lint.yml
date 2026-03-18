@@ -23,8 +23,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: Game-Files/my_project/Library
-          key: Library-my_project-${{ hashFiles('Game-Files/my_project/Packages/packages-lock.json') }}
+          key: Library-my_project-${{ runner.os }}-${{ hashFiles('Game-Files/my_project/Assets/**', 'Game-Files/my_project/Packages/**', 'Game-Files/my_project/ProjectSettings/**') }}
           restore-keys: |
+            Library-my_project-${{ runner.os }}-
             Library-my_project-
 
       - name: Generate Solution

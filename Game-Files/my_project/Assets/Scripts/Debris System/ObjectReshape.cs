@@ -272,38 +272,38 @@ public class ObjectReshape : MonoBehaviour
         Color spriteColor = Color.white;
         string sortingLayer = "Default";
         int sortingOrder = 0;
-Texture2D textureToUse = originalTexture;
+        Texture2D textureToUse = originalTexture;
 
-if (spriteRenderer != null)
-{
-    spriteColor = spriteRenderer.color;
-    sortingLayer = spriteRenderer.sortingLayerName;
-    sortingOrder = spriteRenderer.sortingOrder;
-    if (spriteRenderer.sprite?.texture != null)
-        textureToUse = spriteRenderer.sprite.texture;
-}
-
-// NEW: if still no texture, check the existing mesh child's material
-if (textureToUse == null)
-{
-    MeshRenderer existingMR = GetComponentInChildren<MeshRenderer>();
-    if (existingMR != null && existingMR.sharedMaterial != null)
-    {
-        textureToUse = existingMR.sharedMaterial.mainTexture as Texture2D;
-        // Also inherit sorting layer/order from the existing mesh
-        if (sortingLayer == "Default")
+        if (spriteRenderer != null)
         {
-            sortingLayer = existingMR.sortingLayerName;
-            sortingOrder = existingMR.sortingOrder;
+            spriteColor = spriteRenderer.color;
+            sortingLayer = spriteRenderer.sortingLayerName;
+            sortingOrder = spriteRenderer.sortingOrder;
+            if (spriteRenderer.sprite?.texture != null)
+                textureToUse = spriteRenderer.sprite.texture;
         }
-    }
-}
 
-if (textureToUse == null)
-{
-    MaterialTextureGenerator gen = FindObjectOfType<MaterialTextureGenerator>();
-    if (gen != null) textureToUse = gen.GetTexture(materialTag);
-}
+        // NEW: if still no texture, check the existing mesh child's material
+        if (textureToUse == null)
+        {
+            MeshRenderer existingMR = GetComponentInChildren<MeshRenderer>();
+            if (existingMR != null && existingMR.sharedMaterial != null)
+            {
+                textureToUse = existingMR.sharedMaterial.mainTexture as Texture2D;
+                // Also inherit sorting layer/order from the existing mesh
+                if (sortingLayer == "Default")
+                {
+                    sortingLayer = existingMR.sortingLayerName;
+                    sortingOrder = existingMR.sortingOrder;
+                }
+            }
+        }
+
+        if (textureToUse == null)
+        {
+            MaterialTextureGenerator gen = FindObjectOfType<MaterialTextureGenerator>();
+            if (gen != null) textureToUse = gen.GetTexture(materialTag);
+        }
 
         // Remove old mesh children
         foreach (MeshRenderer mr in GetComponentsInChildren<MeshRenderer>())
@@ -466,7 +466,7 @@ if (textureToUse == null)
         float denom = ((b.y - c.y) * (a.x - c.x) + (c.x - b.x) * (a.y - c.y));
         if (Mathf.Abs(denom) < 0.0001f) return false;
         float alpha = ((b.y - c.y) * (p.x - c.x) + (c.x - b.x) * (p.y - c.y)) / denom;
-        float beta  = ((c.y - a.y) * (p.x - c.x) + (a.x - c.x) * (p.y - c.y)) / denom;
+        float beta = ((c.y - a.y) * (p.x - c.x) + (a.x - c.x) * (p.y - c.y)) / denom;
         float gamma = 1f - alpha - beta;
         return alpha > 0 && beta > 0 && gamma > 0;
     }

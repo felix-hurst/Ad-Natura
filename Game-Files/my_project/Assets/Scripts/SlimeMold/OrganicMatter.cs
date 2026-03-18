@@ -161,47 +161,47 @@ public class OrganicMatter : MonoBehaviour
 
     public float GetHealthPercent() => currentHealth / maxHealth;
 
-        void TriggerDebris(bool useDelay = true)
+    void TriggerDebris(bool useDelay = true)
+    {
+        if (StructuralCollapseManager.Instance == null)
         {
-            if (StructuralCollapseManager.Instance == null)
-            {
-                Debug.LogError($"[TriggerDebris] '{name}': StructuralCollapseManager.Instance is null!");
-                return;
-            }
-
-            var receiver = GetComponent<RaycastReceiver>();
-            if (receiver == null)
-            {
-                Debug.LogError($"[TriggerDebris] '{name}': Missing RaycastReceiver — cuts will silently fail!");
-                return;
-            }
-
-
-            float delay = useDelay ? weaknessDelay : 0f;
-
-            bool doWarning = useDelay && showFractureWarning;
-
-            StructuralCollapseManager.Instance.ScheduleDelayedExplosion(
-                gameObject,
-                new Vector2(transform.position.x, transform.position.y),
-                delay,
-                minRayCount,
-                maxRayCount,
-                explosionRayDistance,
-                minAngle,
-                maxAngle,
-                showExplosionRays,
-                rayVisualizationDuration,
-                explosionRayColor,
-                doWarning,
-                warningDuration,
-                warningColor,
-                destroyParentAfterCollapse,
-                parentDestroyDelay,
-                destroyFragmentsAfterCollapse,
-                fragmentDestroyDelay
-            );
+            Debug.LogError($"[TriggerDebris] '{name}': StructuralCollapseManager.Instance is null!");
+            return;
         }
+
+        var receiver = GetComponent<RaycastReceiver>();
+        if (receiver == null)
+        {
+            Debug.LogError($"[TriggerDebris] '{name}': Missing RaycastReceiver — cuts will silently fail!");
+            return;
+        }
+
+
+        float delay = useDelay ? weaknessDelay : 0f;
+
+        bool doWarning = useDelay && showFractureWarning;
+
+        StructuralCollapseManager.Instance.ScheduleDelayedExplosion(
+            gameObject,
+            new Vector2(transform.position.x, transform.position.y),
+            delay,
+            minRayCount,
+            maxRayCount,
+            explosionRayDistance,
+            minAngle,
+            maxAngle,
+            showExplosionRays,
+            rayVisualizationDuration,
+            explosionRayColor,
+            doWarning,
+            warningDuration,
+            warningColor,
+            destroyParentAfterCollapse,
+            parentDestroyDelay,
+            destroyFragmentsAfterCollapse,
+            fragmentDestroyDelay
+        );
+    }
 
     [ContextMenu("Debug: Take 50 Damage")]
     void DebugTakeDecompositionDamage()

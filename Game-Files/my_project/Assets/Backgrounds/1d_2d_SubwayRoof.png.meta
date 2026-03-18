@@ -1,16 +1,10 @@
 fileFormatVersion: 2
-guid: 8a9ef9ab6a68b67468d04a4ccd10facd
+guid: ebcc7f4fe6486684badd7802baa9d5d4
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 3899207332090401849
-    second: TerrainLayer_0
-  - first:
-      213: -1384619456900606501
-    second: TerrainLayer_1
-  - first:
-      213: 361461806588109451
-    second: TerrainLayer_2
+      213: 7459366304742411730
+    second: 1d_2d_SubwayRoof_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -43,7 +37,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 0
+    filterMode: 1
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -52,7 +46,7 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 1
+  spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
@@ -106,57 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: TerrainLayer_0
-      rect:
-        serializedVersion: 2
-        x: 0
-        y: 257
-        width: 40
-        height: 79
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: 934d8ded864cc1630800000000000000
-      internalID: 3899207332090401849
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: TerrainLayer_1
-      rect:
-        serializedVersion: 2
-        x: 127
-        y: 92
-        width: 648
-        height: 244
-      alignment: 0
-      pivot: {x: 0, y: 0}
-      border: {x: 0, y: 0, z: 0, w: 0}
-      customData: 
-      outline: []
-      physicsShape: []
-      tessellationDetail: -1
-      bones: []
-      spriteID: bd55852a0f7d8cce0800000000000000
-      internalID: -1384619456900606501
-      vertices: []
-      indices: 
-      edges: []
-      weights: []
-    - serializedVersion: 2
-      name: TerrainLayer_2
+      name: 1d_2d_SubwayRoof_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 775
-        height: 139
+        width: 330
+        height: 20
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -165,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: b822e85199b240500800000000000000
-      internalID: 361461806588109451
+      spriteID: 2dd80bbf12ef48760800000000000000
+      internalID: 7459366304742411730
       vertices: []
       indices: 
       edges: []
@@ -175,7 +125,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 5e97eb03825dee720800000000000000
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -185,9 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      TerrainLayer_0: 3899207332090401849
-      TerrainLayer_1: -1384619456900606501
-      TerrainLayer_2: 361461806588109451
+      1d_2d_SubwayRoof_0: 7459366304742411730
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

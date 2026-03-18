@@ -72,6 +72,12 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Transform farArm;
     [SerializeField] private Transform muzzle;
 
+    [Header("Gun Sprites")]
+    [SerializeField] private SpriteRenderer nearArmSpriteRenderer;
+    [SerializeField] private Sprite waterGunSprite;
+    [SerializeField] private Sprite incendiaryGunSprite;
+    [SerializeField] private Sprite windGunSprite;
+
     [Header("Stretching Settings")]
     [SerializeField] private Transform farHandGrip;
     [SerializeField] private float armLength = 0.5f;
@@ -207,7 +213,7 @@ public class PlayerController : MonoBehaviour
             anim.SetBool("isGrounded", isGrounded);
             anim.SetBool("isAiming", isAiming);
 
-            anim.SetInteger("ToolIndex", currentToolIndex);
+            anim.SetFloat("ToolIndex", (float)currentToolIndex);
         }
     }
 
@@ -240,6 +246,8 @@ public class PlayerController : MonoBehaviour
     {
         Debug.Log("SwitchTool called with: " + toolIndex);
 
+        currentToolIndex = toolIndex;
+
         if (toolIndex == -1)
         {
             isAiming = false;
@@ -248,12 +256,28 @@ public class PlayerController : MonoBehaviour
             return;
         }
 
-        currentToolIndex = toolIndex;
+        if (nearArmSpriteRenderer != null)
+        {
+            switch ((ToolType)toolIndex)
+            {
+                case ToolType.WaterBall:
+                    nearArmSpriteRenderer.sprite = waterGunSprite;
+                    break;
+                case ToolType.IncendiaryBall:
+                    nearArmSpriteRenderer.sprite = incendiaryGunSprite;
+                    break;
+                case ToolType.WindBall:
+                    nearArmSpriteRenderer.sprite = windGunSprite;
+                    break;
+            }
+        }
+
+
         currentTool = (ToolType)toolIndex;
 
         if (anim != null)
         {
-            anim.SetInteger("ToolIndex", toolIndex);
+            anim.SetFloat("ToolIndex", (float)toolIndex);
         }
 
         if (raycast != null)
@@ -442,9 +466,13 @@ public class PlayerController : MonoBehaviour
 
     public void OnAim(InputValue value)
     {
-        if (value.isPressed && isGrounded)
+        if (value.isPressed && isGrounded && currentToolIndex != -1)
         {
             isAiming = !isAiming;
+        }
+        else if (value.isPressed && currentToolIndex == -1)
+        {
+            isAiming = false;
         }
     }
 
