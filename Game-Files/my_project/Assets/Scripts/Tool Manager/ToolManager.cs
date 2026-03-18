@@ -67,7 +67,7 @@ public class ToolManager : MonoBehaviour
         if (visibilityTimer > 0)
         {
             visibilityTimer -= Time.deltaTime;
-            if  (player.IsRunning()) visibilityTimer = 0;
+            if (player.IsRunning()) visibilityTimer = 0;
             if (visibilityTimer <= 0 && hudGroup != null)
             {
                 hudGroup.alpha = 0;
@@ -94,14 +94,16 @@ public class ToolManager : MonoBehaviour
 
     public void SelectTool(int index)
     {
-        // If we click the tool that is already active, unselect it
+        // Toggle: If selecting the same tool, go back to "None" (-1)
         if (currentToolIndex == index)
         {
-            currentToolIndex = -1; // -1 means no tool
+            currentToolIndex = -1;
+            Debug.Log("ToolManager: Deselecting tool (setting to -1)");
         }
         else
         {
             currentToolIndex = index;
+            Debug.Log("ToolManager: Selecting tool " + index);
         }
 
         // Update the UI visual frames
@@ -110,18 +112,23 @@ public class ToolManager : MonoBehaviour
             if (i == currentToolIndex)
             {
                 slots[i].sprite = activeFrame;
-                descs[i].SetActive(true);
-                slots[i].transform.localScale = Vector3.one * activeScale;
+                // Safety check for your empty Descs array
+                if (descs != null && i < descs.Length && descs[i] != null)
+                    descs[i].SetActive(true);
+
+                slots[i].rectTransform.localScale = Vector3.one * activeScale;
             }
             else
             {
                 slots[i].sprite = inactiveFrame;
-                descs[i].SetActive(false);
-                slots[i].transform.localScale = Vector3.one;
+                if (descs != null && i < descs.Length && descs[i] != null)
+                    descs[i].SetActive(false);
+
+                slots[i].rectTransform.localScale = Vector3.one;
             }
         }
 
-        // Tell the PlayerController what happened
+        // Tell the PlayerController to unequip/update animations
         if (player != null)
         {
             player.SwitchTool(currentToolIndex);

@@ -158,12 +158,12 @@ public class WindBallBackblast : MonoBehaviour
         public float lifetime, maxLifetime, peakIntensity;
     }
 
-    private List<EjectaParticle>  activeEjecta = new List<EjectaParticle>();
-    private List<SmokePuff>       activeSmoke  = new List<SmokePuff>();
-    private List<ImpactLight>     activeLights = new List<ImpactLight>();
+    private List<EjectaParticle> activeEjecta = new List<EjectaParticle>();
+    private List<SmokePuff> activeSmoke = new List<SmokePuff>();
+    private List<ImpactLight> activeLights = new List<ImpactLight>();
 
     private Queue<EjectaParticle> ejectaPool = new Queue<EjectaParticle>();
-    private Queue<SmokePuff>      smokePool  = new Queue<SmokePuff>();
+    private Queue<SmokePuff> smokePool = new Queue<SmokePuff>();
 
     private List<Sprite> smokeVariants = new List<Sprite>();
     private const int SmokeVariantCount = 6;
@@ -171,7 +171,7 @@ public class WindBallBackblast : MonoBehaviour
     private Sprite ejectaSprite;
     private Sprite wakeSprite;
 
-    private float wakeTimer       = 0f;
+    private float wakeTimer = 0f;
     private float flightSmokeTimer = 0f;
 
     // =========================================================================
@@ -181,15 +181,15 @@ public class WindBallBackblast : MonoBehaviour
     void Awake()
     {
         ejectaSprite = CreateSoftCircleSprite(10, new Color(0.7f, 0.9f, 1f, 1f));
-        wakeSprite   = CreateSoftCircleSprite(8,  new Color(0.8f, 0.95f, 1f, 1f));
+        wakeSprite = CreateSoftCircleSprite(8, new Color(0.8f, 0.95f, 1f, 1f));
 
         PreGenerateSmokeVariants();
 
         // Warm the pools
         for (int i = 0; i < 15; i++)
         {
-            var e = AllocateEjecta();  e.go.SetActive(false); ejectaPool.Enqueue(e);
-            var s = AllocateSmoke();   s.go.SetActive(false); smokePool.Enqueue(s);
+            var e = AllocateEjecta(); e.go.SetActive(false); ejectaPool.Enqueue(e);
+            var s = AllocateSmoke(); s.go.SetActive(false); smokePool.Enqueue(s);
         }
     }
 
@@ -202,14 +202,14 @@ public class WindBallBackblast : MonoBehaviour
 
     void OnDestroy()
     {
-        foreach (var l in activeLights)  if (l.go) Destroy(l.go);
-        foreach (var e in activeEjecta)  if (e.go) Destroy(e.go);
-        foreach (var s in activeSmoke)   if (s.go) Destroy(s.go);
+        foreach (var l in activeLights) if (l.go) Destroy(l.go);
+        foreach (var e in activeEjecta) if (e.go) Destroy(e.go);
+        foreach (var s in activeSmoke) if (s.go) Destroy(s.go);
         while (ejectaPool.Count > 0) { var e = ejectaPool.Dequeue(); if (e.go) Destroy(e.go); }
-        while (smokePool.Count  > 0) { var s = smokePool.Dequeue();  if (s.go) Destroy(s.go); }
+        while (smokePool.Count > 0) { var s = smokePool.Dequeue(); if (s.go) Destroy(s.go); }
         foreach (var sp in smokeVariants) if (sp && sp.texture) Destroy(sp.texture);
         if (ejectaSprite && ejectaSprite.texture) Destroy(ejectaSprite.texture);
-        if (wakeSprite   && wakeSprite.texture)   Destroy(wakeSprite.texture);
+        if (wakeSprite && wakeSprite.texture) Destroy(wakeSprite.texture);
     }
 
     // =========================================================================
@@ -221,7 +221,7 @@ public class WindBallBackblast : MonoBehaviour
     {
         if (velocity.magnitude < 0.5f) return;
 
-        wakeTimer        += Time.fixedDeltaTime;
+        wakeTimer += Time.fixedDeltaTime;
         flightSmokeTimer += Time.fixedDeltaTime;
 
         if (enableFlightWake && wakeTimer >= wakeEmitInterval)
@@ -240,7 +240,7 @@ public class WindBallBackblast : MonoBehaviour
     /// <summary>Call once when the ball collides with something.</summary>
     public void NotifyImpact(Vector2 impactPoint, Vector2 impactVelocity, Vector2 surfaceNormal)
     {
-        float speed     = impactVelocity.magnitude;
+        float speed = impactVelocity.magnitude;
         float intensity = Mathf.Clamp01(speed / 15f); // normalise against a reasonable max
 
         if (enableImpactLightBurst)
@@ -270,7 +270,7 @@ public class WindBallBackblast : MonoBehaviour
 
             // Spray mostly backwards with a spread cone
             float spreadAngle = Random.Range(-35f, 35f) * Mathf.Deg2Rad;
-            float backAngle   = Mathf.Atan2(backward.y, backward.x);
+            float backAngle = Mathf.Atan2(backward.y, backward.x);
             Vector2 dir = new Vector2(
                 Mathf.Cos(backAngle + spreadAngle),
                 Mathf.Sin(backAngle + spreadAngle)
@@ -288,7 +288,7 @@ public class WindBallBackblast : MonoBehaviour
 
     void EmitFlightSmoke(Vector2 ballPos, Vector2 velocity)
     {
-        Vector2 backward  = -velocity.normalized;
+        Vector2 backward = -velocity.normalized;
         Vector2 spawnBase = ballPos + backward * (wakeSpawnOffset * 0.8f);
 
         for (int i = 0; i < flightSmokePuffsPerBurst; i++)
@@ -315,11 +315,11 @@ public class WindBallBackblast : MonoBehaviour
     void CreateEjectaPlume(Vector2 position, Vector2 projectileVelocity,
                            Vector2 surfaceNormal, float impactSpeed)
     {
-        Vector2 incomingDir   = projectileVelocity.normalized;
-        Vector2 reflectedDir  = Vector2.Reflect(incomingDir, surfaceNormal);
-        Vector2 primaryDir    = (reflectedDir + Vector2.up * 0.2f).normalized;
-        float   primaryAngle  = Mathf.Atan2(primaryDir.y, primaryDir.x);
-        float   ejectaSpeed   = impactSpeed * ejectaVelocityFraction;
+        Vector2 incomingDir = projectileVelocity.normalized;
+        Vector2 reflectedDir = Vector2.Reflect(incomingDir, surfaceNormal);
+        Vector2 primaryDir = (reflectedDir + Vector2.up * 0.2f).normalized;
+        float primaryAngle = Mathf.Atan2(primaryDir.y, primaryDir.x);
+        float ejectaSpeed = impactSpeed * ejectaVelocityFraction;
 
         for (int i = 0; i < ejectaParticleCount; i++)
         {
@@ -328,7 +328,7 @@ public class WindBallBackblast : MonoBehaviour
             float angleOffset = (Random.Range(-ejectaConeSpread, ejectaConeSpread)
                               + Mathf.Cos(Random.Range(0f, 360f) * Mathf.Deg2Rad)
                               * Random.Range(0f, ejectaConeAngle)) * Mathf.Deg2Rad;
-            float finalAngle  = primaryAngle + angleOffset;
+            float finalAngle = primaryAngle + angleOffset;
 
             Vector2 dir = new Vector2(Mathf.Cos(finalAngle), Mathf.Sin(finalAngle));
             if (Vector2.Dot(dir, surfaceNormal) < 0f)
@@ -355,11 +355,11 @@ public class WindBallBackblast : MonoBehaviour
                            Vector2 surfaceNormal, float impactSpeed)
     {
         Vector2 reflectedDir = Vector2.Reflect(projectileVelocity.normalized, surfaceNormal);
-        Vector2 primaryDir   = (reflectedDir + Vector2.up * 0.3f).normalized;
-        float   primaryAngle = Mathf.Atan2(primaryDir.y, primaryDir.x);
-        float   smokeSpeed   = impactSpeed * impactSmokeVelocityFraction;
+        Vector2 primaryDir = (reflectedDir + Vector2.up * 0.3f).normalized;
+        float primaryAngle = Mathf.Atan2(primaryDir.y, primaryDir.x);
+        float smokeSpeed = impactSpeed * impactSmokeVelocityFraction;
 
-        int clusters    = spawnInClusters ? Mathf.CeilToInt(impactSmokeCount / 3f) : impactSmokeCount;
+        int clusters = spawnInClusters ? Mathf.CeilToInt(impactSmokeCount / 3f) : impactSmokeCount;
         int puffsPerCluster = spawnInClusters ? 3 : 1;
 
         for (int c = 0; c < clusters; c++)
@@ -373,12 +373,12 @@ public class WindBallBackblast : MonoBehaviour
             {
                 if (activeSmoke.Count >= maxSmokeParticles) break;
 
-                float   velVar = Random.Range(0.7f, 1.3f);
-                Vector2 vel    = clusterDir * smokeSpeed * velVar;
-                Vector2 pos    = position + surfaceNormal * Random.Range(0.05f, 0.15f)
+                float velVar = Random.Range(0.7f, 1.3f);
+                Vector2 vel = clusterDir * smokeSpeed * velVar;
+                Vector2 pos = position + surfaceNormal * Random.Range(0.05f, 0.15f)
                                + Random.insideUnitCircle * 0.2f;
 
-                float size     = impactSmokeSize * Random.Range(0.9f, 1.2f);
+                float size = impactSmokeSize * Random.Range(0.9f, 1.2f);
                 float lifetime = impactSmokeLifetime * Random.Range(0.9f, 1.1f);
 
                 EmitSmoke(pos, vel, size, lifetime, impactSmokeColor,
@@ -393,23 +393,23 @@ public class WindBallBackblast : MonoBehaviour
 
     void SpawnImpactLight(Vector2 position, float intensity)
     {
-        GameObject obj  = new GameObject("WindBallImpactLight");
+        GameObject obj = new GameObject("WindBallImpactLight");
         obj.transform.SetParent(transform);
         obj.transform.position = position;
 
         var light2D = obj.AddComponent<UnityEngine.Rendering.Universal.Light2D>();
-        light2D.lightType              = UnityEngine.Rendering.Universal.Light2D.LightType.Point;
-        light2D.intensity              = impactLightIntensity * intensity;
-        light2D.pointLightOuterRadius  = impactLightRadius * Mathf.Lerp(0.7f, 1.3f, intensity);
-        light2D.color                  = impactLightColor;
-        light2D.falloffIntensity       = 0.7f;
+        light2D.lightType = UnityEngine.Rendering.Universal.Light2D.LightType.Point;
+        light2D.intensity = impactLightIntensity * intensity;
+        light2D.pointLightOuterRadius = impactLightRadius * Mathf.Lerp(0.7f, 1.3f, intensity);
+        light2D.color = impactLightColor;
+        light2D.falloffIntensity = 0.7f;
 
         activeLights.Add(new ImpactLight
         {
-            go            = obj,
-            light2D       = light2D,
-            lifetime      = 0f,
-            maxLifetime   = impactLightDuration,
+            go = obj,
+            light2D = light2D,
+            lifetime = 0f,
+            maxLifetime = impactLightDuration,
             peakIntensity = impactLightIntensity * intensity
         });
     }
@@ -422,14 +422,14 @@ public class WindBallBackblast : MonoBehaviour
     {
         EjectaParticle e = ejectaPool.Count > 0 ? ejectaPool.Dequeue() : AllocateEjecta();
 
-        e.go.transform.position  = pos;
-        e.velocity    = vel;
-        e.lifetime    = 0f;
+        e.go.transform.position = pos;
+        e.velocity = vel;
+        e.lifetime = 0f;
         e.maxLifetime = lifetime;
         e.initialSize = size;
-        e.baseColor   = color;
-        e.sr.sprite   = isWake ? wakeSprite : ejectaSprite;
-        e.sr.color    = color;
+        e.baseColor = color;
+        e.sr.sprite = isWake ? wakeSprite : ejectaSprite;
+        e.sr.color = color;
         e.go.transform.localScale = Vector3.one * size;
         e.go.SetActive(true);
         activeEjecta.Add(e);
@@ -441,23 +441,23 @@ public class WindBallBackblast : MonoBehaviour
         SmokePuff s = smokePool.Count > 0 ? smokePool.Dequeue() : AllocateSmoke();
 
         s.go.transform.position = pos;
-        s.velocity       = vel;
+        s.velocity = vel;
         s.initialVelocity = vel;
-        s.lifetime       = 0f;
-        s.maxLifetime    = lifetime;
-        s.initialSize    = size;
-        s.baseColor      = color;
-        s.rotationAngle  = Random.Range(0f, 360f);
-        s.rotationSpeed  = Random.Range(-45f, 45f) * animeRotationSpeed;
-        s.expansionRate  = billowing;
+        s.lifetime = 0f;
+        s.maxLifetime = lifetime;
+        s.initialSize = size;
+        s.baseColor = color;
+        s.rotationAngle = Random.Range(0f, 360f);
+        s.rotationSpeed = Random.Range(-45f, 45f) * animeRotationSpeed;
+        s.expansionRate = billowing;
         s.customRiseSpeed = riseSpeed;
-        s.isImpactSmoke  = isImpactSmoke;
+        s.isImpactSmoke = isImpactSmoke;
 
         int idx = Random.Range(0, smokeVariants.Count);
         s.sr.sprite = smokeVariants[idx];
-        s.sr.color  = color;
+        s.sr.color = color;
         s.go.transform.localScale = Vector3.one;
-        s.go.transform.rotation   = Quaternion.Euler(0f, 0f, s.rotationAngle);
+        s.go.transform.rotation = Quaternion.Euler(0f, 0f, s.rotationAngle);
         s.go.SetActive(true);
         activeSmoke.Add(s);
     }
@@ -482,10 +482,10 @@ public class WindBallBackblast : MonoBehaviour
             }
 
             e.velocity.y += ejectaGravity * Time.deltaTime;
-            e.velocity   *= ejectaAirResistance;
+            e.velocity *= ejectaAirResistance;
 
-            Vector2 pos  = e.go.transform.position;
-            pos          += e.velocity * Time.deltaTime;
+            Vector2 pos = e.go.transform.position;
+            pos += e.velocity * Time.deltaTime;
             e.go.transform.position = pos;
 
             // Spin in the direction of travel
@@ -493,10 +493,10 @@ public class WindBallBackblast : MonoBehaviour
             e.go.transform.Rotate(0f, 0f, spin * Time.deltaTime);
 
             // Fade + scale
-            float t     = e.lifetime / e.maxLifetime;
+            float t = e.lifetime / e.maxLifetime;
             float alpha = e.baseColor.a * (1f - Mathf.Pow(t, 1.5f));
             float scale = e.initialSize * Mathf.Lerp(1f, 0.6f, t);
-            e.sr.color                = new Color(e.baseColor.r, e.baseColor.g, e.baseColor.b, alpha);
+            e.sr.color = new Color(e.baseColor.r, e.baseColor.g, e.baseColor.b, alpha);
             e.go.transform.localScale = Vector3.one * scale;
         }
     }
@@ -525,30 +525,30 @@ public class WindBallBackblast : MonoBehaviour
                 if (t < 0.3f)
                 {
                     float p = t / 0.3f;
-                    s.velocity   = Vector2.Lerp(s.initialVelocity, s.initialVelocity * 0.15f, p);
-                    s.velocity  *= 0.93f;
+                    s.velocity = Vector2.Lerp(s.initialVelocity, s.initialVelocity * 0.15f, p);
+                    s.velocity *= 0.93f;
                     s.velocity.y += s.customRiseSpeed * 0.4f * p;
                 }
                 else if (t < 0.6f)
                 {
                     float p = (t - 0.3f) / 0.3f;
                     s.velocity.x *= Mathf.Lerp(0.93f, 0.85f, p);
-                    s.velocity.y  = Mathf.Lerp(s.velocity.y, s.customRiseSpeed * 0.9f, p * 0.5f);
+                    s.velocity.y = Mathf.Lerp(s.velocity.y, s.customRiseSpeed * 0.9f, p * 0.5f);
                 }
                 else
                 {
                     s.velocity.x *= 0.92f;
-                    s.velocity.y  = s.customRiseSpeed * 0.9f;
+                    s.velocity.y = s.customRiseSpeed * 0.9f;
                 }
             }
             else
             {
                 s.velocity.x *= 0.94f;
-                s.velocity.y  = s.customRiseSpeed * Mathf.Lerp(0.85f, 1f, t * 0.4f);
+                s.velocity.y = s.customRiseSpeed * Mathf.Lerp(0.85f, 1f, t * 0.4f);
             }
 
             Vector2 pos = s.go.transform.position;
-            pos        += s.velocity * Time.deltaTime;
+            pos += s.velocity * Time.deltaTime;
             s.go.transform.position = pos;
 
             s.rotationAngle += s.rotationSpeed * Time.deltaTime;
@@ -601,8 +601,8 @@ public class WindBallBackblast : MonoBehaviour
         GameObject obj = new GameObject("WBEjecta");
         obj.transform.SetParent(transform);
         var sr = obj.AddComponent<SpriteRenderer>();
-        sr.sprite       = ejectaSprite;
-        sr.color        = ejectaColor;
+        sr.sprite = ejectaSprite;
+        sr.color = ejectaColor;
         sr.sortingOrder = 8;
         return new EjectaParticle { go = obj, sr = sr };
     }
@@ -625,7 +625,7 @@ public class WindBallBackblast : MonoBehaviour
         for (int v = 0; v < SmokeVariantCount; v++)
         {
             var offsets = new List<Vector2>();
-            var sizes   = new List<float>();
+            var sizes = new List<float>();
 
             offsets.Add(Random.insideUnitCircle * 0.08f);
             sizes.Add(Random.Range(0.9f, 1.1f));
@@ -657,27 +657,27 @@ public class WindBallBackblast : MonoBehaviour
         int res = 64;
         var tex = new Texture2D(res, res, TextureFormat.RGBA32, false);
         tex.filterMode = FilterMode.Bilinear;
-        tex.wrapMode   = TextureWrapMode.Clamp;
+        tex.wrapMode = TextureWrapMode.Clamp;
 
         float c = (res - 1) * 0.5f;
         for (int x = 0; x < res; x++)
-        for (int y = 0; y < res; y++)
-        {
-            float nx = (x - c) / (res * 0.5f);
-            float ny = (y - c) / (res * 0.5f);
-            float density = 0f;
-
-            for (int i = 0; i < offsets.Count; i++)
+            for (int y = 0; y < res; y++)
             {
-                float dx   = nx - offsets[i].x;
-                float dy   = ny - offsets[i].y;
-                float dist = Mathf.Sqrt(dx * dx + dy * dy);
-                float d    = Mathf.Max(0f, 1f - dist / (sizes[i] * 1.1f));
-                density   += Mathf.Pow(d, 0.8f);
+                float nx = (x - c) / (res * 0.5f);
+                float ny = (y - c) / (res * 0.5f);
+                float density = 0f;
+
+                for (int i = 0; i < offsets.Count; i++)
+                {
+                    float dx = nx - offsets[i].x;
+                    float dy = ny - offsets[i].y;
+                    float dist = Mathf.Sqrt(dx * dx + dy * dy);
+                    float d = Mathf.Max(0f, 1f - dist / (sizes[i] * 1.1f));
+                    density += Mathf.Pow(d, 0.8f);
+                }
+                density = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(density));
+                tex.SetPixel(x, y, new Color(1f, 1f, 1f, density));
             }
-            density = Mathf.SmoothStep(0f, 1f, Mathf.Clamp01(density));
-            tex.SetPixel(x, y, new Color(1f, 1f, 1f, density));
-        }
         tex.Apply();
         return tex;
     }
@@ -686,18 +686,18 @@ public class WindBallBackblast : MonoBehaviour
     {
         var tex = new Texture2D(res, res, TextureFormat.RGBA32, false);
         tex.filterMode = FilterMode.Bilinear;
-        tex.wrapMode   = TextureWrapMode.Clamp;
+        tex.wrapMode = TextureWrapMode.Clamp;
 
         float c = (res - 1) * 0.5f;
         for (int x = 0; x < res; x++)
-        for (int y = 0; y < res; y++)
-        {
-            float nx   = (x - c) / (res * 0.5f);
-            float ny   = (y - c) / (res * 0.5f);
-            float dist = Mathf.Sqrt(nx * nx + ny * ny);
-            float a    = Mathf.Clamp01(1.1f - dist * 1.1f);
-            tex.SetPixel(x, y, new Color(tint.r, tint.g, tint.b, a * tint.a));
-        }
+            for (int y = 0; y < res; y++)
+            {
+                float nx = (x - c) / (res * 0.5f);
+                float ny = (y - c) / (res * 0.5f);
+                float dist = Mathf.Sqrt(nx * nx + ny * ny);
+                float a = Mathf.Clamp01(1.1f - dist * 1.1f);
+                tex.SetPixel(x, y, new Color(tint.r, tint.g, tint.b, a * tint.a));
+            }
         tex.Apply();
         return Sprite.Create(tex, new Rect(0, 0, res, res), new Vector2(0.5f, 0.5f), res);
     }

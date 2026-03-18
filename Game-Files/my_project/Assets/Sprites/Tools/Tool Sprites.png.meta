@@ -1,16 +1,16 @@
 fileFormatVersion: 2
-guid: 8a9ef9ab6a68b67468d04a4ccd10facd
+guid: 25b96b29dac0cef4db1fd3fe439c5fb2
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 3899207332090401849
-    second: TerrainLayer_0
+      213: 8640546800654124554
+    second: Tool Sprites_0
   - first:
-      213: -1384619456900606501
-    second: TerrainLayer_1
+      213: 2423827458247597442
+    second: Tool Sprites_1
   - first:
-      213: 361461806588109451
-    second: TerrainLayer_2
+      213: -3278746318068392930
+    second: Tool Sprites_2
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -43,7 +43,7 @@ TextureImporter:
   maxTextureSize: 2048
   textureSettings:
     serializedVersion: 2
-    filterMode: 0
+    filterMode: 1
     aniso: 1
     mipBias: 0
     wrapU: 1
@@ -52,7 +52,7 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 1
+  spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
@@ -106,13 +106,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: TerrainLayer_0
+      name: Tool Sprites_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 257
-        width: 40
-        height: 79
+        y: 35
+        width: 39
+        height: 9
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -121,20 +121,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 934d8ded864cc1630800000000000000
-      internalID: 3899207332090401849
+      spriteID: a06802e198369e770800000000000000
+      internalID: 8640546800654124554
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TerrainLayer_1
+      name: Tool Sprites_1
       rect:
         serializedVersion: 2
-        x: 127
-        y: 92
-        width: 648
-        height: 244
+        x: 1
+        y: 16
+        width: 38
+        height: 11
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -143,20 +143,20 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: bd55852a0f7d8cce0800000000000000
-      internalID: -1384619456900606501
+      spriteID: 28d9fa53b3a23a120800000000000000
+      internalID: 2423827458247597442
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: TerrainLayer_2
+      name: Tool Sprites_2
       rect:
         serializedVersion: 2
-        x: 0
+        x: 1
         y: 0
-        width: 775
-        height: 139
+        width: 39
+        height: 11
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -165,8 +165,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: b822e85199b240500800000000000000
-      internalID: 361461806588109451
+      spriteID: e1cd9e2689d8f72d0800000000000000
+      internalID: -3278746318068392930
       vertices: []
       indices: 
       edges: []
@@ -175,7 +175,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 5e97eb03825dee720800000000000000
+    spriteID: 
     internalID: 0
     vertices: []
     indices: 
@@ -185,9 +185,9 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      TerrainLayer_0: 3899207332090401849
-      TerrainLayer_1: -1384619456900606501
-      TerrainLayer_2: 361461806588109451
+      Tool Sprites_0: 8640546800654124554
+      Tool Sprites_1: 2423827458247597442
+      Tool Sprites_2: -3278746318068392930
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

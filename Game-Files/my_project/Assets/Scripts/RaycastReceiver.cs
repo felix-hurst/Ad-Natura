@@ -90,9 +90,9 @@ public class RaycastReceiver : MonoBehaviour
         {
             objectReshape = gameObject.AddComponent<ObjectReshape>();
 
-        // Sync bounds to ObjectReshape so it also UV-maps correctly when this piece is cut again
-        if (hasOriginalSpriteBounds)
-            objectReshape.SetOriginalSpriteBounds(originalSpriteBounds);
+            // Sync bounds to ObjectReshape so it also UV-maps correctly when this piece is cut again
+            if (hasOriginalSpriteBounds)
+                objectReshape.SetOriginalSpriteBounds(originalSpriteBounds);
         }
     }
 
@@ -423,17 +423,17 @@ public class RaycastReceiver : MonoBehaviour
         if (textureForPiece == null && spriteRenderer != null && spriteRenderer.sprite != null)
             textureForPiece = spriteRenderer.sprite.texture;
 
-GameObject largePiece = new GameObject($"{gameObject.name}_CutPiece");
-try { largePiece.tag = gameObject.tag; } catch (UnityException) { }
-int cutPieceLayer = LayerMask.NameToLayer("CutPiece");
-Debug.Log($"[RaycastReceiver] CutPiece layer index = {cutPieceLayer}, setting on '{largePiece.name}'");
-if (cutPieceLayer != -1)
-{
-    largePiece.layer = cutPieceLayer;
-    Debug.Log($"[RaycastReceiver] '{largePiece.name}' layer is now: {LayerMask.LayerToName(largePiece.layer)}");
-}
-else
-    Debug.LogWarning("[RaycastReceiver] 'CutPiece' layer not found — add it in Project Settings > Tags and Layers.");
+        GameObject largePiece = new GameObject($"{gameObject.name}_CutPiece");
+        try { largePiece.tag = gameObject.tag; } catch (UnityException) { }
+        int cutPieceLayer = LayerMask.NameToLayer("CutPiece");
+        Debug.Log($"[RaycastReceiver] CutPiece layer index = {cutPieceLayer}, setting on '{largePiece.name}'");
+        if (cutPieceLayer != -1)
+        {
+            largePiece.layer = cutPieceLayer;
+            Debug.Log($"[RaycastReceiver] '{largePiece.name}' layer is now: {LayerMask.LayerToName(largePiece.layer)}");
+        }
+        else
+            Debug.LogWarning("[RaycastReceiver] 'CutPiece' layer not found — add it in Project Settings > Tags and Layers.");
 
         StructuralCollapseManager.ExplosionFragment parentMarker = GetComponent<StructuralCollapseManager.ExplosionFragment>();
         if (parentMarker != null)
