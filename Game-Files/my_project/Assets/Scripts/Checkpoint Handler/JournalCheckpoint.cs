@@ -1,6 +1,7 @@
 using UnityEngine;
 using UnityEngine.InputSystem;
 using TMPro;
+using Unity.VisualScripting;
 
 public class JournalCheckpoint : MonoBehaviour
 {
@@ -18,13 +19,20 @@ public class JournalCheckpoint : MonoBehaviour
     [Header("Prompt UI")]
     [SerializeField] private GameObject interactPrompt;
 
+    [Header("Hover (Bob Up and Down) Behaviour")]
+    [SerializeField] private float bobSpeed = 2f;
+    [SerializeField] private float bobAmplitude = 0.1f;
+
     private bool hasBeenRead = false;
     private bool playerInRange = false;
+    private float yPosition;
+    private float currentTime;
 
     void Start()
     {
         if (interactPrompt != null)
             interactPrompt.SetActive(false);
+        yPosition = transform.position.y;
     }
 
     void Update()
@@ -44,6 +52,10 @@ public class JournalCheckpoint : MonoBehaviour
                 hasBeenRead = true;
             }
         }
+
+        // Bob up and down
+        currentTime = Time.fixedTime;
+        transform.position = new Vector3(transform.position.x, yPosition + bobAmplitude * Mathf.Sin(bobSpeed * currentTime), transform.position.z);
     }
 
     private void OnDrawGizmosSelected()

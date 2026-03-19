@@ -525,7 +525,7 @@ public class PlayerController : MonoBehaviour
             }
         }
 
-        if (collision.gameObject.layer == 7)
+        if (collision.gameObject.layer == LayerMask.NameToLayer("Climbable"))
         {
             // Bool to allow jumping while on wall
             // Slow fall
