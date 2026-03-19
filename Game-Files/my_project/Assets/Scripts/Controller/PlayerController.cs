@@ -71,6 +71,12 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Transform nearArmGun;
     [SerializeField] private Transform farArm;
     [SerializeField] private Transform muzzle;
+    [SerializeField] private Transform torsoTransform;
+    [SerializeField] private Transform headTransform;
+    [SerializeField] private Transform hipsTransform;
+    [SerializeField] private float torsoLeanWeight = 0.2f; // 20% of arm angle
+    [SerializeField] private float headLeanWeight = 0.5f;  // 50% of arm angle
+    [SerializeField] private float hipsLeanWeight = 0.4f;  // 20% of arm angle
 
     [Header("Gun Sprites")]
     [SerializeField] private SpriteRenderer nearArmSpriteRenderer;
@@ -364,34 +370,67 @@ public class PlayerController : MonoBehaviour
 
     private void HandleArmRotation()
     {
-        if (nearArmGun == null || farArm == null || gameCamera == null) return;
+        if (nearArmGun == null || gameCamera == null) return;
 
         if (isAiming)
         {
             Vector3 mousePos = gameCamera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
             Vector2 lookDir = (Vector2)mousePos - (Vector2)nearArmGun.position;
+            float facing = transform.localScale.x;
+
+            //Rotate Gun and near arm
             float angle = Mathf.Atan2(lookDir.y, lookDir.x) * Mathf.Rad2Deg;
-            float finalAngle = (transform.localScale.x < 0) ? angle + 180f : angle;
+            // When localScale.x is -1, the Z-axis rotation is inverted. 
+            // We add 180 to point the gun the right way, then multiply by facing to correct the rotation direction.
+            float finalAngle = (facing < 0) ? (angle + 180f) : angle;
             nearArmGun.rotation = Quaternion.Euler(0, 0, finalAngle);
 
-            if (farHandGrip != null)
+            //Calculate the base vertical angle (always 0 to 90 or 0 to -90)
+            float verticalAimAngle = Mathf.Atan2(lookDir.y, Mathf.Abs(lookDir.x)) * Mathf.Rad2Deg;
+
+            if (hipsTransform != null)
+            {
+                float hLean = verticalAimAngle * hipsLeanWeight;
+                hLean = Mathf.Clamp(hLean, -5f, 5f);
+                hipsTransform.localRotation = Quaternion.Slerp(hipsTransform.localRotation, Quaternion.Euler(0, 0, hLean), Time.deltaTime * 15f);
+            }
+
+            if (torsoTransform != null)
+            {
+                float tLean = verticalAimAngle * torsoLeanWeight;
+                tLean = Mathf.Clamp(tLean, -15f, 15f);
+                torsoTransform.localRotation = Quaternion.Slerp(torsoTransform.localRotation, Quaternion.Euler(0, 0, tLean), Time.deltaTime * 15f);
+            }
+
+            if (headTransform != null)
+            {
+                float hLean = verticalAimAngle * headLeanWeight;
+                hLean = Mathf.Clamp(hLean, -30f, 30f);
+                headTransform.localRotation = Quaternion.Slerp(headTransform.localRotation, Quaternion.Euler(0, 0, hLean), Time.deltaTime * 15f);
+            }
+
+            //Stretch the far arm
+            if (farHandGrip != null && farArm != null)
             {
                 Vector2 shoulderToGrip = (Vector2)farHandGrip.position - (Vector2)farArm.position;
-                float distance = shoulderToGrip.magnitude;
                 float farAngle = Mathf.Atan2(shoulderToGrip.y, shoulderToGrip.x) * Mathf.Rad2Deg;
-                float finalFarAngle = (transform.localScale.x < 0) ? farAngle + 180f : farAngle;
+                float finalFarAngle = (facing < 0) ? farAngle + 180f : farAngle;
                 farArm.rotation = Quaternion.Euler(0, 0, finalFarAngle);
-                float stretchFactor = distance / armLength;
-                farArm.localScale = new Vector3(stretchFactor, 1f, 1f);
+                farArm.localScale = new Vector3(shoulderToGrip.magnitude / armLength, 1f, 1f);
             }
         }
         else
         {
+            // Reset to identity (neutral)
             nearArmGun.localRotation = Quaternion.identity;
-            farArm.localRotation = Quaternion.identity;
-            farArm.localScale = Vector3.one;
+            if (hipsTransform) hipsTransform.localRotation = Quaternion.identity;
+            if (torsoTransform) torsoTransform.localRotation = Quaternion.identity;
+            if (headTransform) headTransform.localRotation = Quaternion.identity;
+            if (farArm) { farArm.localRotation = Quaternion.identity; farArm.localScale = Vector3.one; }
         }
     }
+
+
 
     private void HandleVisualSwitch()
     {

@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: cb21af8e06584df44a597b3390f78821
+guid: b69715d9f0f1e6b48a6581bfd7192f00
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 9003500228801689171
-    second: AnimationWallClimb_0016_0
+      213: 5037860980882277775
+    second: PlayerTorso_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -46,11 +46,11 @@ TextureImporter:
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 2
+  spriteMode: 1
   spriteExtrude: 1
   spriteMeshType: 1
-  alignment: 0
-  spritePivot: {x: 0.5, y: 0.5}
+  alignment: 9
+  spritePivot: {x: 0.45565116, y: 0.07467144}
   spritePixelsToUnits: 25
   spriteBorder: {x: 0, y: 0, z: 0, w: 0}
   spriteGenerateFallbackPhysicsShape: 1
@@ -100,23 +100,23 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: AnimationWallClimb_0016_0
+      name: PlayerTorso_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 3
-        width: 28
-        height: 54
+        y: 16
+        width: 26
+        height: 31
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 3567fd861cbd2fc70800000000000000
-      internalID: 9003500228801689171
+      spriteID: f850a41ded31ae540800000000000000
+      internalID: 5037860980882277775
       vertices: []
       indices: 
       edges: []
@@ -125,8 +125,8 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 
-    internalID: 0
+    spriteID: 5e97eb03825dee720800000000000000
+    internalID: 1537655665
     vertices: []
     indices: 
     edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      AnimationWallClimb_0016_0: 9003500228801689171
+      PlayerTorso_0: 5037860980882277775
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

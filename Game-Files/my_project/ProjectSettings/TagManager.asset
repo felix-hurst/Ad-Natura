@@ -12,20 +12,21 @@ TagManager:
   - Fragment
   - Wall
   - Dirt
+  - BurstLeaf
+  - Calamity
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Player
   - Water
   - UI
   - Decompose
   - 
   - Climbable
-  - 
-  - 
-  - 
-  - 
+  - SlimeObstacle
+  - SlimeBoundary
+  - Background
   - 
   - 
   - 

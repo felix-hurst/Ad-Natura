@@ -50,8 +50,8 @@ jobs:
           SLN_PATH=$(find Game-Files/my_project -maxdepth 1 -name "*.sln" | head -n 1)
           echo "Found solution at: $SLN_PATH"
 
-          # Run the fixer (No --verify-no-changes here!)
-          dotnet format "$SLN_PATH"
+          # Run the fixer
+          dotnet format "$SLN_PATH" --verbosity diagnostic
 
           # If files changed, commit and push
           if [[ -n $(git status --porcelain) ]]; then
