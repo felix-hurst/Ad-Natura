@@ -12,6 +12,8 @@ TagManager:
   - Fragment
   - Wall
   - Dirt
+  - BurstLeaf
+  - Calamity
   layers:
   - Default
   - TransparentFX
