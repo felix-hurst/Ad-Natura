@@ -16,16 +16,15 @@ TagManager:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - 
+  - Player
   - Water
   - UI
   - Decompose
   - 
   - Climbable
-  - 
-  - 
-  - 
-  - 
+  - SlimeObstacle
+  - SlimeBoundary
+  - Background
   - 
   - 
   - 

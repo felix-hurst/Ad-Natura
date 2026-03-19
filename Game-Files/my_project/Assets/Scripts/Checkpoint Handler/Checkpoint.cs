@@ -1,5 +1,6 @@
-using UnityEngine;
 using System.Collections;
+using UnityEngine;
+using UnityEngine.UIElements;
 
 public class Checkpoint : MonoBehaviour
 {
@@ -16,9 +17,15 @@ public class Checkpoint : MonoBehaviour
     [SerializeField] private float fadeOutDuration = 2f;
     [SerializeField] private float cooldownDuration = 1f;
 
+    [Header("Hover (Bob Up and Down) Behaviour")]
+    [SerializeField] private float bobSpeed = 2f;
+    [SerializeField] private float bobAmplitude = 0.1f;
+
     private SpriteRenderer spriteRenderer;
     private bool isActivated = false;
     private bool isOnCooldown = false;
+    private float yPosition;
+    private float currentTime;
 
     void Start()
     {
@@ -27,6 +34,14 @@ public class Checkpoint : MonoBehaviour
         {
             spriteRenderer.color = inactiveColor;
         }
+        yPosition = transform.position.y;
+    }
+
+    void Update()
+    {
+        // Bob up and down
+        currentTime = Time.fixedTime;
+        transform.position = new Vector3(transform.position.x, yPosition + bobAmplitude * Mathf.Sin(bobSpeed * currentTime), transform.position.z);
     }
 
     void OnTriggerEnter2D(Collider2D other)
