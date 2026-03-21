@@ -7,32 +7,33 @@ TagManager:
   - Stone
   - Glass
   - Wood
-  - Ground
   - Debris
   - Fragment
-  - Wall
-  - Dirt
-  - BurstLeaf
+  - Ground
+  - Cloth
+  - Fuel
   - Calamity
+  - BurstLeaf
+  - Dirt
   layers:
   - Default
   - TransparentFX
   - Ignore Raycast
-  - Player
+  - 
   - Water
   - UI
+  - Player
+  - Ignore
+  - Ground
+  - TerrainLayers
+  - Rope
   - Decompose
-  - 
-  - Climbable
-  - SlimeObstacle
+  - WaterCollider
   - SlimeBoundary
+  - CutPiece
+  - SlimeObstacle
   - Background
-  - 
-  - 
-  - 
-  - 
-  - 
-  - 
+  - Projectile
   - 
   - 
   - 

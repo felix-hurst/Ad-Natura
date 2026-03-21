@@ -1,0 +1,102 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &1333102880557441785
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 1418309136755362329}
+  - component: {fileID: 2773432928826450513}
+  m_Layer: 0
+  m_Name: CalamityObjectSpawner
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &1418309136755362329
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1333102880557441785}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 0.1937, y: 0.22113, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &2773432928826450513
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1333102880557441785}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 6445c306c1d32b845859f8a7b293c2ad, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  spawnZones:
+  - center: {x: 2, y: 5}
+    size: {x: 8, y: 3}
+    groundY: -3.8
+    maxObjects: 2
+    useGroundRaycast: 0
+    groundLayer:
+      serializedVersion: 2
+      m_Bits: 256
+    gizmoColor: {r: 0, g: 0, b: 0, a: 0}
+    spawnedObjects: []
+  spawnParams:
+    baseWidthRange: {x: 0.5, y: 1.5}
+    heightRange: {x: 2, y: 4}
+    topWidthRange: {x: 0.1, y: 0.4}
+    roughnessRange: {x: 0.22, y: 0.42}
+    edgeVerticesRange: {x: 14, y: 22}
+    asymmetryRange: {x: 0.2, y: 0.5}
+    branchCountRange: {x: 2, y: 4}
+    branchSizeRange: {x: 0.35, y: 0.7}
+    minColor: {r: 0.19117124, g: 0.19777946, b: 0.2264151, a: 1}
+    maxColor: {r: 0.17710927, g: 0.18289424, b: 0.18867922, a: 1}
+    materialTag: Calamity
+    sortingOrder: 5
+    sortingLayer: Default
+    enableMist: 1
+    mistColor: {r: 0.14449094, g: 0.16037738, b: 0.16037738, a: 1}
+    mistColorAlt: {r: 0.19330722, g: 0.20710218, b: 0.2264151, a: 1}
+    mistOpacity: 0.73
+    mistVorticity: 18
+    mistEmitterStrength: 0.0273
+    mistDensityStrength: 0.04
+    mistResolution: 64
+    mistObstacleLayerMask:
+      serializedVersion: 2
+      m_Bits: 131073
+    massRange: {x: 3, y: 10}
+    spawnAsStatic: 1
+    physicsMaterial: {fileID: 0}
+    highlightMode: 2
+    showCutOutline: 1
+    largePieceMassMultiplier: 0.5
+    cutPieceLifetime: 30
+    minAreaThreshold: 0.15
+    animateSprout: 0
+    sproutDurationRange: {x: 0.8, y: 1.8}
+    groundShakeMagnitude: 0.05
+  spawnMode: 0
+  spawnInterval: 0.5
+  initialDelay: 0
+  waveCooldown: 10
+  objectsPerWave: {x: 1, y: 3}
+  minSpacing: 2
+  maxPlacementAttempts: 20
+  drawGizmos: 1
+  logSpawns: 1

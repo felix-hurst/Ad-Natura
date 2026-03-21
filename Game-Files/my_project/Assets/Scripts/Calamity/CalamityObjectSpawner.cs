@@ -36,24 +36,34 @@ public class CalamityObjectSpawner : MonoBehaviour
     {
         [Header("Dimensions")]
         public Vector2 baseWidthRange = new Vector2(0.8f, 2.5f);
-        public Vector2 heightRange = new Vector2(2f, 7f);
-        public Vector2 topWidthRange = new Vector2(0.2f, 0.8f);
+        public Vector2 heightRange = new Vector2(3f, 9f);       // was 2–7
+        public Vector2 topWidthRange = new Vector2(0.1f, 0.5f);  // was 0.2–0.8
 
         [Header("Surface Detail")]
-        public Vector2Int edgeVerticesRange = new Vector2Int(6, 15);
-        public Vector2 roughnessRange = new Vector2(0.05f, 0.25f);
-        public Vector2 asymmetryRange = new Vector2(0f, 0.4f);
-        public Vector2Int branchCountRange = new Vector2Int(0, 3);
-        public Vector2 branchSizeRange = new Vector2(0.15f, 0.5f);
+        public Vector2 roughnessRange = new Vector2(0.18f, 0.40f); // was 0.05–0.25
+        public Vector2Int edgeVerticesRange = new Vector2Int(12, 22); // was 6–15
+        public Vector2 asymmetryRange = new Vector2(0.15f, 0.5f);  // was 0–0.4
+        public Vector2Int branchCountRange = new Vector2Int(2, 4);    // was 0–3
+        public Vector2 branchSizeRange = new Vector2(0.3f, 0.7f);  // was 0.15–0.5
 
         [Header("Visual")]
         public Color minColor = new Color(0.1f, 0.05f, 0.15f, 1f);
         public Color maxColor = new Color(0.25f, 0.1f, 0.35f, 1f);
-        public Color edgeGlowColor = new Color(0.6f, 0.1f, 0.8f, 1f);
-        [Range(0f, 1f)] public float glowIntensity = 0.3f;
         public string materialTag = "Calamity";
         public int sortingOrder = 5;
         public string sortingLayer = "Default";
+
+        [Header("Mist")]
+        public bool enableMist = true;
+        public Color mistColor = new Color(0.04f, 0.02f, 0.06f, 1f);
+        public Color mistColorAlt = new Color(0.08f, 0.05f, 0.10f, 1f);
+        [Range(0f, 1f)] public float mistOpacity = 0.6f;
+        [Range(0f, 30f)] public float mistVorticity = 18f;
+        [Range(0f, 0.08f)] public float mistEmitterStrength = 0.03f;
+        public float mistDensityStrength = 0.018f;  // was 0.06
+        [Range(64, 256)] public int mistResolution = 48;
+
+        public LayerMask mistObstacleLayerMask = 0;  // add this
 
         [Header("Physics")]
         public Vector2 massRange = new Vector2(3f, 10f);
@@ -280,15 +290,25 @@ public class CalamityObjectSpawner : MonoBehaviour
         for (int attempt = 0; attempt < maxPlacementAttempts; attempt++)
         {
             float x = Random.Range(zone.center.x - zone.size.x * 0.5f, zone.center.x + zone.size.x * 0.5f);
-            float y = zone.center.y + Random.Range(-zone.size.y * 0.5f, zone.size.y * 0.5f);
-
-            Vector2 candidate = new Vector2(x, y);
+            // Y is irrelevant for overlap — all objects land at groundY.
+            // Only return x; we use groundY at placement time.
+            Vector2 candidate = new Vector2(x, zone.groundY);
 
             bool tooClose = false;
             foreach (GameObject existing in zone.spawnedObjects)
             {
                 if (existing == null) continue;
-                if (Vector2.Distance(candidate, (Vector2)existing.transform.position) < minSpacing)
+
+                // X-only distance check — objects share the same ground plane
+                float xDist = Mathf.Abs(candidate.x - existing.transform.position.x);
+
+                // Account for existing object's actual width if available
+                float requiredSpacing = minSpacing;
+                CalamityObject co = existing.GetComponent<CalamityObject>();
+                if (co != null)
+                    requiredSpacing = minSpacing + co.baseWidth * 0.5f;
+
+                if (xDist < requiredSpacing)
                 {
                     tooClose = true;
                     break;
@@ -326,8 +346,10 @@ public class CalamityObjectSpawner : MonoBehaviour
 
         CalamityObject calamity = obj.AddComponent<CalamityObject>();
 
-        calamity.shapeSeed = seed;
+        // Randomise width FIRST so FindValidPosition can read it on subsequent spawns
         calamity.baseWidth = Random.Range(spawnParams.baseWidthRange.x, spawnParams.baseWidthRange.y);
+
+        calamity.shapeSeed = seed;
         calamity.height = Random.Range(spawnParams.heightRange.x, spawnParams.heightRange.y);
         calamity.topWidth = Random.Range(spawnParams.topWidthRange.x, spawnParams.topWidthRange.y);
 
@@ -338,11 +360,20 @@ public class CalamityObjectSpawner : MonoBehaviour
         calamity.branchSize = Random.Range(spawnParams.branchSizeRange.x, spawnParams.branchSizeRange.y);
 
         calamity.baseColor = Color.Lerp(spawnParams.minColor, spawnParams.maxColor, Random.value);
-        calamity.edgeGlowColor = spawnParams.edgeGlowColor;
-        calamity.glowIntensity = spawnParams.glowIntensity;
         calamity.materialTag = spawnParams.materialTag;
         calamity.sortingOrder = spawnParams.sortingOrder;
         calamity.sortingLayer = spawnParams.sortingLayer;
+
+        calamity.mistObstacleLayerMask = spawnParams.mistObstacleLayerMask;
+
+        calamity.enableMist = spawnParams.enableMist;
+        calamity.mistColor = spawnParams.mistColor;
+        calamity.mistColorAlt = spawnParams.mistColorAlt;
+        calamity.mistOpacity = spawnParams.mistOpacity;
+        calamity.mistVorticity = spawnParams.mistVorticity;
+        calamity.mistEmitterStrength = spawnParams.mistEmitterStrength;
+        calamity.mistDensityStrength = spawnParams.mistDensityStrength;
+        calamity.mistResolution = spawnParams.mistResolution;
 
         calamity.mass = Random.Range(spawnParams.massRange.x, spawnParams.massRange.y);
         calamity.isStatic = spawnParams.spawnAsStatic;
