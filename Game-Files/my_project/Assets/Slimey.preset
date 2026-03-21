@@ -1,0 +1,216 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!181963792 &2655988077585873504
+Preset:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_Name: Slimey
+  m_TargetType:
+    m_NativeTypeID: 114
+    m_ManagedTypePPtr: {fileID: 11500000, guid: a4b7fcf2e66b6204ab73cd1d8759ce05, type: 3}
+    m_ManagedTypeFallback: 
+  m_Properties:
+  - target: {fileID: 0}
+    propertyPath: m_Enabled
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_EditorHideFlags
+    value: 0
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: m_EditorClassIdentifier
+    value: 
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: shader
+    value: 
+    objectReference: {fileID: 7200000, guid: e4b9a491ba4848245b3df1095a872bc7, type: 3}
+  - target: {fileID: 0}
+    propertyPath: width
+    value: 128
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: height
+    value: 128
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: numAgents
+    value: 1024
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: moveSpeed
+    value: 2
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: diffuseSpeed
+    value: 0.069
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: evaporateSpeed
+    value: 0.069
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: trailWeight
+    value: 0.986
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: idleSpeed
+    value: 0.266
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: attractedSpeedMultiplier
+    value: 3
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sensorLength
+    value: 10.17
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sensorAngle
+    value: 24.86
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: turnSpeed
+    value: 6.33
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: spawnX
+    value: 0.204
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: spawnY
+    value: 0.714
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: spawnRadius
+    value: 0.102
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: boundingObject
+    value: 
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: worldBounds.x
+    value: -22.6
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: worldBounds.y
+    value: -5
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: worldBounds.width
+    value: 20
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: worldBounds.height
+    value: 20
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: pulseAmplitude
+    value: 0.023
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: pulseMinFreq
+    value: 0.186
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: pulseMaxFreq
+    value: 0.32
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: pulseWaveScale
+    value: 0.36
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: driftStrength
+    value: 0.51
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: driftSpeed
+    value: 0.195
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: entropyScale
+    value: 0.11
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: entropySpeed
+    value: 0.385
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: entropyStrength
+    value: 0.388
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: hazardAvoidanceStrength
+    value: 8
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: deathTint.r
+    value: 0.7
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: deathTint.g
+    value: 0.55
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: deathTint.b
+    value: 0.1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: deathTint.a
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: hazardCorrosionRate
+    value: 6
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: hazardTrailDampen
+    value: 0.85
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: consumptionRate
+    value: 0.38
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: consumptionThreshold
+    value: 0.05
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: glowIntensity
+    value: 0.278
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: glowDecayRate
+    value: 1.01
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: slimeColor.r
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: slimeColor.g
+    value: 0.9
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: slimeColor.b
+    value: 0.2
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: slimeColor.a
+    value: 1
+    objectReference: {fileID: 0}
+  - target: {fileID: 0}
+    propertyPath: sortingOrder
+    value: 5
+    objectReference: {fileID: 0}
+  m_ExcludedProperties: []
+  m_CoupledType:
+    m_NativeTypeID: 0
+    m_ManagedTypePPtr: {fileID: 0}
+    m_ManagedTypeFallback: 
+  m_CoupledProperties: []

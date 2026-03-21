@@ -31,9 +31,9 @@ float spawnCenterY;
 float spawnRadius;
 
 float hazardAvoidanceStrength;
-float4 decayColor;
 float hazardCorrosionRate;
 float hazardTrailDampen;
+float4 deathTint;
 
 float4 slimeColor;
 
@@ -56,6 +56,21 @@ float pulseWaveScale;
 float entropyScale;
 float entropySpeed;
 float entropyStrength;
+
+// Behavioral Drift
+// No pacemaker, no uniform parameters. Each agent becomes an individual
+// within the collective — some exploratory, some conservative, some fast,
+// some slow. Offsets drift via noise over time so the population never
+// converges to a single stable pattern. (Sinclair: simultaneously
+// individual AND collective; Keller: no central governor.)
+float driftStrength;
+float driftSpeed;
+
+// Water Consumption / Metabolic Glow
+// The organism absorbs water and glows when feeding — intra-action
+// made visible. Water shapes the organism; the organism consumes
+// the water. Neither exists independently of the encounter (Barad).
+float metabolicGlow;
 
 struct Agent {
     float2 pos;
@@ -84,10 +99,10 @@ float randomValue(uint seed)
 
 // Sense trail intensity in a 3x3 neighborhood at the sensor position.
 // Each agent samples forward, left, and right to decide which way to turn.
-float sense(Agent agent, float angle)
+float sense(Agent agent, float angle, float sensorDist)
 {
     float2 sensorDir = float2(cos(agent.angle + angle), sin(agent.angle + angle));
-    float2 sensorPos = agent.pos + sensorDir * sensorLength;
+    float2 sensorPos = agent.pos + sensorDir * sensorDist;
 
     float sum = 0;
     for (int oy = -1; oy <= 1; oy++)
@@ -106,10 +121,10 @@ float sense(Agent agent, float angle)
 
 // Sense hazard intensity — same 3x3 pattern but reads from HazardMap.
 // Agents steer away from high hazard values to avoid calamity objects.
-float senseHazard(Agent agent, float angle)
+float senseHazard(Agent agent, float angle, float sensorDist)
 {
     float2 sensorDir = float2(cos(agent.angle + angle), sin(agent.angle + angle));
-    float2 sensorPos = agent.pos + sensorDir * sensorLength;
+    float2 sensorPos = agent.pos + sensorDir * sensorDist;
 
     float sum = 0;
     for (int oy = -1; oy <= 1; oy++)
@@ -135,15 +150,38 @@ void Update(uint3 id : SV_DispatchThreadID)
     uint seed = uint(agent.pos.y * width + agent.pos.x) + id.x + uint(gameTime * 1000);
     float random01 = randomValue(seed);
 
+    // --- Behavioral Drift ---
+    // Each agent gets a unique personality via noise seeded by its index.
+    // Offsets drift slowly over time — the colony is a population of
+    // individuals, not a homogeneous mass.
+    float agentSeed = float(id.x) * 0.137;  // spread agents across noise space
+    float driftTime = gameTime * driftSpeed;
+    float driftSensor = (randomValue(id.x * 3u + 7u) * 2.0 - 1.0)
+                      + sin(driftTime + agentSeed * 6.283) * 0.5;
+    float driftTurn   = (randomValue(id.x * 5u + 13u) * 2.0 - 1.0)
+                      + sin(driftTime * 1.3 + agentSeed * 4.17) * 0.5;
+    float driftTrail  = (randomValue(id.x * 7u + 29u) * 2.0 - 1.0)
+                      + sin(driftTime * 0.7 + agentSeed * 5.01) * 0.5;
+    float driftWater  = (randomValue(id.x * 11u + 37u) * 2.0 - 1.0)
+                      + sin(driftTime * 0.9 + agentSeed * 3.53) * 0.5;
+
+    // Apply drift: modulate base parameters per-agent.
+    // Multipliers are bold so the effect is visible — scouts look far and
+    // chase water, followers stick to trails, stragglers wander loosely.
+    float mySensorLength = sensorLength * (1.0 + driftSensor * driftStrength * 0.7);
+    float myTurnSpeed    = turnSpeed    * (1.0 + driftTurn   * driftStrength * 0.6);
+    float myTrailWeight  = trailWeight  * (1.0 + driftTrail  * driftStrength * 0.8);
+    float myWaterStrength = waterAttractionStrength * (1.0 + driftWater * driftStrength * 0.9);
+
     // Calculate sensor positions for all three directions
     float2 fwdDir = float2(cos(agent.angle), sin(agent.angle));
     float2 leftDir = float2(cos(agent.angle + sensorAngleSpacing), sin(agent.angle + sensorAngleSpacing));
     float2 rightDir = float2(cos(agent.angle - sensorAngleSpacing), sin(agent.angle - sensorAngleSpacing));
 
     // Clamp sensor positions to bounds (so agents can sense water/light at edges)
-    int2 fwdPos = int2(clamp(agent.pos + fwdDir * sensorLength, float2(0,0), float2(width-1, height-1)));
-    int2 leftPos = int2(clamp(agent.pos + leftDir * sensorLength, float2(0,0), float2(width-1, height-1)));
-    int2 rightPos = int2(clamp(agent.pos + rightDir * sensorLength, float2(0,0), float2(width-1, height-1)));
+    int2 fwdPos = int2(clamp(agent.pos + fwdDir * mySensorLength, float2(0,0), float2(width-1, height-1)));
+    int2 leftPos = int2(clamp(agent.pos + leftDir * mySensorLength, float2(0,0), float2(width-1, height-1)));
+    int2 rightPos = int2(clamp(agent.pos + rightDir * mySensorLength, float2(0,0), float2(width-1, height-1)));
 
     // Sample water attraction (G channel) and light fear (R channel)
     float3 waterValues = float3(
@@ -156,21 +194,21 @@ void Update(uint3 id : SV_DispatchThreadID)
     float currentFear = WaterAttractionMap[currentPos].r;
 
     // Sense hazards in all three directions
-    float hazFwd = senseHazard(agent, 0);
-    float hazLeft = senseHazard(agent, sensorAngleSpacing);
-    float hazRight = senseHazard(agent, -sensorAngleSpacing);
+    float hazFwd = senseHazard(agent, 0, mySensorLength);
+    float hazLeft = senseHazard(agent, sensorAngleSpacing, mySensorLength);
+    float hazRight = senseHazard(agent, -sensorAngleSpacing, mySensorLength);
 
     // Sense trails — always, even in fear mode.
     // The organism retains self-organization under light; it resists rather than
     // becoming a pure reflex machine. This preserves emergent behavior (Keller:
     // no external governor) while still responding to environmental pressure.
-    float trailFwd = sense(agent, 0);
-    float trailLeft = sense(agent, sensorAngleSpacing);
-    float trailRight = sense(agent, -sensorAngleSpacing);
+    float trailFwd = sense(agent, 0, mySensorLength);
+    float trailLeft = sense(agent, sensorAngleSpacing, mySensorLength);
+    float trailRight = sense(agent, -sensorAngleSpacing, mySensorLength);
 
-    float waterFwd = waterValues.x * waterAttractionStrength;
-    float waterLeft = waterValues.y * waterAttractionStrength;
-    float waterRight = waterValues.z * waterAttractionStrength;
+    float waterFwd = waterValues.x * myWaterStrength;
+    float waterLeft = waterValues.y * myWaterStrength;
+    float waterRight = waterValues.z * myWaterStrength;
 
     float totalFwd, totalLeft, totalRight;
     float attractionLevel = 0;
@@ -186,16 +224,16 @@ void Update(uint3 id : SV_DispatchThreadID)
 
         // Blend: fear dominates but trail signal still contributes
         float fearWeight = saturate(currentFear * 2.0);
-        totalFwd = lerp(trailFwd * trailWeight + waterFwd, fearFwd, fearWeight);
-        totalLeft = lerp(trailLeft * trailWeight + waterLeft, fearLeft, fearWeight);
-        totalRight = lerp(trailRight * trailWeight + waterRight, fearRight, fearWeight);
+        totalFwd = lerp(trailFwd * myTrailWeight + waterFwd, fearFwd, fearWeight);
+        totalLeft = lerp(trailLeft * myTrailWeight + waterLeft, fearLeft, fearWeight);
+        totalRight = lerp(trailRight * myTrailWeight + waterRight, fearRight, fearWeight);
     }
     else
     {
         // Normal chemotaxis: combined water + trail sensing
-        totalFwd = waterFwd + (trailFwd * trailWeight);
-        totalLeft = waterLeft + (trailLeft * trailWeight);
-        totalRight = waterRight + (trailRight * trailWeight);
+        totalFwd = waterFwd + (trailFwd * myTrailWeight);
+        totalLeft = waterLeft + (trailLeft * myTrailWeight);
+        totalRight = waterRight + (trailRight * myTrailWeight);
     }
 
     float maxWaterSensed = max(waterFwd, max(waterLeft, waterRight));
@@ -215,7 +253,7 @@ void Update(uint3 id : SV_DispatchThreadID)
     speed *= hazardSlowdown;
 
     // Standard physarum turning logic — emergent path-following from local rules
-    float turnAmount = turnSpeed * deltaTime;
+    float turnAmount = myTurnSpeed * deltaTime;
     float randomTurn = (random01 - 0.5) * turnAmount * 0.5;
 
     if (totalFwd >= totalLeft && totalFwd >= totalRight) {
@@ -275,36 +313,17 @@ void Update(uint3 id : SV_DispatchThreadID)
     agents[id.x].pos = newPos;
 
     // --- Hazard death and respawn ---
-    // Agents that touch a calamity object (hazard >= 0.5) die: their surrounding
-    // trails are tinted with decay color, and the agent respawns at the colony center.
+    // Agents that touch a calamity object (hazard >= 0.5) die: a death mark
+    // is left at their last position and the agent respawns at the colony center.
     int2 hazardPos = int2(clamp(newPos, float2(0,0), float2(width-1, height-1)));
     float hazard = HazardMap[hazardPos];
 
     if (hazard >= 0.5)
     {
-        // Death — tint surrounding trails with decay color
+        // Death — tint the agent's last position, then respawn.
+        // The mark lingers briefly and fades via normal evaporation.
         int2 deathPos = int2(newPos.x, newPos.y);
-        for (int oy = -1; oy <= 1; oy++)
-        {
-            for (int ox = -1; ox <= 1; ox++)
-            {
-                int2 clearPos = deathPos + int2(ox, oy);
-                if (clearPos.x >= 0 && clearPos.x < width && clearPos.y >= 0 && clearPos.y < height)
-                {
-                    if (HazardMap[clearPos] > 0.3)
-                    {
-                        float4 existing = TrailMap[clearPos];
-                        float br = length(existing.rgb);
-                        if (br > 0.01)
-                        {
-                            TrailMap[clearPos] = lerp(existing, decayColor * br * 0.5, 0.6);
-                        }
-                    }
-                }
-            }
-        }
-
-        TrailMap[deathPos] = decayColor * 0.2;
+        TrailMap[deathPos] = deathTint * 0.8;
 
         // Respawn at colony center with random position and heading
         uint respawnSeed = hash(seed + 31337u);
@@ -329,24 +348,19 @@ void Update(uint3 id : SV_DispatchThreadID)
         return;
     }
 
-    // Hazard proximity — agents near (but not touching) hazards deposit weakened,
-    // discolored trails and jitter erratically
+    // Every agent deposits a fixed trace. Veins emerge from repeated
+    // reinforcement — many agents refreshing the same path before
+    // evaporation can fade it. Unpopular paths evaporate away.
+    float trailStr = 1.0;
+
     if (hazard > 0.1)
     {
         float decayFactor = saturate((hazard - 0.1) / 0.4);
-        float dampened = 1.0 - decayFactor * hazardTrailDampen;
-
-        float trailStr = (1.0 + attractionLevel * 2.0) * dampened;
-        float4 depositColor = lerp(slimeColor, decayColor, decayFactor * 0.6);
-        TrailMap[int2(newPos.x, newPos.y)] = depositColor * trailStr;
-
+        trailStr *= (1.0 - decayFactor * hazardTrailDampen);
         float jitter = (randomValue(seed + 4231u) - 0.5) * decayFactor * 2.0;
         agents[id.x].angle += jitter;
-        return;
     }
 
-    // Deposit trail — stronger when near water (creates highways to moisture)
-    float trailStr = 1.0 + attractionLevel * 2.0;
     TrailMap[int2(newPos.x, newPos.y)] = slimeColor * trailStr;
 }
 
@@ -411,38 +425,26 @@ void Postprocess(uint3 id : SV_DispatchThreadID)
     float4 diffused = lerp(original, blurred, diffuseSpeed * deltaTime);
 
     // --- Hazard zone corrosion ---
-    // Calamity objects corrode existing trails. The corrosion is modulated by
-    // organic noise so damage looks biological — patchy, uneven, like real
-    // environmental degradation rather than a uniform color wipe.
+    // Calamity objects corrode trails by fading them — noise-modulated so
+    // damage looks biological (patchy, uneven). Trails fade to nothing,
+    // never to a dark stain; the organism dissolves, it doesn't bruise.
     float hazard = HazardMap[id.xy];
-
     if (hazard > 0.05)
     {
-        float brightness = length(diffused.rgb);
         float2 hazNoiseCoord = float2(id.x, id.y) * 0.08 + gameTime * 0.1;
         float hazNoise = organicNoise(hazNoiseCoord);
+        float noiseModulation = lerp(0.6, 1.0, hazNoise);
 
         if (hazard >= 0.5)
         {
-            if (brightness > 0.01)
-            {
-                // Noise-modulated corrosion — some spots corrode faster than others
-                float noiseModulation = lerp(0.6, 1.0, hazNoise);
-                diffused = lerp(diffused, decayColor * brightness, 0.4 * noiseModulation);
-                diffused *= saturate(1.0 - hazardCorrosionRate * deltaTime * noiseModulation);
-            }
+            // Direct contact: fast corrosion, modulated by noise
+            diffused *= saturate(1.0 - hazardCorrosionRate * deltaTime * noiseModulation);
         }
         else
         {
+            // Proximity: gentle fade
             float decayIntensity = (hazard - 0.05) / 0.45;
-
-            if (brightness > 0.01)
-            {
-                float colorBlend = decayIntensity * 0.15 * lerp(0.7, 1.0, hazNoise);
-                diffused = lerp(diffused, decayColor * brightness, colorBlend);
-            }
-
-            float extraEvaporate = decayIntensity * hazardCorrosionRate * 0.3;
+            float extraEvaporate = decayIntensity * hazardCorrosionRate * 0.3 * noiseModulation;
             diffused = max(0, diffused - extraEvaporate * deltaTime);
         }
     }
@@ -480,9 +482,39 @@ void Postprocess(uint3 id : SV_DispatchThreadID)
     float pulse = 1.0 + sin(gameTime * freq * 2.0 * PI + spatialPhase) * pulseAmplitude * pulseWeight;
     evaporated.rgb *= pulse;
 
-    // Output: max(0) prevents negative values but NO upper clamp.
-    // Trail values routinely exceed 1.0 — this "reservoir effect" is essential.
-    // Dense networks store accumulated chemical signal, appearing brighter.
-    // Clamping to [0,1] destroys this behavior entirely.
-    TrailMapProcessed[id.xy] = max(evaporated, 0.0);
+    // Metabolic glow — organism brightens when consuming water.
+    // Additive, not multiplicative — multiplication compounds every frame
+    // in the ping-pong buffer and explodes. Addition reaches equilibrium
+    // with evaporation naturally.
+    evaporated.rgb += slimeColor.rgb * metabolicGlow * 0.05 * pulseWeight * WaterAttractionMap[id.xy].g;
+
+    // Color remap: normal trails stay golden at all intensities (prevents
+    // fading yellow from appearing brown). Death marks have a different color
+    // direction — detect them and let them fade as-is.
+    float brightness = length(evaporated.rgb);
+    float4 finalColor;
+
+    if (brightness > 0.001)
+    {
+        float3 colorDir = evaporated.rgb / brightness;
+        float isSlimeTrail = dot(colorDir, normalize(slimeColor.rgb));
+
+        if (isSlimeTrail > 0.95)
+        {
+            // Normal trail — remap to preserve golden hue at all intensities
+            finalColor = slimeColor * brightness / length(slimeColor.rgb);
+        }
+        else
+        {
+            // Death mark or other — preserve original color, fade naturally
+            finalColor = evaporated;
+        }
+    }
+    else
+    {
+        finalColor = float4(0, 0, 0, 0);
+    }
+
+    // No upper clamp — reservoir effect preserved. Dense networks glow brighter.
+    TrailMapProcessed[id.xy] = max(finalColor, 0.0);
 }

@@ -55,15 +55,13 @@
 
 \section{Revision History}
 
-\begin{tabularx}{\textwidth}{p{3cm}p{2cm}X}
-\toprule {\bf Date} & {\bf Version} & {\bf Notes}\\
+\begin{tabularx}{\textwidth}{p{3cm}p{2cm}p{2.5cm}X}
+\toprule {\bf Date} & {\bf Version} & {\bf Author} & {\bf Notes}\\
 \midrule
-Mar 7, 2026 & 1.0 & Initial report: architecture, implemented behaviors, design rationale\\
+Mar 7, 2026 & 1.0 & Andy Liang & Initial report: architecture, implemented behaviors, design rationale\\
+Mar 21, 2026 & 1.1 & Andy Liang & Added behavioral drift, water consumption, metabolic glow; updated design rationale with Sims and Adamatzky\\
 \bottomrule
 \end{tabularx}
-
-\vspace{1em}
-\noindent \textbf{Author:} Andy Liang
 
 \newpage
 
@@ -144,8 +142,8 @@ $[0, 1]$ destroys this behavior entirely.
     deposition. Dispatched as $\lceil 1024 / 16 \rceil = 64$ thread groups.
 
     \item \textbf{Postprocess kernel} (\texttt{[numthreads(8,8,1)]}): One
-    thread per texel. Handles 3$\times$3 diffusion, entropic decay, and
-    cytoplasmic pulse. Dispatched over the full trail map resolution.
+    thread per texel. Handles 3$\times$3 diffusion, entropic decay,
+    cytoplasmic pulse, and metabolic glow. Dispatched over the full trail map resolution.
 \end{itemize}
 
 % ============================================================
@@ -216,13 +214,38 @@ Each agent deposits trail intensity proportional to local water attraction:
 This creates denser trail networks near water sources, visually emphasizing the
 organism's attraction to moisture.
 
+\subsection{Behavioral Drift}
+\label{sec:drift}
+
+In a real \textit{Physarum} population, no two regions of the plasmodium behave
+identically. To model this, each agent's parameters are modulated by a
+per-agent noise seed derived from its index:
+
+\begin{equation}
+    p_i = p_{\text{base}} \cdot (1 + m \cdot (2 \cdot \text{hash}(i, t) - 1))
+\end{equation}
+
+where $p_i$ is the agent's effective parameter value, $p_{\text{base}}$ is the
+shared base value, $m$ is the drift multiplier, and $\text{hash}(i, t)$ is a
+slowly evolving noise value seeded by the agent's index. Four parameters are
+modulated independently: sensor length ($m = 0.7$), turn speed ($m = 0.6$),
+trail weight ($m = 0.8$), and water attraction strength ($m = 0.9$).
+
+The drift evolves over time (controlled by \texttt{driftSpeed}), so an agent
+that is currently exploratory may later become conservative, and vice versa.
+The population is simultaneously individual \textit{and} collective---what
+Sinclair \cite{sinclair2020} describes as paraconsistent individuality, where
+an entity can hold contradictory states without resolution. The emergent effect
+is a simulation that never fully converges to a single stable pattern.
+
 % ============================================================
 \section{Trail Dynamics}
 \label{sec:trails}
 % ============================================================
 
-The Postprocess kernel transforms the raw trail map each frame through three
-sequential stages: diffusion, entropic decay, and cytoplasmic pulse.
+The Postprocess kernel transforms the raw trail map each frame through four
+sequential stages: diffusion, entropic decay, cytoplasmic pulse, and metabolic
+glow.
 
 \subsection{Diffusion}
 
@@ -318,6 +341,35 @@ Key design decisions:
     chemical signal.
 \end{itemize}
 
+\subsection{Metabolic Glow}
+\label{sec:glow}
+
+When the slime mold consumes water from the environment
+(Section~\ref{sec:consumption}), a \texttt{metabolicGlow} value is tracked on
+the CPU and passed to the shader. The Postprocess kernel applies this as an
+additive brightness boost, localized to regions where trails and water overlap:
+
+\begin{equation}
+    T_{\text{out}}(x,y) = T_{\text{pulse}}(x,y) +
+    \mathbf{c}_{\text{slime}} \cdot g \cdot 0.05 \cdot d_n \cdot w(x,y)
+\end{equation}
+
+where $g$ is the current metabolic glow intensity,
+$\mathbf{c}_{\text{slime}}$ is the organism's base color, $d_n$ is the
+same density threshold used by the pulse, and $w(x,y)$ is the local water
+attraction value. This localizes the glow to feeding sites rather than
+illuminating the entire network---the bloom appears where the organism meets
+the water, not everywhere it has been. The glow is strictly additive, not
+multiplicative---a critical design decision. Because the Postprocess kernel
+operates within a ping-pong buffer, any multiplicative amplification
+($T \gets T \cdot (1 + g)$) would compound exponentially across frames,
+producing catastrophic feedback. Additive glow reaches a natural equilibrium
+with evaporation, producing a visible but stable brightness increase that
+decays smoothly as the glow value fades on the CPU side.
+
+The effect is a brief luminous bloom when the organism feeds---a visible
+metabolic event that makes the act of consumption perceptible.
+
 % ============================================================
 \section{GPU Noise Implementation}
 \label{sec:noise}
@@ -370,6 +422,19 @@ the broader game through several mechanics:
     Trail density in an area contributes to the decomposition rate of nearby
     objects.
 
+    \item \textbf{Water Consumption}: \label{sec:consumption} The organism
+    actively consumes water from the game's cellular liquid simulation. The C\#
+    controller periodically samples trail density across the texture, identifies
+    regions where both slime trails and water are present, and calls
+    \texttt{RemoveWater()} on the liquid simulation to drain a cluster of
+    neighboring grid cells. A \texttt{metabolicGlow} value accumulates during
+    consumption and decays over time, driving the visual glow in the shader
+    (Section~\ref{sec:glow}). This creates a reciprocal material
+    relationship: the water shapes the organism's growth, and the organism
+    depletes the water. Neither remains unchanged by the encounter---what Barad
+    \cite{barad2011} terms intra-action, where entities co-constitute through
+    mutual transformation rather than one-directional influence.
+
     \item \textbf{Planned---Light Avoidance}: Real \textit{Physarum}
     is negatively phototactic. A future implementation will add light sources
     that repel agents, creating gameplay opportunities around guiding the
@@ -391,8 +456,10 @@ interact with the slime mold.
 % ============================================================
 
 The design of this system is informed by both biological research and critical
-theory. Several deliberate choices distinguish it from conventional algorithmic
-implementations.
+theory. The artist's role here is not that of a central author imposing form
+onto matter, but a designer of conditions under which matter performs
+\cite{adamatzky2016}. Several deliberate choices distinguish it from
+conventional algorithmic implementations.
 
 \subsection{Self-Organization Without Central Control}
 
@@ -406,6 +473,17 @@ follow identical local rules---sense, turn, move, deposit. Network formation,
 trail reinforcement, and path optimization emerge entirely from these local
 interactions. There is no global pathfinding, no master controller, no
 optimization objective.
+
+\subsection{Externalized Memory}
+
+The trail map functions as a form of externalized spatial memory. As Sims
+\cite{sims2021} observes, slime mold does not store memory internally; it
+remembers through the chemical traces it leaves in its environment. In the
+simulation, the trail network is simultaneously the organism's history, its
+communication medium, and the substrate for collective decision-making.
+Entropic decay (Section~\ref{sec:entropy}) ensures this memory is impermanent
+and shaped by environmental noise---not a perfect record but an organic,
+degrading trace.
 
 \subsection{Counter-Algorithmic Design}
 
@@ -492,22 +570,8 @@ reset manually.
 \label{sec:future}
 % ============================================================
 
-Three additional features are planned to deepen the simulation's biological
-fidelity and conceptual range:
-
-\subsection{Behavioral Drift}
-
-Currently, all agents share identical parameters (sensor distance, turn speed,
-move speed). Behavioral Drift will introduce per-agent variation: each agent's
-parameters will be initialized with slight offsets from the base values, and
-these offsets will evolve slowly over time via noise-driven drift.
-
-This produces a population of individuals within a collective---some agents
-more exploratory, others more conservative; some faster, others slower. The
-emergent effect is a simulation that never fully converges to a single stable
-pattern, mirroring the paraconsistent logic of biological individuality
-described by Sinclair \cite{sinclair2020}: the organism is simultaneously
-individual \textit{and} collective.
+Two additional features are planned to deepen the simulation's conceptual
+range and transform it from a reactive system into an interactive installation:
 
 \subsection{Microphone as Interface}
 
@@ -533,15 +597,18 @@ infinitely compliant tool but an entity with thresholds and boundaries.
 The slime mold simulation in \textit{Ad-Natura} is a GPU-accelerated,
 agent-based model of \textit{Physarum polycephalum} that prioritizes biological
 plausibility and emergent complexity over algorithmic efficiency. Through
-entropic decay, cytoplasmic pulse, and careful architectural decisions, the
-system produces organic, unpredictable behavior from simple local rules.
+entropic decay, cytoplasmic pulse, behavioral drift, water consumption, and
+metabolic glow, the system produces organic, unpredictable behavior from simple
+local rules---while engaging in reciprocal material exchange with its
+environment.
 
 The design is grounded in critical engagement with both biological research and
 theoretical frameworks that challenge conventional approaches to computational
 modeling of living systems. Rather than reducing \textit{Physarum} to an
 optimization heuristic, the system attempts to honor the organism's capacity
-for self-organization, distributed agency, and resistance to centralized
-control.
+for self-organization, distributed agency, externalized memory, and resistance
+to centralized control. The artist's role is not to dictate outcomes but to
+construct conditions under which matter performs.
 
 % ============================================================
 \begin{thebibliography}{9}
@@ -550,6 +617,16 @@ control.
 A.~Adamatzky.
 \newblock Slime mould analog models of space exploration.
 \newblock \textit{International Journal of Bifurcation and Chaos}, 24(02):1430006, 2014.
+
+\bibitem[Adamatzky and Schubert(2016)]{adamatzky2016}
+A.~Adamatzky and T.~Schubert.
+\newblock \textit{Experiencing the Unconventional: Science in Art}.
+\newblock World Scientific, 2016.
+
+\bibitem[Sims(2021)]{sims2021}
+B.~Sims.
+\newblock \textit{Slime Mould and Philosophy}.
+\newblock Punctum Books, 2021.
 
 \bibitem[Barad(2011)]{barad2011}
 K.~Barad.
