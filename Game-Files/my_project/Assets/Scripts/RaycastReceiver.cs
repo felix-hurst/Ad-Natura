@@ -721,7 +721,6 @@ public class RaycastReceiver : MonoBehaviour
         float currentArea = ObjectReshape.CalculatePolygonArea(new List<Vector2>(currentVertices));
         if (currentArea <= minAreaThreshold)
         {
-            DebugHighlightTooSmallParent(new List<Vector2>(currentVertices));
             if (enableAutoCleanup && GetComponent<CutPieceCleanup>() == null)
             {
                 var cleanup = gameObject.AddComponent<CutPieceCleanup>();
@@ -730,27 +729,6 @@ public class RaycastReceiver : MonoBehaviour
             if (GetComponent<SmallParentCollisionHandler>() == null)
                 gameObject.AddComponent<SmallParentCollisionHandler>();
         }
-    }
-
-    void DebugHighlightTooSmallParent(List<Vector2> vertices)
-    {
-        if (vertices.Count < 2) return;
-        LineRenderer debugLine = GetComponent<LineRenderer>();
-        if (debugLine == null)
-        {
-            GameObject lineObj = new GameObject($"{gameObject.name}_TooSmallDebug");
-            lineObj.transform.SetParent(transform);
-            debugLine = lineObj.AddComponent<LineRenderer>();
-            debugLine.startWidth = 0.12f; debugLine.endWidth = 0.12f;
-            debugLine.material = new Material(Shader.Find("Unlit/Color"));
-            debugLine.material.color = Color.red;
-            debugLine.startColor = Color.red; debugLine.endColor = Color.red;
-            debugLine.sortingOrder = 20; debugLine.useWorldSpace = true; debugLine.loop = true;
-            lineObj.AddComponent<DebugPulseEffect>();
-        }
-        debugLine.positionCount = vertices.Count;
-        for (int i = 0; i < vertices.Count; i++)
-            debugLine.SetPosition(i, new Vector3(vertices[i].x, vertices[i].y, 0));
     }
 
     void Update()
