@@ -98,7 +98,7 @@ public class SoundManager : MonoBehaviour
     public void ResumeMusic() => musicSource.UnPause();
 
     /// <summary>Set SFX volume (0–1).</summary>
-    public void SetSFXVolume(float volume)   => sfxSource.volume   = Mathf.Clamp01(volume);
+    public void SetSFXVolume(float volume) => sfxSource.volume = Mathf.Clamp01(volume);
 
     /// <summary>Set music volume (0–1).</summary>
     public void SetMusicVolume(float volume) => musicSource.volume = Mathf.Clamp01(volume);
@@ -106,7 +106,7 @@ public class SoundManager : MonoBehaviour
     /// <summary>Mute / unmute all audio.</summary>
     public void SetMuted(bool muted)
     {
-        sfxSource.mute   = muted;
+        sfxSource.mute = muted;
         musicSource.mute = muted;
     }
 

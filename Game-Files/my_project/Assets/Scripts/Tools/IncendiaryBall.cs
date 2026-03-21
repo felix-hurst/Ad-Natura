@@ -293,16 +293,18 @@ public class IncendiaryBall : MonoBehaviour
         }
 
 
-    int hitLayer = collision.gameObject.layer;
-    if (hitLayer == LayerMask.NameToLayer("Wood") || hitLayer == LayerMask.NameToLayer("Decompose")|| hitLayer == LayerMask.NameToLayer("CutPiece"))
-    {
-        SoundManager.Instance?.Play("RifleHitWood");
-        Debug.Log("here");
+        int hitLayer = collision.gameObject.layer;
+        if (hitLayer == LayerMask.NameToLayer("Wood") || hitLayer == LayerMask.NameToLayer("Decompose") || hitLayer == LayerMask.NameToLayer("CutPiece"))
+        {
+            SoundManager.Instance?.Play("RifleHitWood");
+            Debug.Log("here");
         }
-        else{
+        else
+        {
             Debug.Log($"nohere {collision.gameObject.layer}");
-            
-        }        Vector2 impactPoint = collision.contacts.Length > 0 ? collision.contacts[0].point : (Vector2)transform.position;
+
+        }
+        Vector2 impactPoint = collision.contacts.Length > 0 ? collision.contacts[0].point : (Vector2)transform.position;
         Vector2 impactVelocity = preImpactVelocity;
         Vector2 surfaceNormal = collision.contacts.Length > 0 ? collision.contacts[0].normal : Vector2.up;
 

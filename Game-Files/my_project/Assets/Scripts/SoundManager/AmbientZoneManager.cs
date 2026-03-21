@@ -12,7 +12,7 @@ public class AmbientZoneManager : MonoBehaviour
     [Header("Volume")]
     [SerializeField][Range(0f, 1f)] private float masterAmbientVolume = 0.6f;
 
-    private AudioSource sourceA; 
+    private AudioSource sourceA;
     private AudioSource sourceB;
 
     private string currentClipName = "";
