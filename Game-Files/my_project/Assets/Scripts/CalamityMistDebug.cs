@@ -29,13 +29,13 @@ public class CalamityMistDebug : MonoBehaviour
 
     // ── Internal state ────────────────────────────────────────────────────
     private CalamityMistFluid _fluid;
-    private int               _frameCount;
+    private int _frameCount;
 
     // Latest stats
     private float _velMax, _velAvg;
     private float _densMax, _densAvg;
-    private bool  _shadersFound;
-    private bool  _rtCreated;
+    private bool _shadersFound;
+    private bool _rtCreated;
     private string _lastError = "";
 
     // Readback textures (reused)
@@ -49,7 +49,7 @@ public class CalamityMistDebug : MonoBehaviour
     void Start()
     {
         // Check shaders immediately
-        var simShader  = Shader.Find("Hidden/CalamityFluid");
+        var simShader = Shader.Find("Hidden/CalamityFluid");
         var dispShader = Shader.Find("Hidden/CalamityFluidDisplay");
 
         _shadersFound = simShader != null && dispShader != null;
@@ -118,10 +118,10 @@ public class CalamityMistDebug : MonoBehaviour
         var type = typeof(CalamityMistFluid);
         var flags = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance;
 
-        var velField  = type.GetField("_velocityA", flags);
-        var densField = type.GetField("_densityA",  flags);
-        var simField  = type.GetField("_simMat",    flags);
-        var dispField = type.GetField("_dispMat",   flags);
+        var velField = type.GetField("_velocityA", flags);
+        var densField = type.GetField("_densityA", flags);
+        var simField = type.GetField("_simMat", flags);
+        var dispField = type.GetField("_dispMat", flags);
 
         if (velField == null)
         {
@@ -130,10 +130,10 @@ public class CalamityMistDebug : MonoBehaviour
             return;
         }
 
-        var velRT  = velField.GetValue(_fluid)  as RenderTexture;
+        var velRT = velField.GetValue(_fluid) as RenderTexture;
         var densRT = densField.GetValue(_fluid) as RenderTexture;
-        var simMat = simField.GetValue(_fluid)  as Material;
-        var dispMat= dispField.GetValue(_fluid) as Material;
+        var simMat = simField.GetValue(_fluid) as Material;
+        var dispMat = dispField.GetValue(_fluid) as Material;
 
         _rtCreated = velRT != null && velRT.IsCreated();
 
@@ -236,14 +236,14 @@ public class CalamityMistDebug : MonoBehaviour
 
         GUIStyle style = new GUIStyle(GUI.skin.box)
         {
-            fontSize  = 12,
+            fontSize = 12,
             alignment = TextAnchor.UpperLeft
         };
         style.normal.textColor = Color.white;
 
         string status = _shadersFound ? "<color=green>FOUND</color>" : "<color=red>MISSING</color>";
-        string rtStatus = _rtCreated  ? "<color=green>CREATED</color>" : "<color=red>NOT CREATED</color>";
-        string velStatus  = _velMax  > 0.0001f ? $"<color=green>{_velMax:F5}</color>"  : $"<color=red>{_velMax:F5}</color>";
+        string rtStatus = _rtCreated ? "<color=green>CREATED</color>" : "<color=red>NOT CREATED</color>";
+        string velStatus = _velMax > 0.0001f ? $"<color=green>{_velMax:F5}</color>" : $"<color=red>{_velMax:F5}</color>";
         string densStatus = _densMax > 0.0001f ? $"<color=green>{_densMax:F5}</color>" : $"<color=red>{_densMax:F5}</color>";
 
         string label =
@@ -296,7 +296,7 @@ public class CalamityMistDebug : MonoBehaviour
 
                 Gizmos.color = Color.red;
                 Gizmos.DrawWireSphere(emitterWorld, _fluid.rockWidth * _fluid.emitterRadius);
-                Gizmos.DrawLine(emitterWorld + Vector3.left  * _fluid.rockWidth,
+                Gizmos.DrawLine(emitterWorld + Vector3.left * _fluid.rockWidth,
                                 emitterWorld + Vector3.right * _fluid.rockWidth);
             }
         }

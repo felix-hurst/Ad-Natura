@@ -34,8 +34,8 @@ public class CalamityObject : MonoBehaviour
     public string sortingLayer = "Default";
 
     [Header("Pixel Visual")]
-[Range(4, 32)] public int pixelTextureSize = 16;
-[Range(0f, 1f)] public float pixelColorVariance = 0.12f;
+    [Range(4, 32)] public int pixelTextureSize = 16;
+    [Range(0f, 1f)] public float pixelColorVariance = 0.12f;
 
     [Header("Mist (Fluid Simulation)")]
     public bool enableMist = true;
@@ -115,17 +115,17 @@ public class CalamityObject : MonoBehaviour
         BuildObject();
     }
 
-    public List<Vector2> GetShape()  => generatedShape;
-    public bool HasSpawned()         => hasSpawned;
+    public List<Vector2> GetShape() => generatedShape;
+    public bool HasSpawned() => hasSpawned;
 
     public void MakeDynamic()
     {
         Rigidbody2D rb = GetComponent<Rigidbody2D>();
         if (rb != null)
         {
-            rb.bodyType     = RigidbodyType2D.Dynamic;
+            rb.bodyType = RigidbodyType2D.Dynamic;
             rb.gravityScale = 1f;
-            isStatic        = false;
+            isStatic = false;
         }
     }
 
@@ -137,15 +137,15 @@ public class CalamityObject : MonoBehaviour
     {
         List<Vector2> vertices = new List<Vector2>();
         float halfBase = baseWidth * 0.5f;
-        float halfTop  = topWidth  * 0.5f;
+        float halfTop = topWidth * 0.5f;
         float leanAmount = Random.Range(-asymmetry, asymmetry) * height * 0.35f;
 
         int bandCount = Random.Range(2, 5);
-        float[] bandT     = new float[bandCount];
+        float[] bandT = new float[bandCount];
         float[] bandDepth = new float[bandCount];
         for (int b = 0; b < bandCount; b++)
         {
-            bandT[b]     = Random.Range(0.12f, 0.88f);
+            bandT[b] = Random.Range(0.12f, 0.88f);
             bandDepth[b] = Random.Range(0.08f, 0.22f);
         }
 
@@ -246,22 +246,22 @@ public class CalamityObject : MonoBehaviour
             }
             if (edgeIndex == -1) continue;
 
-            Vector2 anchor    = result[edgeIndex];
-            Vector2 outward   = (anchor.x < 0f ? Vector2.left : Vector2.right);
-            outward           = (outward + Vector2.up * Random.Range(0.1f, 0.5f)).normalized;
-            Vector2 perp      = new Vector2(-outward.y, outward.x);
-            float   shelfLen  = baseWidth * branchSize * Random.Range(0.7f, 1.3f);
-            float   shelfThick = shelfLen * Random.Range(0.25f, 0.55f);
-            int     segments  = Random.Range(3, 6);
+            Vector2 anchor = result[edgeIndex];
+            Vector2 outward = (anchor.x < 0f ? Vector2.left : Vector2.right);
+            outward = (outward + Vector2.up * Random.Range(0.1f, 0.5f)).normalized;
+            Vector2 perp = new Vector2(-outward.y, outward.x);
+            float shelfLen = baseWidth * branchSize * Random.Range(0.7f, 1.3f);
+            float shelfThick = shelfLen * Random.Range(0.25f, 0.55f);
+            int segments = Random.Range(3, 6);
 
             List<Vector2> shelf = new List<Vector2>();
             shelf.Add(anchor + perp * (-shelfThick * 0.4f));
             for (int s = 0; s <= segments; s++)
             {
-                float st    = (float)s / segments;
+                float st = (float)s / segments;
                 float reach = shelfLen * Mathf.Sin(st * Mathf.PI) * Random.Range(0.75f, 1.05f);
-                reach       = Mathf.Max(reach, shelfLen * 0.08f);
-                float hVar  = Random.Range(-shelfThick * 0.35f, shelfThick * 0.35f);
+                reach = Mathf.Max(reach, shelfLen * 0.08f);
+                float hVar = Random.Range(-shelfThick * 0.35f, shelfThick * 0.35f);
                 shelf.Add(anchor + outward * reach + perp * (shelfThick * 0.5f + hVar));
             }
             shelf.Add(anchor + perp * (shelfThick * 0.4f));
@@ -281,7 +281,7 @@ public class CalamityObject : MonoBehaviour
     {
         if (generatedShape == null || generatedShape.Count < 3) return;
 
-        gameObject.tag   = materialTag;
+        gameObject.tag = materialTag;
         gameObject.layer = LayerMask.NameToLayer("Default");
 
         PolygonCollider2D polyCollider = gameObject.GetComponent<PolygonCollider2D>();
@@ -291,8 +291,8 @@ public class CalamityObject : MonoBehaviour
 
         Rigidbody2D rb = gameObject.GetComponent<Rigidbody2D>();
         if (rb == null) rb = gameObject.AddComponent<Rigidbody2D>();
-        rb.mass                   = mass;
-        rb.bodyType               = isStatic ? RigidbodyType2D.Static : RigidbodyType2D.Dynamic;
+        rb.mass = mass;
+        rb.bodyType = isStatic ? RigidbodyType2D.Static : RigidbodyType2D.Dynamic;
         rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
 
         SpriteRenderer sr = gameObject.GetComponent<SpriteRenderer>();
@@ -319,8 +319,8 @@ public class CalamityObject : MonoBehaviour
     {
         RaycastReceiver receiver = gameObject.GetComponent<RaycastReceiver>();
         if (receiver == null) receiver = gameObject.AddComponent<RaycastReceiver>();
-        receiver.highlightMode            = highlightMode;
-        receiver.showCutOutline           = showCutOutline;
+        receiver.highlightMode = highlightMode;
+        receiver.showCutOutline = showCutOutline;
         receiver.largePieceMassMultiplier = largePieceMassMultiplier;
     }
 
@@ -328,152 +328,152 @@ public class CalamityObject : MonoBehaviour
     // Visual mesh
     // ─────────────────────────────────────────────────────────────────────────
 
-void BuildVisualMesh()
-{
-    foreach (Transform child in transform)
-        if (child.name.Contains("_CalamityMesh")) Destroy(child.gameObject);
-
-    GameObject meshObj = new GameObject($"{gameObject.name}_CalamityMesh");
-    meshObj.transform.SetParent(transform);
-    meshObj.transform.localPosition = Vector3.zero;
-    meshObj.transform.localRotation = Quaternion.identity;
-    meshObj.transform.localScale    = Vector3.one;
-
-    MeshFilter   meshFilter   = meshObj.AddComponent<MeshFilter>();
-    MeshRenderer meshRenderer = meshObj.AddComponent<MeshRenderer>();
-
-    Shader shader = Shader.Find("Sprites/Default");
-    if (shader == null) shader = Shader.Find("Unlit/Texture");
-
-    Material mat = new Material(shader);
-    mat.mainTexture = GeneratePixelTexture();
-    mat.color       = Color.white; // tint lives in the texture now
-
-    meshRenderer.material         = mat;
-    meshRenderer.sortingLayerName = sortingLayer;
-    meshRenderer.sortingOrder     = sortingOrder;
-
-    visualMesh = CreateMeshFromPolygon(generatedShape);
-    if (visualMesh != null) meshFilter.mesh = visualMesh;
-}
-
-Texture2D GeneratePixelTexture()
-{
-    int size = pixelTextureSize;
-    Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
-
-    // Point filtering = hard pixel edges, no blending between texels
-    tex.filterMode = FilterMode.Point;
-    tex.wrapMode   = TextureWrapMode.Clamp;
-
-    // Use the same seeded random state so the texture matches the shape
-    int seed = shapeSeed == -1 ? 0 : shapeSeed;
-
-    for (int y = 0; y < size; y++)
+    void BuildVisualMesh()
     {
-        for (int x = 0; x < size; x++)
-        {
-            float u = (float)x / size;
-            float v = (float)y / size;
+        foreach (Transform child in transform)
+            if (child.name.Contains("_CalamityMesh")) Destroy(child.gameObject);
 
-            // Two octaves of Perlin noise for surface colour variation
-            float n  = Mathf.PerlinNoise(u * 3.7f + seed * 0.001f, v * 3.7f) * 0.65f
-                     + Mathf.PerlinNoise(u * 8.1f + seed * 0.002f, v * 8.1f) * 0.35f;
+        GameObject meshObj = new GameObject($"{gameObject.name}_CalamityMesh");
+        meshObj.transform.SetParent(transform);
+        meshObj.transform.localPosition = Vector3.zero;
+        meshObj.transform.localRotation = Quaternion.identity;
+        meshObj.transform.localScale = Vector3.one;
 
-            // Darken toward the edges to give a subtle rim
-            float rim = Mathf.Clamp01(Mathf.Min(u, 1f - u, v, 1f - v) * 4f);
-            n *= 0.85f + rim * 0.15f;
+        MeshFilter meshFilter = meshObj.AddComponent<MeshFilter>();
+        MeshRenderer meshRenderer = meshObj.AddComponent<MeshRenderer>();
 
-            // Shift baseColor slightly per pixel
-            float shift = (n - 0.5f) * pixelColorVariance;
-            Color c = new Color(
-                Mathf.Clamp01(baseColor.r + shift),
-                Mathf.Clamp01(baseColor.g + shift * 0.8f),
-                Mathf.Clamp01(baseColor.b + shift * 1.2f),
-                baseColor.a);
+        Shader shader = Shader.Find("Sprites/Default");
+        if (shader == null) shader = Shader.Find("Unlit/Texture");
 
-            tex.SetPixel(x, y, c);
-        }
+        Material mat = new Material(shader);
+        mat.mainTexture = GeneratePixelTexture();
+        mat.color = Color.white; // tint lives in the texture now
+
+        meshRenderer.material = mat;
+        meshRenderer.sortingLayerName = sortingLayer;
+        meshRenderer.sortingOrder = sortingOrder;
+
+        visualMesh = CreateMeshFromPolygon(generatedShape);
+        if (visualMesh != null) meshFilter.mesh = visualMesh;
     }
 
-    tex.Apply();
-    return tex;
-}
+    Texture2D GeneratePixelTexture()
+    {
+        int size = pixelTextureSize;
+        Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
+
+        // Point filtering = hard pixel edges, no blending between texels
+        tex.filterMode = FilterMode.Point;
+        tex.wrapMode = TextureWrapMode.Clamp;
+
+        // Use the same seeded random state so the texture matches the shape
+        int seed = shapeSeed == -1 ? 0 : shapeSeed;
+
+        for (int y = 0; y < size; y++)
+        {
+            for (int x = 0; x < size; x++)
+            {
+                float u = (float)x / size;
+                float v = (float)y / size;
+
+                // Two octaves of Perlin noise for surface colour variation
+                float n = Mathf.PerlinNoise(u * 3.7f + seed * 0.001f, v * 3.7f) * 0.65f
+                         + Mathf.PerlinNoise(u * 8.1f + seed * 0.002f, v * 8.1f) * 0.35f;
+
+                // Darken toward the edges to give a subtle rim
+                float rim = Mathf.Clamp01(Mathf.Min(u, 1f - u, v, 1f - v) * 4f);
+                n *= 0.85f + rim * 0.15f;
+
+                // Shift baseColor slightly per pixel
+                float shift = (n - 0.5f) * pixelColorVariance;
+                Color c = new Color(
+                    Mathf.Clamp01(baseColor.r + shift),
+                    Mathf.Clamp01(baseColor.g + shift * 0.8f),
+                    Mathf.Clamp01(baseColor.b + shift * 1.2f),
+                    baseColor.a);
+
+                tex.SetPixel(x, y, c);
+            }
+        }
+
+        tex.Apply();
+        return tex;
+    }
 
     // ─────────────────────────────────────────────────────────────────────────
     // Fluid mist — two layers: behind and in front of the rock
     // ─────────────────────────────────────────────────────────────────────────
 
-void BuildFluidMist()
-{
-    foreach (Transform child in transform)
-        if (child.name.Contains("_FluidMist")) Destroy(child.gameObject);
+    void BuildFluidMist()
+    {
+        foreach (Transform child in transform)
+            if (child.name.Contains("_FluidMist")) Destroy(child.gameObject);
 
-    // Both quads are IDENTICAL in size and position so their edge fades
-    // overlap perfectly and blend at the rock silhouette. The only difference
-    // is sorting order — one renders behind the rock, one in front.
+        // Both quads are IDENTICAL in size and position so their edge fades
+        // overlap perfectly and blend at the rock silhouette. The only difference
+        // is sorting order — one renders behind the rock, one in front.
 
-    // Back layer — behind the rock
-    CreateFluidInstance(
-        label:          "_FluidMistBack",
-        sortOrder:      sortingOrder - 1,
-        opacity:        mistOpacity * 0.6f,
-        quadWidthMult:  7.0f,
-        quadHeightMult: 7.0f,
-        quadYOff:       -0.05f,
-        emitY:          0.10f,
-        emitStrength:   mistEmitterStrength * 0.8f,
-        densStrength:   mistDensityStrength * 0.8f,
-        vorticity:      mistVorticity * 1.1f
-    );
+        // Back layer — behind the rock
+        CreateFluidInstance(
+            label: "_FluidMistBack",
+            sortOrder: sortingOrder - 1,
+            opacity: mistOpacity * 0.6f,
+            quadWidthMult: 7.0f,
+            quadHeightMult: 7.0f,
+            quadYOff: -0.05f,
+            emitY: 0.10f,
+            emitStrength: mistEmitterStrength * 0.8f,
+            densStrength: mistDensityStrength * 0.8f,
+            vorticity: mistVorticity * 1.1f
+        );
 
-    // Front layer — in front of the rock, same quad dimensions as back
-    CreateFluidInstance(
-        label:          "_FluidMistFront",
-        sortOrder:      sortingOrder + 1,   // restored: in front of rock
-        opacity:        mistOpacity * 0.6f,
-        quadWidthMult:  4.0f,               // identical to back
-        quadHeightMult: 2.0f,               // identical to back
-        quadYOff:       -0.05f,             // identical to back
-        emitY:          0.12f,
-        emitStrength:   mistEmitterStrength,
-        densStrength:   mistDensityStrength,
-        vorticity:      mistVorticity
-    );
-}
+        // Front layer — in front of the rock, same quad dimensions as back
+        CreateFluidInstance(
+            label: "_FluidMistFront",
+            sortOrder: sortingOrder + 1,   // restored: in front of rock
+            opacity: mistOpacity * 0.6f,
+            quadWidthMult: 4.0f,               // identical to back
+            quadHeightMult: 2.0f,               // identical to back
+            quadYOff: -0.05f,             // identical to back
+            emitY: 0.12f,
+            emitStrength: mistEmitterStrength,
+            densStrength: mistDensityStrength,
+            vorticity: mistVorticity
+        );
+    }
 
-void CreateFluidInstance(string label, int sortOrder, float opacity,
-                         float quadWidthMult, float quadHeightMult, float quadYOff,
-                         float emitY, float emitStrength, float densStrength,
-                         float vorticity)
-{
-    GameObject mistObj = new GameObject($"{gameObject.name}{label}");
-    mistObj.transform.SetParent(transform);
-    mistObj.transform.localPosition = Vector3.zero;
-    mistObj.transform.localRotation = Quaternion.identity;
-    mistObj.transform.localScale    = Vector3.one;
+    void CreateFluidInstance(string label, int sortOrder, float opacity,
+                             float quadWidthMult, float quadHeightMult, float quadYOff,
+                             float emitY, float emitStrength, float densStrength,
+                             float vorticity)
+    {
+        GameObject mistObj = new GameObject($"{gameObject.name}{label}");
+        mistObj.transform.SetParent(transform);
+        mistObj.transform.localPosition = Vector3.zero;
+        mistObj.transform.localRotation = Quaternion.identity;
+        mistObj.transform.localScale = Vector3.one;
 
-    CalamityMistFluid fluid       = mistObj.AddComponent<CalamityMistFluid>();
-    fluid.resolution              = mistResolution;
-    fluid.obstacleLayerMask       = mistObstacleLayerMask;
+        CalamityMistFluid fluid = mistObj.AddComponent<CalamityMistFluid>();
+        fluid.resolution = mistResolution;
+        fluid.obstacleLayerMask = mistObstacleLayerMask;
 
-    fluid.Initialise(
-        width:          baseWidth,
-        height:         height,
-        color:          mistColor,
-        colorAlt:       mistColorAlt,
-        opacity:        opacity,
-        sortOrder:      sortOrder,
-        sortLayer:      sortingLayer,
-        quadWidthMult:  quadWidthMult,
-        quadHeightMult: quadHeightMult,
-        quadYOff:       quadYOff,
-        emitY:          emitY,
-        emitStrength:   emitStrength,
-        densStrength:   densStrength,
-        vorticity:      vorticity
-    );
-}
+        fluid.Initialise(
+            width: baseWidth,
+            height: height,
+            color: mistColor,
+            colorAlt: mistColorAlt,
+            opacity: opacity,
+            sortOrder: sortOrder,
+            sortLayer: sortingLayer,
+            quadWidthMult: quadWidthMult,
+            quadHeightMult: quadHeightMult,
+            quadYOff: quadYOff,
+            emitY: emitY,
+            emitStrength: emitStrength,
+            densStrength: densStrength,
+            vorticity: vorticity
+        );
+    }
 
     // ─────────────────────────────────────────────────────────────────────────
     // Mesh utilities
@@ -491,8 +491,8 @@ void CreateFluidInstance(string label, int sortOrder, float opacity,
         int[] triangles = TriangulatePolygon(vertices);
         if (triangles == null || triangles.Length < 3) return null;
 
-        Vector2[] uvs    = new Vector2[vertices.Count];
-        Bounds    bounds = CalculateBounds(vertices);
+        Vector2[] uvs = new Vector2[vertices.Count];
+        Bounds bounds = CalculateBounds(vertices);
         if (bounds.size.x > 0 && bounds.size.y > 0)
         {
             for (int i = 0; i < vertices.Count; i++)
@@ -509,7 +509,7 @@ void CreateFluidInstance(string label, int sortOrder, float opacity,
     int[] TriangulatePolygon(List<Vector2> vertices)
     {
         List<int> triangles = new List<int>();
-        List<int> indices   = new List<int>();
+        List<int> indices = new List<int>();
         for (int i = 0; i < vertices.Count; i++) indices.Add(i);
 
         while (indices.Count > 3)
@@ -560,7 +560,7 @@ void CreateFluidInstance(string label, int sortOrder, float opacity,
         float d = ((b.y - c.y) * (a.x - c.x) + (c.x - b.x) * (a.y - c.y));
         if (Mathf.Abs(d) < 0.0001f) return false;
         float alpha = ((b.y - c.y) * (p.x - c.x) + (c.x - b.x) * (p.y - c.y)) / d;
-        float beta  = ((c.y - a.y) * (p.x - c.x) + (a.x - c.x) * (p.y - c.y)) / d;
+        float beta = ((c.y - a.y) * (p.x - c.x) + (a.x - c.x) * (p.y - c.y)) / d;
         float gamma = 1f - alpha - beta;
         return alpha > 0 && beta > 0 && gamma > 0;
     }
@@ -608,7 +608,7 @@ void CreateFluidInstance(string label, int sortOrder, float opacity,
     IEnumerator GroundShake()
     {
         Vector3 originalPos = transform.position;
-        float   elapsed     = 0f;
+        float elapsed = 0f;
         while (elapsed < groundShakeDuration)
         {
             elapsed += Time.deltaTime;

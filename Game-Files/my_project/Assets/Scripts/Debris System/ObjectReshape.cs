@@ -466,7 +466,7 @@ public class ObjectReshape : MonoBehaviour
         float denom = ((b.y - c.y) * (a.x - c.x) + (c.x - b.x) * (a.y - c.y));
         if (Mathf.Abs(denom) < 0.0001f) return false;
         float alpha = ((b.y - c.y) * (p.x - c.x) + (c.x - b.x) * (p.y - c.y)) / denom;
-        float beta  = ((c.y - a.y) * (p.x - c.x) + (a.x - c.x) * (p.y - c.y)) / denom;
+        float beta = ((c.y - a.y) * (p.x - c.x) + (a.x - c.x) * (p.y - c.y)) / denom;
         float gamma = 1f - alpha - beta;
         return alpha > 0 && beta > 0 && gamma > 0;
     }

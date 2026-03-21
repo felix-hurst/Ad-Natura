@@ -708,7 +708,7 @@ public class SlimeMoldManager : MonoBehaviour
             }
         }
     }
-        // -------------------------------------------------------------------------
+    // -------------------------------------------------------------------------
     // Hazard map
     // Two channels:
     //   R = solid hazard (binary 0/1): rasterised from Calamity colliders
