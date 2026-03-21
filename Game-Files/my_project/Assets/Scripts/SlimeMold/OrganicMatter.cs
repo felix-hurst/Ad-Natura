@@ -105,7 +105,6 @@ public class OrganicMatter : MonoBehaviour
         currentHealth -= amount;
         damagePercent = 1f - (currentHealth / maxHealth);
 
-        Debug.Log($"[Decomp Step 4 - HEALTH] '{name}': health {previousHealth:F1} → {currentHealth:F1} / {maxHealth} ({damagePercent * 100:F1}% damaged)");
         // Update slime overlay
         UpdateSlimeOverlay();
 
@@ -127,15 +126,21 @@ public class OrganicMatter : MonoBehaviour
                 onDecomposed?.Invoke();
                 enabled = false;
             }
-            else // Wall
+            else if (CompareTag("Wall"))
             {
-                Debug.Log($"[Decomp Step 5 - COLLAPSE] '{name}': fully decomposed (Wall). Converting to Climbable.");
+                // Wall: convert to climbable surface
                 gameObject.layer = LayerMask.NameToLayer("Climbable");
                 if (overlayRenderer != null)
                     overlayRenderer.color = new Color(0f, 0f, 0f, 0f);
                 var sr = GetComponent<SpriteRenderer>();
                 if (sr != null && climbableWallSprite != null)
                     sr.sprite = climbableWallSprite;
+            }
+            else
+            {
+                // Generic organic matter — just invoke event and disable
+                onDecomposed?.Invoke();
+                enabled = false;
             }
         }
     }
