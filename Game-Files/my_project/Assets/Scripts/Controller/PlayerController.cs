@@ -326,8 +326,17 @@ public class PlayerController : MonoBehaviour
     {
         if (!HasAmmo(tool)) return false;
 
-        if (tool == ToolType.WaterBall) waterAmmo--;
-        else if (tool == ToolType.IncendiaryBall) incendiaryAmmo--;
+        if (tool == ToolType.WaterBall)
+        {
+            waterAmmo--;
+            SoundManager.Instance.Play("WaterFire");
+        }
+
+        else if (tool == ToolType.IncendiaryBall)
+        {
+            incendiaryAmmo--;
+            SoundManager.Instance.Play("RifleFire");
+        }
         else if (tool == ToolType.WindBall) windAmmo--;
 
         return true;
