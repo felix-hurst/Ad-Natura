@@ -126,9 +126,9 @@ public class OrganicMatter : MonoBehaviour
                 onDecomposed?.Invoke();
                 enabled = false;
             }
-            else if (CompareTag("Wall"))
+            else if (CompareTag("Dirt"))
             {
-                // Wall: convert to climbable surface
+                // Dirt wall: convert to climbable surface
                 gameObject.layer = LayerMask.NameToLayer("Climbable");
                 if (overlayRenderer != null)
                     overlayRenderer.color = new Color(0f, 0f, 0f, 0f);

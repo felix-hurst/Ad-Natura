@@ -272,7 +272,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!61 &106504568
 BoxCollider2D:
   m_ObjectHideFlags: 0
@@ -356,6 +356,79 @@ Transform:
   m_CorrespondingSourceObject: {fileID: 929353229041168039, guid: 81dd48242af209d4daaae9eb3e68241c, type: 3}
   m_PrefabInstance: {fileID: 5898529161288946801}
   m_PrefabAsset: {fileID: 0}
+--- !u!1001 &125969187
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 703426607442871914, guid: 8a0fcbf43f057964bbc3ce2cbea11eab, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 4.64
+      objectReference: {fileID: 0}
+    - target: {fileID: 703426607442871914, guid: 8a0fcbf43f057964bbc3ce2cbea11eab, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 7.03434
+      objectReference: {fileID: 0}
+    - target: {fileID: 703426607442871914, guid: 8a0fcbf43f057964bbc3ce2cbea11eab, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 703426607442871914, guid: 8a0fcbf43f057964bbc3ce2cbea11eab, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 703426607442871914, guid: 8a0fcbf43f057964bbc3ce2cbea11eab, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 703426607442871914, guid: 8a0fcbf43f057964bbc3ce2cbea11eab, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 703426607442871914, guid: 8a0fcbf43f057964bbc3ce2cbea11eab, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 703426607442871914, guid: 8a0fcbf43f057964bbc3ce2cbea11eab, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 703426607442871914, guid: 8a0fcbf43f057964bbc3ce2cbea11eab, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 703426607442871914, guid: 8a0fcbf43f057964bbc3ce2cbea11eab, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 1798489601280929126, guid: 8a0fcbf43f057964bbc3ce2cbea11eab, type: 3}
+      propertyPath: m_Name
+      value: IndoorSoundArea
+      objectReference: {fileID: 0}
+    - target: {fileID: 8239214518869834882, guid: 8a0fcbf43f057964bbc3ce2cbea11eab, type: 3}
+      propertyPath: gizmoColor.a
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8239214518869834882, guid: 8a0fcbf43f057964bbc3ce2cbea11eab, type: 3}
+      propertyPath: gizmoColor.b
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8239214518869834882, guid: 8a0fcbf43f057964bbc3ce2cbea11eab, type: 3}
+      propertyPath: gizmoColor.g
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8239214518869834882, guid: 8a0fcbf43f057964bbc3ce2cbea11eab, type: 3}
+      propertyPath: gizmoColor.r
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 8a0fcbf43f057964bbc3ce2cbea11eab, type: 3}
 --- !u!1 &132518126
 GameObject:
   m_ObjectHideFlags: 0
@@ -1009,7 +1082,7 @@ SpriteShapeRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.2784314, g: 0.2392157, b: 0.22352943, a: 1}
   m_MaskInteraction: 0
   m_ShapeTexture: {fileID: 0}
   m_Sprites: []
@@ -2068,7 +2141,7 @@ Transform:
   m_GameObject: {fileID: 439375413}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.45, y: 9.282, z: -16}
+  m_LocalPosition: {x: -5.578, y: 9.206, z: -16}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2306,7 +2379,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 21300000, guid: df8f5248af9af824e88994833ec40ada, type: 3}
+  m_Sprite: {fileID: 4931181146836632553, guid: df8f5248af9af824e88994833ec40ada, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -2703,7 +2776,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.8188982, y: 7.434213, z: -16}
+  m_LocalPosition: {x: 2.9041681, y: 7.434213, z: -16}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2792,7 +2865,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: 0.1071012, y: 0.5973973}
+  m_Offset: {x: -0.23201227, y: 0.11521101}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -2802,7 +2875,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 4.4841743, y: 2.1947951}
+  m_Size: {x: 5.162401, y: 3.1591678}
   m_EdgeRadius: 0
 --- !u!4 &571507380
 Transform:
@@ -3482,7 +3555,7 @@ SpriteShapeRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Color: {r: 1, g: 1, b: 1, a: 1}
+  m_Color: {r: 0.32941177, g: 0.29803923, b: 0.26666668, a: 1}
   m_MaskInteraction: 0
   m_ShapeTexture: {fileID: 0}
   m_Sprites: []
@@ -3627,7 +3700,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pixelSize: 2
   enablePixelation: 1
-  showDebugPixels: 1
+  showDebugPixels: 0
 --- !u!114 &748109550
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4353,11 +4426,11 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   enableAttraction: 1
-  attractionStrength: 0.79
-  internalAttractionRadius: 0.5
-  showDebugGizmos: 1
+  attractionStrength: 5
+  internalAttractionRadius: 0.05
+  showDebugGizmos: 0
   logDecomposition: 0
-  debugDecomposition: 1
+  debugDecomposition: 0
 --- !u!114 &870513703
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -4370,7 +4443,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aeb48c81012b04041b88a8a63e97b57f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SlimeMoldManager
-  waterAttractionStrength: 81
+  waterAttractionStrength: 8
   autoFindSources: 1
   sourceRefreshInterval: 0.5
   manualWaterSources: []
@@ -4379,15 +4452,15 @@ MonoBehaviour:
   liquidSimulation: {fileID: 8009153335970302523}
   useLiquidSimulation: 1
   autoSyncBounds: 0
-  liquidAttractionMultiplier: 1.5
-  minWaterThreshold: 0.05
+  liquidAttractionMultiplier: 3
+  minWaterThreshold: 0
   enableCalamityHazard: 1
   hazardRefreshInterval: 0.25
   hazardGradientWidth: 0.8
   minimumHazardPixelRadius: 3
   avoidanceLayers:
     serializedVersion: 2
-    m_Bits: 32768
+    m_Bits: 0
   avoidanceStrength: 0.8
   avoidanceGradientWidth: 1
   avoidanceRefreshInterval: 0.1
@@ -4405,39 +4478,45 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   shader: {fileID: 7200000, guid: e4b9a491ba4848245b3df1095a872bc7, type: 3}
   width: 128
-  height: 96
+  height: 128
   numAgents: 1024
-  moveSpeed: 1.5
-  diffuseSpeed: 0.25
-  evaporateSpeed: 0.106
-  trailWeight: 0.377
-  idleSpeed: 1
-  attractedSpeedMultiplier: 3.3
-  sensorLength: 10.1
-  sensorAngle: 25
-  turnSpeed: 6.6
-  spawnX: 0.524
-  spawnY: 0.315
-  spawnRadius: 0.17
+  moveSpeed: 2
+  diffuseSpeed: 0.069
+  evaporateSpeed: 0.069
+  trailWeight: 0.986
+  idleSpeed: 0.266
+  attractedSpeedMultiplier: 3
+  sensorLength: 10.17
+  sensorAngle: 24.86
+  turnSpeed: 6.33
+  spawnX: 0.417
+  spawnY: 0.542
+  spawnRadius: 0.252
   boundingObject: {fileID: 1698587518}
   worldBounds:
     serializedVersion: 2
-    x: -12.6
+    x: -22.6
     y: -5
     width: 20
     height: 20
-  pulseAmplitude: 0.2
-  pulseMinFreq: 0.3
-  pulseMaxFreq: 1.5
-  pulseWaveScale: 0
-  entropyScale: 0.05
-  entropySpeed: 0.15
-  entropyStrength: 0.4
+  pulseAmplitude: 0.023
+  pulseMinFreq: 0.186
+  pulseMaxFreq: 0.32
+  pulseWaveScale: 0.36
+  driftStrength: 0.51
+  driftSpeed: 0.195
+  entropyScale: 0.11
+  entropySpeed: 0.385
+  entropyStrength: 0.388
   hazardAvoidanceStrength: 8
-  decayColor: {r: 0.25, g: 0.15, b: 0.05, a: 1}
+  deathTint: {r: 0.7, g: 0.55, b: 0.1, a: 1}
   hazardCorrosionRate: 6
   hazardTrailDampen: 0.85
-  slimeColor: {r: 1, g: 0.9019608, b: 0.2, a: 1}
+  consumptionRate: 0.38
+  consumptionThreshold: 0.05
+  glowIntensity: 0.278
+  glowDecayRate: 1.01
+  slimeColor: {r: 1, g: 0.9, b: 0.2, a: 1}
   sortingOrder: 0
 --- !u!4 &870513705
 Transform:
@@ -6027,11 +6106,11 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   enableAttraction: 1
-  attractionStrength: 0.79
-  internalAttractionRadius: 0.5
-  showDebugGizmos: 1
-  logDecomposition: 1
-  debugDecomposition: 1
+  attractionStrength: 5
+  internalAttractionRadius: 0.05
+  showDebugGizmos: 0
+  logDecomposition: 0
+  debugDecomposition: 0
 --- !u!114 &1368657083
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6044,7 +6123,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aeb48c81012b04041b88a8a63e97b57f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SlimeMoldManager
-  waterAttractionStrength: 80
+  waterAttractionStrength: 8
   autoFindSources: 1
   sourceRefreshInterval: 0.5
   manualWaterSources: []
@@ -6053,8 +6132,8 @@ MonoBehaviour:
   liquidSimulation: {fileID: 8009153335970302523}
   useLiquidSimulation: 1
   autoSyncBounds: 0
-  liquidAttractionMultiplier: 1.5
-  minWaterThreshold: 0.05
+  liquidAttractionMultiplier: 3
+  minWaterThreshold: 0
   enableCalamityHazard: 1
   hazardRefreshInterval: 0.25
   hazardGradientWidth: 0.8
@@ -6079,39 +6158,45 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   shader: {fileID: 7200000, guid: e4b9a491ba4848245b3df1095a872bc7, type: 3}
   width: 128
-  height: 96
+  height: 128
   numAgents: 1024
-  moveSpeed: 1.5
-  diffuseSpeed: 0.25
-  evaporateSpeed: 0.052
-  trailWeight: 0.377
-  idleSpeed: 1
-  attractedSpeedMultiplier: 2
-  sensorLength: 9
-  sensorAngle: 25
-  turnSpeed: 4
-  spawnX: 0.292
-  spawnY: 0.411
-  spawnRadius: 0.305
+  moveSpeed: 2
+  diffuseSpeed: 0.069
+  evaporateSpeed: 0.069
+  trailWeight: 0.986
+  idleSpeed: 0.266
+  attractedSpeedMultiplier: 3
+  sensorLength: 10.17
+  sensorAngle: 24.86
+  turnSpeed: 6.33
+  spawnX: 0.488
+  spawnY: 0.571
+  spawnRadius: 0.237
   boundingObject: {fileID: 571507378}
   worldBounds:
     serializedVersion: 2
-    x: -12.6
+    x: -22.6
     y: -5
     width: 20
     height: 20
-  pulseAmplitude: 0.2
-  pulseMinFreq: 0.3
-  pulseMaxFreq: 1.5
-  pulseWaveScale: 0
-  entropyScale: 0.05
-  entropySpeed: 0.15
-  entropyStrength: 0.4
+  pulseAmplitude: 0.023
+  pulseMinFreq: 0.186
+  pulseMaxFreq: 0.32
+  pulseWaveScale: 0.36
+  driftStrength: 0.51
+  driftSpeed: 0.195
+  entropyScale: 0.11
+  entropySpeed: 0.385
+  entropyStrength: 0.388
   hazardAvoidanceStrength: 8
-  decayColor: {r: 0.25, g: 0.15, b: 0.05, a: 1}
+  deathTint: {r: 0.7, g: 0.55, b: 0.1, a: 1}
   hazardCorrosionRate: 6
   hazardTrailDampen: 0.85
-  slimeColor: {r: 1, g: 0.9019608, b: 0.2, a: 1}
+  consumptionRate: 0.38
+  consumptionThreshold: 0.05
+  glowIntensity: 0.278
+  glowDecayRate: 1.01
+  slimeColor: {r: 1, g: 0.9, b: 0.2, a: 1}
   sortingOrder: 0
 --- !u!4 &1368657085
 Transform:
@@ -7399,7 +7484,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -1.0334203, y: 0.08854389}
+  m_Offset: {x: -0.0049403906, y: 0.72855383}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -7409,7 +7494,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 6.7627473, y: 3.212502}
+  m_Size: {x: 4.7057877, y: 1.9324821}
   m_EdgeRadius: 0
 --- !u!1 &1701465011
 GameObject:
@@ -7534,7 +7619,7 @@ BoxCollider2D:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 4294967295
   m_LayerOverridePriority: 0
   m_ForceSendLayers:
     serializedVersion: 2
@@ -7725,7 +7810,7 @@ MonoBehaviour:
   continuousSpawning: 0
   spawnPattern: 2
   waterAmount: 1
-  spawnInterval: 0.01
+  spawnInterval: 1
   spawnRadius: 10
   spawnDuration: 5
   loopSpawning: 1
@@ -7895,7 +7980,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: Assembly-CSharp::SlimeDecomposer
   requireDecomposeLayer: 1
   detectionInterval: 0.2
-  baseDamagePerSecond: 25
+  baseDamagePerSecond: 50
   minTrailDensity: 0.005
   damageMultiplier:
     serializedVersion: 2
@@ -7922,11 +8007,11 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   enableAttraction: 1
-  attractionStrength: 0.79
-  internalAttractionRadius: 0.5
-  showDebugGizmos: 1
-  logDecomposition: 1
-  debugDecomposition: 1
+  attractionStrength: 5
+  internalAttractionRadius: 0.05
+  showDebugGizmos: 0
+  logDecomposition: 0
+  debugDecomposition: 0
 --- !u!114 &1888117691
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7939,7 +8024,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: aeb48c81012b04041b88a8a63e97b57f, type: 3}
   m_Name: 
   m_EditorClassIdentifier: Assembly-CSharp::SlimeMoldManager
-  waterAttractionStrength: 60
+  waterAttractionStrength: 8
   autoFindSources: 1
   sourceRefreshInterval: 0.5
   manualWaterSources: []
@@ -7948,15 +8033,15 @@ MonoBehaviour:
   liquidSimulation: {fileID: 8009153335970302523}
   useLiquidSimulation: 1
   autoSyncBounds: 0
-  liquidAttractionMultiplier: 1.5
-  minWaterThreshold: 0.05
+  liquidAttractionMultiplier: 3
+  minWaterThreshold: 0
   enableCalamityHazard: 1
   hazardRefreshInterval: 0.25
   hazardGradientWidth: 0.8
   minimumHazardPixelRadius: 3
   avoidanceLayers:
     serializedVersion: 2
-    m_Bits: 32768
+    m_Bits: 0
   avoidanceStrength: 0.8
   avoidanceGradientWidth: 1
   avoidanceRefreshInterval: 0.1
@@ -7974,39 +8059,45 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   shader: {fileID: 7200000, guid: e4b9a491ba4848245b3df1095a872bc7, type: 3}
   width: 128
-  height: 96
+  height: 128
   numAgents: 1024
-  moveSpeed: 1.5
-  diffuseSpeed: 0.063
-  evaporateSpeed: 0.052
-  trailWeight: 0.377
-  idleSpeed: 0.03
-  attractedSpeedMultiplier: 1.5
-  sensorLength: 9
-  sensorAngle: 25
-  turnSpeed: 4
-  spawnX: 0.622
-  spawnY: 0.711
-  spawnRadius: 0.235
+  moveSpeed: 2
+  diffuseSpeed: 0.069
+  evaporateSpeed: 0.069
+  trailWeight: 0.986
+  idleSpeed: 0.266
+  attractedSpeedMultiplier: 3
+  sensorLength: 10.17
+  sensorAngle: 24.86
+  turnSpeed: 6.33
+  spawnX: 0.744
+  spawnY: 0.714
+  spawnRadius: 0.165
   boundingObject: {fileID: 620629126}
   worldBounds:
     serializedVersion: 2
-    x: -12.6
+    x: -22.6
     y: -5
     width: 20
     height: 20
-  pulseAmplitude: 0.2
-  pulseMinFreq: 0.3
-  pulseMaxFreq: 1.5
-  pulseWaveScale: 0
-  entropyScale: 0.05
-  entropySpeed: 0.15
-  entropyStrength: 0.4
+  pulseAmplitude: 0.023
+  pulseMinFreq: 0.186
+  pulseMaxFreq: 0.32
+  pulseWaveScale: 0.36
+  driftStrength: 0.51
+  driftSpeed: 0.195
+  entropyScale: 0.11
+  entropySpeed: 0.385
+  entropyStrength: 0.388
   hazardAvoidanceStrength: 8
-  decayColor: {r: 0.25, g: 0.15, b: 0.05, a: 1}
+  deathTint: {r: 0.7, g: 0.55, b: 0.1, a: 1}
   hazardCorrosionRate: 6
   hazardTrailDampen: 0.85
-  slimeColor: {r: 1, g: 0.9019608, b: 0.2, a: 1}
+  consumptionRate: 0.38
+  consumptionThreshold: 0.05
+  glowIntensity: 0.278
+  glowDecayRate: 1.01
+  slimeColor: {r: 1, g: 0.9, b: 0.2, a: 1}
   sortingOrder: 0
 --- !u!4 &1888117693
 Transform:
@@ -8069,11 +8160,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 6485533160007763511, guid: b6ff7e9fa6be6224db075a4f94c206ec, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -2.3600001
+      value: -4.61
       objectReference: {fileID: 0}
     - target: {fileID: 6485533160007763511, guid: b6ff7e9fa6be6224db075a4f94c206ec, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 6.2119994
+      value: 7.891
       objectReference: {fileID: 0}
     - target: {fileID: 6485533160007763511, guid: b6ff7e9fa6be6224db075a4f94c206ec, type: 3}
       propertyPath: m_LocalPosition.z
@@ -9796,6 +9887,63 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2058999813}
   m_CullTransparentMesh: 1
+--- !u!1001 &2061308653
+PrefabInstance:
+  m_ObjectHideFlags: 0
+  serializedVersion: 2
+  m_Modification:
+    serializedVersion: 3
+    m_TransformParent: {fileID: 0}
+    m_Modifications:
+    - target: {fileID: 883801098270646599, guid: 79ca12f6ae527cd4d85b485f38b6608b, type: 3}
+      propertyPath: m_Name
+      value: SoundManager
+      objectReference: {fileID: 0}
+    - target: {fileID: 8418047529450816963, guid: 79ca12f6ae527cd4d85b485f38b6608b, type: 3}
+      propertyPath: m_LocalPosition.x
+      value: 4.18922
+      objectReference: {fileID: 0}
+    - target: {fileID: 8418047529450816963, guid: 79ca12f6ae527cd4d85b485f38b6608b, type: 3}
+      propertyPath: m_LocalPosition.y
+      value: 7.03434
+      objectReference: {fileID: 0}
+    - target: {fileID: 8418047529450816963, guid: 79ca12f6ae527cd4d85b485f38b6608b, type: 3}
+      propertyPath: m_LocalPosition.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8418047529450816963, guid: 79ca12f6ae527cd4d85b485f38b6608b, type: 3}
+      propertyPath: m_LocalRotation.w
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 8418047529450816963, guid: 79ca12f6ae527cd4d85b485f38b6608b, type: 3}
+      propertyPath: m_LocalRotation.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8418047529450816963, guid: 79ca12f6ae527cd4d85b485f38b6608b, type: 3}
+      propertyPath: m_LocalRotation.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8418047529450816963, guid: 79ca12f6ae527cd4d85b485f38b6608b, type: 3}
+      propertyPath: m_LocalRotation.z
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8418047529450816963, guid: 79ca12f6ae527cd4d85b485f38b6608b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.x
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8418047529450816963, guid: 79ca12f6ae527cd4d85b485f38b6608b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.y
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 8418047529450816963, guid: 79ca12f6ae527cd4d85b485f38b6608b, type: 3}
+      propertyPath: m_LocalEulerAnglesHint.z
+      value: 0
+      objectReference: {fileID: 0}
+    m_RemovedComponents: []
+    m_RemovedGameObjects: []
+    m_AddedGameObjects: []
+    m_AddedComponents: []
+  m_SourcePrefab: {fileID: 100100000, guid: 79ca12f6ae527cd4d85b485f38b6608b, type: 3}
 --- !u!1 &2067722660
 GameObject:
   m_ObjectHideFlags: 0
@@ -10442,11 +10590,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 929353229041168039, guid: 81dd48242af209d4daaae9eb3e68241c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -5.45
+      value: -5.578
       objectReference: {fileID: 0}
     - target: {fileID: 929353229041168039, guid: 81dd48242af209d4daaae9eb3e68241c, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 8.282
+      value: 8.206
       objectReference: {fileID: 0}
     - target: {fileID: 929353229041168039, guid: 81dd48242af209d4daaae9eb3e68241c, type: 3}
       propertyPath: m_LocalPosition.z
@@ -10602,7 +10750,7 @@ MonoBehaviour:
   maxSplashVelocity: 15
   splashLayers:
     serializedVersion: 2
-    m_Bits: 6145
+    m_Bits: 137473
   checkInterval: 0.05
   enableEnhancedPhysics: 1
   crownCellCount: 12
@@ -10639,7 +10787,7 @@ MonoBehaviour:
   minTimeBeforeSecondaryCollision: 0.15
   particleCollisionLayers:
     serializedVersion: 2
-    m_Bits: 4416
+    m_Bits: 137537
   particleCollisionRadius: 0.05
   collisionBounceFactor: 0.4
   minMicroSplashVelocity: 1.5
@@ -10899,6 +11047,8 @@ SceneRoots:
   - {fileID: 439375416}
   - {fileID: 1757921225}
   - {fileID: 875588832}
+  - {fileID: 2061308653}
+  - {fileID: 125969187}
   - {fileID: 6299279438443426081}
   - {fileID: 7417241668615152285}
   - {fileID: 1783050729}

@@ -206,7 +206,7 @@ Preset:
     objectReference: {fileID: 0}
   - target: {fileID: 0}
     propertyPath: sortingOrder
-    value: 5
+    value: 0
     objectReference: {fileID: 0}
   m_ExcludedProperties: []
   m_CoupledType:

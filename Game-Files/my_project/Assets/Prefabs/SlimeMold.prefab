@@ -11,6 +11,7 @@ GameObject:
   - component: {fileID: 3283153483605907420}
   - component: {fileID: 8245078912163544819}
   - component: {fileID: 3889617876163172301}
+  - component: {fileID: 602978517246409758}
   m_Layer: 0
   m_Name: SlimeMold
   m_TagString: Untagged
@@ -47,40 +48,46 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   shader: {fileID: 7200000, guid: e4b9a491ba4848245b3df1095a872bc7, type: 3}
   width: 128
-  height: 96
+  height: 128
   numAgents: 1024
-  moveSpeed: 15
-  diffuseSpeed: 0.25
-  evaporateSpeed: 0.04
-  trailWeight: 0.35
-  idleSpeed: 0.3
-  attractedSpeedMultiplier: 2.5
-  sensorLength: 5
-  sensorAngle: 25
-  turnSpeed: 4
-  spawnX: 0.5
-  spawnY: 0.5
-  spawnRadius: 0.1
+  moveSpeed: 2
+  diffuseSpeed: 0.069
+  evaporateSpeed: 0.069
+  trailWeight: 0.986
+  idleSpeed: 0.266
+  attractedSpeedMultiplier: 3
+  sensorLength: 10.17
+  sensorAngle: 24.86
+  turnSpeed: 6.33
+  spawnX: 0.204
+  spawnY: 0.714
+  spawnRadius: 0.102
   boundingObject: {fileID: 0}
   worldBounds:
     serializedVersion: 2
-    x: -10
-    y: -7.5
-    width: 25
-    height: 25
-  pulseAmplitude: 0.2
-  pulseMinFreq: 0.3
-  pulseMaxFreq: 1.5
-  pulseWaveScale: 0
-  entropyScale: 0.05
-  entropySpeed: 0.15
-  entropyStrength: 0.4
+    x: -22.6
+    y: -5
+    width: 20
+    height: 20
+  pulseAmplitude: 0.023
+  pulseMinFreq: 0.186
+  pulseMaxFreq: 0.32
+  pulseWaveScale: 0.36
+  driftStrength: 0.51
+  driftSpeed: 0.195
+  entropyScale: 0.11
+  entropySpeed: 0.385
+  entropyStrength: 0.388
   hazardAvoidanceStrength: 8
-  decayColor: {r: 0.25, g: 0.15, b: 0.05, a: 1}
+  deathTint: {r: 0.7, g: 0.55, b: 0.1, a: 1}
   hazardCorrosionRate: 6
   hazardTrailDampen: 0.85
+  consumptionRate: 0.38
+  consumptionThreshold: 0.05
+  glowIntensity: 0.278
+  glowDecayRate: 1.01
   slimeColor: {r: 1, g: 0.9, b: 0.2, a: 1}
-  sortingOrder: 5
+  sortingOrder: 0
 --- !u!114 &3889617876163172301
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -92,8 +99,8 @@ MonoBehaviour:
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: aeb48c81012b04041b88a8a63e97b57f, type: 3}
   m_Name: 
-  m_EditorClassIdentifier: 
-  waterAttractionStrength: 40
+  m_EditorClassIdentifier: Assembly-CSharp::SlimeMoldManager
+  waterAttractionStrength: 8
   autoFindSources: 1
   sourceRefreshInterval: 0.5
   manualWaterSources: []
@@ -101,16 +108,62 @@ MonoBehaviour:
   mapUpdateInterval: 0.066
   liquidSimulation: {fileID: 0}
   useLiquidSimulation: 1
-  autoSyncBounds: 1
-  liquidAttractionMultiplier: 1
-  minWaterThreshold: 0.1
+  autoSyncBounds: 0
+  liquidAttractionMultiplier: 3
+  minWaterThreshold: 0
   enableCalamityHazard: 1
   hazardRefreshInterval: 0.25
-  hazardGradientWidth: 0.1
+  hazardGradientWidth: 0.8
   minimumHazardPixelRadius: 3
   avoidanceLayers:
     serializedVersion: 2
     m_Bits: 0
   avoidanceStrength: 0.8
-  avoidanceGradientWidth: 0.1
+  avoidanceGradientWidth: 1
   avoidanceRefreshInterval: 0.1
+--- !u!114 &602978517246409758
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8969033245560523579}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16316d0838a60ac489003418e026b952, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SlimeDecomposer
+  requireDecomposeLayer: 1
+  detectionInterval: 0.2
+  baseDamagePerSecond: 50
+  minTrailDensity: 0.005
+  damageMultiplier:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 1
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 1
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  enableAttraction: 1
+  attractionStrength: 5
+  internalAttractionRadius: 0.05
+  showDebugGizmos: 0
+  logDecomposition: 0
+  debugDecomposition: 0
