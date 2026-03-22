@@ -59,8 +59,8 @@ MonoBehaviour:
   sensorLength: 10.17
   sensorAngle: 24.86
   turnSpeed: 6.33
-  spawnX: 0.204
-  spawnY: 0.714
+  spawnX: 0.5
+  spawnY: 0.5
   spawnRadius: 0.102
   boundingObject: {fileID: 0}
   worldBounds:

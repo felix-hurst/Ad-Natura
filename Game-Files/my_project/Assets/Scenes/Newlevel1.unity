@@ -303,7 +303,7 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
@@ -2141,7 +2141,7 @@ Transform:
   m_GameObject: {fileID: 439375413}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.578, y: 9.206, z: -16}
+  m_LocalPosition: {x: 13.62, y: 7.76, z: -16}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2776,7 +2776,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.9041681, y: 7.434213, z: -16}
+  m_LocalPosition: {x: 8.545827, y: 7.434213, z: -16}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -4491,7 +4491,7 @@ MonoBehaviour:
   turnSpeed: 6.33
   spawnX: 0.417
   spawnY: 0.542
-  spawnRadius: 0.252
+  spawnRadius: 0.2
   boundingObject: {fileID: 1698587518}
   worldBounds:
     serializedVersion: 2
@@ -4796,8 +4796,8 @@ EdgeCollider2D:
   - {x: 2.013033, y: 1.6320105}
   - {x: 2.3945842, y: 1.1803514}
   - {x: 2.805557, y: 1.1766177}
-  - {x: 3.2104857, y: 0.6817627}
-  - {x: 4.2196045, y: 0.3563228}
+  - {x: 3.2105198, y: 0.66845137}
+  - {x: 3.2111797, y: 0.40782553}
   - {x: 22.199654, y: 0.29152107}
   - {x: 24.90012, y: 0.073712274}
   - {x: 25.67769, y: 0.05060161}
@@ -4955,7 +4955,7 @@ MonoBehaviour:
       spriteIndex: 0
       corner: 1
       m_CornerMode: 1
-    - position: {x: 4.2196045, y: 0.3563228, z: 0}
+    - position: {x: 3.2111797, y: 0.40782553, z: 0}
       leftTangent: {x: 0, y: 0, z: 0}
       rightTangent: {x: 0, y: 0, z: 0}
       mode: 0
@@ -5079,8 +5079,8 @@ MonoBehaviour:
   - {x: 2.013033, y: 1.6320105}
   - {x: 2.3945842, y: 1.1803514}
   - {x: 2.805557, y: 1.1766177}
-  - {x: 3.2104857, y: 0.6817627}
-  - {x: 4.2196045, y: 0.3563228}
+  - {x: 3.2105198, y: 0.66845137}
+  - {x: 3.2111797, y: 0.40782553}
   - {x: 22.199654, y: 0.29152107}
   - {x: 24.90012, y: 0.073712274}
   - {x: 25.67769, y: 0.05060161}
@@ -6170,8 +6170,8 @@ MonoBehaviour:
   sensorAngle: 24.86
   turnSpeed: 6.33
   spawnX: 0.488
-  spawnY: 0.571
-  spawnRadius: 0.237
+  spawnY: 0.5
+  spawnRadius: 0.2
   boundingObject: {fileID: 571507378}
   worldBounds:
     serializedVersion: 2
@@ -6245,7 +6245,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 7406257626581917475, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: -0.64
       objectReference: {fileID: 0}
     - target: {fileID: 7406257626581917475, guid: 460a967d89ed18f43ba326027cf14ef1, type: 3}
       propertyPath: m_LocalRotation.w
@@ -10590,11 +10590,11 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 929353229041168039, guid: 81dd48242af209d4daaae9eb3e68241c, type: 3}
       propertyPath: m_LocalPosition.x
-      value: -5.578
+      value: 13.62
       objectReference: {fileID: 0}
     - target: {fileID: 929353229041168039, guid: 81dd48242af209d4daaae9eb3e68241c, type: 3}
       propertyPath: m_LocalPosition.y
-      value: 8.206
+      value: 6.76
       objectReference: {fileID: 0}
     - target: {fileID: 929353229041168039, guid: 81dd48242af209d4daaae9eb3e68241c, type: 3}
       propertyPath: m_LocalPosition.z

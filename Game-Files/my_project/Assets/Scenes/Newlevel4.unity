@@ -311,8 +311,8 @@ EdgeCollider2D:
   - {x: -13.7675705, y: -5.5674706}
   - {x: -13.647247, y: 4.219862}
   - {x: -13.061723, y: 4.2093534}
-  - {x: -13.079838, y: -2.8234882}
-  - {x: 5.304753, y: -2.825984}
+  - {x: -13.092356, y: -2.5731444}
+  - {x: 5.304753, y: -2.5941744}
   - {x: 5.295376, y: 4.254378}
   - {x: 6.1677084, y: 4.2477727}
   - {x: 6.2852297, y: -5.642335}
@@ -360,7 +360,7 @@ MonoBehaviour:
       spriteIndex: 0
       corner: 1
       m_CornerMode: 1
-    - position: {x: -13.079838, y: -2.8234882, z: 0}
+    - position: {x: -13.092356, y: -2.5731444, z: 0}
       leftTangent: {x: 0, y: 0, z: 0}
       rightTangent: {x: 0, y: 0, z: 0}
       mode: 0
@@ -368,7 +368,7 @@ MonoBehaviour:
       spriteIndex: 0
       corner: 1
       m_CornerMode: 1
-    - position: {x: 5.304753, y: -2.825984, z: 0}
+    - position: {x: 5.304753, y: -2.5941744, z: 0}
       leftTangent: {x: 0, y: 0, z: 0}
       rightTangent: {x: 0, y: 0, z: 0}
       mode: 0
@@ -424,8 +424,8 @@ MonoBehaviour:
   - {x: -13.7675705, y: -5.5674706}
   - {x: -13.647247, y: 4.219862}
   - {x: -13.061723, y: 4.2093534}
-  - {x: -13.079838, y: -2.8234882}
-  - {x: 5.304753, y: -2.825984}
+  - {x: -13.092356, y: -2.5731444}
+  - {x: 5.304753, y: -2.5941744}
   - {x: 5.295376, y: 4.254378}
   - {x: 6.1677084, y: 4.2477727}
   - {x: 6.2852297, y: -5.642335}
@@ -574,157 +574,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 51249723}
   m_CullTransparentMesh: 1
---- !u!1 &79498007
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 79498009}
-  - component: {fileID: 79498008}
-  m_Layer: 0
-  m_Name: SlimeSporeSpawner (Ground+Sky)
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!114 &79498008
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 79498007}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: da808c5bdf68d1147bb5aaacf5b22273, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  particleTypes:
-  - name: Oak
-    mass: 0.00001
-    sizeRange: {x: 0.05, y: 0.1}
-    colorGradient:
-      serializedVersion: 2
-      key0: {r: 0.9056604, g: 0.7983741, b: 0.2691349, a: 1}
-      key1: {r: 0.8584906, g: 0.8275945, b: 0.44139376, a: 1}
-      key2: {r: 0.89019614, g: 0.8078432, b: 0.32941177, a: 1}
-      key3: {r: 0.9058824, g: 0.8862746, b: 0.6431373, a: 0}
-      key4: {r: 0.9150943, g: 0.87639123, b: 0.3927999, a: 0}
-      key5: {r: 0, g: 0, b: 0, a: 0}
-      key6: {r: 0, g: 0, b: 0, a: 0}
-      key7: {r: 0, g: 0, b: 0, a: 0}
-      ctime0: 0
-      ctime1: 31804
-      ctime2: 36623
-      ctime3: 43176
-      ctime4: 65535
-      ctime5: 0
-      ctime6: 0
-      ctime7: 0
-      atime0: 0
-      atime1: 32382
-      atime2: 65535
-      atime3: 0
-      atime4: 0
-      atime5: 0
-      atime6: 0
-      atime7: 0
-      m_Mode: 2
-      m_ColorSpace: -1
-      m_NumColorKeys: 5
-      m_NumAlphaKeys: 3
-    spawnWeight: 0
-    drag: 0
-    airResistance: 2
-    flutter: 1.5
-    flutterSpeed: 3
-  autoSpawn: 1
-  spawnAllAtOnce: 1
-  instantSpawnCount: 100
-  spawnRate: 5
-  maxLeaves: 5000
-  spawnArea: {x: 3, y: 0.1}
-  leafMesh: {fileID: 0}
-  leafMaterial: {fileID: 0}
-  sizeRange: {x: 0.03, y: 0.08}
-  leafColorGradient:
-    serializedVersion: 2
-    key0: {r: 1, g: 1, b: 1, a: 1}
-    key1: {r: 1, g: 1, b: 1, a: 1}
-    key2: {r: 0, g: 0, b: 0, a: 0}
-    key3: {r: 0, g: 0, b: 0, a: 0}
-    key4: {r: 0, g: 0, b: 0, a: 0}
-    key5: {r: 0, g: 0, b: 0, a: 0}
-    key6: {r: 0, g: 0, b: 0, a: 0}
-    key7: {r: 0, g: 0, b: 0, a: 0}
-    ctime0: 0
-    ctime1: 65535
-    ctime2: 0
-    ctime3: 0
-    ctime4: 0
-    ctime5: 0
-    ctime6: 0
-    ctime7: 0
-    atime0: 0
-    atime1: 65535
-    atime2: 0
-    atime3: 0
-    atime4: 0
-    atime5: 0
-    atime6: 0
-    atime7: 0
-    m_Mode: 0
-    m_ColorSpace: -1
-    m_NumColorKeys: 2
-    m_NumAlphaKeys: 2
-  gravity: -9.81
-  mass: 0.0001
-  drag: 1.5
-  angularDrag: 2
-  airResistance: 2
-  flutter: 1.5
-  flutterSpeed: 3
-  enableCollision: 1
-  collisionLayers:
-    serializedVersion: 2
-    m_Bits: 3895
-  collisionBounce: 0.1
-  groundFriction: 0.8
-  contactDeleteTime: 15
-  minContactObjects: 2
-  groundedLiftMultiplier: 3
-  windMultiplier: 3
-  enableStickyLeaves: 1
-  stickyLeafChance: 0.3
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 0
-  minLifetime: 60
-  maxLifetime: 120
-  fadeOutDuration: 2
-  batchSize: 1023
-  maxCollisionChecksPerFrame: 200
-  showDebug: 0
---- !u!4 &79498009
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 79498007}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -3.065, y: 0.171, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children:
-  - {fileID: 1943956194}
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!1 &102287502
 GameObject:
   m_ObjectHideFlags: 0
@@ -1848,7 +1697,7 @@ GameObject:
   - component: {fileID: 507870056}
   - component: {fileID: 507870055}
   m_Layer: 0
-  m_Name: SporeSpawner (GroundOnly) (Interval)
+  m_Name: SporeSpawner
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -1910,7 +1759,7 @@ MonoBehaviour:
   instantSpawnCount: 0
   spawnRate: 0.5
   maxLeaves: 150
-  spawnArea: {x: 0.2, y: 1}
+  spawnArea: {x: 0.2, y: 0.5}
   leafMesh: {fileID: 0}
   leafMaterial: {fileID: 0}
   sizeRange: {x: 0.03, y: 0.08}
@@ -1981,157 +1830,7 @@ Transform:
   m_GameObject: {fileID: 507870054}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -5.629, y: 5.562, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!1 &616635185
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 616635187}
-  - component: {fileID: 616635186}
-  m_Layer: 0
-  m_Name: SporeSpawner (GroundOnly) (Instant)
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 0
---- !u!114 &616635186
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 616635185}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: da808c5bdf68d1147bb5aaacf5b22273, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  particleTypes:
-  - name: Oak
-    mass: 0.00001
-    sizeRange: {x: 0.05, y: 0.1}
-    colorGradient:
-      serializedVersion: 2
-      key0: {r: 0.9056604, g: 0.7983741, b: 0.2691349, a: 1}
-      key1: {r: 0.8584906, g: 0.8275945, b: 0.44139376, a: 1}
-      key2: {r: 0.89019614, g: 0.8078432, b: 0.32941177, a: 1}
-      key3: {r: 0.9058824, g: 0.8862746, b: 0.6431373, a: 0}
-      key4: {r: 0.9150943, g: 0.87639123, b: 0.3927999, a: 0}
-      key5: {r: 0, g: 0, b: 0, a: 0}
-      key6: {r: 0, g: 0, b: 0, a: 0}
-      key7: {r: 0, g: 0, b: 0, a: 0}
-      ctime0: 0
-      ctime1: 31804
-      ctime2: 36623
-      ctime3: 43176
-      ctime4: 65535
-      ctime5: 0
-      ctime6: 0
-      ctime7: 0
-      atime0: 0
-      atime1: 32382
-      atime2: 65535
-      atime3: 0
-      atime4: 0
-      atime5: 0
-      atime6: 0
-      atime7: 0
-      m_Mode: 2
-      m_ColorSpace: -1
-      m_NumColorKeys: 5
-      m_NumAlphaKeys: 3
-    spawnWeight: 0
-    drag: 0
-    airResistance: 2
-    flutter: 1.5
-    flutterSpeed: 3
-  autoSpawn: 1
-  spawnAllAtOnce: 1
-  instantSpawnCount: 50
-  spawnRate: 1
-  maxLeaves: 150
-  spawnArea: {x: 1, y: 0.1}
-  leafMesh: {fileID: 0}
-  leafMaterial: {fileID: 0}
-  sizeRange: {x: 0.03, y: 0.08}
-  leafColorGradient:
-    serializedVersion: 2
-    key0: {r: 1, g: 1, b: 1, a: 1}
-    key1: {r: 1, g: 1, b: 1, a: 1}
-    key2: {r: 0, g: 0, b: 0, a: 0}
-    key3: {r: 0, g: 0, b: 0, a: 0}
-    key4: {r: 0, g: 0, b: 0, a: 0}
-    key5: {r: 0, g: 0, b: 0, a: 0}
-    key6: {r: 0, g: 0, b: 0, a: 0}
-    key7: {r: 0, g: 0, b: 0, a: 0}
-    ctime0: 0
-    ctime1: 65535
-    ctime2: 0
-    ctime3: 0
-    ctime4: 0
-    ctime5: 0
-    ctime6: 0
-    ctime7: 0
-    atime0: 0
-    atime1: 65535
-    atime2: 0
-    atime3: 0
-    atime4: 0
-    atime5: 0
-    atime6: 0
-    atime7: 0
-    m_Mode: 0
-    m_ColorSpace: -1
-    m_NumColorKeys: 2
-    m_NumAlphaKeys: 2
-  gravity: -9.81
-  mass: 0.0001
-  drag: 1.5
-  angularDrag: 2
-  airResistance: 2
-  flutter: 1.5
-  flutterSpeed: 3
-  enableCollision: 1
-  collisionLayers:
-    serializedVersion: 2
-    m_Bits: 3863
-  collisionBounce: 0.1
-  groundFriction: 0.8
-  contactDeleteTime: 15
-  minContactObjects: 2
-  groundedLiftMultiplier: 3
-  windMultiplier: 3
-  enableStickyLeaves: 1
-  stickyLeafChance: 0.3
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 0
-  minLifetime: 10
-  maxLifetime: 30
-  fadeOutDuration: 2
-  batchSize: 1023
-  maxCollisionChecksPerFrame: 200
-  showDebug: 0
---- !u!4 &616635187
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 616635185}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: -4.21, y: 0.171, z: 0}
+  m_LocalPosition: {x: -5.6423, y: 5.562, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2213,9 +1912,9 @@ MonoBehaviour:
   sensorLength: 10.17
   sensorAngle: 24.86
   turnSpeed: 6.33
-  spawnX: 0.476
-  spawnY: 0.518
-  spawnRadius: 0.483
+  spawnX: 0.5
+  spawnY: 0.5
+  spawnRadius: 0.5
   boundingObject: {fileID: 701813565}
   worldBounds:
     serializedVersion: 2
@@ -2411,7 +2110,7 @@ BoxCollider2D:
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
-  m_Offset: {x: -0.43603447, y: -1.0338941}
+  m_Offset: {x: -0.43603447, y: -1.0149069}
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0, y: 0}
@@ -2421,7 +2120,7 @@ BoxCollider2D:
     drawMode: 0
     adaptiveTiling: 0
   m_AutoTiling: 0
-  m_Size: {x: 0.18789381, y: 1.1489465}
+  m_Size: {x: 0.23635954, y: 0.8891971}
   m_EdgeRadius: 0
 --- !u!4 &701813567
 Transform:
@@ -2646,12 +2345,12 @@ MonoBehaviour:
   minLeavesPerCluster: 10
   maxSimultaneousSlimes: 1
   spawnCooldown: 3
-  zoneFloorY: -4.5
+  zoneFloorY: -3.5
   spawnXJitter: 0.1
   scaleWithClusterSize: 0
-  minSlimeWidth: 5
-  maxSlimeWidth: 5
-  slimeHeight: 5
+  minSlimeWidth: 4
+  maxSlimeWidth: 4
+  slimeHeight: 4
   despawnWhenLeavesGone: 0
   fadeOutDuration: 2
   maxSlimeLifetime: 0
@@ -2842,8 +2541,8 @@ SpriteRenderer:
   m_AutoUVMaxDistance: 0.5
   m_AutoUVMaxAngle: 89
   m_LightmapParameters: {fileID: 0}
-  m_SortingLayerID: 0
-  m_SortingLayer: 0
+  m_SortingLayerID: 1025954641
+  m_SortingLayer: 1
   m_SortingOrder: 0
   m_Sprite: {fileID: -4948552566806096487, guid: 78f2d4f8e5068774bac9b8894e57b494, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
@@ -2865,7 +2564,7 @@ Transform:
   m_GameObject: {fileID: 1035176153}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 0.57, y: 3.43, z: -4}
+  m_LocalPosition: {x: 0.57, y: 3.1, z: -4}
   m_LocalScale: {x: 4, y: 4, z: 4}
   m_ConstrainProportionsScale: 1
   m_Children:
@@ -3182,7 +2881,7 @@ Transform:
   m_GameObject: {fileID: 1312008417}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -1.3796034, y: 2.942509, z: -13}
+  m_LocalPosition: {x: -2.1595745, y: 2.8449986, z: -13}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3299,9 +2998,9 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   spawnZones:
-  - center: {x: -1.82, y: 2.34}
+  - center: {x: -2.46, y: 2.34}
     size: {x: 2.43, y: 9.1}
-    groundY: -3
+    groundY: -0.12
     maxObjects: 2
     useGroundRaycast: 0
     groundLayer:
@@ -3311,7 +3010,7 @@ MonoBehaviour:
     spawnedObjects: []
   - center: {x: 4.07, y: 2.34}
     size: {x: 4.3, y: 9.1}
-    groundY: -3
+    groundY: -1.5
     maxObjects: 2
     useGroundRaycast: 0
     groundLayer:
@@ -3320,27 +3019,27 @@ MonoBehaviour:
     gizmoColor: {r: 0, g: 0, b: 0, a: 0}
     spawnedObjects: []
   spawnParams:
-    baseWidthRange: {x: 1, y: 3}
-    heightRange: {x: 6, y: 8}
+    baseWidthRange: {x: 1, y: 2.5}
+    heightRange: {x: 4, y: 6}
     topWidthRange: {x: 0.2, y: 0.8}
     roughnessRange: {x: 0.05, y: 0.25}
     edgeVerticesRange: {x: 4, y: 12}
     asymmetryRange: {x: 0, y: 0.4}
     branchCountRange: {x: 0, y: 3}
     branchSizeRange: {x: 0.15, y: 0.5}
-    minColor: {r: 0.1, g: 0.05, b: 0.15, a: 1}
-    maxColor: {r: 0.25, g: 0.1, b: 0.35, a: 1}
+    minColor: {r: 0.14288893, g: 0.1792453, b: 0.15464337, a: 1}
+    maxColor: {r: 0.13428049, g: 0.12179603, b: 0.16037738, a: 1}
     materialTag: Calamity
     sortingOrder: 5
     sortingLayer: Default
     enableMist: 1
-    mistColor: {r: 0.04, g: 0.02, b: 0.06, a: 1}
-    mistColorAlt: {r: 0.08, g: 0.05, b: 0.1, a: 1}
-    mistOpacity: 0.6
+    mistColor: {r: 0, g: 0, b: 0, a: 1}
+    mistColorAlt: {r: 0, g: 0, b: 0, a: 1}
+    mistOpacity: 0.5
     mistVorticity: 18
-    mistEmitterStrength: 0.03
-    mistDensityStrength: 0.018
-    mistResolution: 64
+    mistEmitterStrength: 0.01
+    mistDensityStrength: 0.005
+    mistResolution: 256
     mistObstacleLayerMask:
       serializedVersion: 2
       m_Bits: 0
@@ -4992,7 +4691,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!212 &1797226060
 SpriteRenderer:
   m_ObjectHideFlags: 0
@@ -5292,156 +4991,6 @@ CanvasRenderer:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 1871140094}
   m_CullTransparentMesh: 1
---- !u!1 &1943956193
-GameObject:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  serializedVersion: 6
-  m_Component:
-  - component: {fileID: 1943956194}
-  - component: {fileID: 1943956195}
-  m_Layer: 0
-  m_Name: SlimeSporeSpawner (Sky)
-  m_TagString: Untagged
-  m_Icon: {fileID: 0}
-  m_NavMeshLayer: 0
-  m_StaticEditorFlags: 0
-  m_IsActive: 1
---- !u!4 &1943956194
-Transform:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1943956193}
-  serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
-  m_LocalPosition: {x: 0, y: 3.38, z: 0}
-  m_LocalScale: {x: 1, y: 1, z: 1}
-  m_ConstrainProportionsScale: 0
-  m_Children: []
-  m_Father: {fileID: 79498009}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &1943956195
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1943956193}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: da808c5bdf68d1147bb5aaacf5b22273, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  particleTypes:
-  - name: Oak
-    mass: 0.00001
-    sizeRange: {x: 0.05, y: 0.1}
-    colorGradient:
-      serializedVersion: 2
-      key0: {r: 0.9056604, g: 0.7983741, b: 0.2691349, a: 1}
-      key1: {r: 0.8584906, g: 0.8275945, b: 0.44139376, a: 1}
-      key2: {r: 0.89019614, g: 0.8078432, b: 0.32941177, a: 1}
-      key3: {r: 0.9058824, g: 0.8862746, b: 0.6431373, a: 0}
-      key4: {r: 0.9150943, g: 0.87639123, b: 0.3927999, a: 0}
-      key5: {r: 0, g: 0, b: 0, a: 0}
-      key6: {r: 0, g: 0, b: 0, a: 0}
-      key7: {r: 0, g: 0, b: 0, a: 0}
-      ctime0: 0
-      ctime1: 31804
-      ctime2: 36623
-      ctime3: 43176
-      ctime4: 65535
-      ctime5: 0
-      ctime6: 0
-      ctime7: 0
-      atime0: 0
-      atime1: 32382
-      atime2: 65535
-      atime3: 0
-      atime4: 0
-      atime5: 0
-      atime6: 0
-      atime7: 0
-      m_Mode: 2
-      m_ColorSpace: -1
-      m_NumColorKeys: 5
-      m_NumAlphaKeys: 3
-    spawnWeight: 0
-    drag: 0
-    airResistance: 2
-    flutter: 1.5
-    flutterSpeed: 3
-  autoSpawn: 1
-  spawnAllAtOnce: 0
-  instantSpawnCount: 0
-  spawnRate: 2
-  maxLeaves: 150
-  spawnArea: {x: 3, y: 1}
-  leafMesh: {fileID: 0}
-  leafMaterial: {fileID: 0}
-  sizeRange: {x: 0.03, y: 0.08}
-  leafColorGradient:
-    serializedVersion: 2
-    key0: {r: 1, g: 1, b: 1, a: 1}
-    key1: {r: 1, g: 1, b: 1, a: 1}
-    key2: {r: 0, g: 0, b: 0, a: 0}
-    key3: {r: 0, g: 0, b: 0, a: 0}
-    key4: {r: 0, g: 0, b: 0, a: 0}
-    key5: {r: 0, g: 0, b: 0, a: 0}
-    key6: {r: 0, g: 0, b: 0, a: 0}
-    key7: {r: 0, g: 0, b: 0, a: 0}
-    ctime0: 0
-    ctime1: 65535
-    ctime2: 0
-    ctime3: 0
-    ctime4: 0
-    ctime5: 0
-    ctime6: 0
-    ctime7: 0
-    atime0: 0
-    atime1: 65535
-    atime2: 0
-    atime3: 0
-    atime4: 0
-    atime5: 0
-    atime6: 0
-    atime7: 0
-    m_Mode: 0
-    m_ColorSpace: -1
-    m_NumColorKeys: 2
-    m_NumAlphaKeys: 2
-  gravity: -9.81
-  mass: 0.0001
-  drag: 1.5
-  angularDrag: 2
-  airResistance: 2
-  flutter: 1.5
-  flutterSpeed: 3
-  enableCollision: 1
-  collisionLayers:
-    serializedVersion: 2
-    m_Bits: 3895
-  collisionBounce: 0.1
-  groundFriction: 0.8
-  contactDeleteTime: 15
-  minContactObjects: 2
-  groundedLiftMultiplier: 3
-  windMultiplier: 3
-  enableStickyLeaves: 1
-  stickyLeafChance: 0.3
-  groundLayer:
-    serializedVersion: 2
-    m_Bits: 0
-  minLifetime: 60
-  maxLifetime: 120
-  fadeOutDuration: 2
-  batchSize: 1023
-  maxCollisionChecksPerFrame: 200
-  showDebug: 0
 --- !u!1 &1998950476
 GameObject:
   m_ObjectHideFlags: 0
@@ -5604,7 +5153,7 @@ BoxCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 0
+  m_IsTrigger: 1
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
@@ -5950,7 +5499,7 @@ MonoBehaviour:
     AngularDampingMode: 0
     RotationDamping: {x: 1, y: 1, z: 1}
     QuaternionDamping: 1
-  FollowOffset: {x: 0, y: 2, z: -10}
+  FollowOffset: {x: 0, y: 1.5, z: -10}
 --- !u!114 &2127377786
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6003,7 +5552,7 @@ Transform:
   m_GameObject: {fileID: 2127377783}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -8.60504, y: 3.345, z: -13}
+  m_LocalPosition: {x: -8.60504, y: 2.845, z: -13}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -6169,12 +5718,8 @@ SceneRoots:
   - {fileID: 364007623}
   - {fileID: 899229633}
   - {fileID: 2083396168}
-  - {fileID: 79498009}
-  - {fileID: 507870056}
-  - {fileID: 616635187}
   - {fileID: 30921093}
   - {fileID: 1638700590}
-  - {fileID: 653717210}
   - {fileID: 217469065}
   - {fileID: 1322439318}
   - {fileID: 1350166276}
@@ -6182,3 +5727,5 @@ SceneRoots:
   - {fileID: 1797226061}
   - {fileID: 1035176155}
   - {fileID: 2011546544}
+  - {fileID: 653717210}
+  - {fileID: 507870056}
