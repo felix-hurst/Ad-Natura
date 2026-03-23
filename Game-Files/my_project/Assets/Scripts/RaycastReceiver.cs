@@ -487,8 +487,8 @@ public class RaycastReceiver : MonoBehaviour
         if (originalSR != null)
         {
             pieceSR.sortingLayerName = originalSR.sortingLayerName;
-            pieceSR.sortingOrder     = originalSR.sortingOrder;
-            pieceSR.color            = originalSR.color;
+            pieceSR.sortingOrder = originalSR.sortingOrder;
+            pieceSR.color = originalSR.color;
             Debug.Log($"[RR.Spawn] {largePiece.name} | pieceSR color from originalSR = {pieceSR.color}");
         }
         else
@@ -497,9 +497,9 @@ public class RaycastReceiver : MonoBehaviour
             Debug.Log($"[RR.Spawn] {largePiece.name} | no originalSR — pieceSR color from cachedObjectColor = {pieceSR.color}");
         }
 
-ObjectReshape pieceReshape = largePiece.AddComponent<ObjectReshape>();
-pieceReshape.SetOriginalSpriteBounds(spriteBoundsForUV);
-pieceReshape.SetRenderColor(cachedObjectColor); // ← add this line
+        ObjectReshape pieceReshape = largePiece.AddComponent<ObjectReshape>();
+        pieceReshape.SetOriginalSpriteBounds(spriteBoundsForUV);
+        pieceReshape.SetRenderColor(cachedObjectColor); // ← add this line
 
         PixelatedCutRenderer piecePixelRenderer = largePiece.AddComponent<PixelatedCutRenderer>();
 
@@ -512,7 +512,7 @@ pieceReshape.SetRenderColor(cachedObjectColor); // ← add this line
         if (profileManager != null && cutProfile.strength > 0.01f)
         {
             Vector2 localEntry = largePiece.transform.InverseTransformPoint(entryPoint);
-            Vector2 localExit  = largePiece.transform.InverseTransformPoint(exitPoint);
+            Vector2 localExit = largePiece.transform.InverseTransformPoint(exitPoint);
             irregularShape = profileManager.ApplyIrregularCut(localVertices, localEntry, localExit, cutProfile);
         }
 
@@ -520,7 +520,7 @@ pieceReshape.SetRenderColor(cachedObjectColor); // ← add this line
         if (piecePixelRenderer != null)
         {
             Vector2 localEntry = largePiece.transform.InverseTransformPoint(entryPoint);
-            Vector2 localExit  = largePiece.transform.InverseTransformPoint(exitPoint);
+            Vector2 localExit = largePiece.transform.InverseTransformPoint(exitPoint);
             pixelatedShape = piecePixelRenderer.PixelatePolygonWithCutLine(irregularShape, localEntry, localExit);
         }
 
@@ -542,14 +542,14 @@ pieceReshape.SetRenderColor(cachedObjectColor); // ← add this line
         rb.constraints = RigidbodyConstraints2D.None;
 
         RaycastReceiver pieceReceiver = largePiece.AddComponent<RaycastReceiver>();
-        pieceReceiver.highlightMode            = this.highlightMode;
-        pieceReceiver.showCutOutline           = this.showCutOutline;
+        pieceReceiver.highlightMode = this.highlightMode;
+        pieceReceiver.showCutOutline = this.showCutOutline;
         pieceReceiver.largePieceMassMultiplier = this.largePieceMassMultiplier;
-        pieceReceiver.largePieceForceRange     = this.largePieceForceRange;
-        pieceReceiver.cutPieceLifetime         = this.cutPieceLifetime;
-        pieceReceiver.enableAutoCleanup        = this.enableAutoCleanup;
-        pieceReceiver.minAreaThreshold         = this.minAreaThreshold;
-        pieceReceiver.enableMinSizeCheck       = this.enableMinSizeCheck;
+        pieceReceiver.largePieceForceRange = this.largePieceForceRange;
+        pieceReceiver.cutPieceLifetime = this.cutPieceLifetime;
+        pieceReceiver.enableAutoCleanup = this.enableAutoCleanup;
+        pieceReceiver.minAreaThreshold = this.minAreaThreshold;
+        pieceReceiver.enableMinSizeCheck = this.enableMinSizeCheck;
         pieceReceiver.SetOriginalSpriteBounds(spriteBoundsForUV, textureForPiece);
         pieceReceiver.SetCachedColor(cachedObjectColor);
         pieceReceiver.MarkAsOriginalCutPiece();
@@ -596,9 +596,9 @@ pieceReshape.SetRenderColor(cachedObjectColor); // ← add this line
         meshObject.transform.SetParent(piece.transform);
         meshObject.transform.localPosition = Vector3.zero;
         meshObject.transform.localRotation = Quaternion.identity;
-        meshObject.transform.localScale    = Vector3.one;
+        meshObject.transform.localScale = Vector3.one;
 
-        MeshFilter   meshFilter   = meshObject.AddComponent<MeshFilter>();
+        MeshFilter meshFilter = meshObject.AddComponent<MeshFilter>();
         MeshRenderer meshRenderer = meshObject.AddComponent<MeshRenderer>();
 
         Texture2D texture = sourceTexture;
@@ -626,13 +626,13 @@ pieceReshape.SetRenderColor(cachedObjectColor); // ← add this line
         if (parentSR != null)
         {
             meshRenderer.sortingLayerName = parentSR.sortingLayerName;
-            meshRenderer.sortingOrder     = parentSR.sortingOrder;
+            meshRenderer.sortingOrder = parentSR.sortingOrder;
         }
         meshRenderer.material = material;
 
         Mesh mesh = CreateMeshFromPolygonWithSpriteBounds(localVertices, piece.transform, originalBounds);
         if (mesh != null) meshFilter.mesh = mesh;
-        else              Destroy(meshObject);
+        else Destroy(meshObject);
     }
     Mesh CreateMeshFromPolygonWithSpriteBounds(List<Vector2> localVertices, Transform pieceTransform, Bounds originalBounds)
     {
@@ -642,7 +642,7 @@ pieceReshape.SetRenderColor(cachedObjectColor); // ← add this line
         mesh.name = "LargePieceMesh";
 
         Vector3[] vertices3D = new Vector3[localVertices.Count];
-        Vector2[] uvs        = new Vector2[localVertices.Count];
+        Vector2[] uvs = new Vector2[localVertices.Count];
 
         for (int i = 0; i < localVertices.Count; i++)
         {
