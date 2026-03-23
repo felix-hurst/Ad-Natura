@@ -32,7 +32,7 @@ public class PlantSeedsObjective : MonoBehaviour
             timer += Time.deltaTime;
             for (int i = 0; i < numberOfSeedsToPlant; i++)
             {
-                if (timer >= timeForSproutsToGrow + i*timeBetweenSprouts)
+                if (timer >= timeForSproutsToGrow + i * timeBetweenSprouts)
                 {
                     clearUI.SetActive(false);
                     sprouts[i].SetActive(true);
