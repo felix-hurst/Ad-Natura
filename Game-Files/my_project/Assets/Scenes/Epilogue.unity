@@ -263,9 +263,9 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: My final mission is complete. The flower has been replanted. Now we can
-    only hope that its growth restores the natural environment we lost. It will likely
-    take lifetimes before our world fully recovers...
+  m_text: My final mission is complete. The flowers have been replanted. Now we can
+    only hope that their growth restores the natural environment we lost. It will
+    likely take lifetimes before our world fully recovers...
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a45b4723eb54a8b418468a699634e4cd, type: 2}
   m_sharedMaterial: {fileID: 5950487263263938589, guid: a45b4723eb54a8b418468a699634e4cd, type: 2}

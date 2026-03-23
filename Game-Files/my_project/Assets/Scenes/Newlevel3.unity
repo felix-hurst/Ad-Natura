@@ -2361,7 +2361,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.0266886, y: 7.339149, z: -10}
+  m_LocalPosition: {x: 2.0266886, y: 7.339149, z: -13}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5755,7 +5755,7 @@ Transform:
   m_GameObject: {fileID: 1352424670}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -5.587, y: 9.245, z: -10}
+  m_LocalPosition: {x: -5.587, y: 9.245, z: -13}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -5779,7 +5779,7 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 929353229041168039, guid: 81dd48242af209d4daaae9eb3e68241c, type: 3}
       propertyPath: m_LocalPosition.z
-      value: 0
+      value: -3
       objectReference: {fileID: 0}
     - target: {fileID: 929353229041168039, guid: 81dd48242af209d4daaae9eb3e68241c, type: 3}
       propertyPath: m_LocalRotation.w
@@ -7370,11 +7370,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     - target: {fileID: 3406898395983688105, guid: b6ff7e9fa6be6224db075a4f94c206ec, type: 3}
       propertyPath: m_Name
-      value: 'Mission Log #3: Near Calamity'
+      value: 'Mission Log #3: Calamity'
       objectReference: {fileID: 0}
     - target: {fileID: 3435467237574143893, guid: b6ff7e9fa6be6224db075a4f94c206ec, type: 3}
       propertyPath: journalTitle
-      value: 'Mission Log #3: Near Calamity'
+      value: 'Mission Log #3: Calamity'
       objectReference: {fileID: 0}
     - target: {fileID: 3435467237574143893, guid: b6ff7e9fa6be6224db075a4f94c206ec, type: 3}
       propertyPath: journalFullText
@@ -9596,7 +9596,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &2061636029
 Transform:
   m_ObjectHideFlags: 0

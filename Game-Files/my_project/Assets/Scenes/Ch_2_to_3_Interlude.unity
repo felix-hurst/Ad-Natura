@@ -399,8 +399,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: It is now the year 2102. The scientists were finally able to finish breeding
-    the calamity-resistant plant that I delivered to them two years ago.
+  m_text: It is now the year 2101. The scientists were finally able to finish breeding
+    the calamity-resistant plant that I delivered to them last year.
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a45b4723eb54a8b418468a699634e4cd, type: 2}
   m_sharedMaterial: {fileID: 5950487263263938589, guid: a45b4723eb54a8b418468a699634e4cd, type: 2}
@@ -1096,8 +1096,8 @@ MonoBehaviour:
   m_OnCullStateChanged:
     m_PersistentCalls:
       m_Calls: []
-  m_text: 'Now, it is time to complete my final mission: To replant this brand new
-    seed where it belongs. Many other agents like me are replanting new seeds as
+  m_text: 'Now, it is time to complete my final mission: To replant these brand new
+    seeds where they belong. Many other agents like me are replanting new seeds as
     well.'
   m_isRightToLeft: 0
   m_fontAsset: {fileID: 11400000, guid: a45b4723eb54a8b418468a699634e4cd, type: 2}
