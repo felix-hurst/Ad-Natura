@@ -52,6 +52,7 @@ public class RaycastReceiver : MonoBehaviour
     private Bounds originalSpriteBounds;
     private bool hasOriginalSpriteBounds = false;
     private Texture2D originalSpriteTexture;
+    private Color cachedObjectColor = Color.white;
 
     void Start()
     {
@@ -85,6 +86,26 @@ public class RaycastReceiver : MonoBehaviour
             }
         }
 
+        // Capture color from whichever renderer is present
+        if (spriteRenderer != null)
+        {
+            cachedObjectColor = spriteRenderer.color;
+            Debug.Log($"[RR.Start] {gameObject.name} | source=SpriteRenderer | cachedObjectColor={cachedObjectColor}");
+        }
+        else
+        {
+            MeshRenderer mr = GetComponent<MeshRenderer>() ?? GetComponentInChildren<MeshRenderer>();
+            if (mr != null && mr.sharedMaterial != null)
+            {
+                cachedObjectColor = mr.sharedMaterial.color;
+                Debug.Log($"[RR.Start] {gameObject.name} | source=MeshRenderer ({mr.gameObject.name}) | sharedMat.color={mr.sharedMaterial.color} | cachedObjectColor={cachedObjectColor}");
+            }
+            else
+            {
+                Debug.LogWarning($"[RR.Start] {gameObject.name} | NO renderer found — cachedObjectColor stays WHITE");
+            }
+        }
+
         objectReshape = GetComponent<ObjectReshape>();
         if (objectReshape == null)
         {
@@ -94,6 +115,12 @@ public class RaycastReceiver : MonoBehaviour
             if (hasOriginalSpriteBounds)
                 objectReshape.SetOriginalSpriteBounds(originalSpriteBounds);
         }
+    }
+
+    public void SetCachedColor(Color color)
+    {
+        Debug.Log($"[RR.SetCachedColor] {gameObject.name} | color={color}");
+        cachedObjectColor = color;
     }
 
     public void MarkAsOriginalCutPiece()
@@ -319,6 +346,10 @@ public class RaycastReceiver : MonoBehaviour
         {
             SpawnLargeCutPiece(cutOffShape, totalCutOffArea, entryPoint, exitPoint, materialTag, cutProfile);
 
+            // Parent also moves to CutPiece layer now that it's been cut
+            int cutPieceLayer = LayerMask.NameToLayer("CutPiece");
+            if (cutPieceLayer != -1) gameObject.layer = cutPieceLayer;
+
             gameObject.name = originalParentName;
 
             if (isOriginalCutPiece)
@@ -387,9 +418,11 @@ public class RaycastReceiver : MonoBehaviour
             GameObject largePiece = SpawnLargeCutPiece(actualCutShape, totalCutOffArea, entryPoint, exitPoint, materialTag, cutProfile);
 
             if (largePiece != null && onPieceSpawned != null)
-            {
                 onPieceSpawned.Invoke(largePiece);
-            }
+
+            // Parent also moves to CutPiece layer now that it's been cut
+            int cutPieceLayer = LayerMask.NameToLayer("CutPiece");
+            if (cutPieceLayer != -1) gameObject.layer = cutPieceLayer;
 
             gameObject.name = originalParentName;
 
@@ -415,7 +448,7 @@ public class RaycastReceiver : MonoBehaviour
     GameObject SpawnLargeCutPiece(List<Vector2> cutOffShape, float targetArea, Vector2 entryPoint, Vector2 exitPoint,
                                    string materialTag, CutProfile cutProfile)
     {
-        Debug.Log($"[RaycastReceiver] SpawnLargeCutPiece on {gameObject.name}");
+        Debug.Log($"[RR.Spawn] SpawnLargeCutPiece on {gameObject.name} | cachedObjectColor={cachedObjectColor}");
 
         // Capture the original sprite bounds (world space) before the object changes
         Bounds spriteBoundsForUV = hasOriginalSpriteBounds ? originalSpriteBounds : GetObjectRendererBounds();
@@ -426,12 +459,8 @@ public class RaycastReceiver : MonoBehaviour
         GameObject largePiece = new GameObject($"{gameObject.name}_CutPiece");
         try { largePiece.tag = gameObject.tag; } catch (UnityException) { }
         int cutPieceLayer = LayerMask.NameToLayer("CutPiece");
-        Debug.Log($"[RaycastReceiver] CutPiece layer index = {cutPieceLayer}, setting on '{largePiece.name}'");
         if (cutPieceLayer != -1)
-        {
             largePiece.layer = cutPieceLayer;
-            Debug.Log($"[RaycastReceiver] '{largePiece.name}' layer is now: {LayerMask.LayerToName(largePiece.layer)}");
-        }
         else
             Debug.LogWarning("[RaycastReceiver] 'CutPiece' layer not found — add it in Project Settings > Tags and Layers.");
 
@@ -458,14 +487,19 @@ public class RaycastReceiver : MonoBehaviour
         if (originalSR != null)
         {
             pieceSR.sortingLayerName = originalSR.sortingLayerName;
-            pieceSR.sortingOrder = originalSR.sortingOrder;
-            pieceSR.color = originalSR.color;
+            pieceSR.sortingOrder     = originalSR.sortingOrder;
+            pieceSR.color            = originalSR.color;
+            Debug.Log($"[RR.Spawn] {largePiece.name} | pieceSR color from originalSR = {pieceSR.color}");
+        }
+        else
+        {
+            pieceSR.color = cachedObjectColor;
+            Debug.Log($"[RR.Spawn] {largePiece.name} | no originalSR — pieceSR color from cachedObjectColor = {pieceSR.color}");
         }
 
-        // KEY FIX: store reference and immediately set original bounds so ObjectReshape
-        // uses correct UVs when this piece is later cut again (producing _CutMesh)
-        ObjectReshape pieceReshape = largePiece.AddComponent<ObjectReshape>();
-        pieceReshape.SetOriginalSpriteBounds(spriteBoundsForUV);
+ObjectReshape pieceReshape = largePiece.AddComponent<ObjectReshape>();
+pieceReshape.SetOriginalSpriteBounds(spriteBoundsForUV);
+pieceReshape.SetRenderColor(cachedObjectColor); // ← add this line
 
         PixelatedCutRenderer piecePixelRenderer = largePiece.AddComponent<PixelatedCutRenderer>();
 
@@ -478,7 +512,7 @@ public class RaycastReceiver : MonoBehaviour
         if (profileManager != null && cutProfile.strength > 0.01f)
         {
             Vector2 localEntry = largePiece.transform.InverseTransformPoint(entryPoint);
-            Vector2 localExit = largePiece.transform.InverseTransformPoint(exitPoint);
+            Vector2 localExit  = largePiece.transform.InverseTransformPoint(exitPoint);
             irregularShape = profileManager.ApplyIrregularCut(localVertices, localEntry, localExit, cutProfile);
         }
 
@@ -486,7 +520,7 @@ public class RaycastReceiver : MonoBehaviour
         if (piecePixelRenderer != null)
         {
             Vector2 localEntry = largePiece.transform.InverseTransformPoint(entryPoint);
-            Vector2 localExit = largePiece.transform.InverseTransformPoint(exitPoint);
+            Vector2 localExit  = largePiece.transform.InverseTransformPoint(exitPoint);
             pixelatedShape = piecePixelRenderer.PixelatePolygonWithCutLine(irregularShape, localEntry, localExit);
         }
 
@@ -494,7 +528,8 @@ public class RaycastReceiver : MonoBehaviour
         polyCollider.points = irregularShape.ToArray();
         polyCollider.enabled = false;
 
-        CreateLargePieceMesh(largePiece, pixelatedShape, materialTag, spriteBoundsForUV, textureForPiece, originalSR);
+        Debug.Log($"[RR.Spawn] Calling CreateLargePieceMesh | fallbackColor={cachedObjectColor} | texture={(textureForPiece != null ? textureForPiece.name : "NULL")} | parentSR={(originalSR != null ? originalSR.color.ToString() : "NULL")}");
+        CreateLargePieceMesh(largePiece, pixelatedShape, materialTag, spriteBoundsForUV, textureForPiece, originalSR, cachedObjectColor);
 
         Rigidbody2D rb = largePiece.AddComponent<Rigidbody2D>();
         rb.bodyType = RigidbodyType2D.Kinematic;
@@ -506,19 +541,20 @@ public class RaycastReceiver : MonoBehaviour
         rb.sleepMode = RigidbodySleepMode2D.StartAwake;
         rb.constraints = RigidbodyConstraints2D.None;
 
-        // KEY FIX: pass original bounds to the piece's RaycastReceiver so any further
-        // cuts on this piece (producing _CutPiece_CutMesh) also UV correctly
         RaycastReceiver pieceReceiver = largePiece.AddComponent<RaycastReceiver>();
-        pieceReceiver.highlightMode = this.highlightMode;
-        pieceReceiver.showCutOutline = this.showCutOutline;
+        pieceReceiver.highlightMode            = this.highlightMode;
+        pieceReceiver.showCutOutline           = this.showCutOutline;
         pieceReceiver.largePieceMassMultiplier = this.largePieceMassMultiplier;
-        pieceReceiver.largePieceForceRange = this.largePieceForceRange;
-        pieceReceiver.cutPieceLifetime = this.cutPieceLifetime;
-        pieceReceiver.enableAutoCleanup = this.enableAutoCleanup;
-        pieceReceiver.minAreaThreshold = this.minAreaThreshold;
-        pieceReceiver.enableMinSizeCheck = this.enableMinSizeCheck;
+        pieceReceiver.largePieceForceRange     = this.largePieceForceRange;
+        pieceReceiver.cutPieceLifetime         = this.cutPieceLifetime;
+        pieceReceiver.enableAutoCleanup        = this.enableAutoCleanup;
+        pieceReceiver.minAreaThreshold         = this.minAreaThreshold;
+        pieceReceiver.enableMinSizeCheck       = this.enableMinSizeCheck;
         pieceReceiver.SetOriginalSpriteBounds(spriteBoundsForUV, textureForPiece);
+        pieceReceiver.SetCachedColor(cachedObjectColor);
         pieceReceiver.MarkAsOriginalCutPiece();
+
+        Debug.Log($"[RR.Spawn] pieceReceiver on {largePiece.name} | SetCachedColor({cachedObjectColor}) called");
 
         if (enableAutoCleanup)
         {
@@ -551,7 +587,8 @@ public class RaycastReceiver : MonoBehaviour
     }
 
     void CreateLargePieceMesh(GameObject piece, List<Vector2> localVertices, string materialTag,
-                               Bounds originalBounds, Texture2D sourceTexture, SpriteRenderer parentSR)
+                            Bounds originalBounds, Texture2D sourceTexture, SpriteRenderer parentSR,
+                            Color fallbackColor)
     {
         if (localVertices == null || localVertices.Count < 3) return;
 
@@ -559,9 +596,9 @@ public class RaycastReceiver : MonoBehaviour
         meshObject.transform.SetParent(piece.transform);
         meshObject.transform.localPosition = Vector3.zero;
         meshObject.transform.localRotation = Quaternion.identity;
-        meshObject.transform.localScale = Vector3.one;
+        meshObject.transform.localScale    = Vector3.one;
 
-        MeshFilter meshFilter = meshObject.AddComponent<MeshFilter>();
+        MeshFilter   meshFilter   = meshObject.AddComponent<MeshFilter>();
         MeshRenderer meshRenderer = meshObject.AddComponent<MeshRenderer>();
 
         Texture2D texture = sourceTexture;
@@ -574,21 +611,29 @@ public class RaycastReceiver : MonoBehaviour
 
         Shader shader = Shader.Find("Sprites/Default") ?? Shader.Find("Unlit/Texture");
         Material material = new Material(shader);
-        if (texture != null) material.mainTexture = texture;
-        else if (parentSR != null) material.color = parentSR.color;
+
+        if (texture != null)
+            material.mainTexture = texture;
+
+        // Always apply color — Sprites/Default multiplies texture by color.
+        // Previously this was inside an else-if, so a blank white texture
+        // from MaterialTextureGenerator prevented the color from ever being set.
+        if (parentSR != null)
+            material.color = fallbackColor; // parentSR.color == fallbackColor at this point
+        else
+            material.color = fallbackColor;
 
         if (parentSR != null)
         {
             meshRenderer.sortingLayerName = parentSR.sortingLayerName;
-            meshRenderer.sortingOrder = parentSR.sortingOrder;
+            meshRenderer.sortingOrder     = parentSR.sortingOrder;
         }
         meshRenderer.material = material;
 
         Mesh mesh = CreateMeshFromPolygonWithSpriteBounds(localVertices, piece.transform, originalBounds);
         if (mesh != null) meshFilter.mesh = mesh;
-        else Destroy(meshObject);
+        else              Destroy(meshObject);
     }
-
     Mesh CreateMeshFromPolygonWithSpriteBounds(List<Vector2> localVertices, Transform pieceTransform, Bounds originalBounds)
     {
         if (localVertices == null || localVertices.Count < 3) return null;
@@ -597,7 +642,7 @@ public class RaycastReceiver : MonoBehaviour
         mesh.name = "LargePieceMesh";
 
         Vector3[] vertices3D = new Vector3[localVertices.Count];
-        Vector2[] uvs = new Vector2[localVertices.Count];
+        Vector2[] uvs        = new Vector2[localVertices.Count];
 
         for (int i = 0; i < localVertices.Count; i++)
         {
