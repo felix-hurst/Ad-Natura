@@ -1,10 +1,10 @@
 fileFormatVersion: 2
-guid: 8ad520bc0d8fd834789f755e70a9743b
+guid: 343450b03953e364ba50a18cdfe1292e
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 6608427606957844626
-    second: ClimbableWall_Before_0
+      213: -4787523450376887682
+    second: TreeRoot_0
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -40,15 +40,15 @@ TextureImporter:
     filterMode: 0
     aniso: 1
     mipBias: 0
-    wrapU: 0
-    wrapV: 0
-    wrapW: 0
+    wrapU: 1
+    wrapV: 1
+    wrapW: 1
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
   spriteMode: 1
   spriteExtrude: 1
-  spriteMeshType: 0
+  spriteMeshType: 1
   alignment: 0
   spritePivot: {x: 0.5, y: 0.5}
   spritePixelsToUnits: 25
@@ -100,13 +100,13 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: ClimbableWall_Before_0
+      name: TreeRoot_0
       rect:
         serializedVersion: 2
         x: 0
         y: 0
-        width: 15
-        height: 97
+        width: 87
+        height: 140
       alignment: 0
       pivot: {x: 0, y: 0}
       border: {x: 0, y: 0, z: 0, w: 0}
@@ -115,8 +115,8 @@ TextureImporter:
       physicsShape: []
       tessellationDetail: -1
       bones: []
-      spriteID: 2986b9445e9d5bb50800000000000000
-      internalID: 6608427606957844626
+      spriteID: e72ee6a89cc4f8db0800000000000000
+      internalID: -4787523450376887682
       vertices: []
       indices: 
       edges: []
@@ -135,7 +135,7 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      ClimbableWall_Before_0: 6608427606957844626
+      TreeRoot_0: -4787523450376887682
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

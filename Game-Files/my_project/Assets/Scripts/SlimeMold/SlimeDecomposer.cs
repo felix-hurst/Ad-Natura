@@ -236,7 +236,15 @@ public class SlimeDecomposer : MonoBehaviour
                 // Factor 5: damage accumulation
                 Debug.Log($"[Decompose] DAMAGE '{organic.name}': normalizedDensity={normalizedDensity:F3}, curveMultiplier={multiplier:F3}, damage={damage:F5}, healthBefore={organic.GetHealthPercent() * 100:F1}%");
 
-                organic.TakeDecompositionDamage(damage);
+                var linked = organic.GetComponent<LinkedOrganicMatter>();
+                if (linked != null)
+                {
+                    linked.TakeLinkedDamage(damage);
+                }
+                else
+                {
+                    organic.TakeDecompositionDamage(damage);
+                }
 
                 Debug.Log($"[Decompose] HEALTH '{organic.name}': healthAfter={organic.GetHealthPercent() * 100:F1}%");
 

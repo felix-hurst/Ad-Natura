@@ -65,6 +65,9 @@ public class BurstLeafSystem : MonoBehaviour
         [Range(0.5f, 8f)]
         public float flutterSpeed = 3f;
 
+
+     
+
         public void EnsureGradient()
         {
             if (colorGradient == null)
@@ -82,6 +85,36 @@ public class BurstLeafSystem : MonoBehaviour
                         new GradientAlphaKey(1f, 1f)
                     }
                 );
+            }
+        }
+    }
+
+    private void ProcessEnvironmentalDeath()
+    {
+        foreach (var manager in SlimeMoldManager.AllInstances)
+        {
+            Texture2D lightTex = manager.GetLightTexture();
+            Rect bounds = manager.GetWorldBounds();
+
+            for (int i = 0; i < activeLeafCount; i++)
+            {
+                float3 pos = positions[i];
+                float u = (pos.x - bounds.x) / bounds.width;
+                float v = (pos.y - bounds.y) / bounds.height;
+
+                if (u >= 0 && u <= 1 && v >= 0 && v <= 1)
+                {
+                    float lightValue = lightTex.GetPixelBilinear(u, v).r;
+
+                    if (lightValue > 0.5f) // Any light at all
+                    {
+                        // DEBUG: Only log every 2 seconds so we don't crash Unity
+                        if (Time.time % 2 < 0.01f)
+                            Debug.Log($"[Spore System] Spore {i} detected light level: {lightValue}. Killing...");
+
+                        leafAge[i] = leafMaxLifetime[i];
+                    }
+                }
             }
         }
     }
@@ -157,6 +190,9 @@ public class BurstLeafSystem : MonoBehaviour
 
     [Header("Debug")]
     [SerializeField] private bool showDebug = true;
+
+    [Header("Environmental Hazards")]
+    [SerializeField] private SlimeMoldManager slimeEnvironment;
 
     private NativeArray<float3> positions;
     private NativeArray<float3> velocities;
@@ -446,6 +482,8 @@ public class BurstLeafSystem : MonoBehaviour
         }
 
         CheckAndDeleteStuckLeaves();
+
+        ProcessEnvironmentalDeath();
 
         UpdateLeafLifetimes(deltaTime);
 
@@ -1672,6 +1710,16 @@ public class BurstLeafSystem : MonoBehaviour
                 Vector3 pos = new Vector3(positions[i].x, positions[i].y, positions[i].z);
                 Gizmos.DrawWireSphere(pos, sizes[i] * 0.5f);
             }
+        }
+
+        if (!Application.isPlaying) return;
+
+        foreach (var manager in SlimeMoldManager.AllInstances)
+        {
+            Rect bounds = manager.GetWorldBounds();
+            Gizmos.color = Color.yellow;
+            // Draws the boundary of the Slime Manager's coordinate system
+            Gizmos.DrawWireCube(new Vector3(bounds.center.x, bounds.center.y, 0), new Vector3(bounds.width, bounds.height, 1));
         }
     }
 }

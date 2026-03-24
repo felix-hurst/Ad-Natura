@@ -89,6 +89,11 @@ public class SlimeMoldManager : MonoBehaviour
     private float timeSinceSourceRefresh;
     private float timeSinceMapUpdate;
 
+    public static List<SlimeMoldManager> AllInstances = new List<SlimeMoldManager>();
+
+    void OnEnable() => AllInstances.Add(this);
+    void OnDisable() => AllInstances.Remove(this);
+
     private void Start()
     {
         slimeSimulation = GetComponent<Slime>();
@@ -167,6 +172,38 @@ public class SlimeMoldManager : MonoBehaviour
             if (slimeSimulation != null && hazardTextureCPU != null)
             {
                 slimeSimulation.SetHazardMap(hazardTextureCPU);
+            }
+        }
+    }
+
+    private void PaintLightAversion(int w, int h)
+    {
+        if (!enableLightAversion) return;
+
+        foreach (LightSource light in cachedLightSources)
+        {
+            if (light == null || !light.isActive) continue;
+
+            Vector2 lightPos = light.GetPosition();
+            float radius = light.fearRadius;
+            float strength = light.repulsionStrength;
+
+            int minX = Mathf.Max(0, WorldToTextureX(lightPos.x - radius));
+            int maxX = Mathf.Min(w - 1, WorldToTextureX(lightPos.x + radius));
+            int minY = Mathf.Max(0, WorldToTextureY(lightPos.y - radius));
+            int maxY = Mathf.Min(h - 1, WorldToTextureY(lightPos.y + radius));
+
+            for (int y = minY; y <= maxY; y++)
+            {
+                for (int x = minX; x <= maxX; x++)
+                {
+                    Vector2 worldPos = TextureToWorld(x, y);
+                    if (Vector2.Distance(worldPos, lightPos) < radius)
+                    {
+                        int idx = y * w + x;
+                        pixelBuffer[idx].r = Mathf.Max(pixelBuffer[idx].r, strength);
+                    }
+                }
             }
         }
     }
@@ -437,7 +474,7 @@ public class SlimeMoldManager : MonoBehaviour
         {
             slimeDecomposer.GetDecomposableAttractions(pixelBuffer, w, h, worldBounds);
         }
-
+        PaintLightAversion(resolution.x, resolution.y);
         waterAttractionTextureCPU.SetPixels(pixelBuffer);
         waterAttractionTextureCPU.Apply();
         Graphics.Blit(waterAttractionTextureCPU, waterAttractionMap);
@@ -951,4 +988,8 @@ public class SlimeMoldManager : MonoBehaviour
         Gizmos.color = new Color(1, 1, 1, 0.2f);
         Gizmos.DrawGUITexture(new Rect(worldBounds.x, worldBounds.y, worldBounds.width, worldBounds.height), waterAttractionTextureCPU);
     }
+
+    public Texture2D GetHazardTexture() => hazardTextureCPU;
+    public Texture2D GetLightTexture() => waterAttractionTextureCPU;
+    public Rect GetWorldBounds() => worldBounds;
 }
