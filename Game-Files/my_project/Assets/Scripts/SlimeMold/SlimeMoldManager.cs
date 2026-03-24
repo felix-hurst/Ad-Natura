@@ -178,30 +178,54 @@ public class SlimeMoldManager : MonoBehaviour
 
     private void PaintLightAversion(int w, int h)
     {
-        if (!enableLightAversion) return;
+        if (!enableLightAversion || pixelBuffer == null) return;
 
         foreach (LightSource light in cachedLightSources)
         {
             if (light == null || !light.isActive) continue;
 
             Vector2 lightPos = light.GetPosition();
-            float radius = light.fearRadius;
-            float strength = light.repulsionStrength;
+            int idx;
 
-            int minX = Mathf.Max(0, WorldToTextureX(lightPos.x - radius));
-            int maxX = Mathf.Min(w - 1, WorldToTextureX(lightPos.x + radius));
-            int minY = Mathf.Max(0, WorldToTextureY(lightPos.y - radius));
-            int maxY = Mathf.Min(h - 1, WorldToTextureY(lightPos.y + radius));
-
-            for (int y = minY; y <= maxY; y++)
+            if (light.shape == LightSource.LightShape.Circle)
             {
-                for (int x = minX; x <= maxX; x++)
+                float radius = light.fearRadius;
+                int minX = Mathf.Max(0, WorldToTextureX(lightPos.x - radius));
+                int maxX = Mathf.Min(w - 1, WorldToTextureX(lightPos.x + radius));
+                int minY = Mathf.Max(0, WorldToTextureY(lightPos.y - radius));
+                int maxY = Mathf.Min(h - 1, WorldToTextureY(lightPos.y + radius));
+
+                for (int y = minY; y <= maxY; y++)
                 {
-                    Vector2 worldPos = TextureToWorld(x, y);
-                    if (Vector2.Distance(worldPos, lightPos) < radius)
+                    for (int x = minX; x <= maxX; x++)
                     {
-                        int idx = y * w + x;
-                        pixelBuffer[idx].r = Mathf.Max(pixelBuffer[idx].r, strength);
+                        Vector2 worldPos = TextureToWorld(x, y);
+                        if (Vector2.Distance(worldPos, lightPos) < radius)
+                        {
+                            idx = y * w + x;
+                            pixelBuffer[idx].r = Mathf.Max(pixelBuffer[idx].r, 1.0f); // Guaranteed max strength
+                        }
+                    }
+                }
+            }
+            else if (light.shape == LightSource.LightShape.Rectangle)
+            {
+                // Calculate half-extents for the rectangle
+                float halfX = light.rectSize.x / 2f;
+                float halfY = light.rectSize.y / 2f;
+
+                int minX = Mathf.Max(0, WorldToTextureX(lightPos.x - halfX));
+                int maxX = Mathf.Min(w - 1, WorldToTextureX(lightPos.x + halfX));
+                int minY = Mathf.Max(0, WorldToTextureY(lightPos.y - halfY));
+                int maxY = Mathf.Min(h - 1, WorldToTextureY(lightPos.y + halfY));
+
+                for (int y = minY; y <= maxY; y++)
+                {
+                    for (int x = minX; x <= maxX; x++)
+                    {
+                        // No distance check needed for rectangle — if it's in the loop, it's in the box
+                        idx = y * w + x;
+                        pixelBuffer[idx].r = 1.0f; // Guaranteed max strength
                     }
                 }
             }

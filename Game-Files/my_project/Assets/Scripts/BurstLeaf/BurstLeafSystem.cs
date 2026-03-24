@@ -102,18 +102,20 @@ public class BurstLeafSystem : MonoBehaviour
                 float u = (pos.x - bounds.x) / bounds.width;
                 float v = (pos.y - bounds.y) / bounds.height;
 
-                if (u >= 0 && u <= 1 && v >= 0 && v <= 1)
+                //Boundary check
+                if (u < 0f || u > 1f || v < 0f || v > 1f) continue;
+
+                float lightLevel = lightTex.GetPixelBilinear(u, v).r;
+
+                /*
+                if (lightLevel > 0.5f && Time.frameCount % 60 == 0)
+                    Debug.Log($"[Spore] Inside Killzone! Intensity: {lightLevel}");
+                */
+
+                //Guaranteed kill if light is present
+                if (lightLevel > 0.8f)
                 {
-                    float lightValue = lightTex.GetPixelBilinear(u, v).r;
-
-                    if (lightValue > 0.5f) // Any light at all
-                    {
-                        // DEBUG: Only log every 2 seconds so we don't crash Unity
-                        if (Time.time % 2 < 0.01f)
-                            Debug.Log($"[Spore System] Spore {i} detected light level: {lightValue}. Killing...");
-
-                        leafAge[i] = leafMaxLifetime[i];
-                    }
+                    leafAge[i] = leafMaxLifetime[i];
                 }
             }
         }

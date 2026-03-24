@@ -57,12 +57,11 @@ MonoBehaviour:
   explosionAffectsParent: 0
   excludedLayers:
     serializedVersion: 2
-    m_Bits: 98624
+    m_Bits: 320
   excludedTags:
   - Player
   - Debris
   - Fragment
-  - Wood
   showImpactEffect: 0
   impactColor: {r: 1, g: 0.5, b: 0, a: 1}
   impactDuration: 0.3
