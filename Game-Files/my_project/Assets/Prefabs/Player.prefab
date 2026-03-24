@@ -937,7 +937,7 @@ MonoBehaviour:
   - {fileID: 1337979888146897841}
   - {fileID: 6928287071142708536}
   hudGroup: {fileID: 378905931059681374}
-  displayDuration: 2
+  displayDuration: 5
   activeScale: 1.2
 --- !u!225 &378905931059681374
 CanvasGroup:
