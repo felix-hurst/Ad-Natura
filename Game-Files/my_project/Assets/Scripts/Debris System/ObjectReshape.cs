@@ -20,6 +20,8 @@ public class ObjectReshape : MonoBehaviour
     private Bounds originalSpriteBounds;
     private bool hasOriginalSpriteBounds = false;
 
+    private Color cachedRenderColor = Color.white;
+
     void Awake()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
@@ -72,6 +74,11 @@ public class ObjectReshape : MonoBehaviour
     {
         originalSpriteBounds = bounds;
         hasOriginalSpriteBounds = true;
+    }
+
+    public void SetRenderColor(Color color)
+    {
+        cachedRenderColor = color;
     }
 
     public List<Vector2> CutOffPortion(Vector2 entryPoint, Vector2 exitPoint, List<Vector2> highlightedShape)
@@ -252,7 +259,7 @@ public class ObjectReshape : MonoBehaviour
         foreach (Vector2 w in colliderShape) localCollider.Add(transform.InverseTransformPoint(w));
 
         UpdateCollider(useSmoothCollider ? localCollider : localVisual);
-        UpdateVisualMesh(localVisual, visualShape); // pass world verts for UV calculation
+        UpdateVisualMesh(localVisual, visualShape);
     }
 
     public void ApplyNewShape(List<Vector2> worldShape) => ApplyNewShape(worldShape, worldShape);
@@ -281,21 +288,36 @@ public class ObjectReshape : MonoBehaviour
             sortingOrder = spriteRenderer.sortingOrder;
             if (spriteRenderer.sprite?.texture != null)
                 textureToUse = spriteRenderer.sprite.texture;
+
+            Debug.Log($"[OR.UpdateVisualMesh] {gameObject.name} | Step1-SpriteRenderer | color={spriteColor} | texture={(textureToUse != null ? textureToUse.name : "NULL")}");
+        }
+        else
+        {
+            Debug.Log($"[OR.UpdateVisualMesh] {gameObject.name} | Step1-SpriteRenderer=NULL");
         }
 
-        // NEW: if still no texture, check the existing mesh child's material
-        if (textureToUse == null)
+        if (textureToUse == null || spriteRenderer == null)
         {
             MeshRenderer existingMR = GetComponentInChildren<MeshRenderer>();
             if (existingMR != null && existingMR.sharedMaterial != null)
             {
-                textureToUse = existingMR.sharedMaterial.mainTexture as Texture2D;
-                // Also inherit sorting layer/order from the existing mesh
+                if (textureToUse == null)
+                    textureToUse = existingMR.sharedMaterial.mainTexture as Texture2D;
+
+                if (spriteRenderer == null)
+                    spriteColor = existingMR.sharedMaterial.color;
+
                 if (sortingLayer == "Default")
                 {
                     sortingLayer = existingMR.sortingLayerName;
                     sortingOrder = existingMR.sortingOrder;
                 }
+
+                Debug.Log($"[OR.UpdateVisualMesh] {gameObject.name} | Step2-MeshRenderer ({existingMR.gameObject.name}) | color={spriteColor} | texture={(textureToUse != null ? textureToUse.name : "NULL")}");
+            }
+            else
+            {
+                Debug.LogWarning($"[OR.UpdateVisualMesh] {gameObject.name} | Step2-No MeshRenderer child found — color stays WHITE");
             }
         }
 
@@ -303,7 +325,10 @@ public class ObjectReshape : MonoBehaviour
         {
             MaterialTextureGenerator gen = FindObjectOfType<MaterialTextureGenerator>();
             if (gen != null) textureToUse = gen.GetTexture(materialTag);
+            Debug.Log($"[OR.UpdateVisualMesh] {gameObject.name} | Step3-MaterialTextureGenerator | texture={(textureToUse != null ? textureToUse.name : "NULL")} | materialTag={materialTag}");
         }
+
+        Debug.Log($"[OR.UpdateVisualMesh] {gameObject.name} | FINAL before mesh creation | spriteColor={spriteColor} | texture={(textureToUse != null ? textureToUse.name : "NULL")}");
 
         // Remove old mesh children
         foreach (MeshRenderer mr in GetComponentsInChildren<MeshRenderer>())
@@ -337,7 +362,9 @@ public class ObjectReshape : MonoBehaviour
 
         Material mat = new Material(shader);
         if (textureToUse != null) mat.mainTexture = textureToUse;
-        else mat.color = spriteColor;
+        mat.color = cachedRenderColor;
+
+        Debug.Log($"[OR.UpdateVisualMesh] {gameObject.name} | mat.color set to {mat.color} | mat.mainTexture={(mat.mainTexture != null ? mat.mainTexture.name : "NULL")}");
 
         newMeshRenderer.material = mat;
         newMeshRenderer.sortingLayerName = sortingLayer;
