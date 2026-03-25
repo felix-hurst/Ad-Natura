@@ -66,7 +66,7 @@ public class BurstLeafSystem : MonoBehaviour
         public float flutterSpeed = 3f;
 
 
-     
+
 
         public void EnsureGradient()
         {
