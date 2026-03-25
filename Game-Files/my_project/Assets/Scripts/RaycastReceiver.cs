@@ -270,7 +270,7 @@ public class RaycastReceiver : MonoBehaviour
     {
         if (vertices.Count < 3) return vertices;
         List<Vector2> cleaned = new List<Vector2>();
-        float minDist = 0.05f;
+        float minDist = 0.001f;
         foreach (Vector2 v in vertices)
         {
             bool isDuplicate = false;
@@ -334,7 +334,6 @@ public class RaycastReceiver : MonoBehaviour
             isOriginalCutPiece = false;
         }
 
-        // Check if the remaining PARENT object is too small after the cut
         if (enableMinSizeCheck && IsParentObject())
         {
             CheckAndDestroyIfTooSmall();
@@ -352,7 +351,6 @@ public class RaycastReceiver : MonoBehaviour
             }
         }
 
-        // Make sure ObjectReshape has the correct bounds before the cut happens
         if (hasOriginalSpriteBounds)
             objectReshape.SetOriginalSpriteBounds(originalSpriteBounds);
 
@@ -405,7 +403,6 @@ public class RaycastReceiver : MonoBehaviour
             isOriginalCutPiece = false;
         }
 
-        // Check if the remaining PARENT object is too small after the cut
         if (enableMinSizeCheck && IsParentObject())
         {
             CheckAndDestroyIfTooSmall();
@@ -417,7 +414,6 @@ public class RaycastReceiver : MonoBehaviour
     {
         Debug.Log($"[RaycastReceiver] SpawnLargeCutPiece on {gameObject.name}");
 
-        // Capture the original sprite bounds (world space) before the object changes
         Bounds spriteBoundsForUV = hasOriginalSpriteBounds ? originalSpriteBounds : GetObjectRendererBounds();
         Texture2D textureForPiece = originalSpriteTexture;
         if (textureForPiece == null && spriteRenderer != null && spriteRenderer.sprite != null)
@@ -462,39 +458,34 @@ public class RaycastReceiver : MonoBehaviour
             pieceSR.color = originalSR.color;
         }
 
-        // KEY FIX: store reference and immediately set original bounds so ObjectReshape
-        // uses correct UVs when this piece is later cut again (producing _CutMesh)
         ObjectReshape pieceReshape = largePiece.AddComponent<ObjectReshape>();
         pieceReshape.SetOriginalSpriteBounds(spriteBoundsForUV);
 
         PixelatedCutRenderer piecePixelRenderer = largePiece.AddComponent<PixelatedCutRenderer>();
 
-        List<Vector2> localVertices = new List<Vector2>();
+        List<Vector2> currentShape = new List<Vector2>();
         foreach (Vector2 worldVertex in cutOffShape)
-            localVertices.Add(largePiece.transform.InverseTransformPoint(worldVertex));
+            currentShape.Add(largePiece.transform.InverseTransformPoint(worldVertex));
+
+        Vector2 localEntry = largePiece.transform.InverseTransformPoint(entryPoint);
+        Vector2 localExit = largePiece.transform.InverseTransformPoint(exitPoint);
 
         CutProfileManager profileManager = FindObjectOfType<CutProfileManager>();
-        List<Vector2> irregularShape = localVertices;
         if (profileManager != null && cutProfile.strength > 0.01f)
         {
-            Vector2 localEntry = largePiece.transform.InverseTransformPoint(entryPoint);
-            Vector2 localExit = largePiece.transform.InverseTransformPoint(exitPoint);
-            irregularShape = profileManager.ApplyIrregularCut(localVertices, localEntry, localExit, cutProfile);
+            currentShape = profileManager.ApplyIrregularCut(currentShape, localEntry, localExit, cutProfile);
         }
 
-        List<Vector2> pixelatedShape = irregularShape;
         if (piecePixelRenderer != null)
         {
-            Vector2 localEntry = largePiece.transform.InverseTransformPoint(entryPoint);
-            Vector2 localExit = largePiece.transform.InverseTransformPoint(exitPoint);
-            pixelatedShape = piecePixelRenderer.PixelatePolygonWithCutLine(irregularShape, localEntry, localExit);
+            currentShape = piecePixelRenderer.PixelatePolygonWithCutLine(currentShape, localEntry, localExit);
         }
 
         PolygonCollider2D polyCollider = largePiece.AddComponent<PolygonCollider2D>();
-        polyCollider.points = irregularShape.ToArray();
+        polyCollider.points = currentShape.ToArray();
         polyCollider.enabled = false;
 
-        CreateLargePieceMesh(largePiece, pixelatedShape, materialTag, spriteBoundsForUV, textureForPiece, originalSR);
+        CreateLargePieceMesh(largePiece, currentShape, materialTag, spriteBoundsForUV, textureForPiece, originalSR);
 
         Rigidbody2D rb = largePiece.AddComponent<Rigidbody2D>();
         rb.bodyType = RigidbodyType2D.Kinematic;
@@ -506,8 +497,6 @@ public class RaycastReceiver : MonoBehaviour
         rb.sleepMode = RigidbodySleepMode2D.StartAwake;
         rb.constraints = RigidbodyConstraints2D.None;
 
-        // KEY FIX: pass original bounds to the piece's RaycastReceiver so any further
-        // cuts on this piece (producing _CutPiece_CutMesh) also UV correctly
         RaycastReceiver pieceReceiver = largePiece.AddComponent<RaycastReceiver>();
         pieceReceiver.highlightMode = this.highlightMode;
         pieceReceiver.showCutOutline = this.showCutOutline;

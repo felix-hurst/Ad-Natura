@@ -381,8 +381,8 @@ public class IncendiaryBall : MonoBehaviour
         Collider2D hitCollider = hitObject.GetComponent<Collider2D>();
         if (hitCollider != null)
         {
-            Vector2 rayOrigin = impactPoint - incidentDirection * 0.5f;
-            RaycastHit2D[] hits = Physics2D.RaycastAll(rayOrigin, incidentDirection, cutRaycastDistance);
+            Vector2 rayOrigin = impactPoint - incidentDirection * 0.1f;
+            RaycastHit2D[] hits = Physics2D.CircleCastAll(rayOrigin, ballRadius * 0.5f, incidentDirection, cutRaycastDistance);
 
             Debug.Log($"[Ball {gameObject.GetInstanceID()}] Raycasting for entry/exit points - found {hits.Length} hits");
 
