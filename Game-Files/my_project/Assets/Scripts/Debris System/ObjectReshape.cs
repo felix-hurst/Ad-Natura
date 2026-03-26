@@ -77,9 +77,9 @@ public class ObjectReshape : MonoBehaviour
     }
 
     public void SetRenderColor(Color color)
-{
-    cachedRenderColor = color;
-}
+    {
+        cachedRenderColor = color;
+    }
 
     public List<Vector2> CutOffPortion(Vector2 entryPoint, Vector2 exitPoint, List<Vector2> highlightedShape)
     {
