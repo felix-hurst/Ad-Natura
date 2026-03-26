@@ -31,7 +31,7 @@ public class OrganicMatter : MonoBehaviour
     public UnityEvent onDecomposed;
 
     [Header("Sound")]
-[SerializeField] private string damageSound = "Decomposition";
+    [SerializeField] private string damageSound = "Decomposition";
 
     [Header("Debug")]
     [SerializeField] private bool showHealthBar = true;
