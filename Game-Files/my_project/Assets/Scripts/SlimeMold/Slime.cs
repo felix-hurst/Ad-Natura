@@ -94,6 +94,38 @@ public class Slime : MonoBehaviour
     [Tooltip("How fast the glow fades after feeding stops")]
     [SerializeField, Range(0f, 5f)] private float glowDecayRate = 1.5f;
 
+    [Header("Microphone Reactivity")]
+    [Tooltip("Optional: drag a MicrophoneInput component here. Leave empty to disable mic")]
+    [SerializeField] private MicrophoneInput micInput;
+    [Tooltip("Master mix: how strongly mic affects simulation. 0 = mic ignored entirely")]
+    [SerializeField, Range(0f, 1f)] private float micInfluence = 0.6f;
+    [Tooltip("Loud sound -> faster trail evaporation (agitation)")]
+    [SerializeField, Range(0f, 5f)] private float micAmpEvaporateGain = 1.8f;
+    [Tooltip("Loud sound -> faster turning (agitation)")]
+    [SerializeField, Range(0f, 4f)] private float micAmpTurnGain = 1.2f;
+    [Tooltip("Low pitch -> trail diffusion boost (network softens)")]
+    [SerializeField, Range(0f, 3f)] private float micLowFreqDiffuseGain = 1.5f;
+    [Tooltip("High pitch -> faster turning (nervous contraction)")]
+    [SerializeField, Range(0f, 3f)] private float micHighFreqTurnGain = 0.6f;
+    [Tooltip("High pitch -> shorter sensor reach (myopic, contracted)")]
+    [SerializeField, Range(0f, 0.7f)] private float micHighFreqSensorShrink = 0.25f;
+    [Tooltip("Quiet presence -> pulse frequency lift (organism notices you)")]
+    [SerializeField, Range(0f, 2f)] private float micQuietPulseGain = 1.0f;
+    [Tooltip("Sudden sound -> temporary trail weight burst (memory of the sound event)")]
+    [SerializeField, Range(0f, 5f)] private float micOnsetTrailBurst = 1.5f;
+
+    [Header("Consent/Resistance")]
+    [Tooltip("Amplitude above which stress accumulates")]
+    [SerializeField, Range(0f, 1f)] private float stressThreshold = 0.45f;
+    [Tooltip("How fast stress fills when overstimulated")]
+    [SerializeField, Range(0f, 2f)] private float stressAccumulationRate = 0.35f;
+    [Tooltip("How fast stress drains in silence")]
+    [SerializeField, Range(0f, 1f)] private float stressRecoveryRate = 0.06f;
+    [Tooltip("Stress level that triggers full withdrawal")]
+    [SerializeField, Range(0f, 1f)] private float refractoryThreshold = 0.75f;
+    [Tooltip("How long withdrawal lasts once triggered (seconds)")]
+    [SerializeField, Range(1f, 30f)] private float refractoryDuration = 12f;
+
     [Header("Visual")]
     [Tooltip("Slime color. Golden yellow is classic Physarum")]
     [SerializeField] private Color slimeColor = new Color(1f, 0.9f, 0.2f, 1f);
@@ -116,6 +148,12 @@ public class Slime : MonoBehaviour
     private float metabolicGlow;
     private float consumptionTimer;
     private Color[] cachedTrailPixels;
+
+    // Consent/Resistance state
+    private float stressLevel;
+    private float refractoryTimer;
+    private bool inRefractory;
+    private float smoothRefractory;
     private Texture2D displayTexture;
     private Sprite displaySprite;
     private SpriteRenderer targetRenderer;
@@ -260,6 +298,104 @@ public class Slime : MonoBehaviour
     {
         if (trailMapA == null || agentsBuffer == null) return;
 
+        // --- Local copies of parameters for mic modulation ---
+        // Mic shifts conditions each frame without mutating Inspector values.
+        float effEvaporateSpeed = evaporateSpeed;
+        float effDiffuseSpeed = diffuseSpeed;
+        float effTurnSpeed = turnSpeed;
+        float effSensorLength = sensorLength;
+        float effTrailWeight = trailWeight;
+        float effPulseMinFreq = pulseMinFreq;
+        float effPulseAmplitude = pulseAmplitude;
+        float effDriftStrength = driftStrength;
+        float currentStress = 0f;
+        float currentRefractory = 0f;
+
+        // --- Consent/Resistance: stress + refractory (runs even if mic drops out) ---
+        // Recovery ticks independently so the organism doesn't freeze mid-withdrawal
+        // if the mic disconnects or micInfluence is set to 0.
+        float micAmp = 0f, micCentroid = 0f, micOnset = 0f;
+        bool micAvailable = micInput != null && micInput.IsActive && micInfluence > 0f;
+
+        if (micAvailable)
+        {
+            micAmp = micInput.Amplitude;
+            micCentroid = micInput.SpectralCentroid;
+            micOnset = micInput.Onset;
+        }
+
+        if (inRefractory)
+        {
+            // Loud input during withdrawal pauses recovery — the organism
+            // cannot heal while still being assaulted. Silence is required.
+            bool stillLoud = micAvailable && micAmp > stressThreshold;
+            if (!stillLoud)
+                refractoryTimer -= Time.fixedDeltaTime;
+
+            if (refractoryTimer <= 0f)
+            {
+                inRefractory = false;
+                stressLevel = 0.3f; // fragile after withdrawal, not fully reset
+            }
+        }
+        else if (micAvailable)
+        {
+            if (micAmp > stressThreshold)
+                stressLevel += (micAmp - stressThreshold) * stressAccumulationRate * Time.fixedDeltaTime;
+            else
+                stressLevel -= stressRecoveryRate * Time.fixedDeltaTime;
+
+            stressLevel = Mathf.Clamp01(stressLevel);
+
+            if (stressLevel >= refractoryThreshold)
+            {
+                inRefractory = true;
+                refractoryTimer = refractoryDuration;
+            }
+        }
+
+        currentStress = stressLevel;
+        float targetRefractory = inRefractory ? Mathf.Clamp01(refractoryTimer / refractoryDuration) : 0f;
+        smoothRefractory = Mathf.Lerp(smoothRefractory, targetRefractory, 1.5f * Time.fixedDeltaTime);
+        currentRefractory = smoothRefractory;
+
+        // --- Microphone modulation ---
+        if (micAvailable)
+        {
+            // Responsiveness fades as stress builds — the organism gradually
+            // stops listening before full withdrawal. Not a switch, a retreat.
+            float responsiveness;
+            if (inRefractory)
+                responsiveness = (1f - currentRefractory) * 0.1f;
+            else
+                responsiveness = 1f - stressLevel * 0.7f;
+            float mix = micInfluence * responsiveness;
+
+            // Quiet presence: pulse frequency lifts gently (organism notices you)
+            float quietness = 1f - micAmp;
+            effPulseMinFreq *= 1f + quietness * micQuietPulseGain * mix * 0.3f;
+
+            // Loud sound: evaporation increases (agitation, dissolution)
+            effEvaporateSpeed *= 1f + micAmp * micAmpEvaporateGain * mix;
+
+            // Turn speed: combine amplitude (agitation) + pitch (nervousness) additively
+            float turnBoost = micAmp * micAmpTurnGain + micCentroid * micHighFreqTurnGain;
+            effTurnSpeed *= 1f + turnBoost * mix;
+
+            // Low frequency: diffusion boost (network softens, expands)
+            float lowFreq = 1f - micCentroid;
+            effDiffuseSpeed = Mathf.Clamp01(effDiffuseSpeed + lowFreq * micLowFreqDiffuseGain * mix * 0.1f);
+
+            // High frequency: sensor shrink (nervous, contracted)
+            // Floor at 50% of base length — too-short sensors cause agents to
+            // lock onto nearby trails and spiral into dense clusters
+            float shrink = micCentroid * micHighFreqSensorShrink * mix;
+            effSensorLength *= Mathf.Max(1f - shrink, 0.5f);
+
+            // Onset: temporary trail weight burst (memory of the sound event)
+            effTrailWeight += micOnset * micOnsetTrailBurst * mix;
+        }
+
         var readBuffer = useBufferA ? trailMapA : trailMapB;
         var writeBuffer = useBufferA ? trailMapB : trailMapA;
 
@@ -270,14 +406,16 @@ public class Slime : MonoBehaviour
         shader.SetFloat("moveSpeed", moveSpeed);
         shader.SetFloat("deltaTime", Time.fixedDeltaTime);
         shader.SetFloat("gameTime", Time.time);
-        shader.SetFloat("sensorLength", sensorLength);
+        shader.SetFloat("sensorLength", effSensorLength);
         shader.SetFloat("sensorAngleSpacing", sensorAngle * Mathf.Deg2Rad);
-        shader.SetFloat("turnSpeed", turnSpeed);
-        shader.SetFloat("trailWeight", trailWeight);
+        shader.SetFloat("turnSpeed", effTurnSpeed);
+        shader.SetFloat("trailWeight", effTrailWeight);
         shader.SetFloat("idleSpeed", idleSpeed);
         shader.SetFloat("attractedSpeedMultiplier", attractedSpeedMultiplier);
-        shader.SetFloat("driftStrength", driftStrength);
+        shader.SetFloat("driftStrength", effDriftStrength);
         shader.SetFloat("driftSpeed", driftSpeed);
+        shader.SetFloat("micStress", currentStress);
+        shader.SetFloat("refractoryState", currentRefractory);
         shader.SetVector("slimeColor", new Vector4(slimeColor.r, slimeColor.g, slimeColor.b, slimeColor.a));
 
         var waterMap = hasExternalAttraction && externalWaterMap != null ? externalWaterMap : defaultAttractionMap;
@@ -299,12 +437,12 @@ public class Slime : MonoBehaviour
         shader.SetBuffer(kernelUpdate, "agents", agentsBuffer);
         shader.Dispatch(kernelUpdate, numAgents / 16, 1, 1);
 
-        shader.SetFloat("evaporateSpeed", evaporateSpeed);
-        shader.SetFloat("diffuseSpeed", diffuseSpeed);
+        shader.SetFloat("evaporateSpeed", effEvaporateSpeed);
+        shader.SetFloat("diffuseSpeed", effDiffuseSpeed);
 
         // Pulse parameters
-        shader.SetFloat("pulseAmplitude", pulseAmplitude);
-        shader.SetFloat("pulseMinFreq", pulseMinFreq);
+        shader.SetFloat("pulseAmplitude", effPulseAmplitude);
+        shader.SetFloat("pulseMinFreq", effPulseMinFreq);
         shader.SetFloat("pulseMaxFreq", pulseMaxFreq);
         shader.SetFloat("pulseWaveScale", pulseWaveScale);
 
