@@ -149,15 +149,26 @@ public class StructuralCollapseManager : MonoBehaviour
             yield return new WaitForSeconds(delay);
         }
 
-        if (warningVis != null) Destroy(warningVis);
-        if (target == null) yield break;
+if (warningVis != null) Destroy(warningVis);
+if (target == null) yield break;
 
-        // Move parent to CutPiece layer before any cuts begin
-        int cutPieceLayer = LayerMask.NameToLayer("CutPiece");
-        if (cutPieceLayer != -1)
-            target.layer = cutPieceLayer;
+        if (target.name == "Roof_CutPiece"){
+            SoundManager.Instance?.Play("RoofCollapse");
+        } else if(target.name.StartsWith("CalamityObject"))
+        {
+            SoundManager.Instance?.Play("CalamityObjectCollapse");
+        }
+        else {
+            SoundManager.Instance?.Play("Decomposition");
+            UnityEngine.Debug.Log($"targetname '{target.name}'");
+        }
 
-        ExplosionFragment targetFragment = target.GetComponent<ExplosionFragment>();
+// Move parent to CutPiece layer before any cuts begin
+int cutPieceLayer = LayerMask.NameToLayer("CutPiece");
+if (cutPieceLayer != -1)
+    target.layer = cutPieceLayer;
+
+ExplosionFragment targetFragment = target.GetComponent<ExplosionFragment>();
         if (targetFragment == null)
         {
             Debug.LogWarning($"[StructuralCollapseManager] Target {target.name} has no ExplosionFragment, aborting");
@@ -338,15 +349,15 @@ public class StructuralCollapseManager : MonoBehaviour
             yield return new WaitForSeconds(delay);
         }
 
-        if (warningVis != null) Destroy(warningVis);
-        if (target == null) yield break;
+if (warningVis != null) Destroy(warningVis);
+if (target == null) yield break;
 
-        // Move parent to CutPiece layer before any cuts begin
-        int cutPieceLayer = LayerMask.NameToLayer("CutPiece");
-        if (cutPieceLayer != -1)
-            target.layer = cutPieceLayer;
+// Move parent to CutPiece layer before any cuts begin
+int cutPieceLayer = LayerMask.NameToLayer("CutPiece");
+if (cutPieceLayer != -1)
+    target.layer = cutPieceLayer;
 
-        ExplosionFragment[] fragments = FindObjectsOfType<ExplosionFragment>();
+ExplosionFragment[] fragments = FindObjectsOfType<ExplosionFragment>();
 
         foreach (ExplosionFragment fragment in fragments)
         {

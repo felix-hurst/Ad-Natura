@@ -89,6 +89,18 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private float armLength = 0.5f;
     [SerializeField] private Texture2D dashTexture;
 
+    [Header("Aim Settings")]
+[SerializeField] private string aimSound = "ToolAim";
+[SerializeField] private string lowerAimSound = "ToolAim";
+
+
+[Header("Footstep Settings")]
+[SerializeField] private float footstepInterval = 0.35f;
+[SerializeField] private AudioClip footstepClip;
+private AudioSource footstepSource;
+private float footstepTimer = 0f;
+
+
     [Header("Wall Climb")]
     [SerializeField] private float slowFall = -0.5f;
     private bool isWallClimbing = false;
@@ -141,6 +153,10 @@ public class PlayerController : MonoBehaviour
         {
             anim = classicModel.GetComponent<Animator>();
         }
+        footstepSource = gameObject.AddComponent<AudioSource>();
+footstepSource.clip = footstepClip;
+footstepSource.loop = false;
+footstepSource.playOnAwake = false;
     }
 
     void Update()
@@ -171,6 +187,22 @@ public class PlayerController : MonoBehaviour
             isAiming = false;
         }
 
+                // Footstep sounds
+        if (isRunning && isGrounded && !isAiming)
+        {
+            footstepTimer -= Time.deltaTime;
+            if (footstepTimer <= 0f)
+            {
+                footstepSource.Stop();
+                footstepSource.Play();
+                footstepTimer = footstepInterval;
+            }
+        }
+        else
+        {
+            footstepSource.Stop();
+            footstepTimer = 0f;
+        }
         HandleSpriteFlipping();
         HandleArmRotation();
         HandleVisualSwitch();
@@ -337,7 +369,11 @@ public class PlayerController : MonoBehaviour
             incendiaryAmmo--;
             SoundManager.Instance.Play("RifleFire");
         }
-        else if (tool == ToolType.WindBall) windAmmo--;
+        else if (tool == ToolType.WindBall)
+        {
+            windAmmo--;
+            SoundManager.Instance.Play("WindGust");
+        }
 
         return true;
     }
@@ -517,13 +553,23 @@ public class PlayerController : MonoBehaviour
         if (value.isPressed && isGrounded && currentToolIndex != -1)
         {
             isAiming = !isAiming;
+
+            if (isAiming)
+            {
+                footstepSource.Stop();
+                footstepTimer = 0f;
+                currentRunningBuffer = 0f;
+            }
+
+            string clipName = isAiming ? aimSound : lowerAimSound;
+            Debug.Log($"OnAim fired — isAiming: {isAiming}, playing clip: '{clipName}'");
+            SoundManager.Instance.Play(clipName);
         }
         else if (value.isPressed && currentToolIndex == -1)
         {
             isAiming = false;
         }
     }
-
     public void OnMove(InputValue value) { moveInput = value.Get<Vector2>(); }
 
     public void OnJump(InputValue value)
