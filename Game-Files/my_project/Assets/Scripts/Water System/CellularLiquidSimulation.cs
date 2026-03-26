@@ -48,10 +48,10 @@ public class CellularLiquidSimulation : MonoBehaviour
     [SerializeField] private int pixelsPerUnit = 10;
 
     [Header("Water Sounds")]
-[SerializeField] private float flowSoundThreshold = 50f;
-[SerializeField] private float flowSoundMaxCells = 500f;
-[SerializeField] private AudioClip flowingClip;
-private AudioSource flowSource;
+    [SerializeField] private float flowSoundThreshold = 50f;
+    [SerializeField] private float flowSoundMaxCells = 500f;
+    [SerializeField] private AudioClip flowingClip;
+    private AudioSource flowSource;
 
 
     [Header("Physics Interaction")]
@@ -130,11 +130,11 @@ private AudioSource flowSource;
         InitializeOptimizations();
         InitializeRendering();
         flowSource = gameObject.AddComponent<AudioSource>();
-flowSource.clip = flowingClip;
-flowSource.loop = true;
-flowSource.playOnAwake = false;
-flowSource.volume = 0f;
-flowSource.Play();
+        flowSource.clip = flowingClip;
+        flowSource.loop = true;
+        flowSource.playOnAwake = false;
+        flowSource.volume = 0f;
+        flowSource.Play();
 
         if (useCachedDisplacementRigidbodies && enableDisplacement)
         {
@@ -275,10 +275,10 @@ flowSource.Play();
             }
         }
         float targetVolume = 0f;
-if (activeCells.Count > flowSoundThreshold)
-    targetVolume = Mathf.Clamp01((activeCells.Count - flowSoundThreshold) / flowSoundMaxCells);
+        if (activeCells.Count > flowSoundThreshold)
+            targetVolume = Mathf.Clamp01((activeCells.Count - flowSoundThreshold) / flowSoundMaxCells);
 
-flowSource.volume = Mathf.MoveTowards(flowSource.volume, targetVolume, Time.deltaTime * 2f);
+        flowSource.volume = Mathf.MoveTowards(flowSource.volume, targetVolume, Time.deltaTime * 2f);
     }
 
     void SimulationStep()
