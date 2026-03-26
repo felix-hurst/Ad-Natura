@@ -16,6 +16,11 @@ public class ToolManager : MonoBehaviour
     [SerializeField] private GameObject[] descs;
     [SerializeField] private CanvasGroup hudGroup;
 
+    [Header("Sounds")]
+[SerializeField] private string openSound = "ToolWheel";
+[SerializeField] private string selectSound = "ToolWheel";
+
+
     [Header("Visibility Settings")]
     [SerializeField] private float displayDuration = 5.0f;
     private float visibilityTimer;
@@ -77,6 +82,9 @@ public class ToolManager : MonoBehaviour
 
     private void ShowHUD()
     {
+        if (visibilityTimer <= 0)
+            SoundManager.Instance.Play(openSound);
+
         visibilityTimer = displayDuration;
         if (hudGroup != null) hudGroup.alpha = 1;
     }
@@ -96,16 +104,13 @@ public class ToolManager : MonoBehaviour
     {
         // Toggle: If selecting the same tool, go back to "None" (-1)
         if (currentToolIndex == index)
-        {
             currentToolIndex = -1;
-            Debug.Log("ToolManager: Deselecting tool (setting to -1)");
-        }
         else
-        {
             currentToolIndex = index;
-            Debug.Log("ToolManager: Selecting tool " + index);
-        }
 
+        SoundManager.Instance.Play(selectSound); // <-- add this
+
+        // Update the UI visual frames
         // Update the UI visual frames
         for (int i = 0; i < slots.Length; i++)
         {

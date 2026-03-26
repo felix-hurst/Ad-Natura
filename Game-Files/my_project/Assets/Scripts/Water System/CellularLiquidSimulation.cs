@@ -47,6 +47,13 @@ public class CellularLiquidSimulation : MonoBehaviour
     [Tooltip("Should match 1/cellSize for pixel-perfect rendering. If cellSize=0.1, this should be 10")]
     [SerializeField] private int pixelsPerUnit = 10;
 
+    [Header("Water Sounds")]
+[SerializeField] private float flowSoundThreshold = 50f;
+[SerializeField] private float flowSoundMaxCells = 500f;
+[SerializeField] private AudioClip flowingClip;
+private AudioSource flowSource;
+
+
     [Header("Physics Interaction")]
     [SerializeField] private LayerMask solidLayer;
     [SerializeField] private float physicsCheckRadius = 0.05f;
@@ -122,6 +129,12 @@ public class CellularLiquidSimulation : MonoBehaviour
         InitializeGrid();
         InitializeOptimizations();
         InitializeRendering();
+        flowSource = gameObject.AddComponent<AudioSource>();
+flowSource.clip = flowingClip;
+flowSource.loop = true;
+flowSource.playOnAwake = false;
+flowSource.volume = 0f;
+flowSource.Play();
 
         if (useCachedDisplacementRigidbodies && enableDisplacement)
         {
@@ -261,6 +274,11 @@ public class CellularLiquidSimulation : MonoBehaviour
                 UpdateWaterTextureOptimized();
             }
         }
+        float targetVolume = 0f;
+if (activeCells.Count > flowSoundThreshold)
+    targetVolume = Mathf.Clamp01((activeCells.Count - flowSoundThreshold) / flowSoundMaxCells);
+
+flowSource.volume = Mathf.MoveTowards(flowSource.volume, targetVolume, Time.deltaTime * 2f);
     }
 
     void SimulationStep()
@@ -790,6 +808,8 @@ public class CellularLiquidSimulation : MonoBehaviour
         Debug.Log($"Cleaned up {cleanedCells} stuck water cells");
     }
 
+    private float spawnSoundCooldown = 0f;
+
     public void SpawnWater(Vector2 worldPosition, float amount)
     {
         Vector2Int gridPos = WorldToGrid(worldPosition);
@@ -799,6 +819,17 @@ public class CellularLiquidSimulation : MonoBehaviour
             activeCells.Add(gridPos);
             settled[gridPos.x, gridPos.y] = false;
             MarkCellDirty(gridPos.x, gridPos.y);
+        }
+
+        spawnSoundCooldown -= Time.deltaTime;
+        if (spawnSoundCooldown <= 0f)
+        {
+            if (amount < 0.3f)
+                SoundManager.Instance?.Play("DrippingWater", amount / 0.3f);
+            else
+                SoundManager.Instance?.Play("Splash", Mathf.Clamp01(amount));
+
+            spawnSoundCooldown = 0.2f;
         }
     }
 
@@ -1134,6 +1165,10 @@ public class CellularLiquidSimulation : MonoBehaviour
         if (waterToDisplace > minWaterTransfer)
         {
             PushWaterAround(overlappingCells, waterToDisplace, velocity);
+
+            float splashVolume = Mathf.Clamp01(speed / 10f);
+            if (splashVolume > 0.1f)
+                SoundManager.Instance?.Play("Splash", splashVolume);
         }
 
         return true;

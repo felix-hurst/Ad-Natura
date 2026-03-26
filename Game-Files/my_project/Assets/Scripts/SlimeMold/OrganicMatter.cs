@@ -30,6 +30,9 @@ public class OrganicMatter : MonoBehaviour
     [Tooltip("Called when fully decomposed (health reaches 0)")]
     public UnityEvent onDecomposed;
 
+    [Header("Sound")]
+[SerializeField] private string damageSound = "Decomposition";
+
     [Header("Debug")]
     [SerializeField] private bool showHealthBar = true;
 
@@ -104,6 +107,8 @@ public class OrganicMatter : MonoBehaviour
         float previousHealth = currentHealth;
         currentHealth -= amount;
         damagePercent = 1f - (currentHealth / maxHealth);
+
+        SoundManager.Instance?.Play(damageSound);
 
         Debug.Log($"[Decomp Step 4 - HEALTH] '{name}': health {previousHealth:F1} → {currentHealth:F1} / {maxHealth} ({damagePercent * 100:F1}% damaged)");
         // Update slime overlay
