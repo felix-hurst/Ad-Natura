@@ -56,7 +56,8 @@ public class Raycast : MonoBehaviour
             (1 << LayerMask.NameToLayer("SlimeBoundary")) |
             (1 << LayerMask.NameToLayer("CutPiece")) |
             (1 << LayerMask.NameToLayer("SlimeObstacle")) |
-            (1 << LayerMask.NameToLayer("Background")));
+            (1 << LayerMask.NameToLayer("Background")) |
+            (1 << LayerMask.NameToLayer("UI")));
         SetLaserColor(Color.white);
     }
 

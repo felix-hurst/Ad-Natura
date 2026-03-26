@@ -132,15 +132,21 @@ public class OrganicMatter : MonoBehaviour
                 onDecomposed?.Invoke();
                 enabled = false;
             }
-            else // Wall
+            else if (CompareTag("Dirt"))
             {
-                Debug.Log($"[Decomp Step 5 - COLLAPSE] '{name}': fully decomposed (Wall). Converting to Climbable.");
+                // Dirt wall: convert to climbable surface
                 gameObject.layer = LayerMask.NameToLayer("Climbable");
                 if (overlayRenderer != null)
                     overlayRenderer.color = new Color(0f, 0f, 0f, 0f);
                 var sr = GetComponent<SpriteRenderer>();
                 if (sr != null && climbableWallSprite != null)
                     sr.sprite = climbableWallSprite;
+            }
+            else
+            {
+                // Generic organic matter — just invoke event and disable
+                onDecomposed?.Invoke();
+                enabled = false;
             }
         }
     }

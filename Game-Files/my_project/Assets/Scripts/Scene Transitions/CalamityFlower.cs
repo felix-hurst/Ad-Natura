@@ -42,9 +42,9 @@ public class CalamityFlower : MonoBehaviour
         }
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    private void OnTriggerEnter2D(Collider2D collider)
     {
-        if (collision.gameObject.CompareTag("Player") == true)
+        if (collider.CompareTag("Player") == true && !rising && !waitingOnPlayer)
         {
             // Set to foreground so it renders above other objects
             spriteRenderer.sortingLayerName = "Foreground";
