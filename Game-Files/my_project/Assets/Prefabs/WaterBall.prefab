@@ -56,7 +56,7 @@ Rigidbody2D:
     m_Bits: 8224
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 106496
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 1
@@ -109,11 +109,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 15e8bbf15dc26854fb2176a1eacdb833, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ballRadius: 0.3
+  ballRadius: 0.25
   ballColor: {r: 0.8160377, g: 0.9165987, b: 1, a: 0.23921569}
   maxLifetime: 10
-  waterAmountToSpawn: 20
-  waterSpawnRadius: 5
+  waterAmountToSpawn: 10
+  waterSpawnRadius: 3
   useRegionSpawn: 1
   regionSpawnSize: 1.5
   enableSplashEffect: 1
@@ -121,7 +121,7 @@ MonoBehaviour:
   scaleWithVelocity: 0
   maxVelocityForSplash: 15
   enableWaterTrail: 1
-  trailSpawnInterval: 0.01
+  trailSpawnInterval: 0.05
   trailWaterAmount: 0.01
   trailSpawnRadius: 1
   minTrailVelocity: 0.5
@@ -133,7 +133,7 @@ MonoBehaviour:
   trajectorySpreadFactor: 1.5
   excludedLayers:
     serializedVersion: 2
-    m_Bits: 8224
+    m_Bits: 73760
   excludedTags:
   - Player
   - Debris

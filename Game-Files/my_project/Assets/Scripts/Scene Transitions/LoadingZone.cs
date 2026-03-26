@@ -11,22 +11,24 @@ public class LoadingZone : MonoBehaviour
         currentScene = SceneManager.GetActiveScene().name;
     }
 
-    private void OnCollisionEnter2D(Collision2D collision)
+    private void OnTriggerEnter2D(Collider2D collider)
     {
-        if (collision.gameObject.CompareTag("Player") == true)
+        // Note: Chapter 1 Level 2 (1-2) and Chapter 3 Level 2 (3-2) use different conditions
+        // for proceeding to the next stage, and they do not have loading zones
+        if (collider.CompareTag("Player") == true)
         {
+            // 1-1 to 1-2
             if (currentScene == "Newlevel1")
-                SceneManager.LoadScene("Newlevel2"); // Chapter 1 Level 2
-            else if (currentScene == "Newlevel2")
-                SceneManager.LoadScene("Ch_1_to_2_Interlude");
+                SceneManager.LoadScene("Newlevel2");
+            // 2-1 to 2-2
             else if (currentScene == "Newlevel3")
-                SceneManager.LoadScene("Newlevel4"); // Chapter 2 Level 2
+                SceneManager.LoadScene("Newlevel4");
+            // 2-2 to Interlude / Intro to Ch. 3
             else if (currentScene == "Newlevel4")
                 SceneManager.LoadScene("Ch_2_to_3_Interlude");
+            // 3-1 to 3-2
             else if (currentScene == "Newlevel5")
-                SceneManager.LoadScene("Newlevel6"); // Chapter 3 Level 2
-            else if (currentScene == "Newlevel6")
-                SceneManager.LoadScene("Epilogue");
+                SceneManager.LoadScene("Newlevel6");
             else
                 Debug.LogError("Error: Current scene does not have a next scene configured.");
         }

@@ -46,9 +46,9 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1babb35a5bfda784eb685f80f65c9f56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ballRadius: 0.1
-  ballColor: {r: 0.9433962, g: 0.9433962, b: 0.9433962, a: 0.95}
-  maxLifetime: 10
+  ballRadius: 0.2
+  ballColor: {r: 0.27451938, g: 0.27451938, b: 0.2924528, a: 1}
+  maxLifetime: 3
   impactIntensity: 0.8
   scaleWithVelocity: 1
   maxVelocityForImpact: 14
@@ -57,19 +57,27 @@ MonoBehaviour:
   explosionAffectsParent: 0
   excludedLayers:
     serializedVersion: 2
-    m_Bits: 64
+    m_Bits: 100672
   excludedTags:
   - Player
   - Debris
   - Fragment
+  - Wood
+  - Dirt
   showImpactEffect: 0
   impactColor: {r: 1, g: 0.5, b: 0, a: 1}
   impactDuration: 0.3
-  enableTracer: 1
-  tracerLength: 1.5
-  tracerWidth: 0.08
-  tracerColor: {r: 0.8, g: 0.8, b: 0.8, a: 0.8}
-  minTracerVelocity: 0.5
+  enableIncendiaryTrail: 0
+  trailSpawnInterval: 0.08
+  trailParticlesPerSpawn: 2
+  minTrailVelocity: 0.5
+  trailIntensity: 0.15
+  scaleTrailWithVelocity: 1
+  maxTrailVelocity: 10
+  trailBehindDistance: 0.2
+  enableGlowEffect: 0
+  glowFlickerSpeed: 10
+  glowVariation: 0.3
   weaknessDelay: 0.2
   minRayCount: 1
   maxRayCount: 2
@@ -82,9 +90,9 @@ MonoBehaviour:
   showFractureWarning: 0
   warningDuration: 0.4
   warningColor: {r: 1, g: 0.3, b: 0.1, a: 1}
-  enableLeafBlastOnImpact: 1
-  impactLeafBlastRadius: 4
-  impactLeafBlastForce: 12
+  enableLeafBlastOnImpact: 0
+  impactLeafBlastRadius: 2.13
+  impactLeafBlastForce: 2.1
   impactLeafBlastUpwardBias: 0.5
   showDebugInfo: 0
 --- !u!50 &3085887201219852692
@@ -109,7 +117,7 @@ Rigidbody2D:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 65536
   m_Interpolate: 0
   m_SleepingMode: 1
   m_CollisionDetection: 1

@@ -165,7 +165,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
   m_LocalPosition: {x: -0.699, y: -2.626, z: 0}
-  m_LocalScale: {x: 0.7866461, y: 0.7128, z: 1}
+  m_LocalScale: {x: 4, y: 4, z: 4}
   m_ConstrainProportionsScale: 0
   m_Children:
   - {fileID: 4103859691207025641}
@@ -215,7 +215,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
+  m_Sprite: {fileID: -7246439415143383016, guid: 90343dec13242187f9b9b458d214d957, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -242,7 +242,7 @@ PolygonCollider2D:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 0
+    m_Bits: 4294967295
   m_LayerOverridePriority: 0
   m_ForceSendLayers:
     serializedVersion: 2
@@ -256,7 +256,7 @@ PolygonCollider2D:
   m_CallbackLayers:
     serializedVersion: 2
     m_Bits: 4294967295
-  m_IsTrigger: 1
+  m_IsTrigger: 0
   m_UsedByEffector: 0
   m_CompositeOperation: 0
   m_CompositeOrder: 0
@@ -264,7 +264,7 @@ PolygonCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
+    oldSize: {x: 0.17, y: 0.25}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -272,10 +272,10 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: -0.5, y: 0.5}
-      - {x: -0.5, y: -0.5}
-      - {x: 0.5, y: -0.5}
-      - {x: 0.5, y: 0.5}
+    - - {x: -0.085, y: 0.125}
+      - {x: -0.085, y: -0.125}
+      - {x: 0.085, y: -0.125}
+      - {x: 0.085, y: 0.125}
   m_UseDelaunayMesh: 0
 --- !u!114 &3435467237574143893
 MonoBehaviour:
@@ -304,6 +304,8 @@ MonoBehaviour:
   checkpointID: Journal_1
   oneTimeOnly: 0
   interactPrompt: {fileID: 7599781159500940550}
+  bobSpeed: 2
+  bobAmplitude: 0.1
 --- !u!1 &7599781159500940550
 GameObject:
   m_ObjectHideFlags: 0
@@ -332,15 +334,15 @@ RectTransform:
   m_GameObject: {fileID: 7599781159500940550}
   m_LocalRotation: {x: -0, y: -0, z: -0, w: 1}
   m_LocalPosition: {x: 0, y: 0, z: 0}
-  m_LocalScale: {x: 0.01, y: 0.01, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalScale: {x: 0.002, y: 0.002, z: 0.20000002}
+  m_ConstrainProportionsScale: 1
   m_Children:
   - {fileID: 892451327987286261}
   m_Father: {fileID: 6485533160007763511}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 0, y: 0}
-  m_AnchoredPosition: {x: 0.0056, y: 0.682}
+  m_AnchoredPosition: {x: 0.0056, y: 0.17}
   m_SizeDelta: {x: 100.5861, y: 32.2086}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!223 &654590800400079948

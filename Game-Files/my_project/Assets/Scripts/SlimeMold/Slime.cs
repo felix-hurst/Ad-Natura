@@ -20,8 +20,8 @@ public class Slime : MonoBehaviour
     [SerializeField, Range(0f, 1f)] private float diffuseSpeed = 0.25f;
     [Tooltip("How fast trails fade. Lower = longer-lasting networks")]
     [SerializeField, Range(0f, 0.5f)] private float evaporateSpeed = 0.04f;
-    [Tooltip("How much agents follow existing trails vs water. Lower = more water-responsive")]
-    [SerializeField, Range(0f, 1f)] private float trailWeight = 0.35f;
+    [Tooltip("How much agents follow existing trails vs water. Higher = more vein formation")]
+    [SerializeField, Range(0f, 2f)] private float trailWeight = 0.8f;
 
     [Header("Movement")]
     [Tooltip("Speed when no water nearby. Keep low for player control")]
@@ -31,7 +31,7 @@ public class Slime : MonoBehaviour
 
     [Header("Sensors")]
     [Tooltip("How far ahead agents look for trails/water")]
-    [SerializeField, Range(2f, 15f)] private float sensorLength = 5f;
+    [SerializeField, Range(2f, 30f)] private float sensorLength = 5f;
     [Tooltip("Angle between sensors (degrees). Lower = tighter turns")]
     [SerializeField, Range(15f, 45f)] private float sensorAngle = 25f;
     [Tooltip("How fast agents turn. Lower = smoother, organic movement")]
@@ -56,9 +56,15 @@ public class Slime : MonoBehaviour
     [Tooltip("Pulse frequency when far from water (Hz). Low = slow, meditative breathing")]
     [SerializeField, Range(0.1f, 2f)] private float pulseMinFreq = 0.3f;
     [Tooltip("Pulse frequency when near water (Hz). Higher = excited, rapid streaming")]
-    [SerializeField, Range(1f, 6f)] private float pulseMaxFreq = 1.5f;
+    [SerializeField, Range(0.1f, 6f)] private float pulseMaxFreq = 1.5f;
     [Tooltip("Wave spatial scale. Controls how fast the pulse phase shifts across the organism. Higher = tighter ripples")]
     [SerializeField, Range(0f, 1f)] private float pulseWaveScale = 0f;
+
+    [Header("Behavioral Drift")]
+    [Tooltip("How much agents differ from each other. 0 = all identical, 1 = wide personality variation")]
+    [SerializeField, Range(0f, 1f)] private float driftStrength = 0.5f;
+    [Tooltip("How fast agent personalities shift over time. Higher = more restless colony")]
+    [SerializeField, Range(0f, 1f)] private float driftSpeed = 0.15f;
 
     [Header("Entropic Decay")]
     [Tooltip("Spatial scale of decay noise. Lower = larger patches of persistence, higher = fine grain")]
@@ -68,15 +74,25 @@ public class Slime : MonoBehaviour
     [Tooltip("How much evaporation varies. 0 = uniform (original), 1 = some pixels barely evaporate at all")]
     [SerializeField, Range(0f, 1f)] private float entropyStrength = 0.4f;
 
-    [Header("Hazard Death Visuals")]
+    [Header("Hazard (Calamity)")]
     [Tooltip("How strongly agents steer away from hazards. Higher = wider avoidance zone")]
     [SerializeField, Range(0f, 20f)] private float hazardAvoidanceStrength = 8f;
-    [Tooltip("Color of decaying/dying slime trails")]
-    [SerializeField] private Color decayColor = new Color(0.25f, 0.15f, 0.05f, 1f);
+    [Tooltip("Color the dying agent's trail turns before fading away")]
+    [SerializeField] private Color deathTint = new Color(0.7f, 0.55f, 0.1f, 1f);
     [Tooltip("How fast hazard zones corrode existing trails. Higher = faster dissolution")]
     [SerializeField, Range(0f, 15f)] private float hazardCorrosionRate = 6f;
-    [Tooltip("Trail deposit reduction in decay zone (0=full trails, 1=no trails)")]
+    [Tooltip("Trail deposit reduction in hazard zone (0=full trails, 1=no trails)")]
     [SerializeField, Range(0f, 1f)] private float hazardTrailDampen = 0.85f;
+
+    [Header("Water Consumption")]
+    [Tooltip("How much water the organism absorbs per second at each occupied cell")]
+    [SerializeField, Range(0f, 5f)] private float consumptionRate = 0.15f;
+    [Tooltip("Minimum trail density needed to consume water at a position")]
+    [SerializeField, Range(0f, 0.5f)] private float consumptionThreshold = 0.05f;
+    [Tooltip("How brightly the organism glows when feeding")]
+    [SerializeField, Range(0f, 1f)] private float glowIntensity = 0.4f;
+    [Tooltip("How fast the glow fades after feeding stops")]
+    [SerializeField, Range(0f, 5f)] private float glowDecayRate = 1.5f;
 
     [Header("Visual")]
     [Tooltip("Slime color. Golden yellow is classic Physarum")]
@@ -94,6 +110,12 @@ public class Slime : MonoBehaviour
 
     private RenderTexture defaultAttractionMap;
     private ComputeBuffer agentsBuffer;
+
+    // Water consumption state
+    private CellularLiquidSimulation liquidSim;
+    private float metabolicGlow;
+    private float consumptionTimer;
+    private Color[] cachedTrailPixels;
     private Texture2D displayTexture;
     private Sprite displaySprite;
     private SpriteRenderer targetRenderer;
@@ -125,6 +147,10 @@ public class Slime : MonoBehaviour
             return;
         }
 
+        // Each instance needs its own shader copy so multiple slime molds
+        // don't overwrite each other's texture bindings
+        shader = Instantiate(shader);
+
         if (boundingObject != null)
             CalculateBoundsFromObject();
 
@@ -149,6 +175,8 @@ public class Slime : MonoBehaviour
         var clearPixels = new Color[width * height];
         defaultHazardMap.SetPixels(clearPixels);
         defaultHazardMap.Apply();
+
+        liquidSim = FindAnyObjectByType<CellularLiquidSimulation>();
 
         SetupDisplay();
     }
@@ -211,6 +239,7 @@ public class Slime : MonoBehaviour
         displayTexture.filterMode = FilterMode.Point;
 
         // Separate texture purely for CPU sampling — never touched by sprite system
+        cachedTrailPixels = new Color[width * height];
         cpuSampleTexture = new Texture2D(width, height, TextureFormat.RGBAFloat, false);
         cpuSampleTexture.filterMode = FilterMode.Point;
 
@@ -247,6 +276,8 @@ public class Slime : MonoBehaviour
         shader.SetFloat("trailWeight", trailWeight);
         shader.SetFloat("idleSpeed", idleSpeed);
         shader.SetFloat("attractedSpeedMultiplier", attractedSpeedMultiplier);
+        shader.SetFloat("driftStrength", driftStrength);
+        shader.SetFloat("driftSpeed", driftSpeed);
         shader.SetVector("slimeColor", new Vector4(slimeColor.r, slimeColor.g, slimeColor.b, slimeColor.a));
 
         var waterMap = hasExternalAttraction && externalWaterMap != null ? externalWaterMap : defaultAttractionMap;
@@ -260,7 +291,8 @@ public class Slime : MonoBehaviour
         shader.SetFloat("spawnCenterY", height * spawnY);
         shader.SetFloat("spawnRadius", Mathf.Min(width, height) * spawnRadius);
         shader.SetFloat("hazardAvoidanceStrength", hazardAvoidanceStrength);
-        shader.SetVector("decayColor", new Vector4(decayColor.r, decayColor.g, decayColor.b, decayColor.a));
+        shader.SetVector("deathTint", new Vector4(deathTint.r, deathTint.g, deathTint.b, deathTint.a));
+
         shader.SetFloat("hazardCorrosionRate", hazardCorrosionRate);
         shader.SetFloat("hazardTrailDampen", hazardTrailDampen);
 
@@ -280,6 +312,9 @@ public class Slime : MonoBehaviour
         shader.SetFloat("entropyScale", entropyScale);
         shader.SetFloat("entropySpeed", entropySpeed);
         shader.SetFloat("entropyStrength", entropyStrength);
+
+        // Metabolic glow — organism brightens when consuming water
+        shader.SetFloat("metabolicGlow", metabolicGlow * glowIntensity);
 
         shader.SetTexture(kernelPostprocess, "TrailMap", readBuffer);
         shader.SetTexture(kernelPostprocess, "TrailMapProcessed", writeBuffer);
@@ -304,6 +339,60 @@ public class Slime : MonoBehaviour
         RenderTexture.ReleaseTemporary(blitTarget);
         displayTexture.Apply();
         cpuSampleTexture.Apply(false);
+
+        ConsumeWater();
+    }
+
+    void ConsumeWater()
+    {
+        if (liquidSim == null || consumptionRate <= 0f) return;
+
+        // Decay glow toward 0 every frame
+        metabolicGlow = Mathf.MoveTowards(metabolicGlow, 0f, glowDecayRate * Time.fixedDeltaTime);
+
+        // Only sample every ~0.2s to avoid per-frame cost
+        consumptionTimer -= Time.fixedDeltaTime;
+        if (consumptionTimer > 0f) return;
+        consumptionTimer = 0.2f;
+
+        float totalConsumed = 0f;
+        int sampleStep = Mathf.Max(2, Mathf.Min(width, height) / 16);
+
+        // Bulk read — reuse reference, GC handles the old array
+        cachedTrailPixels = cpuSampleTexture.GetPixels();
+
+        for (int y = 0; y < height; y += sampleStep)
+        {
+            for (int x = 0; x < width; x += sampleStep)
+            {
+                Color trail = cachedTrailPixels[y * width + x];
+                float density = trail.r + trail.g + trail.b;
+                if (density < consumptionThreshold) continue;
+
+                float worldX = worldBounds.x + (float)x / width * worldBounds.width;
+                float worldY = worldBounds.y + (float)y / height * worldBounds.height;
+                Vector2 worldPos = new Vector2(worldX, worldY);
+
+                // Sample a small cluster of liquid cells — the slime pixel
+                // covers multiple liquid grid cells due to resolution mismatch
+                Vector2Int gridPos = liquidSim.WorldToGrid(worldPos);
+                for (int gy = -1; gy <= 1; gy++)
+                {
+                    for (int gx = -1; gx <= 1; gx++)
+                    {
+                        float w = liquidSim.GetWater(gridPos.x + gx, gridPos.y + gy);
+                        if (w < 0.01f) continue;
+                        float amount = Mathf.Min(w, consumptionRate * 0.2f);
+                        liquidSim.RemoveWater(worldPos + new Vector2(gx * 0.1f, gy * 0.1f), amount);
+                        totalConsumed += amount;
+                    }
+                }
+            }
+        }
+
+        // Feed the glow — organism brightens when metabolizing
+        if (totalConsumed > 0f)
+            metabolicGlow = Mathf.Min(1f, metabolicGlow + totalConsumed * 2f);
     }
 
     void OnDestroy()
@@ -313,6 +402,7 @@ public class Slime : MonoBehaviour
         defaultAttractionMap?.Release();
         if (defaultHazardMap != null) Destroy(defaultHazardMap);
         agentsBuffer?.Release();
+        if (shader != null) Destroy(shader);
         if (displayTexture != null) Destroy(displayTexture);
         if (cpuSampleTexture != null) Destroy(cpuSampleTexture);
         if (displaySprite != null) Destroy(displaySprite);
