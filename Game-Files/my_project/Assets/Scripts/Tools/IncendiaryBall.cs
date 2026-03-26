@@ -292,18 +292,6 @@ public class IncendiaryBall : MonoBehaviour
             return;
         }
 
-
-        int hitLayer = collision.gameObject.layer;
-        if (hitLayer == LayerMask.NameToLayer("Wood") || hitLayer == LayerMask.NameToLayer("Decompose") || hitLayer == LayerMask.NameToLayer("CutPiece"))
-        {
-            SoundManager.Instance?.Play("RifleHitWood");
-            Debug.Log("here");
-        }
-        else
-        {
-            Debug.Log($"nohere {collision.gameObject.layer}");
-
-        }
         Vector2 impactPoint = collision.contacts.Length > 0 ? collision.contacts[0].point : (Vector2)transform.position;
         Vector2 impactVelocity = preImpactVelocity;
         Vector2 surfaceNormal = collision.contacts.Length > 0 ? collision.contacts[0].normal : Vector2.up;
@@ -393,8 +381,8 @@ public class IncendiaryBall : MonoBehaviour
         Collider2D hitCollider = hitObject.GetComponent<Collider2D>();
         if (hitCollider != null)
         {
-            Vector2 rayOrigin = impactPoint - incidentDirection * 0.5f;
-            RaycastHit2D[] hits = Physics2D.RaycastAll(rayOrigin, incidentDirection, cutRaycastDistance);
+            Vector2 rayOrigin = impactPoint - incidentDirection * 0.1f;
+            RaycastHit2D[] hits = Physics2D.CircleCastAll(rayOrigin, ballRadius * 0.5f, incidentDirection, cutRaycastDistance);
 
             Debug.Log($"[Ball {gameObject.GetInstanceID()}] Raycasting for entry/exit points - found {hits.Length} hits");
 

@@ -348,7 +348,6 @@ GameObject:
   - component: {fileID: 136283851}
   - component: {fileID: 136283850}
   - component: {fileID: 136283849}
-  - component: {fileID: 136283848}
   - component: {fileID: 136283847}
   - component: {fileID: 136283846}
   m_Layer: 0
@@ -379,6 +378,7 @@ MonoBehaviour:
   onDecomposed:
     m_PersistentCalls:
       m_Calls: []
+  damageSound: Decomposition
   showHealthBar: 1
   weaknessDelay: 1.5
   minRayCount: 10
@@ -435,7 +435,7 @@ PolygonCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
+    oldSize: {x: 0.32, y: 1.28}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -443,27 +443,23 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: -0.5, y: 0.5}
-      - {x: -0.5, y: -0.5}
-      - {x: 0.5, y: -0.5}
-      - {x: 0.5, y: 0.5}
+    - - {x: 0.16, y: 0.45}
+      - {x: 0.16, y: 0.64}
+      - {x: -0.16, y: 0.64}
+      - {x: -0.16, y: 0.62}
+      - {x: -0.14999999, y: 0.57}
+      - {x: -0.13, y: 0.45}
+      - {x: -0.14, y: 0.24}
+      - {x: -0.16, y: 0.07}
+      - {x: -0.16, y: -0.13}
+      - {x: -0.14, y: -0.14999999}
+      - {x: -0.14, y: -0.41}
+      - {x: -0.16, y: -0.56}
+      - {x: -0.16, y: -0.64}
+      - {x: 0.16, y: -0.64}
+      - {x: 0.16, y: 0.16}
+      - {x: 0.14, y: 0.32}
   m_UseDelaunayMesh: 0
---- !u!114 &136283848
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 136283845}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c26e740f2a0835a4d9a754f015710eed, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  applyOnStart: 1
-  useMaterialTag: 1
-  overrideMaterialName: 
-  pixelsPerUnit: 64
 --- !u!114 &136283849
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -599,8 +595,8 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 0.6603774, g: 0.6603774, b: 0.6603774, a: 1}
+  m_Sprite: {fileID: 9101844511835533456, guid: abbcf51f74a9ed2448f3edf316e5ce47, type: 3}
+  m_Color: {r: 0.9433962, g: 0.9433962, b: 0.9433962, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -620,7 +616,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0.05353712, w: 0.9985659}
   m_LocalPosition: {x: 9.04, y: 15.72, z: -0.8}
-  m_LocalScale: {x: 0.40840966, y: 1.9423156, z: 1}
+  m_LocalScale: {x: 1.5, y: 1.5, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -1696,7 +1692,6 @@ GameObject:
   - component: {fileID: 385829356}
   - component: {fileID: 385829355}
   - component: {fileID: 385829354}
-  - component: {fileID: 385829353}
   - component: {fileID: 385829352}
   - component: {fileID: 385829351}
   m_Layer: 0
@@ -1727,6 +1722,7 @@ MonoBehaviour:
   onDecomposed:
     m_PersistentCalls:
       m_Calls: []
+  damageSound: Decomposition
   showHealthBar: 1
   weaknessDelay: 1.5
   minRayCount: 10
@@ -1783,7 +1779,7 @@ PolygonCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
+    oldSize: {x: 0.32, y: 1.28}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -1791,27 +1787,23 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: -0.5, y: 0.5}
-      - {x: -0.5, y: -0.5}
-      - {x: 0.5, y: -0.5}
-      - {x: 0.5, y: 0.5}
+    - - {x: 0.16, y: 0.45}
+      - {x: 0.16, y: 0.64}
+      - {x: -0.16, y: 0.64}
+      - {x: -0.16, y: 0.62}
+      - {x: -0.14999999, y: 0.57}
+      - {x: -0.13, y: 0.45}
+      - {x: -0.14, y: 0.24}
+      - {x: -0.16, y: 0.07}
+      - {x: -0.16, y: -0.13}
+      - {x: -0.14, y: -0.14999999}
+      - {x: -0.14, y: -0.41}
+      - {x: -0.16, y: -0.56}
+      - {x: -0.16, y: -0.64}
+      - {x: 0.16, y: -0.64}
+      - {x: 0.16, y: 0.16}
+      - {x: 0.14, y: 0.32}
   m_UseDelaunayMesh: 0
---- !u!114 &385829353
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 385829350}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c26e740f2a0835a4d9a754f015710eed, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  applyOnStart: 1
-  useMaterialTag: 1
-  overrideMaterialName: 
-  pixelsPerUnit: 64
 --- !u!114 &385829354
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -1947,8 +1939,8 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 0.41509432, g: 0.41509432, b: 0.41509432, a: 1}
+  m_Sprite: {fileID: 9101844511835533456, guid: abbcf51f74a9ed2448f3edf316e5ce47, type: 3}
+  m_Color: {r: 0.7830189, g: 0.7830189, b: 0.7830189, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -1967,8 +1959,8 @@ Transform:
   m_GameObject: {fileID: 385829350}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0.0597891, w: 0.9982111}
-  m_LocalPosition: {x: 9.7, y: 14.4, z: -0.8}
-  m_LocalScale: {x: 0.65968287, y: 3.686308, z: 1}
+  m_LocalPosition: {x: 9.8382, y: 14.5303, z: -0.8}
+  m_LocalScale: {x: 3, y: 3, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -2361,7 +2353,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.2705822, y: 7.339149, z: -13}
+  m_LocalPosition: {x: 3.5485048, y: 7.339149, z: -13}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -2454,6 +2446,9 @@ MonoBehaviour:
   maxShadingDepth: 8
   waterMaterial: {fileID: 0}
   pixelsPerUnit: 10
+  flowSoundThreshold: 50
+  flowSoundMaxCells: 500
+  flowingClip: {fileID: 0}
   solidLayer:
     serializedVersion: 2
     m_Bits: 3329
@@ -2616,7 +2611,6 @@ GameObject:
   - component: {fileID: 585320971}
   - component: {fileID: 585320970}
   - component: {fileID: 585320969}
-  - component: {fileID: 585320968}
   - component: {fileID: 585320967}
   - component: {fileID: 585320966}
   m_Layer: 0
@@ -2647,6 +2641,7 @@ MonoBehaviour:
   onDecomposed:
     m_PersistentCalls:
       m_Calls: []
+  damageSound: Decomposition
   showHealthBar: 1
   weaknessDelay: 1.5
   minRayCount: 10
@@ -2703,7 +2698,7 @@ PolygonCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
+    oldSize: {x: 0.32, y: 1.28}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -2711,27 +2706,23 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: -0.5, y: 0.5}
-      - {x: -0.5, y: -0.5}
-      - {x: 0.5, y: -0.5}
-      - {x: 0.5, y: 0.5}
+    - - {x: 0.16, y: 0.45}
+      - {x: 0.16, y: 0.64}
+      - {x: -0.16, y: 0.64}
+      - {x: -0.16, y: 0.62}
+      - {x: -0.14999999, y: 0.57}
+      - {x: -0.13, y: 0.45}
+      - {x: -0.14, y: 0.24}
+      - {x: -0.16, y: 0.07}
+      - {x: -0.16, y: -0.13}
+      - {x: -0.14, y: -0.14999999}
+      - {x: -0.14, y: -0.41}
+      - {x: -0.16, y: -0.56}
+      - {x: -0.16, y: -0.64}
+      - {x: 0.16, y: -0.64}
+      - {x: 0.16, y: 0.16}
+      - {x: 0.14, y: 0.32}
   m_UseDelaunayMesh: 0
---- !u!114 &585320968
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 585320965}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c26e740f2a0835a4d9a754f015710eed, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  applyOnStart: 1
-  useMaterialTag: 1
-  overrideMaterialName: 
-  pixelsPerUnit: 64
 --- !u!114 &585320969
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2867,8 +2858,8 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 0.7830189, g: 0.7830189, b: 0.7830189, a: 1}
+  m_Sprite: {fileID: 9101844511835533456, guid: abbcf51f74a9ed2448f3edf316e5ce47, type: 3}
+  m_Color: {r: 0.8679245, g: 0.8679245, b: 0.8679245, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -2888,7 +2879,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: 0.07447045, w: 0.99722326}
   m_LocalPosition: {x: 8.49, y: 17.46, z: -0.8}
-  m_LocalScale: {x: 0.40840966, y: 1.9423156, z: 1}
+  m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -6107,6 +6098,7 @@ MonoBehaviour:
   onDecomposed:
     m_PersistentCalls:
       m_Calls: []
+  damageSound: Decomposition
   showHealthBar: 1
   weaknessDelay: 1.5
   minRayCount: 10
@@ -6725,7 +6717,6 @@ GameObject:
   - component: {fileID: 1711075386}
   - component: {fileID: 1711075385}
   - component: {fileID: 1711075384}
-  - component: {fileID: 1711075383}
   - component: {fileID: 1711075382}
   - component: {fileID: 1711075381}
   m_Layer: 0
@@ -6756,6 +6747,7 @@ MonoBehaviour:
   onDecomposed:
     m_PersistentCalls:
       m_Calls: []
+  damageSound: Decomposition
   showHealthBar: 1
   weaknessDelay: 1.5
   minRayCount: 10
@@ -6812,7 +6804,7 @@ PolygonCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
+    oldSize: {x: 0.32, y: 1.28}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -6820,27 +6812,23 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: -0.5, y: 0.5}
-      - {x: -0.5, y: -0.5}
-      - {x: 0.5, y: -0.5}
-      - {x: 0.5, y: 0.5}
+    - - {x: 0.16, y: 0.45}
+      - {x: 0.16, y: 0.64}
+      - {x: -0.16, y: 0.64}
+      - {x: -0.16, y: 0.62}
+      - {x: -0.14999999, y: 0.57}
+      - {x: -0.13, y: 0.45}
+      - {x: -0.14, y: 0.24}
+      - {x: -0.16, y: 0.07}
+      - {x: -0.16, y: -0.13}
+      - {x: -0.14, y: -0.14999999}
+      - {x: -0.14, y: -0.41}
+      - {x: -0.16, y: -0.56}
+      - {x: -0.16, y: -0.64}
+      - {x: 0.16, y: -0.64}
+      - {x: 0.16, y: 0.16}
+      - {x: 0.14, y: 0.32}
   m_UseDelaunayMesh: 0
---- !u!114 &1711075383
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1711075380}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c26e740f2a0835a4d9a754f015710eed, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  applyOnStart: 1
-  useMaterialTag: 1
-  overrideMaterialName: 
-  pixelsPerUnit: 64
 --- !u!114 &1711075384
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6976,8 +6964,8 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 0.5566038, g: 0.5566038, b: 0.5566038, a: 1}
+  m_Sprite: {fileID: 9101844511835533456, guid: abbcf51f74a9ed2448f3edf316e5ce47, type: 3}
+  m_Color: {r: 0.8301887, g: 0.8301887, b: 0.8301887, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -6996,8 +6984,8 @@ Transform:
   m_GameObject: {fileID: 1711075380}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: 0.07447045, w: 0.99722326}
-  m_LocalPosition: {x: 8.25, y: 14.18, z: -0.8}
-  m_LocalScale: {x: 0.65968287, y: 3.686308, z: 1}
+  m_LocalPosition: {x: 8.2448, y: 14.2144, z: -0.8}
+  m_LocalScale: {x: 2, y: 2, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -7513,7 +7501,6 @@ GameObject:
   - component: {fileID: 1781038674}
   - component: {fileID: 1781038673}
   - component: {fileID: 1781038672}
-  - component: {fileID: 1781038671}
   - component: {fileID: 1781038670}
   - component: {fileID: 1781038669}
   m_Layer: 0
@@ -7544,6 +7531,7 @@ MonoBehaviour:
   onDecomposed:
     m_PersistentCalls:
       m_Calls: []
+  damageSound: Decomposition
   showHealthBar: 1
   weaknessDelay: 1.5
   minRayCount: 10
@@ -7600,7 +7588,7 @@ PolygonCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
+    oldSize: {x: 0.32, y: 1.28}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -7608,27 +7596,23 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: -0.5, y: 0.5}
-      - {x: -0.5, y: -0.5}
-      - {x: 0.5, y: -0.5}
-      - {x: 0.5, y: 0.5}
+    - - {x: 0.16, y: 0.45}
+      - {x: 0.16, y: 0.64}
+      - {x: -0.16, y: 0.64}
+      - {x: -0.16, y: 0.62}
+      - {x: -0.14999999, y: 0.57}
+      - {x: -0.13, y: 0.45}
+      - {x: -0.14, y: 0.24}
+      - {x: -0.16, y: 0.07}
+      - {x: -0.16, y: -0.13}
+      - {x: -0.14, y: -0.14999999}
+      - {x: -0.14, y: -0.41}
+      - {x: -0.16, y: -0.56}
+      - {x: -0.16, y: -0.64}
+      - {x: 0.16, y: -0.64}
+      - {x: 0.16, y: 0.16}
+      - {x: 0.14, y: 0.32}
   m_UseDelaunayMesh: 0
---- !u!114 &1781038671
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1781038668}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c26e740f2a0835a4d9a754f015710eed, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  applyOnStart: 1
-  useMaterialTag: 1
-  overrideMaterialName: 
-  pixelsPerUnit: 64
 --- !u!114 &1781038672
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -7764,8 +7748,8 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
-  m_Color: {r: 0.5188679, g: 0.5188679, b: 0.5188679, a: 1}
+  m_Sprite: {fileID: 9101844511835533456, guid: abbcf51f74a9ed2448f3edf316e5ce47, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
   m_DrawMode: 0
@@ -7785,7 +7769,7 @@ Transform:
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: 0.4582415, w: 0.8888278}
   m_LocalPosition: {x: 15.379, y: 10.744, z: -0.8}
-  m_LocalScale: {x: 0.65968287, y: 3.686308, z: 1}
+  m_LocalScale: {x: 3, y: 3, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
@@ -8578,6 +8562,20 @@ MonoBehaviour:
   consumptionThreshold: 0.05
   glowIntensity: 0.278
   glowDecayRate: 1.01
+  micInput: {fileID: 0}
+  micInfluence: 0.6
+  micAmpEvaporateGain: 1.8
+  micAmpTurnGain: 1.2
+  micLowFreqDiffuseGain: 1.5
+  micHighFreqTurnGain: 0.6
+  micHighFreqSensorShrink: 0.25
+  micQuietPulseGain: 1
+  micOnsetTrailBurst: 1.5
+  stressThreshold: 0.45
+  stressAccumulationRate: 0.35
+  stressRecoveryRate: 0.06
+  refractoryThreshold: 0.75
+  refractoryDuration: 12
   slimeColor: {r: 1, g: 0.9, b: 0.2, a: 1}
   sortingOrder: 0
 --- !u!4 &1851879546
@@ -8746,6 +8744,20 @@ MonoBehaviour:
   consumptionThreshold: 0.05
   glowIntensity: 0.278
   glowDecayRate: 1.01
+  micInput: {fileID: 0}
+  micInfluence: 0.6
+  micAmpEvaporateGain: 1.8
+  micAmpTurnGain: 1.2
+  micLowFreqDiffuseGain: 1.5
+  micHighFreqTurnGain: 0.6
+  micHighFreqSensorShrink: 0.25
+  micQuietPulseGain: 1
+  micOnsetTrailBurst: 1.5
+  stressThreshold: 0.45
+  stressAccumulationRate: 0.35
+  stressRecoveryRate: 0.06
+  refractoryThreshold: 0.75
+  refractoryDuration: 12
   slimeColor: {r: 1, g: 0.9, b: 0.2, a: 1}
   sortingOrder: 0
 --- !u!4 &1857234778

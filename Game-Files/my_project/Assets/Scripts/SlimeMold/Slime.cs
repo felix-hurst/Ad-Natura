@@ -291,7 +291,7 @@ public class Slime : MonoBehaviour
         float scaleX = worldBounds.width / (width / 100f);
         float scaleY = worldBounds.height / (height / 100f);
         targetRenderer.transform.localScale = new Vector3(scaleX, scaleY, 1f);
-        targetRenderer.transform.position = new Vector3(worldBounds.center.x, worldBounds.center.y, 0f);
+        targetRenderer.transform.position = new Vector3(worldBounds.center.x, worldBounds.center.y, -1f);
     }
 
     void FixedUpdate()

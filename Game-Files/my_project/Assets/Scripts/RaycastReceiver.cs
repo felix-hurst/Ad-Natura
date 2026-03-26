@@ -297,7 +297,7 @@ public class RaycastReceiver : MonoBehaviour
     {
         if (vertices.Count < 3) return vertices;
         List<Vector2> cleaned = new List<Vector2>();
-        float minDist = 0.05f;
+        float minDist = 0.001f;
         foreach (Vector2 v in vertices)
         {
             bool isDuplicate = false;
@@ -503,33 +503,31 @@ public class RaycastReceiver : MonoBehaviour
 
         PixelatedCutRenderer piecePixelRenderer = largePiece.AddComponent<PixelatedCutRenderer>();
 
-        List<Vector2> localVertices = new List<Vector2>();
+        List<Vector2> currentShape = new List<Vector2>();
         foreach (Vector2 worldVertex in cutOffShape)
-            localVertices.Add(largePiece.transform.InverseTransformPoint(worldVertex));
+            currentShape.Add(largePiece.transform.InverseTransformPoint(worldVertex));
+
+        Vector2 localEntry = largePiece.transform.InverseTransformPoint(entryPoint);
+        Vector2 localExit = largePiece.transform.InverseTransformPoint(exitPoint);
 
         CutProfileManager profileManager = FindObjectOfType<CutProfileManager>();
-        List<Vector2> irregularShape = localVertices;
+        
         if (profileManager != null && cutProfile.strength > 0.01f)
         {
-            Vector2 localEntry = largePiece.transform.InverseTransformPoint(entryPoint);
-            Vector2 localExit = largePiece.transform.InverseTransformPoint(exitPoint);
-            irregularShape = profileManager.ApplyIrregularCut(localVertices, localEntry, localExit, cutProfile);
+            currentShape = profileManager.ApplyIrregularCut(currentShape, localEntry, localExit, cutProfile);
         }
 
-        List<Vector2> pixelatedShape = irregularShape;
         if (piecePixelRenderer != null)
         {
-            Vector2 localEntry = largePiece.transform.InverseTransformPoint(entryPoint);
-            Vector2 localExit = largePiece.transform.InverseTransformPoint(exitPoint);
-            pixelatedShape = piecePixelRenderer.PixelatePolygonWithCutLine(irregularShape, localEntry, localExit);
+            currentShape = piecePixelRenderer.PixelatePolygonWithCutLine(currentShape, localEntry, localExit);
         }
 
         PolygonCollider2D polyCollider = largePiece.AddComponent<PolygonCollider2D>();
-        polyCollider.points = irregularShape.ToArray();
+        polyCollider.points = currentShape.ToArray();
         polyCollider.enabled = false;
 
         Debug.Log($"[RR.Spawn] Calling CreateLargePieceMesh | fallbackColor={cachedObjectColor} | texture={(textureForPiece != null ? textureForPiece.name : "NULL")} | parentSR={(originalSR != null ? originalSR.color.ToString() : "NULL")}");
-        CreateLargePieceMesh(largePiece, pixelatedShape, materialTag, spriteBoundsForUV, textureForPiece, originalSR, cachedObjectColor);
+        CreateLargePieceMesh(largePiece, currentShape, materialTag, spriteBoundsForUV, textureForPiece, originalSR, cachedObjectColor);
 
         Rigidbody2D rb = largePiece.AddComponent<Rigidbody2D>();
         rb.bodyType = RigidbodyType2D.Kinematic;

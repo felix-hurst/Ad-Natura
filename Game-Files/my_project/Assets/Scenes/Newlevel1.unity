@@ -475,6 +475,7 @@ MonoBehaviour:
   onDecomposed:
     m_PersistentCalls:
       m_Calls: []
+  damageSound: Decomposition
   showHealthBar: 1
   weaknessDelay: 1.5
   minRayCount: 10
@@ -737,7 +738,7 @@ GameObject:
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 1
+  m_IsActive: 0
 --- !u!4 &200329620
 Transform:
   m_ObjectHideFlags: 0
@@ -1261,6 +1262,7 @@ MonoBehaviour:
   onDecomposed:
     m_PersistentCalls:
       m_Calls: []
+  damageSound: Decomposition
   showHealthBar: 1
   weaknessDelay: 1.5
   minRayCount: 10
@@ -1774,7 +1776,6 @@ GameObject:
   - component: {fileID: 375437690}
   - component: {fileID: 375437689}
   - component: {fileID: 375437688}
-  - component: {fileID: 375437687}
   - component: {fileID: 375437686}
   - component: {fileID: 375437685}
   m_Layer: 0
@@ -1805,6 +1806,7 @@ MonoBehaviour:
   onDecomposed:
     m_PersistentCalls:
       m_Calls: []
+  damageSound: Decomposition
   showHealthBar: 1
   weaknessDelay: 1.5
   minRayCount: 10
@@ -1861,7 +1863,7 @@ PolygonCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
+    oldSize: {x: 0.32, y: 1.28}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -1869,27 +1871,23 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: -0.5, y: 0.5}
-      - {x: -0.5, y: -0.5}
-      - {x: 0.5, y: -0.5}
-      - {x: 0.5, y: 0.5}
+    - - {x: 0.16, y: 0.45}
+      - {x: 0.16, y: 0.64}
+      - {x: -0.16, y: 0.64}
+      - {x: -0.16, y: 0.62}
+      - {x: -0.14999999, y: 0.57}
+      - {x: -0.13, y: 0.45}
+      - {x: -0.14, y: 0.24}
+      - {x: -0.16, y: 0.07}
+      - {x: -0.16, y: -0.13}
+      - {x: -0.14, y: -0.14999999}
+      - {x: -0.14, y: -0.41}
+      - {x: -0.16, y: -0.56}
+      - {x: -0.16, y: -0.64}
+      - {x: 0.16, y: -0.64}
+      - {x: 0.16, y: 0.16}
+      - {x: 0.14, y: 0.32}
   m_UseDelaunayMesh: 0
---- !u!114 &375437687
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 375437684}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c26e740f2a0835a4d9a754f015710eed, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  applyOnStart: 1
-  useMaterialTag: 1
-  overrideMaterialName: 
-  pixelsPerUnit: 64
 --- !u!114 &375437688
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2025,7 +2023,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
+  m_Sprite: {fileID: 9101844511835533456, guid: abbcf51f74a9ed2448f3edf316e5ce47, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -2045,9 +2043,9 @@ Transform:
   m_GameObject: {fileID: 375437684}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: 0.045530207, w: 0.998963}
-  m_LocalPosition: {x: 9.2959, y: 6.5133, z: -0.8}
-  m_LocalScale: {x: 0.65968287, y: 3.686308, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalPosition: {x: 9.318, y: 6.274, z: -0.8}
+  m_LocalScale: {x: 2.64, y: 2.64, z: 2.64}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 5.219}
@@ -2776,7 +2774,7 @@ Transform:
   m_GameObject: {fileID: 519420028}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: 2.270575, y: 7.434213, z: -16}
+  m_LocalPosition: {x: 4.3592777, y: 7.434213, z: -16}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
@@ -3593,7 +3591,6 @@ GameObject:
   - component: {fileID: 748109550}
   - component: {fileID: 748109549}
   - component: {fileID: 748109548}
-  - component: {fileID: 748109547}
   - component: {fileID: 748109546}
   - component: {fileID: 748109555}
   m_Layer: 0
@@ -3619,7 +3616,7 @@ PolygonCollider2D:
     m_Bits: 0
   m_ExcludeLayers:
     serializedVersion: 2
-    m_Bits: 8192
+    m_Bits: 0
   m_LayerOverridePriority: 0
   m_ForceSendLayers:
     serializedVersion: 2
@@ -3641,7 +3638,7 @@ PolygonCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
+    oldSize: {x: 1.54, y: 1.32}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -3649,27 +3646,35 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: -0.5, y: 0.5}
-      - {x: -0.5, y: -0.5}
-      - {x: 0.5, y: -0.5}
-      - {x: 0.5, y: 0.5}
+    - - {x: 0.06, y: -0.099999994}
+      - {x: -0.19999999, y: -0.59999996}
+      - {x: -0.22, y: -0.65999997}
+      - {x: 0.19999999, y: -0.65999997}
+      - {x: 0.28, y: -0.58}
+      - {x: 0.32, y: -0.47}
+      - {x: 0.39999998, y: -0.28}
+      - {x: 0.52, y: -0.04}
+      - {x: 0.72999996, y: 0.42999998}
+      - {x: 0.77, y: 0.56}
+      - {x: 0.77, y: 0.65999997}
+      - {x: 0.57, y: 0.65999997}
+      - {x: 0.39999998, y: 0.65}
+      - {x: 0.35, y: 0.55}
+      - {x: 0.25, y: 0.29999998}
+      - {x: 0.04, y: 0.099999994}
+      - {x: -0.17999999, y: -0.12}
+      - {x: -0.42, y: -0.34}
+      - {x: -0.77, y: -0.61}
+      - {x: -0.77, y: -0.65999997}
+      - {x: -0.25, y: -0.65999997}
+      - {x: -0.21, y: -0.45999998}
+      - {x: -0.16, y: -0.29}
+    - - {x: -0.34, y: -0.45999998}
+      - {x: -0.37, y: -0.51}
+      - {x: -0.38, y: -0.56}
+      - {x: -0.41, y: -0.63}
+      - {x: -0.39999998, y: -0.63}
   m_UseDelaunayMesh: 0
---- !u!114 &748109547
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 748109545}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c26e740f2a0835a4d9a754f015710eed, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  applyOnStart: 1
-  useMaterialTag: 1
-  overrideMaterialName: 
-  pixelsPerUnit: 64
 --- !u!114 &748109548
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3805,7 +3810,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
+  m_Sprite: {fileID: 5015612932549523046, guid: e00ae77937ebdcd4bbb382a1f226c2c8, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -3824,13 +3829,13 @@ Transform:
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 748109545}
   serializedVersion: 2
-  m_LocalRotation: {x: -0, y: -0, z: -0.05293148, w: 0.99859816}
-  m_LocalPosition: {x: -0.6077, y: 7.0408, z: -0.8}
-  m_LocalScale: {x: 0.78496295, y: 4.19232, z: 1}
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: -1.442, y: 6.913, z: -0.8}
+  m_LocalScale: {x: 2, y: 3.4876, z: 4}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
-  m_LocalEulerAnglesHint: {x: 0, y: 0, z: -6.068}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
 --- !u!114 &748109555
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3852,6 +3857,7 @@ MonoBehaviour:
   onDecomposed:
     m_PersistentCalls:
       m_Calls: []
+  damageSound: Decomposition
   showHealthBar: 1
   weaknessDelay: 1.5
   minRayCount: 10
@@ -3916,6 +3922,7 @@ MonoBehaviour:
   onDecomposed:
     m_PersistentCalls:
       m_Calls: []
+  damageSound: Decomposition
   showHealthBar: 1
   weaknessDelay: 1.5
   minRayCount: 10
@@ -4427,7 +4434,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   enableAttraction: 1
   attractionStrength: 5
-  internalAttractionRadius: 0.05
+  internalAttractionRadius: 0.5
   showDebugGizmos: 0
   logDecomposition: 0
   debugDecomposition: 0
@@ -4452,7 +4459,7 @@ MonoBehaviour:
   liquidSimulation: {fileID: 8009153335970302523}
   useLiquidSimulation: 1
   autoSyncBounds: 0
-  liquidAttractionMultiplier: 3
+  liquidAttractionMultiplier: 2
   minWaterThreshold: 0
   enableCalamityHazard: 1
   hazardRefreshInterval: 0.25
@@ -4516,6 +4523,20 @@ MonoBehaviour:
   consumptionThreshold: 0.05
   glowIntensity: 0.278
   glowDecayRate: 1.01
+  micInput: {fileID: 0}
+  micInfluence: 0.6
+  micAmpEvaporateGain: 1.8
+  micAmpTurnGain: 1.2
+  micLowFreqDiffuseGain: 1.5
+  micHighFreqTurnGain: 0.6
+  micHighFreqSensorShrink: 0.25
+  micQuietPulseGain: 1
+  micOnsetTrailBurst: 1.5
+  stressThreshold: 0.45
+  stressAccumulationRate: 0.35
+  stressRecoveryRate: 0.06
+  refractoryThreshold: 0.75
+  refractoryDuration: 12
   slimeColor: {r: 1, g: 0.9, b: 0.2, a: 1}
   sortingOrder: 0
 --- !u!4 &870513705
@@ -6196,6 +6217,20 @@ MonoBehaviour:
   consumptionThreshold: 0.05
   glowIntensity: 0.278
   glowDecayRate: 1.01
+  micInput: {fileID: 0}
+  micInfluence: 0.6
+  micAmpEvaporateGain: 1.8
+  micAmpTurnGain: 1.2
+  micLowFreqDiffuseGain: 1.5
+  micHighFreqTurnGain: 0.6
+  micHighFreqSensorShrink: 0.25
+  micQuietPulseGain: 1
+  micOnsetTrailBurst: 1.5
+  stressThreshold: 0.45
+  stressAccumulationRate: 0.35
+  stressRecoveryRate: 0.06
+  refractoryThreshold: 0.75
+  refractoryDuration: 12
   slimeColor: {r: 1, g: 0.9, b: 0.2, a: 1}
   sortingOrder: 0
 --- !u!4 &1368657085
@@ -6880,6 +6915,7 @@ MonoBehaviour:
   onDecomposed:
     m_PersistentCalls:
       m_Calls: []
+  damageSound: Decomposition
   showHealthBar: 1
   weaknessDelay: 1.5
   minRayCount: 10
@@ -7172,6 +7208,7 @@ MonoBehaviour:
   onDecomposed:
     m_PersistentCalls:
       m_Calls: []
+  damageSound: Decomposition
   showHealthBar: 1
   weaknessDelay: 1.5
   minRayCount: 10
@@ -8097,6 +8134,20 @@ MonoBehaviour:
   consumptionThreshold: 0.05
   glowIntensity: 0.278
   glowDecayRate: 1.01
+  micInput: {fileID: 0}
+  micInfluence: 0.6
+  micAmpEvaporateGain: 1.8
+  micAmpTurnGain: 1.2
+  micLowFreqDiffuseGain: 1.5
+  micHighFreqTurnGain: 0.6
+  micHighFreqSensorShrink: 0.25
+  micQuietPulseGain: 1
+  micOnsetTrailBurst: 1.5
+  stressThreshold: 0.45
+  stressAccumulationRate: 0.35
+  stressRecoveryRate: 0.06
+  refractoryThreshold: 0.75
+  refractoryDuration: 12
   slimeColor: {r: 1, g: 0.9, b: 0.2, a: 1}
   sortingOrder: 0
 --- !u!4 &1888117693
@@ -8916,6 +8967,7 @@ MonoBehaviour:
   onDecomposed:
     m_PersistentCalls:
       m_Calls: []
+  damageSound: Decomposition
   showHealthBar: 1
   weaknessDelay: 1.5
   minRayCount: 10
@@ -9177,7 +9229,6 @@ GameObject:
   - component: {fileID: 2023246734}
   - component: {fileID: 2023246733}
   - component: {fileID: 2023246732}
-  - component: {fileID: 2023246731}
   - component: {fileID: 2023246730}
   - component: {fileID: 2023246729}
   m_Layer: 0
@@ -9208,6 +9259,7 @@ MonoBehaviour:
   onDecomposed:
     m_PersistentCalls:
       m_Calls: []
+  damageSound: Decomposition
   showHealthBar: 1
   weaknessDelay: 1.5
   minRayCount: 10
@@ -9264,7 +9316,7 @@ PolygonCollider2D:
   m_SpriteTilingProperty:
     border: {x: 0, y: 0, z: 0, w: 0}
     pivot: {x: 0.5, y: 0.5}
-    oldSize: {x: 1, y: 1}
+    oldSize: {x: 0.32, y: 1.28}
     newSize: {x: 1, y: 1}
     adaptiveTilingThreshold: 0.5
     drawMode: 0
@@ -9272,27 +9324,23 @@ PolygonCollider2D:
   m_AutoTiling: 0
   m_Points:
     m_Paths:
-    - - {x: -0.5, y: 0.5}
-      - {x: -0.5, y: -0.5}
-      - {x: 0.5, y: -0.5}
-      - {x: 0.5, y: 0.5}
+    - - {x: 0.16, y: 0.45}
+      - {x: 0.16, y: 0.64}
+      - {x: -0.16, y: 0.64}
+      - {x: -0.16, y: 0.62}
+      - {x: -0.14999999, y: 0.57}
+      - {x: -0.13, y: 0.45}
+      - {x: -0.14, y: 0.24}
+      - {x: -0.16, y: 0.07}
+      - {x: -0.16, y: -0.13}
+      - {x: -0.14, y: -0.14999999}
+      - {x: -0.14, y: -0.41}
+      - {x: -0.16, y: -0.56}
+      - {x: -0.16, y: -0.64}
+      - {x: 0.16, y: -0.64}
+      - {x: 0.16, y: 0.16}
+      - {x: 0.14, y: 0.32}
   m_UseDelaunayMesh: 0
---- !u!114 &2023246731
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 2023246728}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: c26e740f2a0835a4d9a754f015710eed, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  applyOnStart: 1
-  useMaterialTag: 1
-  overrideMaterialName: 
-  pixelsPerUnit: 64
 --- !u!114 &2023246732
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -9428,7 +9476,7 @@ SpriteRenderer:
   m_SortingLayerID: 0
   m_SortingLayer: 0
   m_SortingOrder: 0
-  m_Sprite: {fileID: 7482667652216324306, guid: 311925a002f4447b3a28927169b83ea6, type: 3}
+  m_Sprite: {fileID: 9101844511835533456, guid: abbcf51f74a9ed2448f3edf316e5ce47, type: 3}
   m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_FlipX: 0
   m_FlipY: 0
@@ -9448,9 +9496,9 @@ Transform:
   m_GameObject: {fileID: 2023246728}
   serializedVersion: 2
   m_LocalRotation: {x: -0, y: -0, z: -0.057467233, w: 0.99834746}
-  m_LocalPosition: {x: 8.6194, y: 5.4302, z: -0.8}
-  m_LocalScale: {x: 0.3833406, y: 1.5000057, z: 1}
-  m_ConstrainProportionsScale: 0
+  m_LocalPosition: {x: 8.537, y: 5.479, z: -0.8}
+  m_LocalScale: {x: 1.33, y: 1.33, z: 1.33}
+  m_ConstrainProportionsScale: 1
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: -6.589}
@@ -9505,6 +9553,7 @@ MonoBehaviour:
   onDecomposed:
     m_PersistentCalls:
       m_Calls: []
+  damageSound: Decomposition
   showHealthBar: 1
   weaknessDelay: 1.5
   minRayCount: 10
@@ -10878,6 +10927,9 @@ MonoBehaviour:
   maxShadingDepth: 8
   waterMaterial: {fileID: 0}
   pixelsPerUnit: 10
+  flowSoundThreshold: 50
+  flowSoundMaxCells: 500
+  flowingClip: {fileID: 0}
   solidLayer:
     serializedVersion: 2
     m_Bits: 3329
