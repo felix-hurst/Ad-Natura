@@ -60,6 +60,7 @@
 \midrule
 Mar 7, 2026 & 1.0 & Andy Liang & Initial report: architecture, implemented behaviors, design rationale\\
 Mar 21, 2026 & 1.1 & Andy Liang & Added behavioral drift, water consumption, metabolic glow; updated design rationale with Sims and Adamatzky\\
+Mar 26, 2026 & 2.0 & Andy Liang & Final version: microphone input, consent/resistance, light avoidance implemented; TA feedback addressed; trail deposition corrected; Future Work moved after Conclusion\\
 \bottomrule
 \end{tabularx}
 
@@ -87,11 +88,12 @@ system \cite{bunton2025} that resists optimization in favor of organic
 unpredictability.
 
 This report covers the technical architecture (Section~\ref{sec:arch}), agent
-behavior (Section~\ref{sec:agents}), trail dynamics including implemented
-features (Section~\ref{sec:trails}), noise generation
-(Section~\ref{sec:noise}), game integration (Section~\ref{sec:game}), design
-rationale (Section~\ref{sec:rationale}), technical challenges
-(Section~\ref{sec:challenges}), and future work (Section~\ref{sec:future}).
+behavior (Section~\ref{sec:agents}), trail dynamics
+(Section~\ref{sec:trails}), noise generation (Section~\ref{sec:noise}), game
+integration (Section~\ref{sec:game}), microphone input
+(Section~\ref{sec:mic}), consent and resistance (Section~\ref{sec:consent}),
+design rationale (Section~\ref{sec:rationale}), and technical challenges
+(Section~\ref{sec:challenges}).
 
 % ============================================================
 \section{System Architecture}
@@ -151,8 +153,13 @@ $[0, 1]$ destroys this behavior entirely.
 \label{sec:agents}
 % ============================================================
 
-Each agent performs a sense-turn-move cycle inspired by the Jones
-model of Physarum chemotaxis \cite{adamatzky2014}.
+The simulation models the organism as a population of 1024 \textit{agents}---autonomous computational particles, each representing a small region
+of the plasmodial network. An agent has a position, a heading angle, and no
+memory beyond these two values. It cannot communicate with other agents
+directly; all coordination happens indirectly through chemical trails deposited
+in the shared environment (stigmergy). Each agent performs a
+sense-turn-move-deposit cycle inspired by the Jones model of Physarum
+chemotaxis \cite{adamatzky2014}.
 
 \subsection{Sensing}
 
@@ -189,30 +196,48 @@ coordination---each agent responds only to local chemical gradients.
 
 \subsection{Movement and Boundary Handling}
 
-Agent speed is modulated by local water attraction:
+After sensing and turning, each agent advances along its heading. Speed is
+a continuous blend between an idle base speed and an attracted speed, governed
+by local water attraction:
 
 \begin{equation}
-    v = \texttt{moveSpeed} \cdot (1 + \texttt{waterSpeedBoost} \cdot
-    \text{water}(p))
+    v = \text{lerp}\big(\texttt{idleSpeed},\;
+    \texttt{moveSpeed} \cdot \texttt{attractedSpeedMultiplier},\;
+    \text{saturate}(\text{attraction})\big)
 \end{equation}
 
-At boundaries, agents do not simply reflect. Instead, they are assigned a new
-random heading and repositioned at the edge. An \texttt{edgeSpread} parameter
-adds slight random displacement along the boundary to prevent agents from
-clustering at corners---a subtle but important detail for maintaining organic
-boundary behavior.
+This produces smooth acceleration toward water rather than a binary
+fast/slow switch. Agents far from any stimulus still drift slowly, keeping the
+colony alive even in barren regions.
+
+At boundaries, the behavior depends on whether water is nearby. If the agent
+hits an edge where the water attraction map reads above a small threshold, it
+deflects \textit{along} the boundary (horizontal or vertical, chosen
+randomly) with a random angular spread. This prevents the pile-up that
+occurs when agents bounce straight back and immediately re-deposit on the
+same pixel. If no water is sensed at the edge, the agent receives a
+random heading biased away from the wall, with slight randomness to
+avoid artificial symmetry. In both cases, the agent's position is clamped to
+stay within bounds.
 
 \subsection{Trail Deposition}
 
-Each agent deposits trail intensity proportional to local water attraction:
+Each agent overwrites its current texel with the organism's base color at a
+fixed intensity:
 
 \begin{equation}
-    \text{deposit} = \texttt{trailWeight} \cdot
-    (1 + \texttt{waterTrailBoost} \cdot \text{water}(p))
+    \texttt{TrailMap}[\text{pos}] = \mathbf{c}_{\text{slime}} \cdot
+    \text{trailStr}
 \end{equation}
 
-This creates denser trail networks near water sources, visually emphasizing the
-organism's attraction to moisture.
+where $\text{trailStr} = 1.0$ under normal conditions. The deposit is a hard
+overwrite, not an addition---a single agent on an empty pixel produces the
+same value as ten agents on the same pixel. Veins emerge not from additive
+stacking but from \textit{reinforcement}: many agents repeatedly refreshing
+the same path before evaporation can fade it. Unpopular paths evaporate
+away; popular paths persist. The \texttt{trailWeight} parameter modulates
+how strongly agents \textit{sense} trails (Section~\ref{sec:agents}), not how
+much they deposit.
 
 \subsection{Behavioral Drift}
 \label{sec:drift}
@@ -244,8 +269,8 @@ is a simulation that never fully converges to a single stable pattern.
 % ============================================================
 
 The Postprocess kernel transforms the raw trail map each frame through four
-sequential stages: diffusion, entropic decay, cytoplasmic pulse, and metabolic
-glow.
+sequential stages: diffusion, entropic decay, cytoplasmic pulse (with
+brightness tapering), and metabolic glow.
 
 \subsection{Diffusion}
 
@@ -339,6 +364,13 @@ Key design decisions:
     \item \textbf{No clamping}: The output uses $\max(\cdot, 0)$ rather than
     $\text{clamp}(0, 1)$, preserving the reservoir effect of accumulated
     chemical signal.
+
+    \item \textbf{Brightness taper}: Because the pulse operates within a
+    ping-pong buffer, its multiplicative boost can ratchet brightness upward
+    across frames in dense clusters. A soft taper scales the pulse contribution
+    down as brightness approaches 2.0:
+    $\text{taper} = \text{saturate}(2.0 - \|\mathbf{T}\|)$. This preserves the
+    glow in dense networks while preventing blowout.
 \end{itemize}
 
 \subsection{Metabolic Glow}
@@ -435,14 +467,19 @@ the broader game through several mechanics:
     \cite{barad2011} terms intra-action, where entities co-constitute through
     mutual transformation rather than one-directional influence.
 
-    \item \textbf{Planned---Light Avoidance}: Real \textit{Physarum}
-    is negatively phototactic. A future implementation will add light sources
-    that repel agents, creating gameplay opportunities around guiding the
-    organism through shadowed paths.
+    \item \textbf{Light Avoidance}: Real \textit{Physarum} is negatively
+    phototactic. The simulation encodes this via the R channel of the
+    \texttt{WaterAttractionMap}, which stores a light fear value. Agents in lit
+    areas blend between trail-following chemotaxis and light-fleeing behavior:
+    fear dominates but trail signal still contributes, so the organism
+    \textit{resists} light rather than losing all self-organization. This
+    preserves emergent network behavior under environmental pressure.
 
-    \item \textbf{Planned---Wall Climbing}: Extending the slime mold's
-    navigable space to vertical surfaces, allowing players to use the organism
-    to traverse otherwise inaccessible terrain.
+    \item \textbf{Hazard System}: Calamity objects (encoded in a separate
+    \texttt{HazardMap}) corrode trails, slow agents, and kill agents on direct
+    contact. Dead agents leave a colored death mark at their last position and
+    respawn at the colony center. The stain falloff is pre-computed on the CPU
+    to avoid expensive per-pixel GPU neighbor searches.
 \end{itemize}
 
 The \texttt{SlimeMoldManager} class coordinates between the simulation and
@@ -566,28 +603,103 @@ development, as code changes appeared to have no effect until the component was
 reset manually.
 
 % ============================================================
-\section{Future Work}
-\label{sec:future}
+\section{Microphone as Interface}
+\label{sec:mic}
 % ============================================================
 
-Two additional features are planned to deepen the simulation's conceptual
-range and transform it from a reactive system into an interactive installation:
+A standalone \texttt{MicrophoneInput} component captures audio from the
+system's default recording device via Unity's \texttt{Microphone} API. Three
+features are extracted each frame:
 
-\subsection{Microphone as Interface}
+\begin{itemize}
+    \item \textbf{Amplitude}: RMS energy of the most recent 1024 samples,
+    scaled by a configurable gain and smoothed via exponential lerp.
+    \item \textbf{Spectral centroid}: The energy-weighted mean frequency bin,
+    computed from Unity's \texttt{GetSpectrumData} FFT (Blackman-Harris
+    window). Normalized to $[0, 1]$, where 0 is low-pitched and 1 is
+    high-pitched.
+    \item \textbf{Onset}: The positive difference in amplitude between
+    consecutive frames, thresholded and scaled to detect sudden sound events.
+\end{itemize}
 
-Audio input from the player's microphone will modulate simulation parameters in
-real time. Amplitude may drive trail deposition strength; frequency spectrum may
-influence agent speed or turning behavior. This creates what Barad
-\cite{barad2011} would call an intra-action between the player's body and the
-simulated organism---not a control interface but a zone of mutual influence.
+A hidden \texttt{AudioSource} (muted, zero volume) plays the microphone clip
+to provide Unity's FFT pipeline with data. The source is muted to prevent
+audible feedback; \texttt{GetSpectrumData} still functions when muted.
 
-\subsection{Consent and Resistance}
+\subsection{Parameter Mapping}
 
-A state system where the slime mold can ``refuse'' player input when
-overstimulated. If environmental changes are too rapid or too intense, the
-organism enters a refractory state---withdrawing, slowing, reducing
-responsiveness. This encodes the organism's autonomy: it is not an
-infinitely compliant tool but an entity with thresholds and boundaries.
+The C\# controller reads mic values into local copies of simulation parameters
+each frame, leaving Inspector-serialized values untouched. A master
+\texttt{micInfluence} slider scales all effects:
+
+\begin{itemize}
+    \item \textbf{Silence} ($\text{amplitude} \approx 0$): Pulse frequency
+    lifts gently. The organism notices the player's quiet presence.
+    \item \textbf{Loud sound}: Evaporation rate increases (trails thin),
+    turn speed increases (agents agitate). The network becomes restless.
+    \item \textbf{High pitch}: Sensor range contracts, turn speed increases
+    further. The organism becomes nervous, myopic.
+    \item \textbf{Low pitch}: Diffusion rate increases. The trail network
+    softens and spreads.
+    \item \textbf{Sudden onset}: Trail sensing weight spikes briefly---a
+    short-term memory of the sound event.
+\end{itemize}
+
+Turn speed modulation from amplitude and pitch are combined additively
+(not multiplicatively) to prevent compounding that spirals agents into dense
+clusters. Sensor shrink is floored at 50\% of base length to ensure agents
+always retain enough sensing range to disperse.
+
+% ============================================================
+\section{Consent and Resistance}
+\label{sec:consent}
+% ============================================================
+
+The organism can refuse the player's input. A stress accumulator on the CPU
+tracks how long the microphone amplitude exceeds a configurable threshold.
+When stress crosses a second threshold, the organism enters a
+\textit{refractory state}---a timed withdrawal during which it becomes
+sluggish, dim, and unresponsive.
+
+\subsection{Stress Dynamics}
+
+\begin{equation}
+    \sigma_{t+1} = \begin{cases}
+    \sigma_t + (\text{amp} - \theta_s) \cdot r_a \cdot \Delta t
+        & \text{if } \text{amp} > \theta_s \\
+    \sigma_t - r_d \cdot \Delta t & \text{otherwise}
+    \end{cases}
+\end{equation}
+
+where $\sigma$ is the stress level, $\theta_s$ is the stress threshold,
+$r_a$ is the accumulation rate, and $r_d$ is the recovery rate. The transition
+into withdrawal is not instantaneous: as stress builds, the organism's
+responsiveness to mic input fades proportionally
+($\text{responsiveness} = 1 - 0.7\sigma$), so the player can observe the
+organism becoming less reactive before it shuts down entirely.
+
+\subsection{Refractory State}
+
+When $\sigma \geq \theta_r$ (the refractory threshold), the organism enters
+withdrawal. A smoothed refractory signal ramps up gradually (preventing a
+harsh visual snap) and is passed to the GPU, where it dampens:
+
+\begin{itemize}
+    \item \textbf{Behavioral drift}: individuality collapses, the collective
+    becomes uniform ($\times 0.9$ reduction).
+    \item \textbf{Speed}: the organism becomes sluggish ($\times 0.35$
+    reduction).
+    \item \textbf{Trail deposit}: trails dim ($\times 0.2$ reduction).
+    \item \textbf{Pulse amplitude}: breathing shallows ($\times 0.4$
+    reduction).
+\end{itemize}
+
+Recovery requires silence. If the microphone amplitude remains above the
+stress threshold during withdrawal, the recovery timer pauses---the organism
+cannot heal while still being assaulted. This is a deliberate design
+choice grounded in Ruberg's ``after agency'' \cite{ruberg2022}: the player's
+control is not removed by a game mechanic but rendered meaningless by the
+organism's refusal.
 
 % ============================================================
 \section{Conclusion}
@@ -597,18 +709,21 @@ infinitely compliant tool but an entity with thresholds and boundaries.
 The slime mold simulation in \textit{Ad-Natura} is a GPU-accelerated,
 agent-based model of \textit{Physarum polycephalum} that prioritizes biological
 plausibility and emergent complexity over algorithmic efficiency. Through
-entropic decay, cytoplasmic pulse, behavioral drift, water consumption, and
-metabolic glow, the system produces organic, unpredictable behavior from simple
-local rules---while engaging in reciprocal material exchange with its
-environment.
+entropic decay, cytoplasmic pulse, behavioral drift, water consumption,
+metabolic glow, real-time microphone input, and consent-based withdrawal, the
+system produces organic, unpredictable behavior from simple local
+rules---while engaging in reciprocal exchange with both its digital
+environment and the player's physical body.
 
-The design is grounded in critical engagement with both biological research and
+The microphone transforms the simulation from a reactive display into a site
+of encounter: the player's breath, voice, and silence all register as input,
+and the organism responds on its own terms---including the capacity to refuse.
+The design is grounded in critical engagement with biological research and
 theoretical frameworks that challenge conventional approaches to computational
 modeling of living systems. Rather than reducing \textit{Physarum} to an
-optimization heuristic, the system attempts to honor the organism's capacity
-for self-organization, distributed agency, externalized memory, and resistance
-to centralized control. The artist's role is not to dictate outcomes but to
-construct conditions under which matter performs.
+optimization heuristic, the system honors the organism's capacity for
+self-organization, distributed agency, externalized memory, and resistance to
+centralized control.
 
 % ============================================================
 \begin{thebibliography}{9}

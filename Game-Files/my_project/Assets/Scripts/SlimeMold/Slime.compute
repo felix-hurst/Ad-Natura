@@ -72,6 +72,14 @@ float driftSpeed;
 // the water. Neither exists independently of the encounter (Barad).
 float metabolicGlow;
 
+// Consent/Resistance — the organism is not an infinitely compliant tool.
+// Sustained stimulation fills a stress buffer; when it overflows the
+// organism enters withdrawal: drift collapses, speed drops, pulse dampens,
+// responsiveness to input approaches zero. Recovery requires silence.
+// (Ruberg: after agency — the organism can refuse.)
+float micStress;
+float refractoryState;
+
 struct Agent {
     float2 pos;
     float angle;
@@ -165,13 +173,23 @@ void Update(uint3 id : SV_DispatchThreadID)
     float driftWater  = (randomValue(id.x * 11u + 37u) * 2.0 - 1.0)
                       + sin(driftTime * 0.9 + agentSeed * 3.53) * 0.5;
 
+    // --- Consent/Resistance: GPU-side withdrawal ---
+    // During refractory state, individuality collapses — the collective
+    // withdraws into torpor. Drift flattens, the organism becomes uniform,
+    // sluggish, unresponsive. It is not your instrument.
+    // Stress gradually dampens before full withdrawal kicks in.
+    // The organism tenses, slows, dims — then shuts down.
+    float stressDampen = micStress * 0.3;
+    float withdrawal = refractoryState;
+    float effectiveDrift = driftStrength * (1.0 - stressDampen) * (1.0 - withdrawal * 0.9);
+
     // Apply drift: modulate base parameters per-agent.
     // Multipliers are bold so the effect is visible — scouts look far and
     // chase water, followers stick to trails, stragglers wander loosely.
-    float mySensorLength = sensorLength * (1.0 + driftSensor * driftStrength * 0.7);
-    float myTurnSpeed    = turnSpeed    * (1.0 + driftTurn   * driftStrength * 0.6);
-    float myTrailWeight  = trailWeight  * (1.0 + driftTrail  * driftStrength * 0.8);
-    float myWaterStrength = waterAttractionStrength * (1.0 + driftWater * driftStrength * 0.9);
+    float mySensorLength = sensorLength * (1.0 + driftSensor * effectiveDrift * 0.7);
+    float myTurnSpeed    = turnSpeed    * (1.0 + driftTurn   * effectiveDrift * 0.6);
+    float myTrailWeight  = trailWeight  * (1.0 + driftTrail  * effectiveDrift * 0.8);
+    float myWaterStrength = waterAttractionStrength * (1.0 + driftWater * effectiveDrift * 0.9);
 
     // Calculate sensor positions for all three directions
     float2 fwdDir = float2(cos(agent.angle), sin(agent.angle));
@@ -251,9 +269,11 @@ void Update(uint3 id : SV_DispatchThreadID)
     // Smooth transitions produce organic movement; discrete states feel mechanical.
     float speed = lerp(idleSpeed, moveSpeed * attractedSpeedMultiplier, saturate(max(attractionLevel, currentFear)));
     speed *= hazardSlowdown;
+    // Stress slows, withdrawal nearly stops
+    speed *= (1.0 - stressDampen * 0.2) * (1.0 - withdrawal * 0.35);
 
     // Standard physarum turning logic — emergent path-following from local rules
-    float turnAmount = myTurnSpeed * deltaTime;
+    float turnAmount = myTurnSpeed * deltaTime * (1.0 - withdrawal * 0.25);
     float randomTurn = (random01 - 0.5) * turnAmount * 0.5;
 
     if (totalFwd >= totalLeft && totalFwd >= totalRight) {
@@ -351,7 +371,8 @@ void Update(uint3 id : SV_DispatchThreadID)
     // Every agent deposits a fixed trace. Veins emerge from repeated
     // reinforcement — many agents refreshing the same path before
     // evaporation can fade it. Unpopular paths evaporate away.
-    float trailStr = 1.0;
+    // During withdrawal, deposits weaken — the organism fades.
+    float trailStr = 1.0 * (1.0 - stressDampen * 0.15) * (1.0 - withdrawal * 0.2);
 
     if (hazard > 0.1)
     {
@@ -470,7 +491,12 @@ void Postprocess(uint3 id : SV_DispatchThreadID)
 
     float waterHere = WaterAttractionMap[id.xy].g;
     float waterInfluence = saturate(waterHere * waterAttractionStrength);
-    float freq = lerp(pulseMinFreq, pulseMaxFreq, waterInfluence);
+
+    // Stress subtly slows pulse even before full withdrawal — the organism tenses.
+    // During refractory, breathing flattens almost entirely — it retreats inward.
+    float stressFreqDampen = 1.0 - micStress * 0.3;
+    float freq = lerp(pulseMinFreq * stressFreqDampen, pulseMaxFreq * stressFreqDampen, waterInfluence);
+    float effectivePulseAmp = pulseAmplitude * (1.0 - refractoryState * 0.4);
 
     // Spatial phase offset: when pulseWaveScale > 0 the wave travels across
     // the organism like real cytoplasmic streaming. At 0 the colony breathes in unison.
@@ -479,7 +505,11 @@ void Postprocess(uint3 id : SV_DispatchThreadID)
     // Only pulse on dense slime pixels (the living organism), not on fading trail wisps.
     // smoothstep creates a soft threshold: below 0.3 density = no pulse, above 0.6 = full pulse
     float pulseWeight = smoothstep(0.3, 0.6, normalizedDensity);
-    float pulse = 1.0 + sin(gameTime * freq * 2.0 * PI + spatialPhase) * pulseAmplitude * pulseWeight;
+    // Taper pulse boost when brightness is already high — prevents the
+    // ping-pong feedback from ratcheting dense clusters to blowout.
+    float currentBrightness = length(evaporated.rgb);
+    float pulseTaper = saturate(2.0 - currentBrightness);
+    float pulse = 1.0 + sin(gameTime * freq * 2.0 * PI + spatialPhase) * effectivePulseAmp * pulseWeight * pulseTaper;
     evaporated.rgb *= pulse;
 
     // Metabolic glow — organism brightens when consuming water.
