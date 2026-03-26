@@ -17,8 +17,8 @@ public class ToolManager : MonoBehaviour
     [SerializeField] private CanvasGroup hudGroup;
 
     [Header("Sounds")]
-[SerializeField] private string openSound = "ToolWheel";
-[SerializeField] private string selectSound = "ToolWheel";
+    [SerializeField] private string openSound = "ToolWheel";
+    [SerializeField] private string selectSound = "ToolWheel";
 
 
     [Header("Visibility Settings")]

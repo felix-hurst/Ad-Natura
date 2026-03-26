@@ -19,14 +19,14 @@ public class Journal : MonoBehaviour
     [SerializeField] private Button backButton;
 
     [Header("Journal Sounds")]
-[SerializeField] private string openSound = "Journal";
-[SerializeField] private string pageFlipSound = "Journal";
-[SerializeField] private string closeSound = "Journal";
+    [SerializeField] private string openSound = "Journal";
+    [SerializeField] private string pageFlipSound = "Journal";
+    [SerializeField] private string closeSound = "Journal";
 
     [Header("Pagination")]
     [SerializeField] private int wordsPerPage = 60;
 
-    
+
 
     private List<string> pages = new List<string>();
     private int currentPage = 0;
@@ -69,7 +69,7 @@ public class Journal : MonoBehaviour
         SoundManager.Instance.Play(openSound);
 
         RefreshPage();
-}
+    }
 
     public void CloseJournal()
     {

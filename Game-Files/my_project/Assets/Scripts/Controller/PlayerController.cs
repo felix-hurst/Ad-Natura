@@ -90,15 +90,15 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Texture2D dashTexture;
 
     [Header("Aim Settings")]
-[SerializeField] private string aimSound = "ToolAim";
-[SerializeField] private string lowerAimSound = "ToolAim";
+    [SerializeField] private string aimSound = "ToolAim";
+    [SerializeField] private string lowerAimSound = "ToolAim";
 
 
-[Header("Footstep Settings")]
-[SerializeField] private float footstepInterval = 0.35f;
-[SerializeField] private AudioClip footstepClip;
-private AudioSource footstepSource;
-private float footstepTimer = 0f;
+    [Header("Footstep Settings")]
+    [SerializeField] private float footstepInterval = 0.35f;
+    [SerializeField] private AudioClip footstepClip;
+    private AudioSource footstepSource;
+    private float footstepTimer = 0f;
 
 
     [Header("Wall Climb")]
@@ -154,9 +154,9 @@ private float footstepTimer = 0f;
             anim = classicModel.GetComponent<Animator>();
         }
         footstepSource = gameObject.AddComponent<AudioSource>();
-footstepSource.clip = footstepClip;
-footstepSource.loop = false;
-footstepSource.playOnAwake = false;
+        footstepSource.clip = footstepClip;
+        footstepSource.loop = false;
+        footstepSource.playOnAwake = false;
     }
 
     void Update()
@@ -187,7 +187,7 @@ footstepSource.playOnAwake = false;
             isAiming = false;
         }
 
-                // Footstep sounds
+        // Footstep sounds
         if (isRunning && isGrounded && !isAiming)
         {
             footstepTimer -= Time.deltaTime;
