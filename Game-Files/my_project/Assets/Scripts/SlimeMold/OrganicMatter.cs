@@ -110,7 +110,6 @@ public class OrganicMatter : MonoBehaviour
 
         SoundManager.Instance?.Play(damageSound);
 
-        Debug.Log($"[Decomp Step 4 - HEALTH] '{name}': health {previousHealth:F1} → {currentHealth:F1} / {maxHealth} ({damagePercent * 100:F1}% damaged)");
         // Update slime overlay
         UpdateSlimeOverlay();
 
