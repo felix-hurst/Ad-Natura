@@ -12,7 +12,7 @@ public class SlimeMoldManager : MonoBehaviour
     [Header("Water Attraction")]
     [Tooltip("Global multiplier for water attraction. Higher = slime responds faster to water")]
     [Range(0f, 100f)]
-    [SerializeField] private float waterAttractionStrength = 40f;
+    [SerializeField] private float waterAttractionStrength = 10f;
 
     [Header("Source Detection")]
     [Tooltip("Automatically find all WaterSource components in scene")]
@@ -40,7 +40,7 @@ public class SlimeMoldManager : MonoBehaviour
     [Tooltip("Auto-sync slime bounds to match liquid simulation area")]
     [SerializeField] private bool autoSyncBounds = true;
     [Tooltip("Strength multiplier for liquid simulation water attraction")]
-    [Range(0f, 2f)]
+    [Range(0f, 10f)]
     [SerializeField] private float liquidAttractionMultiplier = 1f;
     [Tooltip("Minimum water amount to create attraction (filters noise)")]
     [Range(0f, 0.5f)]

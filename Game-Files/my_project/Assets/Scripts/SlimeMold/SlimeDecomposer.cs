@@ -33,7 +33,7 @@ public class SlimeDecomposer : MonoBehaviour
     [Range(0f, 5f)]
     public float attractionStrength = 2f;
     [Tooltip("Radius of attraction field around objects inside bounds (in world units)")]
-    [Range(0.5f, 10f)]
+    [Range(0.05f, 10f)]
     public float internalAttractionRadius = 3f;
 
     [Header("Debug")]
@@ -94,7 +94,8 @@ public class SlimeDecomposer : MonoBehaviour
         // Find all OrganicMatter components
         OrganicMatter[] allOrganic = FindObjectsByType<OrganicMatter>(FindObjectsSortMode.None);
 
-        Debug.Log($"[Decompose] SCAN START: found {allOrganic.Length} OrganicMatter objects in scene. Slime worldBounds={worldBounds}");
+        if (debugDecomposition)
+            Debug.Log($"[Decompose] SCAN START: found {allOrganic.Length} OrganicMatter objects in scene. Slime worldBounds={worldBounds}");
 
         foreach (OrganicMatter organic in allOrganic)
         {
@@ -103,31 +104,16 @@ public class SlimeDecomposer : MonoBehaviour
             Rect objectBounds = GetObjectBounds(organic.gameObject);
             bool overlaps = worldBounds.Overlaps(objectBounds);
             bool onDecomposeLayer = decomposeLayerIndex != -1 && organic.gameObject.layer == decomposeLayerIndex;
-            string layerName = LayerMask.LayerToName(organic.gameObject.layer);
 
-            // Factor 2: bounds overlap
-            Debug.Log($"[Decompose] SCAN '{organic.name}': objectBounds={objectBounds}, slimeBounds={worldBounds}, overlaps={overlaps}");
+            if (!overlaps) continue;
 
-            if (!overlaps)
-            {
-                Debug.Log($"[Decompose] SKIP '{organic.name}': outside slime worldBounds (no overlap)");
-                continue;
-            }
-
-            // Factor 1: layer check
-            Debug.Log($"[Decompose] LAYER '{organic.name}': layer='{layerName}' (index {organic.gameObject.layer}), onDecomposeLayer={onDecomposeLayer}, requireDecomposeLayer={requireDecomposeLayer}");
-
-            if (requireDecomposeLayer && !onDecomposeLayer)
-            {
-                Debug.Log($"[Decompose] SKIP '{organic.name}': requireDecomposeLayer=true but layer is '{layerName}', not 'Decompose'");
-                continue;
-            }
+            if (requireDecomposeLayer && !onDecomposeLayer) continue;
 
             trackedObjects.Add(organic);
-            Debug.Log($"[Decompose] TRACKING '{organic.name}' — passed all filters");
         }
 
-        Debug.Log($"[Decompose] SCAN COMPLETE: {trackedObjects.Count}/{allOrganic.Length} objects tracked");
+        if (debugDecomposition)
+            Debug.Log($"[Decompose] SCAN COMPLETE: {trackedObjects.Count}/{allOrganic.Length} objects tracked");
     }
 
     Rect GetObjectBounds(GameObject obj)
@@ -178,29 +164,16 @@ public class SlimeDecomposer : MonoBehaviour
         worldBounds = slimeSimulation.GetWorldBounds();
 
         Texture2D trailTexture = slimeSimulation.GetTrailTexture();
-        if (trailTexture == null)
-        {
-            Debug.Log("[Decompose] PROCESS: trailTexture is null — skipping (simulation not ready yet)");
-            return;
-        }
+        if (trailTexture == null) return;
 
         foreach (OrganicMatter organic in trackedObjects)
         {
             if (organic == null) continue;
-            // Get sample points - use polygon vertices inside bounds, or fallback to AABB overlap
             List<Vector2> samplePoints = GetSamplePointsInBounds(organic.gameObject, worldBounds);
 
-            if (samplePoints.Count == 0)
-            {
-                Debug.Log($"[Decompose] SAMPLE '{organic.name}': 0 sample points generated — object may be entirely outside bounds");
-                continue;
-            }
+            if (samplePoints.Count == 0) continue;
 
-            Debug.Log($"[Decompose] SAMPLE '{organic.name}': {samplePoints.Count} sample points: {string.Join(", ", samplePoints)}");
-            // Sample trail density and use the maximum
             float maxDensity = 0f;
-            Vector2 densestPoint = Vector2.zero;
-            int texX_best = 0, texY_best = 0;
 
             foreach (Vector2 point in samplePoints)
             {
@@ -211,30 +184,15 @@ public class SlimeDecomposer : MonoBehaviour
                 Color pixel = trailTexture.GetPixel(texX, texY);
                 float density = (pixel.r + pixel.g + pixel.b) / 3f;
 
-                // Factor 3: raw pixel readback
-                Debug.Log($"[Decompose] PIXEL '{organic.name}': worldPos={point} → norm=({normX:F3},{normY:F3}) → texel=({texX},{texY}), pixel=RGBA({pixel.r:F3},{pixel.g:F3},{pixel.b:F3},{pixel.a:F3}), density={density:F4}");
-
                 if (density > maxDensity)
-                {
                     maxDensity = density;
-                    densestPoint = point;
-                    texX_best = texX;
-                    texY_best = texY;
-                }
             }
-
-            // Factor 4: threshold gate
-            Debug.Log($"[Decompose] THRESHOLD '{organic.name}': maxDensity={maxDensity:F4}, minTrailDensity={minTrailDensity:F4}, densestPoint={densestPoint} (texel {texX_best},{texY_best}), PASSES={maxDensity >= minTrailDensity}");
 
             if (maxDensity >= minTrailDensity)
             {
-                // Calculate damage
                 float normalizedDensity = Mathf.InverseLerp(minTrailDensity, 1f, maxDensity);
                 float multiplier = damageMultiplier.Evaluate(normalizedDensity);
                 float damage = baseDamagePerSecond * multiplier * Time.deltaTime;
-
-                // Factor 5: damage accumulation
-                Debug.Log($"[Decompose] DAMAGE '{organic.name}': normalizedDensity={normalizedDensity:F3}, curveMultiplier={multiplier:F3}, damage={damage:F5}, healthBefore={organic.GetHealthPercent() * 100:F1}%");
 
                 var linked = organic.GetComponent<LinkedOrganicMatter>();
                 if (linked != null)
@@ -246,14 +204,8 @@ public class SlimeDecomposer : MonoBehaviour
                     organic.TakeDecompositionDamage(damage);
                 }
 
-                Debug.Log($"[Decompose] HEALTH '{organic.name}': healthAfter={organic.GetHealthPercent() * 100:F1}%");
-
                 if (logDecomposition)
-                    Debug.Log($"[Decompose] LOG {organic.gameObject.name}: density={maxDensity:F2}, damage={damage:F2}");
-            }
-            else
-            {
-                Debug.Log($"[Decompose] NO DAMAGE '{organic.name}': density {maxDensity:F4} did not reach threshold {minTrailDensity:F4}");
+                    Debug.Log($"[Decompose] {organic.gameObject.name}: density={maxDensity:F2}, damage={damage:F2}, health={organic.GetHealthPercent() * 100:F1}%");
             }
         }
     }
@@ -283,8 +235,6 @@ public class SlimeDecomposer : MonoBehaviour
                 points.Add(new Vector2(tx, ty));
             }
         }
-
-        Debug.Log($"[Decompose] GRID SAMPLE '{obj.name}': overlap=({overlapMinX:F2},{overlapMinY:F2})-({overlapMaxX:F2},{overlapMaxY:F2}), 9 points generated");
 
         return points;
     }
