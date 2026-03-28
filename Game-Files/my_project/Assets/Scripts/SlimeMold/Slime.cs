@@ -166,6 +166,8 @@ public class Slime : MonoBehaviour
     private float externalWaterStrength;
     private bool hasExternalAttraction;
 
+    private bool isInitialized = false; // ADD THIS
+
     public struct Agent
     {
         public Vector2 position;
@@ -175,22 +177,26 @@ public class Slime : MonoBehaviour
 
     public float GetSpawnX() => spawnX;
     public float GetSpawnY() => spawnY;
-
     void Start()
     {
-        shader = Resources.Load<ComputeShader>("Slime");
-        Debug.LogError($"shader after Resources.Load: {(shader == null ? "NULL" : shader.name)}");
+        // Try loader first (persistent across scenes)
+        shader = SlimeShaderLoader.SlimeShader;
+
+        // Fallback to load directly if loader somehow failed
+        if (shader == null)
+        {
+            shader = Resources.Load<ComputeShader>("Slime");
+            if (shader != null)
+                shader.hideFlags = HideFlags.DontUnloadUnusedAsset;
+        }
 
         if (shader == null)
         {
-            Debug.LogError("Slime: Compute shader not found in Resources!");
+            Debug.LogError("Slime: Compute shader could not be loaded!");
             enabled = false;
             return;
         }
 
-
-        // Each instance needs its own shader copy so multiple slime molds
-        // don't overwrite each other's texture bindingsshader = Instantiate(shader);
 
         if (boundingObject != null)
             CalculateBoundsFromObject();
@@ -220,6 +226,7 @@ public class Slime : MonoBehaviour
         liquidSim = FindAnyObjectByType<CellularLiquidSimulation>();
 
         SetupDisplay();
+        isInitialized = true;
     }
 
     RenderTexture CreateTrailTexture()
@@ -299,6 +306,7 @@ public class Slime : MonoBehaviour
 
     void FixedUpdate()
     {
+        if (!isInitialized) return;
         if (trailMapA == null || agentsBuffer == null) return;
 
         // --- Local copies of parameters for mic modulation ---
@@ -538,12 +546,12 @@ public class Slime : MonoBehaviour
 
     void OnDestroy()
     {
+        isInitialized = false;
         trailMapA?.Release();
         trailMapB?.Release();
         defaultAttractionMap?.Release();
         if (defaultHazardMap != null) Destroy(defaultHazardMap);
         agentsBuffer?.Release();
-        if (shader != null) Destroy(shader);
         if (displayTexture != null) Destroy(displayTexture);
         if (cpuSampleTexture != null) Destroy(cpuSampleTexture);
         if (displaySprite != null) Destroy(displaySprite);
