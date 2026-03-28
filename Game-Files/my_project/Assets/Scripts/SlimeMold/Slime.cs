@@ -191,7 +191,7 @@ public class Slime : MonoBehaviour
 
         // Each instance needs its own shader copy so multiple slime molds
         // don't overwrite each other's texture bindingsshader = Instantiate(shader);
-    shader = Instantiate(shader);
+        shader = Instantiate(shader);
 
         if (boundingObject != null)
             CalculateBoundsFromObject();
@@ -221,7 +221,7 @@ public class Slime : MonoBehaviour
         liquidSim = FindAnyObjectByType<CellularLiquidSimulation>();
 
         SetupDisplay();
-          isInitialized = true; 
+        isInitialized = true;
     }
 
     RenderTexture CreateTrailTexture()
@@ -301,7 +301,7 @@ public class Slime : MonoBehaviour
 
     void FixedUpdate()
     {
-         if (!isInitialized) return;
+        if (!isInitialized) return;
         if (trailMapA == null || agentsBuffer == null) return;
 
         // --- Local copies of parameters for mic modulation ---
@@ -541,7 +541,7 @@ public class Slime : MonoBehaviour
 
     void OnDestroy()
     {
-         isInitialized = false;
+        isInitialized = false;
         trailMapA?.Release();
         trailMapB?.Release();
         defaultAttractionMap?.Release();
