@@ -229,7 +229,7 @@ public class CellularLiquidSimulation : MonoBehaviour
                 UpdateSolidCells();
             }
         }
-
+        splashSoundCooldown -= Time.deltaTime;
         if (enableDisplacement)
         {
             displacementUpdateTimer += Time.deltaTime;
@@ -809,6 +809,7 @@ public class CellularLiquidSimulation : MonoBehaviour
     }
 
     private float spawnSoundCooldown = 0f;
+private float splashSoundCooldown = 0f;
 
     public void SpawnWater(Vector2 worldPosition, float amount)
     {
@@ -1167,8 +1168,11 @@ public class CellularLiquidSimulation : MonoBehaviour
             PushWaterAround(overlappingCells, waterToDisplace, velocity);
 
             float splashVolume = Mathf.Clamp01(speed / 10f);
-            if (splashVolume > 0.1f)
+            if (splashVolume > 0.1f && splashSoundCooldown <= 0f)
+            {
                 SoundManager.Instance?.Play("Splash", splashVolume);
+                splashSoundCooldown = 5f;
+            }
         }
 
         return true;
