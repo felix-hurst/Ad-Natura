@@ -191,7 +191,7 @@ public class Slime : MonoBehaviour
 
         // Each instance needs its own shader copy so multiple slime molds
         // don't overwrite each other's texture bindingsshader = Instantiate(shader);
-    shader = Instantiate(shader);
+        shader = Instantiate(shader);
 
         if (boundingObject != null)
             CalculateBoundsFromObject();
@@ -221,7 +221,7 @@ public class Slime : MonoBehaviour
         liquidSim = FindAnyObjectByType<CellularLiquidSimulation>();
 
         SetupDisplay();
-          isInitialized = true; 
+        isInitialized = true;
     }
 
     RenderTexture CreateTrailTexture()
@@ -286,8 +286,8 @@ public class Slime : MonoBehaviour
         cpuSampleTexture = new Texture2D(width, height, TextureFormat.RGBAFloat, false);
         cpuSampleTexture.filterMode = FilterMode.Point;
 
-       slimeQuad = new GameObject("SlimeDisplay");
-slimeQuad.transform.SetParent(transform); // added to parent up
+        slimeQuad = new GameObject("SlimeDisplay");
+        slimeQuad.transform.SetParent(transform); // added to parent up
         targetRenderer = slimeQuad.AddComponent<SpriteRenderer>();
         targetRenderer.sortingOrder = sortingOrder;
 
@@ -302,7 +302,7 @@ slimeQuad.transform.SetParent(transform); // added to parent up
 
     void FixedUpdate()
     {
-         if (!isInitialized) return;
+        if (!isInitialized) return;
         if (trailMapA == null || agentsBuffer == null) return;
 
         // --- Local copies of parameters for mic modulation ---
@@ -542,7 +542,7 @@ slimeQuad.transform.SetParent(transform); // added to parent up
 
     void OnDestroy()
     {
-         isInitialized = false;
+        isInitialized = false;
         trailMapA?.Release();
         trailMapB?.Release();
         defaultAttractionMap?.Release();
