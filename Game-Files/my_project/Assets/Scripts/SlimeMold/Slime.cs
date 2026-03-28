@@ -188,12 +188,12 @@ public class Slime : MonoBehaviour
             return;
         }
 
-        
-            // Each instance needs its own shader copy so multiple slime molds
+
+        // Each instance needs its own shader copy so multiple slime molds
         // don't overwrite each other's texture bindingsshader = Instantiate(shader);
 
-    if (boundingObject != null)
-        CalculateBoundsFromObject();
+        if (boundingObject != null)
+            CalculateBoundsFromObject();
 
         numAgents = Mathf.Max(16, (numAgents / 16) * 16);
         width = Mathf.Max(8, (width / 8) * 8);

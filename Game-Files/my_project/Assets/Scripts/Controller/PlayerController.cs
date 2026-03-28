@@ -130,10 +130,10 @@ public class PlayerController : MonoBehaviour
     private float velocityX;
 
     private float currentRecoilAngle = 0f;
-private float currentTorsoRecoil = 0f;
-private float currentHeadRecoil = 0f;
+    private float currentTorsoRecoil = 0f;
+    private float currentHeadRecoil = 0f;
 
-private float currentRecoilUpAngle = 0f;
+    private float currentRecoilUpAngle = 0f;
 
     private int waterAmmo;
     private int incendiaryAmmo;
@@ -217,10 +217,10 @@ private float currentRecoilUpAngle = 0f;
             footstepTimer = 0f;
         }
         HandleSpriteFlipping();
-currentRecoilAngle = Mathf.Lerp(currentRecoilAngle, 0f, Time.deltaTime * recoilReturnSpeed);
-currentRecoilUpAngle = Mathf.Lerp(currentRecoilUpAngle, 0f, Time.deltaTime * recoilReturnSpeed);
-currentTorsoRecoil = Mathf.Lerp(currentTorsoRecoil, 0f, Time.deltaTime * recoilReturnSpeed);
-currentHeadRecoil = Mathf.Lerp(currentHeadRecoil, 0f, Time.deltaTime * recoilReturnSpeed);
+        currentRecoilAngle = Mathf.Lerp(currentRecoilAngle, 0f, Time.deltaTime * recoilReturnSpeed);
+        currentRecoilUpAngle = Mathf.Lerp(currentRecoilUpAngle, 0f, Time.deltaTime * recoilReturnSpeed);
+        currentTorsoRecoil = Mathf.Lerp(currentTorsoRecoil, 0f, Time.deltaTime * recoilReturnSpeed);
+        currentHeadRecoil = Mathf.Lerp(currentHeadRecoil, 0f, Time.deltaTime * recoilReturnSpeed);
         HandleArmRotation();
         HandleVisualSwitch();
 
@@ -370,22 +370,22 @@ currentHeadRecoil = Mathf.Lerp(currentHeadRecoil, 0f, Time.deltaTime * recoilRet
             Debug.Log("Player switched to: " + currentTool.ToString());
         }
     }
-private void ApplyRecoil(float kickMultiplier = 1f)
-{
-    // ADD the kick - this was missing entirely
-    currentRecoilAngle += recoilKickAngle * kickMultiplier;
-    currentRecoilUpAngle += recoilUpAngle * kickMultiplier;
-    currentTorsoRecoil += recoilKickAngle * torsoRecoilMultiplier * kickMultiplier;
-    currentHeadRecoil += recoilKickAngle * headRecoilMultiplier * kickMultiplier;
-
-    // Body pushback - opposite of aim direction
-    if (muzzle != null && gameCamera != null)
+    private void ApplyRecoil(float kickMultiplier = 1f)
     {
-        Vector3 mousePos = gameCamera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
-        Vector2 aimDir = ((Vector2)mousePos - (Vector2)muzzle.position).normalized;
-        rb.AddForce(-aimDir * bodyPushbackForce * kickMultiplier, ForceMode2D.Impulse);
+        // ADD the kick - this was missing entirely
+        currentRecoilAngle += recoilKickAngle * kickMultiplier;
+        currentRecoilUpAngle += recoilUpAngle * kickMultiplier;
+        currentTorsoRecoil += recoilKickAngle * torsoRecoilMultiplier * kickMultiplier;
+        currentHeadRecoil += recoilKickAngle * headRecoilMultiplier * kickMultiplier;
+
+        // Body pushback - opposite of aim direction
+        if (muzzle != null && gameCamera != null)
+        {
+            Vector3 mousePos = gameCamera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
+            Vector2 aimDir = ((Vector2)mousePos - (Vector2)muzzle.position).normalized;
+            rb.AddForce(-aimDir * bodyPushbackForce * kickMultiplier, ForceMode2D.Impulse);
+        }
     }
-}
     public bool RequestAmmoUse(ToolType tool)
     {
         if (!HasAmmo(tool)) return false;
@@ -461,12 +461,12 @@ private void ApplyRecoil(float kickMultiplier = 1f)
             float angle = Mathf.Atan2(lookDir.y, lookDir.x) * Mathf.Rad2Deg;
             // When localScale.x is -1, the Z-axis rotation is inverted. 
             // We add 180 to point the gun the right way, then multiply by facing to correct the rotation direction.
-float recoilOffset = facing < 0 ? -currentRecoilAngle : currentRecoilAngle;
-float upwardOffset = facing < 0 ? currentRecoilUpAngle : currentRecoilUpAngle;
-float finalAngle = (facing < 0) ? (angle + 180f) : angle;
-finalAngle -= recoilOffset;
-finalAngle += upwardOffset;
-nearArmGun.rotation = Quaternion.Euler(0, 0, finalAngle);
+            float recoilOffset = facing < 0 ? -currentRecoilAngle : currentRecoilAngle;
+            float upwardOffset = facing < 0 ? currentRecoilUpAngle : currentRecoilUpAngle;
+            float finalAngle = (facing < 0) ? (angle + 180f) : angle;
+            finalAngle -= recoilOffset;
+            finalAngle += upwardOffset;
+            nearArmGun.rotation = Quaternion.Euler(0, 0, finalAngle);
 
             //Calculate the base vertical angle (always 0 to 90 or 0 to -90)
             float verticalAimAngle = Mathf.Atan2(lookDir.y, Mathf.Abs(lookDir.x)) * Mathf.Rad2Deg;
@@ -480,15 +480,15 @@ nearArmGun.rotation = Quaternion.Euler(0, 0, finalAngle);
 
             if (torsoTransform != null)
             {
-float tLean = verticalAimAngle * torsoLeanWeight - currentTorsoRecoil;
-tLean = Mathf.Clamp(tLean, -15f, 15f);
+                float tLean = verticalAimAngle * torsoLeanWeight - currentTorsoRecoil;
+                tLean = Mathf.Clamp(tLean, -15f, 15f);
                 torsoTransform.localRotation = Quaternion.Slerp(torsoTransform.localRotation, Quaternion.Euler(0, 0, tLean), Time.deltaTime * 15f);
             }
 
             if (headTransform != null)
             {
-float hLean = verticalAimAngle * headLeanWeight - currentHeadRecoil;
-hLean = Mathf.Clamp(hLean, -30f, 30f);
+                float hLean = verticalAimAngle * headLeanWeight - currentHeadRecoil;
+                hLean = Mathf.Clamp(hLean, -30f, 30f);
                 headTransform.localRotation = Quaternion.Slerp(headTransform.localRotation, Quaternion.Euler(0, 0, hLean), Time.deltaTime * 15f);
             }
 

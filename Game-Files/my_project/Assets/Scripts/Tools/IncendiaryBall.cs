@@ -68,35 +68,35 @@ public class IncendiaryBall : MonoBehaviour
     private SpriteRenderer spriteRenderer;
     private Vector2 preImpactVelocity;
 
-void Start()
-{
-    CreateVisual();
-
-    rb = GetComponent<Rigidbody2D>();
-    if (rb == null)
+    void Start()
     {
-        Debug.LogWarning("IncendiaryBall: No Rigidbody2D found! Adding one.");
-        rb = gameObject.AddComponent<Rigidbody2D>();
-        rb.gravityScale = 1f;
-    }
+        CreateVisual();
 
-    incendiarySystem = FindObjectOfType<IncendiaryImpactSystem>();
-    if (incendiarySystem == null && showDebugInfo)
-    {
-        Debug.LogWarning("IncendiaryBall: No IncendiaryImpactSystem found in scene! Impact effects will not work.");
-    }
+        rb = GetComponent<Rigidbody2D>();
+        if (rb == null)
+        {
+            Debug.LogWarning("IncendiaryBall: No Rigidbody2D found! Adding one.");
+            rb = gameObject.AddComponent<Rigidbody2D>();
+            rb.gravityScale = 1f;
+        }
 
-    // Muzzle smoke on spawn
-    if (incendiarySystem != null && rb != null)
-    {
-        Vector2 smokeDirection = rb.linearVelocity.magnitude > 0.1f 
-            ? -rb.linearVelocity.normalized 
-            : Vector2.up;
-        incendiarySystem.TriggerMuzzleSmoke(transform.position, smokeDirection);
-    }
+        incendiarySystem = FindObjectOfType<IncendiaryImpactSystem>();
+        if (incendiarySystem == null && showDebugInfo)
+        {
+            Debug.LogWarning("IncendiaryBall: No IncendiaryImpactSystem found in scene! Impact effects will not work.");
+        }
 
-    preImpactVelocity = Vector2.zero;
-}
+        // Muzzle smoke on spawn
+        if (incendiarySystem != null && rb != null)
+        {
+            Vector2 smokeDirection = rb.linearVelocity.magnitude > 0.1f
+                ? -rb.linearVelocity.normalized
+                : Vector2.up;
+            incendiarySystem.TriggerMuzzleSmoke(transform.position, smokeDirection);
+        }
+
+        preImpactVelocity = Vector2.zero;
+    }
 
 
 
@@ -108,16 +108,16 @@ void Start()
         }
     }
 
-void Update()
-{
-    lifetime += Time.deltaTime;
-
-    if (lifetime >= maxLifetime)
+    void Update()
     {
-        Destroy(gameObject);
-        return;
+        lifetime += Time.deltaTime;
+
+        if (lifetime >= maxLifetime)
+        {
+            Destroy(gameObject);
+            return;
+        }
     }
-}
 
 
 
@@ -205,47 +205,47 @@ void Update()
         return texture;
     }
 
-void OnCollisionEnter2D(Collision2D collision)
-{
-    if (hasImpacted) return;
-
-    Debug.Log($"\n>>> INCENDIARY BALL {gameObject.GetInstanceID()} COLLISION START <<<");
-
-    Vector2 impactPoint = collision.contacts.Length > 0 ? collision.contacts[0].point : (Vector2)transform.position;
-    Vector2 impactVelocity = preImpactVelocity;
-    Vector2 surfaceNormal = collision.contacts.Length > 0 ? collision.contacts[0].normal : Vector2.up;
-
-    bool isExcluded = ShouldExcludeObject(collision.gameObject);
-    if (isExcluded)
+    void OnCollisionEnter2D(Collision2D collision)
     {
-        if (incendiarySystem != null)
-            CreateIncendiaryImpact(impactPoint, preImpactVelocity, surfaceNormal);
+        if (hasImpacted) return;
 
-        if (showImpactEffect)
-            ShowImpactEffect(impactPoint);
+        Debug.Log($"\n>>> INCENDIARY BALL {gameObject.GetInstanceID()} COLLISION START <<<");
 
-        if (enableLeafBlastOnImpact)
-            BurstLeafSystem.BlastAll(impactPoint, impactLeafBlastRadius, impactLeafBlastForce, impactLeafBlastUpwardBias);
+        Vector2 impactPoint = collision.contacts.Length > 0 ? collision.contacts[0].point : (Vector2)transform.position;
+        Vector2 impactVelocity = preImpactVelocity;
+        Vector2 surfaceNormal = collision.contacts.Length > 0 ? collision.contacts[0].normal : Vector2.up;
 
-        hasImpacted = true;
-        Destroy(gameObject);
-        return;
-    }
+        bool isExcluded = ShouldExcludeObject(collision.gameObject);
+        if (isExcluded)
+        {
+            if (incendiarySystem != null)
+                CreateIncendiaryImpact(impactPoint, preImpactVelocity, surfaceNormal);
 
-    int hitLayer = collision.gameObject.layer;
-    if (hitLayer == LayerMask.NameToLayer("Wood") || hitLayer == LayerMask.NameToLayer("Decompose") || hitLayer == LayerMask.NameToLayer("CutPiece"))
-    {
-        SoundManager.Instance?.Play("RifleHitWood");
-        Debug.Log("here");
-    }
-    else
-    {
-        Debug.Log($"nohere {collision.gameObject.layer}");
-    }
+            if (showImpactEffect)
+                ShowImpactEffect(impactPoint);
 
-    // REMOVED the duplicate Vector2 declarations that were here
+            if (enableLeafBlastOnImpact)
+                BurstLeafSystem.BlastAll(impactPoint, impactLeafBlastRadius, impactLeafBlastForce, impactLeafBlastUpwardBias);
 
-    GameObject hitObject = collision.gameObject;
+            hasImpacted = true;
+            Destroy(gameObject);
+            return;
+        }
+
+        int hitLayer = collision.gameObject.layer;
+        if (hitLayer == LayerMask.NameToLayer("Wood") || hitLayer == LayerMask.NameToLayer("Decompose") || hitLayer == LayerMask.NameToLayer("CutPiece"))
+        {
+            SoundManager.Instance?.Play("RifleHitWood");
+            Debug.Log("here");
+        }
+        else
+        {
+            Debug.Log($"nohere {collision.gameObject.layer}");
+        }
+
+        // REMOVED the duplicate Vector2 declarations that were here
+
+        GameObject hitObject = collision.gameObject;
 
         Debug.Log($"[Ball {gameObject.GetInstanceID()}] Hit object: {hitObject.name} (ID: {hitObject.GetInstanceID()})");
         Debug.Log($"[Ball {gameObject.GetInstanceID()}] Impact point: {impactPoint}, Velocity: {impactVelocity.magnitude:F2}");
