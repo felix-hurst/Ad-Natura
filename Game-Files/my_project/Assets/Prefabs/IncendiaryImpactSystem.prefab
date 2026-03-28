@@ -1,6 +1,6 @@
 %YAML 1.1
 %TAG !u! tag:unity3d.com,2011:
---- !u!1 &60782826108034132
+--- !u!1 &7735699154816372358
 GameObject:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
@@ -8,8 +8,8 @@ GameObject:
   m_PrefabAsset: {fileID: 0}
   serializedVersion: 6
   m_Component:
-  - component: {fileID: 5335633308021649397}
-  - component: {fileID: 6321516655313375480}
+  - component: {fileID: 3862796749516646180}
+  - component: {fileID: 4671965780812559421}
   m_Layer: 0
   m_Name: IncendiaryImpactSystem
   m_TagString: Untagged
@@ -17,28 +17,28 @@ GameObject:
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
   m_IsActive: 1
---- !u!4 &5335633308021649397
+--- !u!4 &3862796749516646180
 Transform:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 60782826108034132}
+  m_GameObject: {fileID: 7735699154816372358}
   serializedVersion: 2
   m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
-  m_LocalPosition: {x: -0.31876, y: 1.17419, z: 0}
+  m_LocalPosition: {x: -1.34473, y: 6.44891, z: 0}
   m_LocalScale: {x: 1, y: 1, z: 1}
   m_ConstrainProportionsScale: 0
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
---- !u!114 &6321516655313375480
+--- !u!114 &4671965780812559421
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 60782826108034132}
+  m_GameObject: {fileID: 7735699154816372358}
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 55ab0ea1f14cb414aa4233744607b36c, type: 3}
@@ -74,9 +74,9 @@ MonoBehaviour:
   sparkLifetime: 3
   smokeEmitterLifetime: 2
   smokeEmitterRatio: 0.2
-  enableIgnition: 1
+  enableIgnition: 0
   fireSpreadSystem: {fileID: 0}
-  enableStickyParticles: 1
+  enableStickyParticles: 0
   coreColor: {r: 1, g: 0.8615045, b: 0.6, a: 1}
   smokeColor: {r: 0.9, g: 0.9, b: 0.9, a: 0.7}
   enableFlicker: 1
@@ -85,7 +85,7 @@ MonoBehaviour:
   enableDynamicLighting: 1
   lightIntensity: 1.5
   lightRadius: 2
-  enableGlowTrails: 1
+  enableGlowTrails: 0
   trailLifetime: 0.1
   trailWidthStart: 0.03
   trailWidthEnd: 0.01
@@ -96,10 +96,10 @@ MonoBehaviour:
   impactLightDuration: 0.3
   impactLightColor: {r: 1, g: 0.9, b: 0.6, a: 1}
   enableImpactSmoke: 1
-  impactSmokeCount: 30
+  impactSmokeCount: 20
   impactSmokeVelocityFraction: 0.4
   impactSmokeLifetime: 3
-  impactSmokeSize: 0.7
+  impactSmokeSize: 0.4
   impactSmokeRiseSpeed: 0.5
   impactSmokeBillowing: 1.4
   impactSmokeColor: {r: 0.9, g: 0.9, b: 0.9, a: 0.7}
@@ -139,9 +139,9 @@ MonoBehaviour:
   airResistance: 0.98
   ejectionForceMultiplier: 1
   velocityRandomness: 0.3
-  maxActiveParticles: 25000
-  maxSmokeParticles: 1500
-  maxEjectaParticles: 1000
+  maxActiveParticles: 100
+  maxSmokeParticles: 100
+  maxEjectaParticles: 100
   showDebugInfo: 0
   showCollisionDebug: 0
   visualizeIgnitionRadius: 0

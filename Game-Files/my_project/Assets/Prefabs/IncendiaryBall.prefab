@@ -46,10 +46,10 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1babb35a5bfda784eb685f80f65c9f56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ballRadius: 0.2
+  ballRadius: 0.05
   ballColor: {r: 0.27451938, g: 0.27451938, b: 0.2924528, a: 1}
   maxLifetime: 3
-  impactIntensity: 0.8
+  impactIntensity: 0.238
   scaleWithVelocity: 1
   maxVelocityForImpact: 14
   enableIncidentCut: 1
@@ -68,17 +68,6 @@ MonoBehaviour:
   showImpactEffect: 0
   impactColor: {r: 1, g: 0.5, b: 0, a: 1}
   impactDuration: 0.3
-  enableIncendiaryTrail: 0
-  trailSpawnInterval: 0.08
-  trailParticlesPerSpawn: 2
-  minTrailVelocity: 0.5
-  trailIntensity: 0.15
-  scaleTrailWithVelocity: 1
-  maxTrailVelocity: 10
-  trailBehindDistance: 0.2
-  enableGlowEffect: 0
-  glowFlickerSpeed: 10
-  glowVariation: 0.3
   weaknessDelay: 0.2
   minRayCount: 1
   maxRayCount: 2
