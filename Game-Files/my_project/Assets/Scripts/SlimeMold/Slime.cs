@@ -291,7 +291,7 @@ public class Slime : MonoBehaviour
         cpuSampleTexture = new Texture2D(width, height, TextureFormat.RGBAFloat, false);
         cpuSampleTexture.filterMode = FilterMode.Point;
 
-       slimeQuad = new GameObject("SlimeDisplay");
+        slimeQuad = new GameObject("SlimeDisplay");
         targetRenderer = slimeQuad.AddComponent<SpriteRenderer>();
         targetRenderer.sortingOrder = sortingOrder;
 
