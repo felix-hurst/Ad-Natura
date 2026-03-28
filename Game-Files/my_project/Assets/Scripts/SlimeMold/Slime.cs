@@ -287,7 +287,6 @@ public class Slime : MonoBehaviour
         cpuSampleTexture.filterMode = FilterMode.Point;
 
        slimeQuad = new GameObject("SlimeDisplay");
-slimeQuad.transform.SetParent(transform); // added to parent up
         targetRenderer = slimeQuad.AddComponent<SpriteRenderer>();
         targetRenderer.sortingOrder = sortingOrder;
 
