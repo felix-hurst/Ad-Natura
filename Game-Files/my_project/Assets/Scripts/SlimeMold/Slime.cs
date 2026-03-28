@@ -166,6 +166,8 @@ public class Slime : MonoBehaviour
     private float externalWaterStrength;
     private bool hasExternalAttraction;
 
+    private bool isInitialized = false; // ADD THIS
+
     public struct Agent
     {
         public Vector2 position;
@@ -179,18 +181,16 @@ public class Slime : MonoBehaviour
     void Start()
     {
         shader = Resources.Load<ComputeShader>("Slime");
-        Debug.LogError($"shader after Resources.Load: {(shader == null ? "NULL" : shader.name)}");
 
         if (shader == null)
         {
-            Debug.LogError("Slime: Compute shader not found in Resources!");
             enabled = false;
             return;
         }
-
-        
+      
             // Each instance needs its own shader copy so multiple slime molds
         // don't overwrite each other's texture bindingsshader = Instantiate(shader);
+    shader = Instantiate(shader);
 
     if (boundingObject != null)
         CalculateBoundsFromObject();
@@ -220,6 +220,7 @@ public class Slime : MonoBehaviour
         liquidSim = FindAnyObjectByType<CellularLiquidSimulation>();
 
         SetupDisplay();
+          isInitialized = true; 
     }
 
     RenderTexture CreateTrailTexture()
@@ -284,7 +285,8 @@ public class Slime : MonoBehaviour
         cpuSampleTexture = new Texture2D(width, height, TextureFormat.RGBAFloat, false);
         cpuSampleTexture.filterMode = FilterMode.Point;
 
-        slimeQuad = new GameObject("SlimeDisplay");
+       slimeQuad = new GameObject("SlimeDisplay");
+slimeQuad.transform.SetParent(transform); // added to parent up
         targetRenderer = slimeQuad.AddComponent<SpriteRenderer>();
         targetRenderer.sortingOrder = sortingOrder;
 
@@ -299,6 +301,7 @@ public class Slime : MonoBehaviour
 
     void FixedUpdate()
     {
+         if (!isInitialized) return;
         if (trailMapA == null || agentsBuffer == null) return;
 
         // --- Local copies of parameters for mic modulation ---
@@ -538,6 +541,7 @@ public class Slime : MonoBehaviour
 
     void OnDestroy()
     {
+         isInitialized = false;
         trailMapA?.Release();
         trailMapB?.Release();
         defaultAttractionMap?.Release();
