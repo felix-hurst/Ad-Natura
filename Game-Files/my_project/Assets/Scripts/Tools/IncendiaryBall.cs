@@ -36,23 +36,6 @@ public class IncendiaryBall : MonoBehaviour
     [SerializeField] private Color impactColor = new Color(1f, 0.5f, 0f, 1f);
     [SerializeField] private float impactDuration = 0.3f;
 
-    [Header("Incendiary Trail Settings")]
-    [SerializeField] private bool enableIncendiaryTrail = true;
-    [SerializeField] private float trailSpawnInterval = 0.08f;
-    [Range(1, 5)]
-    [SerializeField] private int trailParticlesPerSpawn = 2;
-    [SerializeField] private float minTrailVelocity = 0.5f;
-    [Range(0f, 0.5f)]
-    [SerializeField] private float trailIntensity = 0.15f;
-    [SerializeField] private bool scaleTrailWithVelocity = true;
-    [SerializeField] private float maxTrailVelocity = 10f;
-    [SerializeField] private float trailBehindDistance = 0.2f;
-
-    [Header("Visual Glow Effect")]
-    [SerializeField] private bool enableGlowEffect = true;
-    [SerializeField] private float glowFlickerSpeed = 10f;
-    [Range(0f, 1f)]
-    [SerializeField] private float glowVariation = 0.3f;
 
     [Header("Structural Collapse Settings")]
     [SerializeField] private float weaknessDelay = 1.5f;
@@ -81,34 +64,41 @@ public class IncendiaryBall : MonoBehaviour
     private float lifetime = 0f;
     private bool hasImpacted = false;
     private IncendiaryImpactSystem incendiarySystem;
-    private float trailTimer = 0f;
     private Rigidbody2D rb;
     private SpriteRenderer spriteRenderer;
-    private Color baseBallColor;
     private Vector2 preImpactVelocity;
 
-    void Start()
+void Start()
+{
+    CreateVisual();
+
+    rb = GetComponent<Rigidbody2D>();
+    if (rb == null)
     {
-        CreateVisual();
-
-        rb = GetComponent<Rigidbody2D>();
-        if (rb == null)
-        {
-            Debug.LogWarning("IncendiaryBall: No Rigidbody2D found! Adding one.");
-            rb = gameObject.AddComponent<Rigidbody2D>();
-            rb.gravityScale = 1f;
-        }
-
-        incendiarySystem = FindObjectOfType<IncendiaryImpactSystem>();
-        if (incendiarySystem == null && showDebugInfo)
-        {
-            Debug.LogWarning("IncendiaryBall: No IncendiaryImpactSystem found in scene! Impact effects will not work.");
-        }
-
-        trailTimer = Random.Range(0f, trailSpawnInterval * 0.5f);
-        baseBallColor = ballColor;
-        preImpactVelocity = Vector2.zero;
+        Debug.LogWarning("IncendiaryBall: No Rigidbody2D found! Adding one.");
+        rb = gameObject.AddComponent<Rigidbody2D>();
+        rb.gravityScale = 1f;
     }
+
+    incendiarySystem = FindObjectOfType<IncendiaryImpactSystem>();
+    if (incendiarySystem == null && showDebugInfo)
+    {
+        Debug.LogWarning("IncendiaryBall: No IncendiaryImpactSystem found in scene! Impact effects will not work.");
+    }
+
+    // Muzzle smoke on spawn
+    if (incendiarySystem != null && rb != null)
+    {
+        Vector2 smokeDirection = rb.linearVelocity.magnitude > 0.1f 
+            ? -rb.linearVelocity.normalized 
+            : Vector2.up;
+        incendiarySystem.TriggerMuzzleSmoke(transform.position, smokeDirection);
+    }
+
+    preImpactVelocity = Vector2.zero;
+}
+
+
 
     void FixedUpdate()
     {
@@ -118,83 +108,18 @@ public class IncendiaryBall : MonoBehaviour
         }
     }
 
-    void Update()
+void Update()
+{
+    lifetime += Time.deltaTime;
+
+    if (lifetime >= maxLifetime)
     {
-        lifetime += Time.deltaTime;
-
-        if (lifetime >= maxLifetime)
-        {
-            Destroy(gameObject);
-            return;
-        }
-
-        if (enableGlowEffect && spriteRenderer != null)
-        {
-            UpdateGlowEffect();
-        }
-
-        if (enableIncendiaryTrail && !hasImpacted && incendiarySystem != null && rb != null)
-        {
-            trailTimer += Time.deltaTime;
-            float currentVelocity = rb.linearVelocity.magnitude;
-
-            if (currentVelocity >= minTrailVelocity && trailTimer >= trailSpawnInterval)
-            {
-                trailTimer = 0f;
-                SpawnIncendiaryTrail(currentVelocity);
-            }
-        }
+        Destroy(gameObject);
+        return;
     }
+}
 
-    void UpdateGlowEffect()
-    {
-        float flicker = Mathf.PerlinNoise(Time.time * glowFlickerSpeed, 0f);
-        flicker = Mathf.Lerp(1f - glowVariation, 1f, flicker);
 
-        Color glowColor = baseBallColor * flicker;
-        glowColor.a = baseBallColor.a;
-
-        spriteRenderer.color = glowColor;
-    }
-
-    void SpawnIncendiaryTrail(float velocity)
-    {
-        Vector2 currentPosition = transform.position;
-
-        float actualTrailIntensity = trailIntensity;
-        if (scaleTrailWithVelocity)
-        {
-            float velocityRatio = Mathf.Clamp01(velocity / maxTrailVelocity);
-            actualTrailIntensity *= Mathf.Lerp(0.3f, 1f, velocityRatio);
-        }
-
-        Vector2 ballVelocity = rb.linearVelocity;
-        Vector2 velocityDirection = ballVelocity.normalized;
-        Vector2 trailOffset = -velocityDirection * trailBehindDistance;
-        Vector2 spawnPosition = currentPosition + trailOffset;
-
-        int particleCount = trailParticlesPerSpawn;
-        if (scaleTrailWithVelocity)
-        {
-            float velocityRatio = Mathf.Clamp01(velocity / maxTrailVelocity);
-            particleCount = Mathf.RoundToInt(trailParticlesPerSpawn * Mathf.Lerp(0.5f, 1f, velocityRatio));
-            particleCount = Mathf.Max(1, particleCount);
-        }
-
-        for (int i = 0; i < particleCount; i++)
-        {
-            Vector2 randomOffset = Random.insideUnitCircle * 0.1f;
-            Vector2 particleSpawnPos = spawnPosition + randomOffset;
-            Vector2 particleVelocity = ballVelocity * Random.Range(0.3f, 0.6f);
-            Vector2 perpendicular = new Vector2(-velocityDirection.y, velocityDirection.x);
-            particleVelocity += perpendicular * Random.Range(-1f, 1f);
-
-            if (incendiarySystem != null)
-            {
-                incendiarySystem.TriggerIncendiaryImpact(particleSpawnPos, particleVelocity, actualTrailIntensity);
-            }
-        }
-    }
 
     void CreateVisual()
     {
@@ -280,23 +205,47 @@ public class IncendiaryBall : MonoBehaviour
         return texture;
     }
 
-    void OnCollisionEnter2D(Collision2D collision)
+void OnCollisionEnter2D(Collision2D collision)
+{
+    if (hasImpacted) return;
+
+    Debug.Log($"\n>>> INCENDIARY BALL {gameObject.GetInstanceID()} COLLISION START <<<");
+
+    Vector2 impactPoint = collision.contacts.Length > 0 ? collision.contacts[0].point : (Vector2)transform.position;
+    Vector2 impactVelocity = preImpactVelocity;
+    Vector2 surfaceNormal = collision.contacts.Length > 0 ? collision.contacts[0].normal : Vector2.up;
+
+    bool isExcluded = ShouldExcludeObject(collision.gameObject);
+    if (isExcluded)
     {
-        if (hasImpacted) return;
+        if (incendiarySystem != null)
+            CreateIncendiaryImpact(impactPoint, preImpactVelocity, surfaceNormal);
 
-        Debug.Log($"\n>>> INCENDIARY BALL {gameObject.GetInstanceID()} COLLISION START <<<");
+        if (showImpactEffect)
+            ShowImpactEffect(impactPoint);
 
-        if (ShouldExcludeObject(collision.gameObject))
-        {
-            Debug.Log($"[Ball {gameObject.GetInstanceID()}] Object {collision.gameObject.name} is excluded - ignoring");
-            return;
-        }
+        if (enableLeafBlastOnImpact)
+            BurstLeafSystem.BlastAll(impactPoint, impactLeafBlastRadius, impactLeafBlastForce, impactLeafBlastUpwardBias);
 
-        Vector2 impactPoint = collision.contacts.Length > 0 ? collision.contacts[0].point : (Vector2)transform.position;
-        Vector2 impactVelocity = preImpactVelocity;
-        Vector2 surfaceNormal = collision.contacts.Length > 0 ? collision.contacts[0].normal : Vector2.up;
+        hasImpacted = true;
+        Destroy(gameObject);
+        return;
+    }
 
-        GameObject hitObject = collision.gameObject;
+    int hitLayer = collision.gameObject.layer;
+    if (hitLayer == LayerMask.NameToLayer("Wood") || hitLayer == LayerMask.NameToLayer("Decompose") || hitLayer == LayerMask.NameToLayer("CutPiece"))
+    {
+        SoundManager.Instance?.Play("RifleHitWood");
+        Debug.Log("here");
+    }
+    else
+    {
+        Debug.Log($"nohere {collision.gameObject.layer}");
+    }
+
+    // REMOVED the duplicate Vector2 declarations that were here
+
+    GameObject hitObject = collision.gameObject;
 
         Debug.Log($"[Ball {gameObject.GetInstanceID()}] Hit object: {hitObject.name} (ID: {hitObject.GetInstanceID()})");
         Debug.Log($"[Ball {gameObject.GetInstanceID()}] Impact point: {impactPoint}, Velocity: {impactVelocity.magnitude:F2}");
@@ -381,8 +330,8 @@ public class IncendiaryBall : MonoBehaviour
         Collider2D hitCollider = hitObject.GetComponent<Collider2D>();
         if (hitCollider != null)
         {
-            Vector2 rayOrigin = impactPoint - incidentDirection * 0.1f;
-            RaycastHit2D[] hits = Physics2D.CircleCastAll(rayOrigin, ballRadius * 0.5f, incidentDirection, cutRaycastDistance);
+            Vector2 rayOrigin = impactPoint - incidentDirection * 0.5f;
+            RaycastHit2D[] hits = Physics2D.RaycastAll(rayOrigin, incidentDirection, cutRaycastDistance);
 
             Debug.Log($"[Ball {gameObject.GetInstanceID()}] Raycasting for entry/exit points - found {hits.Length} hits");
 

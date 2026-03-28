@@ -1874,8 +1874,22 @@ public class IncendiaryImpactSystem : MonoBehaviour
         edge += noise;
 
         return edge * 4f;
-    }
+    }public void TriggerMuzzleSmoke(Vector2 position, Vector2 direction, int puffCount = 5)
+{
+    for (int i = 0; i < puffCount; i++)
+    {
+        if (activeSmoke.Count >= maxSmokeParticles) break;
 
+        Vector2 spread = Random.insideUnitCircle * 0.3f;
+        Vector2 puffVelocity = (direction + spread) * Random.Range(0.5f, 1.5f);
+
+        float size = impactSmokeSize * Random.Range(0.8f, 1.3f);
+        float lifetime = impactSmokeLifetime * Random.Range(0.8f, 1.1f);
+        Vector2 spawnPos = position + Random.insideUnitCircle * 0.1f;
+
+        EmitAnimeSmokePuff(spawnPos, puffVelocity, size, lifetime, impactSmokeColor, impactSmokeRiseSpeed, impactSmokeBillowing, true);
+    }
+}
     public void TriggerIncendiaryImpact(Vector2 position, Vector2 velocity, float intensity = 1f)
     {
         float impactSpeed = Mathf.Lerp(minImpactVelocity, maxImpactVelocity, Mathf.Clamp01(intensity));

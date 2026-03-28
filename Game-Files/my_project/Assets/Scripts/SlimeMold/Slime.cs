@@ -178,19 +178,22 @@ public class Slime : MonoBehaviour
 
     void Start()
     {
+        shader = Resources.Load<ComputeShader>("Slime");
+        Debug.LogError($"shader after Resources.Load: {(shader == null ? "NULL" : shader.name)}");
+
         if (shader == null)
         {
-            Debug.LogError("Slime: Compute shader not assigned!");
+            Debug.LogError("Slime: Compute shader not found in Resources!");
             enabled = false;
             return;
         }
 
-        // Each instance needs its own shader copy so multiple slime molds
-        // don't overwrite each other's texture bindings
-        shader = Instantiate(shader);
+        
+            // Each instance needs its own shader copy so multiple slime molds
+        // don't overwrite each other's texture bindingsshader = Instantiate(shader);
 
-        if (boundingObject != null)
-            CalculateBoundsFromObject();
+    if (boundingObject != null)
+        CalculateBoundsFromObject();
 
         numAgents = Mathf.Max(16, (numAgents / 16) * 16);
         width = Mathf.Max(8, (width / 8) * 8);
