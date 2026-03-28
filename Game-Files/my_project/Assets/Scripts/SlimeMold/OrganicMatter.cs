@@ -65,6 +65,7 @@ public class OrganicMatter : MonoBehaviour
     private SpriteRenderer overlayRenderer;
     private SpriteRenderer mainRenderer;
     private float damagePercent;
+    private float damageSoundCooldown = 0f;
 
     [SerializeField] private Sprite climbableWallSprite;
 
@@ -108,7 +109,12 @@ public class OrganicMatter : MonoBehaviour
         currentHealth -= amount;
         damagePercent = 1f - (currentHealth / maxHealth);
 
-        SoundManager.Instance?.Play(damageSound);
+        damageSoundCooldown -= Time.deltaTime;
+        if (damageSoundCooldown <= 0f)
+        {
+            SoundManager.Instance?.Play(damageSound);
+            damageSoundCooldown = 5f;
+        }
 
         // Update slime overlay
         UpdateSlimeOverlay();
