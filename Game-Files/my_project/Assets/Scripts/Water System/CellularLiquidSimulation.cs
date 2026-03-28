@@ -809,7 +809,7 @@ public class CellularLiquidSimulation : MonoBehaviour
     }
 
     private float spawnSoundCooldown = 0f;
-private float splashSoundCooldown = 0f;
+    private float splashSoundCooldown = 0f;
 
     public void SpawnWater(Vector2 worldPosition, float amount)
     {
