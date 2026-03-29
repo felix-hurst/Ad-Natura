@@ -46,7 +46,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1babb35a5bfda784eb685f80f65c9f56, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  ballRadius: 0.05
+  ballRadius: 0.2
   ballColor: {r: 0.27451938, g: 0.27451938, b: 0.2924528, a: 1}
   maxLifetime: 3
   impactIntensity: 0.238

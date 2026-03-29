@@ -1685,7 +1685,7 @@ MonoBehaviour:
   explosiveBallPrefab: {fileID: 7397440784313061156, guid: 55c7fb9dd2972f640acdf6283654fbf2, type: 3}
   explosiveBallThrowForce: 10
   explosiveBallSpawnOffset: 1
-  incendiaryBallPrefab: {fileID: 8220776105218794862, guid: 1180151eb7f2eba4bbea3bcedc6bd15f, type: 3}
+  incendiaryBallPrefab: {fileID: 8220776105218794862, guid: 412f556a1ee39e240b24c5d9a2cc3f72, type: 3}
   incendiaryBallThrowForce: 30
   incendiaryBallSpawnOffset: 2
   waterBallPrefab: {fileID: 1920139217570416795, guid: 1ecefb02fd788de45abec1189397179e, type: 3}

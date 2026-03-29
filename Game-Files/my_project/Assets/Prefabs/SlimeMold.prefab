@@ -12,6 +12,7 @@ GameObject:
   - component: {fileID: 8245078912163544819}
   - component: {fileID: 3889617876163172301}
   - component: {fileID: 602978517246409758}
+  - component: {fileID: 6518573254394005644}
   m_Layer: 0
   m_Name: SlimeMold
   m_TagString: Untagged
@@ -49,18 +50,18 @@ MonoBehaviour:
   shader: {fileID: 7200000, guid: e4b9a491ba4848245b3df1095a872bc7, type: 3}
   width: 128
   height: 128
-  numAgents: 1024
+  numAgents: 2048
   moveSpeed: 2
   diffuseSpeed: 0.069
-  evaporateSpeed: 0.069
+  evaporateSpeed: 0.061
   trailWeight: 0.986
   idleSpeed: 0.266
   attractedSpeedMultiplier: 3
-  sensorLength: 10.17
+  sensorLength: 11.25
   sensorAngle: 24.86
   turnSpeed: 6.33
   spawnX: 0.5
-  spawnY: 0.5
+  spawnY: 0.85
   spawnRadius: 0.102
   boundingObject: {fileID: 0}
   worldBounds:
@@ -82,10 +83,24 @@ MonoBehaviour:
   deathTint: {r: 0.7, g: 0.55, b: 0.1, a: 1}
   hazardCorrosionRate: 6
   hazardTrailDampen: 0.85
-  consumptionRate: 0.38
+  consumptionRate: 1.55
   consumptionThreshold: 0.05
-  glowIntensity: 0.278
-  glowDecayRate: 1.01
+  glowIntensity: 0.175
+  glowDecayRate: 1.54
+  micInput: {fileID: 6518573254394005644}
+  micInfluence: 1
+  micAmpEvaporateGain: 5
+  micAmpTurnGain: 4
+  micLowFreqDiffuseGain: 3
+  micHighFreqTurnGain: 3
+  micHighFreqSensorShrink: 0.7
+  micQuietPulseGain: 2
+  micOnsetTrailBurst: 5
+  stressThreshold: 0.395
+  stressAccumulationRate: 0.35
+  stressRecoveryRate: 0.06
+  refractoryThreshold: 0.75
+  refractoryDuration: 12
   slimeColor: {r: 1, g: 0.9, b: 0.2, a: 1}
   sortingOrder: 0
 --- !u!114 &3889617876163172301
@@ -162,8 +177,27 @@ MonoBehaviour:
     m_PostInfinity: 2
     m_RotationOrder: 4
   enableAttraction: 1
-  attractionStrength: 5
+  attractionStrength: 1
   internalAttractionRadius: 0.05
   showDebugGizmos: 0
   logDecomposition: 0
   debugDecomposition: 0
+--- !u!114 &6518573254394005644
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8969033245560523579}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2a4c9f6a031ca44d9e613031870e1e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MicrophoneInput
+  micDeviceName: 
+  sampleRate: 44100
+  fftSize: 1024
+  micGain: 20
+  smoothingSpeed: 5
+  onsetDecay: 8
+  showDebugValues: 0
