@@ -527,7 +527,7 @@ public class RaycastReceiver : MonoBehaviour
         Vector2 localExit = largePiece.transform.InverseTransformPoint(exitPoint);
 
         CutProfileManager profileManager = FindObjectOfType<CutProfileManager>();
-        
+
         if (profileManager != null && cutProfile.strength > 0.01f)
         {
             currentShape = profileManager.ApplyIrregularCut(currentShape, localEntry, localExit, cutProfile);
