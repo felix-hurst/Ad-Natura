@@ -350,9 +350,18 @@ public class RaycastReceiver : MonoBehaviour
             int cutPieceLayer = LayerMask.NameToLayer("CutPiece");
             if (cutPieceLayer != -1) gameObject.layer = cutPieceLayer;
 
+            // Make parent dynamic so it responds to gravity after being cut (except Roof)
+            if (!gameObject.name.Contains("Roof"))
+            {
+                Rigidbody2D parentRb = GetComponent<Rigidbody2D>();
+                if (parentRb != null && parentRb.bodyType != RigidbodyType2D.Dynamic)
+                {
+                    parentRb.bodyType = RigidbodyType2D.Dynamic;
+                }
+            }
+
             gameObject.name = originalParentName;
 
-            if (isOriginalCutPiece)
             {
 
                 CutPieceCleanup existingCleanup = GetComponent<CutPieceCleanup>();
@@ -420,13 +429,20 @@ public class RaycastReceiver : MonoBehaviour
             if (largePiece != null && onPieceSpawned != null)
                 onPieceSpawned.Invoke(largePiece);
 
-            // Parent also moves to CutPiece layer now that it's been cut
             int cutPieceLayer = LayerMask.NameToLayer("CutPiece");
             if (cutPieceLayer != -1) gameObject.layer = cutPieceLayer;
 
-            gameObject.name = originalParentName;
+            // Make parent dynamic so it responds to gravity after being cut (except Roof)
+            if (!gameObject.name.Contains("Roof"))
+            {
+                Rigidbody2D parentRb = GetComponent<Rigidbody2D>();
+                if (parentRb != null && parentRb.bodyType != RigidbodyType2D.Dynamic)
+                {
+                    parentRb.bodyType = RigidbodyType2D.Dynamic;
+                }
+            }
 
-            if (isOriginalCutPiece)
+            gameObject.name = originalParentName;
             {
                 CutPieceCleanup existingCleanup = GetComponent<CutPieceCleanup>();
                 if (existingCleanup != null)
@@ -511,7 +527,7 @@ public class RaycastReceiver : MonoBehaviour
         Vector2 localExit = largePiece.transform.InverseTransformPoint(exitPoint);
 
         CutProfileManager profileManager = FindObjectOfType<CutProfileManager>();
-
+        
         if (profileManager != null && cutProfile.strength > 0.01f)
         {
             currentShape = profileManager.ApplyIrregularCut(currentShape, localEntry, localExit, cutProfile);
