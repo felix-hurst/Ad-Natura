@@ -111,7 +111,7 @@ $(c_1 \Rightarrow r_1 | c_2 \Rightarrow r_2 | ... | c_n \Rightarrow r_n)$.
 
 \subsection{Primitive Data Types}
 
-The following table summarizes the primitive data types used by the Destructible Environment System.
+The following table summarizes the primitive data types used by the system.
 
 \begin{table}[h]
 \centering
@@ -132,7 +132,7 @@ boolean & $\mathbb{B}$ & A truth value: true or false \\
 
 \subsection{Derived Data Types}
 
-The Destructible Environment System uses several derived data types: sequences, vectors, polygons, and tuples.
+The Destructible Objects module uses several derived data types: sequences, vectors, polygons, tuples, agents, and textures.
 
 \textbf{Sequences} are lists filled with elements of the same data type, denoted as seq of T where T is the element type (ex. seq of Vector2 represents a sequence of 2D points).
 
@@ -1357,12 +1357,14 @@ Library
 \subsection{Slime Mold Algorithm Modules}\label{SecSMA}
 
 The Slime Mold Algorithm (SMA) modules implement a GPU-accelerated agent-based simulation
-inspired by the growth patterns real slime mold behaviours. Agents move through the
-environment depositing pheromone trails and steering toward attraction sources such as water
-and light. Over time, these trails converge into efficient network-like paths that guide
-gameplay elements. This category contains three modules: the core simulation running on the
-GPU (\hyperref[M16]{M16}), the manager that coordinates attraction data (\hyperref[M17]{M17}),
-and the individual attraction source components placed in the scene (\hyperref[M18]{M18}).
+inspired by the growth patterns of real slime mold behaviours. Agents (type \textbf{Agent},
+defined in Section~\ref{SecNotation}) move through the environment depositing pheromone
+trails stored in \textbf{Texture2D} maps (also defined in Section~\ref{SecNotation}),
+and steer toward attraction sources such as water and light. Over time, these trails
+converge into efficient network-like paths that guide gameplay elements. This category
+contains three modules: the core simulation running on the GPU (\hyperref[M16]{M16}),
+the manager that coordinates attraction data (\hyperref[M17]{M17}), and the individual
+attraction source components placed in the scene (\hyperref[M18]{M18}).
 
 \subsubsection{Slime Mold Simulation Module (M16)} \label{M16}
 
@@ -1380,7 +1382,7 @@ The GPU compute shader implementation for simulating slime mold agent behaviour,
 
 \paragraph{Environment Variables:}
 \begin{itemize}
-\item GPU compute capabilities
+\item GPU compute capabilities (DirectX 11 / OpenGL 4.3 or higher required)
 \item System time for deltaTime calculations
 \end{itemize}
 
@@ -1625,10 +1627,12 @@ module hierarchy forms a Directed Acyclic Graph (DAG).\\
 
 \newpage
 
-\subsection{Use Hierarchy Diagram}
+\subsection{Use Hierarchy Levels}
 
-Table~\ref{TabUseHierarchy} shows the use hierarchy between modules organized by levels.
-Modules at higher levels use (depend on) modules at lower levels.
+Table~\ref{TabUseHierarchy} summarizes the use hierarchy between modules organized by level.
+Modules at higher levels use (depend on) modules at lower levels. Figure~\ref{FigUseHierarchy}
+provides a flowchart-style view of the same dependency structure, showing how control flows
+downward through the hierarchy from user-facing modules to foundational hardware-hiding modules.
 
 \begin{table}[H]
 \centering
@@ -1649,9 +1653,40 @@ Modules at higher levels use (depend on) modules at lower levels.
 0 & Foundation (Hardware) & \mref{M1} (Input), \mref{M2} (Physics), \mref{M3} (Rendering), \mref{M4} (Collider) \\
 \hline
 \end{tabular}
-\caption{Use Hierarchy Levels - Higher levels depend on lower levels}
+\caption{Use Hierarchy Levels --- Higher levels depend on lower levels}
 \label{TabUseHierarchy}
 \end{table}
+
+\begin{figure}[H]
+\centering
+\begin{tabular}{c}
+\fbox{\parbox{0.85\textwidth}{
+\centering
+\vspace{4pt}
+\textbf{Level 5 --- Application} \\
+M5 (Player Controller) \\[6pt]
+$\downarrow$ \\[6pt]
+\textbf{Level 4 --- Coordination} \\
+M6 (Raycast Visualization) \quad M7 (Tool Raycast) \\[6pt]
+$\downarrow$ \\[6pt]
+\textbf{Level 3 --- Services} \\
+M8 (Debris) \quad M9 (Cut Profile) \quad M17 (SMA Manager) \quad M18 (Attraction) \\[6pt]
+$\downarrow$ \\[6pt]
+\textbf{Level 2 --- Algorithm} \\
+M11 (Polygon Partition) \quad M12 (Mesh Gen) \quad M13 (Pixelation) \\
+M14 (Physics Update) \quad M15 (Material Props) \quad M16 (Slime Mold Sim) \\[6pt]
+$\downarrow$ \\[6pt]
+\textbf{Level 1 --- Utility} \\
+M10 (Geometric Operations) \\[6pt]
+$\downarrow$ \\[6pt]
+\textbf{Level 0 --- Foundation (Hardware)} \\
+M1 (Input) \quad M2 (Physics) \quad M3 (Rendering) \quad M4 (Collider) \\
+\vspace{4pt}
+}}
+\end{tabular}
+\caption{Use Hierarchy Flowchart --- Modules depend only on modules at lower levels}
+\label{FigUseHierarchy}
+\end{figure}
 
 \subsection{Use Hierarchy Levels (Detailed)}
 
@@ -1764,8 +1799,8 @@ The selected tool displays its damage type (Projectile, Water, or Wind).
 \item \textbf{Operating System:} Windows, macOS, or Linux (64-bit)
 \item \textbf{Display:} Standard monitor capable of rendering 2D graphics at 1280$\times$720 or higher
 \item \textbf{Input Devices:} Keyboard and mouse (primary), with potential future support for touchscreen
-\item \textbf{Graphics:} GPU with support for DirectX 11 or OpenGL 4.3 (or higher), required for Unity's 2D rendering pipeline and the slime mold compute shaders (\hyperref[M16]{M16})
-\item \textbf{Memory:} Sufficient RAM and GPU memory to maintain agent buffers and trail textures for the slime mold simulation (see \hyperref[M16]{M16})
+\item \textbf{Graphics:} GPU with support for DirectX 11 or OpenGL 4.3 (or higher). This requirement is mandatory for Unity's 2D rendering pipeline and for the compute shaders used by the Slime Mold Simulation module (\hyperref[M16]{M16}).
+\item \textbf{Memory:} Sufficient RAM and GPU memory to maintain agent buffers and trail textures for the slime mold simulation (see \hyperref[M16]{M16}). GPU memory requirements scale with the number of agents ($DEFAULT\_NUM\_AGENTS = 10000$) and trail map resolution ($DEFAULT\_MAP\_RESOLUTION = 512$).
 \end{itemize}
 
 \section{Design of Communication Protocols}\label{SecDCP}
@@ -1774,12 +1809,13 @@ The selected tool displays its damage type (Projectile, Water, or Wind).
 
 The system uses Unity's component-based architecture for module communication.
 In Unity, game logic is attached to scene objects via \texttt{MonoBehaviour} scripts.
-The engine automatically calls certain lifecycle methods on these scripts:
-\texttt{Update()} is called once per rendered frame for per-frame logic,
+The engine automatically calls certain lifecycle methods on these scripts.
+\texttt{Update()} is called once per rendered frame for per-frame logic.
 \texttt{FixedUpdate()} is called on a fixed physics timestep (configured in \hyperref[M2]{M2})
-for physics-dependent logic, and \texttt{OnCollisionEnter2D} is invoked when two
+for physics-dependent logic. \texttt{OnCollisionEnter2D} is invoked when two
 physics colliders first make contact. These callbacks form the backbone of Unity's
-event-driven communication model.
+event-driven communication model and are standard Unity engine functions; they are
+not defined within this system's modules but are provided by the Unity engine itself.
 
 \paragraph{Event-Based Communication:}
 \begin{itemize}
@@ -1826,8 +1862,9 @@ event-driven communication model.
 The project follows the SFWRENG 4G06 course schedule, with two major demonstration
 milestones: Rev0 (Revision 0 demonstration in late November 2025) and Rev1 (final
 demonstration in late March 2026). Development is divided into five phases, each
-targeting a functional milestone aligned with these deadlines. Detailed task
-assignments and issue tracking are maintained on the team's GitHub repository.
+targeting a functional milestone aligned with these deadlines. The high-level schedule
+is summarized below, with detailed task assignments and issue tracking maintained on
+the team's GitHub repository.
 
 \begin{itemize}
 \item \textbf{GitHub Repository:} \url{https://github.com/felix-hurst/Ad-Natura}
@@ -1894,23 +1931,18 @@ Marcos Hernandez-Rivero & Documentation, Testing, Integration Support \\
 \item Full system integration testing and Rev1 preparation
 \end{itemize}
 
-\bibliographystyle{plain}
+\bibliographystyle{plainnat}
 \begin{thebibliography}{9}
-
-\bibitem{Parnas1984}
-D.L. Parnas, P.C. Clement, and D.M. Weiss.
-\textit{The modular structure of complex systems}.
-In International Conference on Software Engineering, pages 408--419, 1984.
 
 \bibitem{Parnas1972}
 David L. Parnas.
 \textit{On the criteria to be used in decomposing systems into modules}.
 Comm. ACM, 15(2):1053--1058, December 1972.
 
-\bibitem{HoffmanStrooper1995}
-Daniel M. Hoffman and Paul A. Strooper.
-\textit{Software Design, Automated Testing, and Maintenance: A Practical Approach}.
-International Thomson Computer Press, 1995.
+\bibitem{Parnas1984}
+D.L. Parnas, P.C. Clement, and D.M. Weiss.
+\textit{The modular structure of complex systems}.
+In International Conference on Software Engineering, pages 408--419, 1984.
 
 \end{thebibliography}
 
