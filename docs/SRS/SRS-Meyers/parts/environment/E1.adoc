@@ -7,6 +7,7 @@ endif::[]
 
 ==== Terms (alphabetical)
 
+[[gl-adnatura]]Ad Natura:: Latin for "To Nature", this is the name of our project and our game.
 [[gl-bench]]Benchmark Scene:: A simple test level used to check performance and behavior consistently.
 [[gl-cell]]Cell:: The smallest terrain unit the game reasons about (a tile in the grid).
 [[gl-devscene]]Development Scene:: A flexible test scene used for debugging and iteration; not used for performance acceptance or timing. Distinct from <<gl-bench,Benchmark Scene>>.
@@ -16,7 +17,7 @@ endif::[]
 [[gl-input]]Input Device:: Keyboard + mouse or a standard Windows gamepad.
 [[gl-latency]]Latency:: Time between an environment change and when that change is made available to the system.
 [[gl-light]]Light Field:: A field representing illumination intensity across the level.
-[[gl-minspec]]Minimum Spec:: The lowest hardware/OS we support for stable play (see Problem Statement for the numbers).
+[[gl-minspec]]Minimum Spec:: The lowest hardware/OS we support for stable play (see link:https://github.com/felix-hurst/Ad-Natura/blob/main/docs/ProblemStatementAndGoals/ProblemStatement.pdf[Problem Statement] for the numbers).
 [[gl-organism]]Organism:: The slime-mould-like entity that moves through levels.
 [[gl-publish]]Publish (Environment):: Making updated fields/terrain available to the system after a change.
 [[gl-playertrav]]Player Traversal:: How the player character moves and navigates levels (separate from <<gl-traversal,Organism Traversal>>).
@@ -27,11 +28,11 @@ endif::[]
 
 ==== Acronyms
 
-[[gl-cpu]]CPU — Central Processing Unit  
-[[gl-gpu]]GPU — Graphics Processing Unit  
-[[gl-fps]]FPS — Frames Per Second  
-[[gl-io]]I/O — Input / Output  
-[[gl-ci]]CI — Continuous Integration  
-[[gl-prng]]PRNG — Pseudo-Random Number Generator
+[[gl-cpu]]CPU:: Central Processing Unit  
+[[gl-gpu]]GPU:: Graphics Processing Unit  
+[[gl-fps]]FPS:: Frames Per Second  
+[[gl-io]]I/O:: Input / Output  
+[[gl-ci]]CI:: Continuous Integration  
+[[gl-prng]]PRNG:: Pseudo-Random Number Generator
 
 

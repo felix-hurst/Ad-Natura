@@ -1,7 +1,7 @@
 [discrete]
 === Control Information
 
-.{project-title} -- Versionning Information -- Goal Book
+.{project-title} -- Versioning Information -- Goal Book
 [cols="^1,^1,^2,^2,^2,^2"]
 |===
 |Section | Version | Lead | Delivered on| Reviewer | Approved on

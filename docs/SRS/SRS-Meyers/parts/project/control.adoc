@@ -1,6 +1,7 @@
 [discrete]
 === Control Information
 
+.{project-title} -- Versioning Information -- Goal Book
 [cols="^1,^1,^1,2,^1,2"]
 |===
 |Section | Version | Lead | Delivered | Reviewer | Approved 

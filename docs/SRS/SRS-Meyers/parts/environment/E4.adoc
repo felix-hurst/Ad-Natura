@@ -23,7 +23,7 @@ Clock:: A stable wall-clock/monotonic timer is available for measuring delays/<<
 
 Locale:: UI is English for MVP; number/date formatting does not depend on system locale.
 
-Color space:: Displays run in SDR/sRGB. HDR or wide-gamut displays are treated as SDR.
+Colour space:: Displays run in SDR/sRGB. HDR or wide-gamut displays are treated as SDR.
 
 Power/thermal:: Normal OS scheduling/throttling can occur (laptops on battery). The game does not require real-time guarantees.
 
