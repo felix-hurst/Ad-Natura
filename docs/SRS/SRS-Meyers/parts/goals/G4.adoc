@@ -3,7 +3,8 @@
 
 The following are the functional requirements for our 2D pixel platformer game in no particular order.
 
-[[g4-sma]]
+\hypertarget{g4-sma}{}
+
 1. Slime mold will be attracted to water, repelled by light and calamity, destroyed by calamity, and react to sound by dimming and minimizing movement while high frequencies are present. Slime mold will also decompose wet wood on contact.
 
 2. Slime mold spores will be destroyed by light, and can only turn into fully-fledged slime mold organisms in areas with low light level.

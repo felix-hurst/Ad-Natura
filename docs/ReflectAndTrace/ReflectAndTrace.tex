@@ -1,7 +1,10 @@
 \documentclass{article}
 
-\usepackage{tabularx}
+\usepackage{xltabular}
+\usepackage{graphicx}
 \usepackage{booktabs}
+\usepackage{float}
+\usepackage{hyperref}
 \usepackage[numbers]{natbib}
 
 \title{Reflection and Traceability Report on \progname}
@@ -63,6 +66,38 @@ document, and likely the Revision 1 versions of the other documents will be
 low.} 
 
 \subsection{SRS and Hazard Analysis}
+This section will summarize the changes made in response to the feedback received from peers and the TA, for both the \href{https://github.com/felix-hurst/Ad-Natura/blob/main/docs/SRS/SRS.pdf}{Software Requirement Specification} and the \href{https://github.com/felix-hurst/Ad-Natura/blob/main/docs/HazardAnalysis/HazardAnalysis.pdf}{Hazard Analysis} documents.
+
+\begin{xltabular}{\textwidth}{|p{1.5cm}|p{2cm}|X|X|}
+\caption{Feedback table for SRS} \\
+\hline
+Feedback Item Number & Source of Feedback & Summary of Feedback & Changes made in response to feedback \\ \hline
+\endfirsthead
+1&TA scheduled meeting&TA told us that the dates should be more specific, and also some overlap is allowed& Changed dates in P.3 and P.4 (scheduling and tasks) \\ \hline
+2&  Peer Review & System assumptions were included, but not audience assumptions. Additionally, what are the accessibility options in the game \href{https://github.com/felix-hurst/Ad-Natura/issues/37}{Feedback Issue \#37} & Assumptions about audience were added \href{https://github.com/felix-hurst/Ad-Natura/commit/8d863e79b91bb23ba54e0fc92494ee030752ac46}{Commit fixing feedback} \\ \hline
+3&Peer Review&Game description implied main success scenario and secondary success scenario happening at the same time while success scenarios implied one or the other was working, steps in success scenario should also be numbered \href{https://github.com/felix-hurst/Ad-Natura/issues/39}{Feedback issue \#39}& Added numbering to the success scenarios, and changed a success scenario to better highlight that the main part of both the main and secondary success scenarios should be happening at the same time. \href{https://github.com/felix-hurst/Ad-Natura/commit/8d863e79b91bb23ba54e0fc92494ee030752ac46}{Commit fixing feedback}\\ \hline
+4& TA Feedback &Control tables have typo in "Versioning" and some were missing captions \href{https://github.com/felix-hurst/Ad-Natura/issues/42}{Issue containing feedback for SRS}& Fixed typos, added missing captions \href{https://github.com/felix-hurst/Ad-Natura/commit/c060d1f768c72ec774a56e5e9003a0c7b364edda}{Commit fixing Feedback}\\ \hline
+5&TA Feedback&General grammar issues, including typos, localization (using canadian spelling instead of american), formatting blocks of text to be lists \href{https://github.com/felix-hurst/Ad-Natura/issues/42}{Issue containing feedback for SRS}&                                   Fixing typos, changed spelling of 'color' to 'colour', and several parts that had blocks of text such as end of E.5 were formatted into lists \href{https://github.com/felix-hurst/Ad-Natura/commit/c060d1f768c72ec774a56e5e9003a0c7b364edda}{Commit fixing Feedback}\\ \hline
+6&TA Feedback&A lot of mentions to important parts (such as the slime mold's actions or the slime mold itself) were missing \href{https://github.com/felix-hurst/Ad-Natura/issues/42}{Issue containing feedback for SRS} & Descriptions were updated to be more accurate, and less vague, as well as mentions to systems (such as the slime mold) outside of the section where they were introduced is hyperlinked. \href{https://github.com/felix-hurst/Ad-Natura/commit/c060d1f768c72ec774a56e5e9003a0c7b364edda}{Commit fixing Feedback}\\ \hline
+7&TA Feedback&High level usage diagram is low quality (G.5) \href{https://github.com/felix-hurst/Ad-Natura/issues/42}{Issue containing feedback for SRS}&No changes were made, as the size is appropriate to capture the entire image, and poor quality happened straight from downloading it from website used to make the diagram, and we wanted to keep the current look of the diagram as we felt it made things the clearest \href{https://github.com/felix-hurst/Ad-Natura/commit/c060d1f768c72ec774a56e5e9003a0c7b364edda}{Commit fixing Feedback}\\ \hline
+\end{xltabular}%
+
+Feedback items number 4 to 7 were all part of the same feedback, just given different rows on the table to distinguish the nature of the feedback and make it clearer to read.
+
+\begin{xltabular}{\textwidth}{|p{1.5cm}|p{2cm}|X|X|}
+\caption{Feedback table for HA} \\
+\hline
+Feedback Item Number & Source of Feedback & Summary of Feedback & Changes made in response to feedback \\ \hline
+1& Peer Review& The FMEA table stated that only one person was responsible for resolving the issue of not being visually appealing in the failure mode, and it was ambiguous how the person responsible would solve this  \href{https://github.com/felix-hurst/Ad-Natura/issues/34}{Feedback Issue \#34}& Added a section explaining how to resolve the not visually appealing issue, including an actual proper process to follow. \href{https://github.com/felix-hurst/Ad-Natura/commit/801b7db48b469dcae4db8fcb9e86d8c89b342cb6}{Commit Fixing Feedback}\\ \hline
+2& Peer Review& One of the failure modes was "not fun to play" which was not elaborated on and was very unclear  \href{https://github.com/felix-hurst/Ad-Natura/issues/35}{Feedback Issue \#35}& Added a strict definition for "not fun to play" in the "Definition of Key Failure Modes" section. \href{https://github.com/felix-hurst/Ad-Natura/commit/801b7db48b469dcae4db8fcb9e86d8c89b342cb6}{Commit Fixing Feedback}\\ \hline
+3& Peer Review& One of the potential losses mentioned is human health and safety, which is a valid loss, but no reason was stated as to why (we never said that player's photosensitivty is triggered, for example)  \href{https://github.com/felix-hurst/Ad-Natura/issues/36}{Feedback Issue \#36}& In the safety and security requirements, added a health and safety warning, audio safety, and accessibility options line, detailing what the risks are and what requirements we will set for players to play safely\href{https://github.com/felix-hurst/Ad-Natura/commit/801b7db48b469dcae4db8fcb9e86d8c89b342cb6}{Commit Fixing Feedback}\\ \hline
+4& TA Scheduled Meeting& A few grammatical points need to be fixed and FMEA table should be a properly formatted table in LaTeX instead of an image of a table& Fixed language to stop using "we" so much, and also properly introduced the FMEA table, formatted as a LaTeX table \href{https://github.com/felix-hurst/Ad-Natura/commit/8707435bcd7c9df7fbed860b88926b758a643a11}{Commit fixing feedback}\\ \hline
+5& TA Feedback& General vagueness, "game system", which was used in our text, was not named, and our system boundaries section was also very vague, only containing the title of the systems with no explanation as to what they do and no context.\href{https://github.com/felix-hurst/Ad-Natura/issues/42}{Issue containing feedback for HA}& Named game system (to be the name of our game), and expanded on each of the system boundaries and components, giving a description of each one. Also changed the use of "R1" to be "Rev 1 Demo" to be more clear about what it wasa referring to. \href{https://github.com/felix-hurst/Ad-Natura/commit/7d394e97e27f93443ec8d7d2270e1095a9afa9b0}{Commit fixing feedback}\\ \hline
+6& TA Feedback& We need to expand on some of the accessibility/usability items in the scope and purpose section, and to properly explain what dangers exist so that the reader understands the scope of the necessary requirements. \href{https://github.com/felix-hurst/Ad-Natura/issues/42}{Feedback Issue \#42}& Added that an accessibility/usability hazard may cause uncomfortableness or damage to a player's eyes. \href{https://github.com/felix-hurst/Ad-Natura/commit/7d394e97e27f93443ec8d7d2270e1095a9afa9b0}{Commit fixing feedback}\\ \hline
+7& TA Feedback& General hyperlink and captioning issues. Documents were referenced that were not hyperlinked, and FMEA table was present without caption  \href{https://github.com/felix-hurst/Ad-Natura/issues/42}{Feedback Issue \#42}& Added list of tables and hyperlinks to relevant documents, also added caption to the FMEA table \href{https://github.com/felix-hurst/Ad-Natura/commit/7d394e97e27f93443ec8d7d2270e1095a9afa9b0}{Commit fixing feedback}\\ \hline
+\end{xltabular}%
+
+Feedback items number 5 to 7 were all part of the same feedback, just given different rows on the table to distinguish the nature of the feedback and make it clearer to read. 
 
 \subsection{Design and Design Documentation}
 
