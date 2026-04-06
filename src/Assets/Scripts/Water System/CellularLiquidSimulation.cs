@@ -53,7 +53,6 @@ public class CellularLiquidSimulation : MonoBehaviour
     [SerializeField] private AudioClip flowingClip;
     private AudioSource flowSource;
 
-
     [Header("Physics Interaction")]
     [SerializeField] private LayerMask solidLayer;
     [SerializeField] private float physicsCheckRadius = 0.05f;
@@ -93,24 +92,38 @@ public class CellularLiquidSimulation : MonoBehaviour
     [Tooltip("Pre-allocate pixel arrays to avoid GC allocations")]
     [SerializeField] private bool usePixelArrayPool = true;
 
+    // Double-buffered water grids — newWater receives writes during a step while water is read,
+    // preventing cells updated earlier in the same step from influencing cells updated later.
     private float[,] water;
     private float[,] newWater;
+
     private bool[,] solid;
     private bool[,] settled;
+
+    // Per-cell depth and surface flags, recalculated each frame for visual shading only.
     private int[,] waterDepth;
     private bool[,] isSurfaceCell;
+
     private Texture2D waterTexture;
     private SpriteRenderer waterRenderer;
     private GameObject waterVisualObject;
+
+    // Active cell set limits simulation work to only cells that actually contain water,
+    // avoiding the cost of iterating the entire grid every step.
     private HashSet<Vector2Int> activeCells = new HashSet<Vector2Int>();
     private Queue<Vector2Int> cellsToCheck = new Queue<Vector2Int>();
+
     private float solidUpdateTimer = 0f;
+
+    // Tracks rigidbody positions from the previous displacement tick so we can compute movement delta.
     private Dictionary<Rigidbody2D, Vector2> trackedRigidbodies = new Dictionary<Rigidbody2D, Vector2>();
     private float displacementUpdateTimer = 0f;
 
+    // Pre-filtered set of rigidbodies eligible for displacement, so we avoid FindObjectsOfType every tick.
     private HashSet<Rigidbody2D> cachedDisplacementRigidbodies = new HashSet<Rigidbody2D>();
     private float displacementCacheRefreshTimer = 0f;
 
+    // Dirty rect tracks the minimal bounding box of changed cells so only that region is re-uploaded to the GPU.
     private int dirtyMinX = int.MaxValue;
     private int dirtyMinY = int.MaxValue;
     private int dirtyMaxX = int.MinValue;
@@ -118,9 +131,13 @@ public class CellularLiquidSimulation : MonoBehaviour
     private bool hasVisualChanges = false;
 
     private int textureUpdateFrameCounter = 0;
+
+    // Pooled pixel buffer avoids a heap allocation every time we upload to the texture.
     private Color[] pixelArrayPool;
     private List<Vector2Int> activeCellsList;
 
+    // Pre-baked color gradient for each depth level so color lookups are a simple array index
+    // rather than multiple Lerp calls per pixel per frame.
     private Color[] depthColorCache;
     private const int DEPTH_CACHE_SIZE = 32;
 
@@ -129,6 +146,9 @@ public class CellularLiquidSimulation : MonoBehaviour
         InitializeGrid();
         InitializeOptimizations();
         InitializeRendering();
+
+        // Audio source is configured here rather than in the Inspector so the component
+        // is guaranteed to exist and be ready before the first Update.
         flowSource = gameObject.AddComponent<AudioSource>();
         flowSource.clip = flowingClip;
         flowSource.loop = true;
@@ -136,6 +156,8 @@ public class CellularLiquidSimulation : MonoBehaviour
         flowSource.volume = 0f;
         flowSource.Play();
 
+        // Populate the displacement cache immediately so the first Update doesn't pay
+        // the cost of a FindObjectsOfType scan.
         if (useCachedDisplacementRigidbodies && enableDisplacement)
         {
             RefreshDisplacementCache();
@@ -148,8 +170,12 @@ public class CellularLiquidSimulation : MonoBehaviour
         {
             pixelArrayPool = new Color[gridWidth * gridHeight];
         }
+
+        // Pre-sized list avoids mid-frame resizing when the active cell count is typical.
         activeCellsList = new List<Vector2Int>(gridWidth * gridHeight / 4);
 
+        // Bake the depth-to-color gradient once at startup. Recalculating per pixel per frame
+        // would be wasteful since the color ramp never changes at runtime.
         depthColorCache = new Color[DEPTH_CACHE_SIZE];
         for (int i = 0; i < DEPTH_CACHE_SIZE; i++)
         {
@@ -177,6 +203,7 @@ public class CellularLiquidSimulation : MonoBehaviour
         waterDepth = new int[gridWidth, gridHeight];
         isSurfaceCell = new bool[gridWidth, gridHeight];
 
+        // Build the initial solid map from whatever physics colliders are already in the scene.
         UpdateSolidCells();
 
         Debug.Log($"Liquid simulation initialized: {gridWidth}x{gridHeight} cells ({gridWidth * gridHeight} total)");
@@ -184,10 +211,13 @@ public class CellularLiquidSimulation : MonoBehaviour
 
     void InitializeRendering()
     {
+        // Point filtering keeps pixel edges sharp; bilinear would blur the blocky water look.
         waterTexture = new Texture2D(gridWidth, gridHeight, TextureFormat.RGBA32, false);
         waterTexture.filterMode = FilterMode.Point;
         waterTexture.wrapMode = TextureWrapMode.Clamp;
 
+        // Pivot at (0,0) so the sprite's bottom-left corner aligns with gridOrigin,
+        // making WorldToGrid / GridToWorld math straightforward.
         Sprite waterSprite = Sprite.Create(
             waterTexture,
             new Rect(0, 0, gridWidth, gridHeight),
@@ -201,6 +231,8 @@ public class CellularLiquidSimulation : MonoBehaviour
 
         waterRenderer = waterVisualObject.AddComponent<SpriteRenderer>();
         waterRenderer.sprite = waterSprite;
+
+        // Sorting order 5 places water above most background elements but below UI or foreground objects.
         waterRenderer.sortingOrder = 5;
 
         if (waterRenderer.sprite != null && waterRenderer.sprite.texture != null)
@@ -220,6 +252,8 @@ public class CellularLiquidSimulation : MonoBehaviour
     {
         if (!enableSimulation) return;
 
+        // Re-scan physics colliders periodically so walls or platforms that move
+        // at runtime are reflected in the solid grid without doing it every frame.
         if (dynamicSolidUpdate)
         {
             solidUpdateTimer += Time.deltaTime;
@@ -229,7 +263,9 @@ public class CellularLiquidSimulation : MonoBehaviour
                 UpdateSolidCells();
             }
         }
+
         splashSoundCooldown -= Time.deltaTime;
+
         if (enableDisplacement)
         {
             displacementUpdateTimer += Time.deltaTime;
@@ -239,6 +275,8 @@ public class CellularLiquidSimulation : MonoBehaviour
                 UpdateDisplacement();
             }
 
+            // Refresh the rigidbody cache on a slow interval so newly spawned or destroyed
+            // objects are picked up without scanning the scene every displacement tick.
             if (useCachedDisplacementRigidbodies && displacementCacheRefreshInterval > 0f)
             {
                 displacementCacheRefreshTimer += Time.deltaTime;
@@ -250,8 +288,13 @@ public class CellularLiquidSimulation : MonoBehaviour
             }
         }
 
+        // Clear the dirty rect before simulation so any cells touched this frame
+        // are correctly captured for the texture upload below.
         ResetDirtyRect();
 
+        // Running multiple steps per frame lets the simulation converge faster
+        // (e.g. water reaches the bottom of a tall column in fewer real-time frames)
+        // without increasing the fixed-timestep cost.
         for (int i = 0; i < simulationStepsPerFrame; i++)
         {
             SimulationStep();
@@ -262,6 +305,8 @@ public class CellularLiquidSimulation : MonoBehaviour
             CalculateWaterDepthAndSurface();
         }
 
+        // Frame-skip batching lets us defer texture uploads on less busy frames,
+        // reducing GPU bandwidth without visibly affecting smoothness at typical rates.
         textureUpdateFrameCounter++;
         bool shouldUpdateTexture = textureUpdateFrameCounter > textureUpdateFrameSkip;
 
@@ -274,6 +319,9 @@ public class CellularLiquidSimulation : MonoBehaviour
                 UpdateWaterTextureOptimized();
             }
         }
+
+        // Fade ambient flow sound in and out based on how many cells are actively moving,
+        // so the audio reflects the intensity of the water without hard cuts.
         float targetVolume = 0f;
         if (activeCells.Count > flowSoundThreshold)
             targetVolume = Mathf.Clamp01((activeCells.Count - flowSoundThreshold) / flowSoundMaxCells);
@@ -283,10 +331,14 @@ public class CellularLiquidSimulation : MonoBehaviour
 
     void SimulationStep()
     {
+        // Copy current water into newWater so all reads during this step see a consistent
+        // snapshot and writes don't immediately affect neighbouring cell calculations.
         System.Array.Copy(water, newWater, water.Length);
 
         HashSet<Vector2Int> nextActiveCells = new HashSet<Vector2Int>();
 
+        // Safety net: if the active set is empty (e.g. on first frame), scan the whole
+        // grid once to find any water that was placed before the simulation started.
         if (activeCells.Count == 0)
         {
             FindAllWaterCells();
@@ -308,6 +360,7 @@ public class CellularLiquidSimulation : MonoBehaviour
             float currentWater = water[x, y];
             if (currentWater < minWaterTransfer) continue;
 
+            // Keep this cell active next step so it keeps flowing if it still has water.
             nextActiveCells.Add(cell);
 
             float pressure = 0f;
@@ -316,8 +369,11 @@ public class CellularLiquidSimulation : MonoBehaviour
                 pressure = CalculatePressure(x, y);
             }
 
+            // Cells under pressure can hold more than maxWaterPerCell, simulating
+            // the compression at the base of a deep column of water.
             float effectiveMaxWater = maxWaterPerCell + (pressure * maxCompression);
 
+            // --- Gravity: flow downward first, as it's the highest-priority direction ---
             if (y > 0 && !solid[x, y - 1])
             {
                 float below = water[x, y - 1];
@@ -342,12 +398,16 @@ public class CellularLiquidSimulation : MonoBehaviour
                 }
             }
 
+            // --- Diagonal flow: lets water "slide" around corners when the cell directly
+            //     below is blocked, preventing unrealistic stacking at ledge edges ---
             if (enableDiagonalFlow && currentWater > minWaterTransfer && y > 0)
             {
                 bool blockedBelow = solid[x, y - 1] || water[x, y - 1] >= maxWaterPerCell * 0.95f;
 
                 if (blockedBelow)
                 {
+                    // Both the diagonal target and the same-row neighbour must be clear
+                    // so water doesn't clip through thin walls.
                     bool canFlowDiagLeft = x > 0 && !solid[x - 1, y - 1] && !solid[x - 1, y];
                     bool canFlowDiagRight = x < gridWidth - 1 && !solid[x + 1, y - 1] && !solid[x + 1, y];
 
@@ -416,6 +476,7 @@ public class CellularLiquidSimulation : MonoBehaviour
                 }
             }
 
+            // --- Horizontal spread: equalise water levels with left/right neighbours ---
             if (currentWater > minWaterTransfer)
             {
                 bool canSpreadLeft = x > 0 && !solid[x - 1, y];
@@ -426,6 +487,8 @@ public class CellularLiquidSimulation : MonoBehaviour
                     float leftWater = canSpreadLeft ? water[x - 1, y] : maxWaterPerCell;
                     float rightWater = canSpreadRight ? water[x + 1, y] : maxWaterPerCell;
 
+                    // Only flow toward a neighbour that has less water — this naturally
+                    // produces a flat water surface over time.
                     if (canSpreadLeft && leftWater < currentWater)
                     {
                         float flow = (currentWater - leftWater) * waterSpreadRate * 0.5f;
@@ -464,6 +527,9 @@ public class CellularLiquidSimulation : MonoBehaviour
                 }
             }
 
+            // --- Upward pressure: simulate incompressible fluid rising inside enclosed spaces ---
+            // Water only pushes upward when the pressure differential is significant enough
+            // to overcome gravity, avoiding spurious upward movement in open areas.
             if (enablePressure && pressure > 0.2f && currentWater > minWaterTransfer)
             {
                 if (y < gridHeight - 1 && !solid[x, y + 1])
@@ -491,6 +557,7 @@ public class CellularLiquidSimulation : MonoBehaviour
             }
         }
 
+        // Swap buffers — newWater becomes the authoritative state for the next step.
         float[,] temp = water;
         water = newWater;
         newWater = temp;
@@ -498,6 +565,8 @@ public class CellularLiquidSimulation : MonoBehaviour
         activeCells = nextActiveCells;
     }
 
+    // Approximates hydrostatic pressure by summing the water in the column directly above.
+    // Capped at 15 cells to keep the check O(1) in practice and avoid full-column scans.
     float CalculatePressure(int x, int y)
     {
         float pressure = 0f;
@@ -518,11 +587,14 @@ public class CellularLiquidSimulation : MonoBehaviour
         return pressure;
     }
 
+    // Computes per-cell depth (distance from the water's top surface) and flags surface-exposed
+    // cells. Both are used exclusively for rendering — they have no effect on the simulation.
     void CalculateWaterDepthAndSurface()
     {
         System.Array.Clear(waterDepth, 0, waterDepth.Length);
         System.Array.Clear(isSurfaceCell, 0, isSurfaceCell.Length);
 
+        // First pass: assign depth by scanning downward from the top of each column.
         for (int x = 0; x < gridWidth; x++)
         {
             int currentDepth = 0;
@@ -542,6 +614,7 @@ public class CellularLiquidSimulation : MonoBehaviour
 
                 if (hasWater)
                 {
+                    // The first water cell encountered from the top is the surface.
                     if (!inWater)
                     {
                         isSurfaceCell[x, y] = true;
@@ -563,6 +636,8 @@ public class CellularLiquidSimulation : MonoBehaviour
             }
         }
 
+        // Second pass: also mark side-exposed cells as surface so that edge highlights
+        // appear on vertical water faces, not just the top.
         for (int x = 0; x < gridWidth; x++)
         {
             for (int y = 0; y < gridHeight; y++)
@@ -584,6 +659,9 @@ public class CellularLiquidSimulation : MonoBehaviour
         }
     }
 
+    // Full grid scan to rebuild the active set from scratch.
+    // Normally the active set is maintained incrementally; this is only needed when
+    // water is placed externally and the set hasn't been seeded yet.
     void FindAllWaterCells()
     {
         activeCells.Clear();
@@ -608,6 +686,9 @@ public class CellularLiquidSimulation : MonoBehaviour
         hasVisualChanges = false;
     }
 
+    // Expands the dirty rect to include cell (x, y) plus a small padding border.
+    // Padding prevents visual seams at the dirty region boundary caused by blending
+    // with cells just outside the updated area.
     void MarkCellDirty(int x, int y)
     {
         if (!useDirtyRectOptimization) return;
@@ -634,11 +715,15 @@ public class CellularLiquidSimulation : MonoBehaviour
 
         if (useDirtyRectOptimization && hasVisualChanges)
         {
+            // Upload only the pixels inside the dirty rect rather than the full texture,
+            // which is the primary performance win for large grids with localised activity.
             int width = (dirtyMaxX - dirtyMinX) + 1;
             int height = (dirtyMaxY - dirtyMinY) + 1;
 
             if (width <= 0 || height <= 0) return;
 
+            // Reuse the pooled buffer when it's large enough; fall back to a fresh allocation
+            // for unusually large dirty rects so we never write out of bounds.
             Color[] pixels;
             if (usePixelArrayPool && width * height <= pixelArrayPool.Length)
             {
@@ -656,6 +741,7 @@ public class CellularLiquidSimulation : MonoBehaviour
                 {
                     if (solid[x, y])
                     {
+                        // Solid cells are always transparent — the terrain sprite beneath shows through.
                         pixels[index] = Color.clear;
                     }
                     else
@@ -679,6 +765,7 @@ public class CellularLiquidSimulation : MonoBehaviour
         }
         else if (!useDirtyRectOptimization)
         {
+            // Full-texture fallback when dirty rects are disabled (e.g. for debugging).
             Color[] pixels = usePixelArrayPool ? pixelArrayPool : new Color[gridWidth * gridHeight];
 
             int index = 0;
@@ -710,6 +797,7 @@ public class CellularLiquidSimulation : MonoBehaviour
             waterTexture.Apply(false);
         }
 
+        // Enforce point filtering after every Apply to guard against Unity resetting it.
         waterTexture.filterMode = FilterMode.Point;
     }
 
@@ -721,6 +809,8 @@ public class CellularLiquidSimulation : MonoBehaviour
         {
             int depth = waterDepth[x, y];
 
+            // Index into the pre-baked cache rather than calling Lerp. Deep cells beyond
+            // the cache size are simply rendered at the darkest shade.
             if (depth < DEPTH_CACHE_SIZE)
             {
                 baseColor = depthColorCache[depth];
@@ -737,6 +827,8 @@ public class CellularLiquidSimulation : MonoBehaviour
 
         if (enableSurfaceHighlight && isSurfaceCell[x, y])
         {
+            // The top surface gets a stronger highlight than side-facing edges, simulating
+            // light reflecting off the water plane more directly.
             bool isTopSurface = (y >= gridHeight - 1) ||
                                (water[x, y + 1] <= minWaterTransfer && !solid[x, y + 1]);
 
@@ -750,6 +842,8 @@ public class CellularLiquidSimulation : MonoBehaviour
             }
         }
 
+        // Cells with very little water fade toward transparent so the transition from
+        // "wet" to "dry" looks natural rather than cutting off abruptly.
         float alphaRatio = Mathf.Clamp01(amount / maxWaterPerCell);
         float minAlpha = 0.2f;
         float alpha = Mathf.Lerp(minAlpha, 1f, alphaRatio) * baseColor.a;
@@ -770,6 +864,8 @@ public class CellularLiquidSimulation : MonoBehaviour
                 Collider2D hit = Physics2D.OverlapCircle(worldPos, physicsCheckRadius, solidLayer);
                 solid[x, y] = (hit != null);
 
+                // When a cell transitions from solid to open (e.g. a door opens),
+                // reactivate any water that was frozen inside it so it can flow out.
                 if (oldSolid[x, y] && !solid[x, y])
                 {
                     if (water[x, y] > 0f)
@@ -787,6 +883,9 @@ public class CellularLiquidSimulation : MonoBehaviour
         }
     }
 
+    // Utility to purge sub-threshold water that can permanently stall the simulation.
+    // Cells with water below minWaterTransfer are skipped each step but never fully
+    // zeroed, so they accumulate and inflate the active cell count over time.
     [ContextMenu("Clean Up Stuck Water")]
     public void CleanUpStuckWater()
     {
@@ -822,6 +921,8 @@ public class CellularLiquidSimulation : MonoBehaviour
             MarkCellDirty(gridPos.x, gridPos.y);
         }
 
+        // Choose drip vs. splash sound based on the amount being spawned,
+        // and throttle calls so rapid spawning doesn't spam the sound system.
         spawnSoundCooldown -= Time.deltaTime;
         if (spawnSoundCooldown <= 0f)
         {
@@ -834,6 +935,8 @@ public class CellularLiquidSimulation : MonoBehaviour
         }
     }
 
+    // Distributes a total water volume evenly across all non-solid cells inside a polygon.
+    // Useful for flooding a room or pre-filling an irregular container from a designer-defined region.
     public void SpawnWaterInRegion(List<Vector2> worldVertices, float totalAmount)
     {
         if (worldVertices == null || worldVertices.Count < 3) return;
@@ -852,6 +955,8 @@ public class CellularLiquidSimulation : MonoBehaviour
         Vector2Int gridMax = WorldToGrid(max);
         int validCells = 0;
 
+        // Count valid cells first so we can divide the total evenly without
+        // iterating the region twice or allocating a list.
         for (int x = gridMin.x; x <= gridMax.x; x++)
         {
             for (int y = gridMin.y; y <= gridMax.y; y++)
@@ -907,6 +1012,7 @@ public class CellularLiquidSimulation : MonoBehaviour
         System.Array.Clear(settled, 0, settled.Length);
         activeCells.Clear();
 
+        // Mark the entire grid dirty so the cleared state is fully uploaded this frame.
         dirtyMinX = 0;
         dirtyMinY = 0;
         dirtyMaxX = gridWidth - 1;
@@ -916,6 +1022,8 @@ public class CellularLiquidSimulation : MonoBehaviour
         UpdateWaterTextureOptimized();
     }
 
+    // Standard ray-casting point-in-polygon test. Works for any convex or concave polygon
+    // as long as it has no self-intersections.
     bool IsPointInPolygon(Vector2 point, List<Vector2> polygon)
     {
         bool inside = false;
@@ -974,8 +1082,10 @@ public class CellularLiquidSimulation : MonoBehaviour
             MarkCellDirty(x, y);
         }
     }
+
     public float CellSize => cellSize;
     public Vector2 GridOrigin => gridOrigin;
+
     public Vector2Int WorldToGrid(Vector2 worldPos)
     {
         Vector2 localPos = worldPos - gridOrigin;
@@ -984,6 +1094,8 @@ public class CellularLiquidSimulation : MonoBehaviour
         return new Vector2Int(x, y);
     }
 
+    // Returns the world-space centre of a cell, which is what physics queries and
+    // collision checks should target rather than the cell's corner.
     public Vector2 GridToWorld(int x, int y)
     {
         return gridOrigin + new Vector2((x + 0.5f) * cellSize, (y + 0.5f) * cellSize);
@@ -1002,11 +1114,17 @@ public class CellularLiquidSimulation : MonoBehaviour
     void OnDrawGizmos()
     {
         if (!Application.isPlaying) return;
+
+        // Show the simulation boundary in the Scene view so designers can see
+        // exactly where the liquid grid starts and ends.
         Gizmos.color = Color.cyan;
         Vector2 gridSize = new Vector2(gridWidth * cellSize, gridHeight * cellSize);
         Gizmos.DrawWireCube(gridOrigin + gridSize * 0.5f, gridSize);
     }
 
+    // Scans the scene for all eligible rigidbodies once and caches the result.
+    // This avoids calling FindObjectsOfType every displacement tick, which is expensive
+    // when many objects are in the scene.
     void RefreshDisplacementCache()
     {
         cachedDisplacementRigidbodies.Clear();
@@ -1026,6 +1144,8 @@ public class CellularLiquidSimulation : MonoBehaviour
         Debug.Log($"Displacement rigidbody cache refreshed: {cachedDisplacementRigidbodies.Count} tracked");
     }
 
+    // Allows external code (e.g. an object spawn system) to add a rigidbody to the cache
+    // immediately, so it causes displacement without waiting for the next cache refresh.
     public void RegisterDisplacementRigidbody(Rigidbody2D rb)
     {
         if (!useCachedDisplacementRigidbodies) return;
@@ -1038,6 +1158,8 @@ public class CellularLiquidSimulation : MonoBehaviour
         }
     }
 
+    // Removes a destroyed or pooled object from both caches so it doesn't cause
+    // null-reference errors during the next displacement update.
     public void UnregisterDisplacementRigidbody(Rigidbody2D rb)
     {
         if (!useCachedDisplacementRigidbodies) return;
@@ -1054,6 +1176,7 @@ public class CellularLiquidSimulation : MonoBehaviour
 
         if (useCachedDisplacementRigidbodies)
         {
+            // Prune stale entries first so destroyed objects don't cause null checks throughout.
             cachedDisplacementRigidbodies.RemoveWhere(rb => rb == null);
             rigidbodiestoCheck = cachedDisplacementRigidbodies;
         }
@@ -1076,6 +1199,7 @@ public class CellularLiquidSimulation : MonoBehaviour
             Vector2 velocity = rb.linearVelocity;
             float speed = velocity.magnitude;
 
+            // Skip objects that are barely moving — they shouldn't disturb the water surface.
             if (speed < minDisplacementVelocity) continue;
 
             Vector2 previousPos = currentPos;
@@ -1088,6 +1212,8 @@ public class CellularLiquidSimulation : MonoBehaviour
             currentRigidbodies[rb] = currentPos;
         }
 
+        // Replace the tracked dict entirely so positions of objects that left the water
+        // are not carried over to the next tick.
         trackedRigidbodies = currentRigidbodies;
     }
 
@@ -1098,6 +1224,9 @@ public class CellularLiquidSimulation : MonoBehaviour
 
         Bounds bounds = col.bounds;
         float objectArea = bounds.size.x * bounds.size.y;
+
+        // Scale displacement by the object's cross-sectional area so large objects
+        // push more water than small ones, which feels physically intuitive.
         float baseDisplacement = objectArea * displacementStrength;
 
         float velocityMultiplier = 1f + (speed / 10f) * pushForce;
@@ -1109,6 +1238,8 @@ public class CellularLiquidSimulation : MonoBehaviour
         Vector2 min = bounds.min;
         Vector2 max = bounds.max;
 
+        // Sample a grid of points inside the collider bounds rather than checking every
+        // water cell, so the cost scales with object size rather than grid size.
         int samplesX = Mathf.Max(3, Mathf.CeilToInt(bounds.size.x / (cellSize * 1.5f)));
         int samplesY = Mathf.Max(3, Mathf.CeilToInt(bounds.size.y / (cellSize * 1.5f)));
 
@@ -1124,6 +1255,8 @@ public class CellularLiquidSimulation : MonoBehaviour
                     Mathf.Lerp(min.y, max.y, tY)
                 );
 
+                // Use OverlapPoint rather than a bounds check so non-rectangular
+                // colliders (circles, polygons) displace accurately.
                 if (col.OverlapPoint(samplePoint))
                 {
                     Vector2Int gridPos = WorldToGrid(samplePoint);
@@ -1149,6 +1282,8 @@ public class CellularLiquidSimulation : MonoBehaviour
         float waterPerCell = totalWaterInCells / overlappingCells.Count;
         float waterToDisplace = 0f;
 
+        // Remove water from cells the object occupies; the displaced volume will be
+        // redistributed outward to simulate the object pushing water aside.
         foreach (Vector2Int cell in overlappingCells)
         {
             float waterToRemove = Mathf.Min(waterPerCell * 0.85f, water[cell.x, cell.y]);
@@ -1167,6 +1302,8 @@ public class CellularLiquidSimulation : MonoBehaviour
         {
             PushWaterAround(overlappingCells, waterToDisplace, velocity);
 
+            // Only play the splash when the impact is significant and enough time has passed,
+            // to avoid sound spam from objects that move continuously through water.
             float splashVolume = Mathf.Clamp01(speed / 10f);
             if (splashVolume > 0.1f && splashSoundCooldown <= 0f)
             {
@@ -1178,12 +1315,15 @@ public class CellularLiquidSimulation : MonoBehaviour
         return true;
     }
 
+    // Redistributes displaced water into a fan of cells above and in the direction of motion.
+    // This creates the characteristic "bow wave" effect when an object moves through water.
     void PushWaterAround(List<Vector2Int> sourceCells, float waterAmount, Vector2 velocity)
     {
         HashSet<Vector2Int> targetCells = new HashSet<Vector2Int>();
 
         foreach (Vector2Int sourceCell in sourceCells)
         {
+            // Always push some water upward — gravity will settle it back naturally.
             for (int dy = 1; dy <= 5; dy++)
             {
                 Vector2Int above = new Vector2Int(sourceCell.x, sourceCell.y + dy);
@@ -1196,6 +1336,7 @@ public class CellularLiquidSimulation : MonoBehaviour
             int sidewaysDir = velocity.x > 0.1f ? 1 : (velocity.x < -0.1f ? -1 : 0);
             if (sidewaysDir != 0)
             {
+                // Push water forward in the direction of travel to simulate a bow wave.
                 for (int dx = 0; dx <= 3; dx++)
                 {
                     for (int dy = 0; dy <= 2; dy++)
@@ -1208,6 +1349,7 @@ public class CellularLiquidSimulation : MonoBehaviour
                     }
                 }
 
+                // Include a small wake behind the object to fill the cavity it leaves.
                 for (int dx = 0; dx <= 2; dx++)
                 {
                     Vector2Int opposite = new Vector2Int(sourceCell.x - sidewaysDir * dx, sourceCell.y);

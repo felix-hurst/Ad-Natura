@@ -5,7 +5,7 @@ public class WaterBall : MonoBehaviour
 {
     [Header("Visual Settings")]
     [SerializeField] private float ballRadius = 0.3f;
-    [SerializeField] private Color ballColor = new Color(0.3f, 0.6f, 1f, 0.9f); // Light blue water color
+    [SerializeField] private Color ballColor = new Color(0.3f, 0.6f, 1f, 0.9f);
 
     [Header("Lifetime")]
     [SerializeField] private float maxLifetime = 10f;
@@ -25,6 +25,7 @@ public class WaterBall : MonoBehaviour
     [SerializeField] private bool scaleWithVelocity = true;
     [Tooltip("Maximum velocity for splash scaling")]
     [SerializeField] private float maxVelocityForSplash = 15f;
+
     [Header("Water Trail Settings")]
     [Tooltip("Enable water trail while ball is in flight")]
     [SerializeField] private bool enableWaterTrail = true;
@@ -62,6 +63,9 @@ public class WaterBall : MonoBehaviour
     [SerializeField] private float impactDuration = 0.3f;
 
     private float lifetime = 0f;
+
+    // Guards against OnCollisionEnter2D firing the impact sequence more than
+    // once if multiple contacts are resolved in the same physics frame.
     private bool hasImpacted = false;
     private CellularLiquidSimulation liquidSimulation;
     private WaterSplashSystem splashSystem;
@@ -91,6 +95,9 @@ public class WaterBall : MonoBehaviour
         {
             Debug.LogWarning("WaterBall: No WaterSplashSystem found in scene! Splash effects will not work. Add WaterSplashSystem component to the same GameObject as CellularLiquidSimulation.");
         }
+
+        // Random offset staggers trail timing between multiple balls fired in
+        // quick succession so their trails don't pulse in perfect sync.
         trailTimer = Random.Range(0f, trailSpawnInterval * 0.5f);
     }
 
@@ -110,6 +117,8 @@ public class WaterBall : MonoBehaviour
 
             float currentVelocity = rb.linearVelocity.magnitude;
 
+            // Only leave a trail when the ball is moving fast enough — a very slow
+            // or stationary ball would create a water puddle in mid-air, which looks wrong.
             if (currentVelocity >= minTrailVelocity && trailTimer >= trailSpawnInterval)
             {
                 trailTimer = 0f;
@@ -125,6 +134,8 @@ public class WaterBall : MonoBehaviour
         float actualTrailAmount = trailWaterAmount;
         if (scaleTrailWithVelocity)
         {
+            // Faster balls leave more water per trail tick, so a hard throw
+            // produces a heavier wet arc through the air than a gentle lob.
             float velocityRatio = Mathf.Clamp01(velocity / maxTrailVelocity);
             actualTrailAmount *= Mathf.Lerp(0.3f, 1f, velocityRatio);
         }
@@ -132,11 +143,15 @@ public class WaterBall : MonoBehaviour
         Vector2 ballVelocity = rb.linearVelocity;
         Vector2 velocityDirection = ballVelocity.normalized;
 
+        // Offset the spawn point behind the ball so the water appears to trail
+        // from the back rather than spawning at the leading edge.
         Vector2 trailOffset = -velocityDirection * trailBehindDistance;
         Vector2 spawnPosition = currentPosition + trailOffset;
 
         Vector2Int centerCell = liquidSimulation.WorldToGrid(spawnPosition);
 
+        // Small random lateral shift prevents the trail from being a perfectly
+        // straight line of cells, which would look artificial.
         int randomOffset = Random.Range(-1, 2);
         centerCell.x += randomOffset;
 
@@ -144,10 +159,11 @@ public class WaterBall : MonoBehaviour
         {
             for (int y = -trailSpawnRadius; y <= trailSpawnRadius; y++)
             {
-
                 if (Mathf.Sqrt(x * x + y * y) <= trailSpawnRadius)
                 {
-
+                    // Shift the cell offsets opposite to the travel direction so
+                    // the trail smears along the path rather than being a circle
+                    // centred exactly on the ball position.
                     float offsetX = x - velocityDirection.x * trajectorySpreadFactor;
                     float offsetY = y - velocityDirection.y * trajectorySpreadFactor;
 
@@ -156,8 +172,11 @@ public class WaterBall : MonoBehaviour
 
                     if (liquidSimulation.IsValidCell(cellX, cellY))
                     {
+                        // Divide the total trail amount across the cells in the spawn
+                        // radius so the total water added per tick is consistent.
                         float waterPerCell = actualTrailAmount / (trailSpawnRadius * trailSpawnRadius * 3.14f);
 
+                        // Per-cell random variation breaks up the uniform fill pattern.
                         waterPerCell *= Random.Range(0.5f, 1f);
 
                         float currentWater = liquidSimulation.GetWater(cellX, cellY);
@@ -167,11 +186,11 @@ public class WaterBall : MonoBehaviour
             }
         }
 
-        // Create small splash effect for trail particles
+        // Micro-splashes along the trail reinforce the sense that the ball is
+        // shedding water in flight rather than leaving a silent static trail.
         if (enableTrailSplashes && splashSystem != null)
         {
-            // Use ball's velocity for splash direction
-            Vector2 splashVelocity = rb.linearVelocity * 0.5f; // Reduce for trail effect
+            Vector2 splashVelocity = rb.linearVelocity * 0.5f;
             splashSystem.TriggerSplash(spawnPosition, trailSplashIntensity, splashVelocity);
         }
     }
@@ -217,7 +236,10 @@ public class WaterBall : MonoBehaviour
                 float distance = Vector2.Distance(new Vector2(x, y), center);
                 if (distance <= radius)
                 {
-                    float alpha = 1f - (distance / radius) * 0.3f; // Slight fade at edges
+                    // Gentle edge fade makes the ball look slightly translucent
+                    // at its rim, which suits the watery aesthetic better than
+                    // a hard opaque cutoff.
+                    float alpha = 1f - (distance / radius) * 0.3f;
                     pixels[y * size + x] = new Color(1f, 1f, 1f, alpha);
                 }
                 else
@@ -272,11 +294,15 @@ public class WaterBall : MonoBehaviour
 
         if (useRegionSpawn)
         {
+            // Region spawn distributes water over a polygon area, which respects
+            // the simulation's solid cells and won't fill cells inside walls.
             List<Vector2> spawnRegion = CreateImpactRegion(impactPoint, regionSpawnSize);
             liquidSimulation.SpawnWaterInRegion(spawnRegion, waterAmountToSpawn);
         }
         else
         {
+            // Cell-by-cell fallback for simple scenarios where region-aware
+            // spawning isn't needed.
             Vector2Int centerCell = liquidSimulation.WorldToGrid(impactPoint);
 
             for (int x = -waterSpawnRadius; x <= waterSpawnRadius; x++)
@@ -308,6 +334,8 @@ public class WaterBall : MonoBehaviour
 
         if (scaleWithVelocity)
         {
+            // A high-speed impact should produce a dramatic spray; a slow
+            // rolling contact should produce a gentle ripple.
             float velocityMagnitude = velocity.magnitude;
             float velocityIntensity = Mathf.Clamp01(velocityMagnitude / maxVelocityForSplash);
             intensity *= velocityIntensity;
@@ -322,6 +350,8 @@ public class WaterBall : MonoBehaviour
         }
     }
 
+    // Builds a circular polygon to use as the region boundary for SpawnWaterInRegion.
+    // A circle is the natural impact shape for a sphere hitting a flat surface.
     List<Vector2> CreateImpactRegion(Vector2 center, float size)
     {
         List<Vector2> region = new List<Vector2>();
@@ -340,6 +370,9 @@ public class WaterBall : MonoBehaviour
         return region;
     }
 
+    // Brief ring drawn at the impact point gives immediate visual confirmation
+    // that the collision was registered, useful when the water simulation takes
+    // a frame or two to visibly fill the area.
     void ShowImpactEffect(Vector2 impactPoint)
     {
         GameObject impactVis = new GameObject("WaterBallImpact");
@@ -359,6 +392,8 @@ public class WaterBall : MonoBehaviour
         int segments = 12;
         lineRenderer.positionCount = segments;
 
+        // Ring radius matches regionSpawnSize so the visual outline corresponds
+        // to exactly where water will be placed.
         for (int i = 0; i < segments; i++)
         {
             float angle = (i / (float)segments) * 360f * Mathf.Deg2Rad;
@@ -387,6 +422,8 @@ public class WaterBall : MonoBehaviour
             }
         }
 
+        // Name-based fallback handles dynamically spawned pieces that may not
+        // have been tagged at the time they were created.
         if (obj.name.Contains("Debris") || obj.name.Contains("Fragment"))
         {
             return true;
@@ -394,6 +431,4 @@ public class WaterBall : MonoBehaviour
 
         return false;
     }
-
-
 }

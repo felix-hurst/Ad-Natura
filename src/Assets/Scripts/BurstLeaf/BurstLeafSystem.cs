@@ -10,6 +10,8 @@ using UnityEngine.Rendering;
 
 public class BurstLeafSystem : MonoBehaviour
 {
+    // Static list allows external systems (e.g. weapons, wind events) to broadcast
+    // force effects to every active leaf system without needing direct references.
     private static List<BurstLeafSystem> allInstances = new List<BurstLeafSystem>();
 
     public static BurstLeafSystem Instance => allInstances.Count > 0 ? allInstances[0] : null;
@@ -65,9 +67,8 @@ public class BurstLeafSystem : MonoBehaviour
         [Range(0.5f, 8f)]
         public float flutterSpeed = 3f;
 
-
-
-
+        // Guarantees every particle type has a valid gradient at runtime, since
+        // Unity does not serialize null Gradient fields reliably across all workflows.
         public void EnsureGradient()
         {
             if (colorGradient == null)
@@ -89,6 +90,9 @@ public class BurstLeafSystem : MonoBehaviour
         }
     }
 
+    // Kills leaves that have been inside a SlimeMold's light zone long enough.
+    // This is intentionally decoupled from the physics job so environmental kill
+    // logic can reference managed types (Texture2D) that Burst cannot access.
     private void ProcessEnvironmentalDeath()
     {
         foreach (var manager in SlimeMoldManager.AllInstances)
@@ -102,7 +106,7 @@ public class BurstLeafSystem : MonoBehaviour
                 float u = (pos.x - bounds.x) / bounds.width;
                 float v = (pos.y - bounds.y) / bounds.height;
 
-                //Boundary check
+                // Leaves outside this manager's bounds can't be affected by it.
                 if (u < 0f || u > 1f || v < 0f || v > 1f) continue;
 
                 float lightLevel = lightTex.GetPixelBilinear(u, v).r;
@@ -112,7 +116,9 @@ public class BurstLeafSystem : MonoBehaviour
                     Debug.Log($"[Spore] Inside Killzone! Intensity: {lightLevel}");
                 */
 
-                //Guaranteed kill if light is present
+                // Force-expire the leaf by setting its age to its lifetime cap.
+                // This lets the normal fade-out path handle the visual transition
+                // rather than popping the leaf out of existence instantly.
                 if (lightLevel > 0.8f)
                 {
                     leafAge[i] = leafMaxLifetime[i];
@@ -158,8 +164,6 @@ public class BurstLeafSystem : MonoBehaviour
     [Range(0.5f, 8f)]
     [SerializeField] private float flutterSpeed = 3f;
 
-
-
     [Header("Collision")]
     [SerializeField] private bool enableCollision = true;
     [SerializeField] private LayerMask collisionLayers = ~0;
@@ -196,6 +200,8 @@ public class BurstLeafSystem : MonoBehaviour
     [Header("Environmental Hazards")]
     [SerializeField] private SlimeMoldManager slimeEnvironment;
 
+    // All per-leaf data lives in NativeArrays so the Burst physics job can read and
+    // write them without managed-heap overhead or GC pressure each frame.
     private NativeArray<float3> positions;
     private NativeArray<float3> velocities;
     private NativeArray<quaternion> rotations;
@@ -204,26 +210,46 @@ public class BurstLeafSystem : MonoBehaviour
     private NativeArray<float4> colors;
     private NativeArray<bool> isAsleep;
     private NativeArray<float3> windForces;
+
+    // Previous frame's wind is stored so we can compute wind delta and apply
+    // extra lift when a sudden gust hits a grounded leaf.
     private NativeArray<float3> prevWindForces;
     private NativeArray<float> groundedTime;
+
+    // Per-leaf multiplier so smaller (lighter) leaves are more easily lifted off the ground.
     private NativeArray<float> groundedLiftFactor;
+
     private NativeArray<float> contactTime;
     private NativeArray<int> contactCount;
+
+    // Sticky leaves are permanently locked to the ground once they land,
+    // simulating wet or heavy leaves that won't blow away again.
     private NativeArray<bool> isSticky;
     private NativeArray<bool> isPermanentlySleeping;
+
     private NativeArray<float> leafAge;
     private NativeArray<float> leafMaxLifetime;
     private NativeArray<float> fadeProgress;
+
+    // Original alpha is captured at the moment fading begins so we lerp from
+    // the correct starting opacity rather than always fading from fully opaque.
     private NativeArray<float> originalAlpha;
+
+    // Per-leaf physics properties allow each particle type to behave differently
+    // without branching on type index inside the Burst job.
     private NativeArray<float> leafMass;
     private NativeArray<float> leafDrag;
     private NativeArray<int> leafTypeIndex;
     private NativeArray<float> leafAirResistance;
     private NativeArray<float> leafFlutter;
     private NativeArray<float> leafFlutterSpeed;
+
+    // Random phase offset so leaves that spawn at the same time don't all
+    // flutter in sync, which would look artificial.
     private NativeArray<float> leafFlutterOffset;
 
-
+    // Matrices and color blocks are split into fixed-size batches because
+    // Graphics.DrawMeshInstanced has a hard limit of 1023 instances per call.
     private Matrix4x4[][] batchMatrices;
     private MaterialPropertyBlock[] propertyBlocks;
     private Vector4[][] batchColors;
@@ -231,6 +257,8 @@ public class BurstLeafSystem : MonoBehaviour
 
     private float spawnTimer = 0f;
     private float totalSpawnWeight = 0f;
+
+    // Cached flag avoids repeated null/length checks inside hot paths.
     private bool useParticleTypes = false;
 
     public int ParticleTypeCount => useParticleTypes ? particleTypes.Length : 0;
@@ -241,7 +269,6 @@ public class BurstLeafSystem : MonoBehaviour
             return particleTypes[index].name;
         return "Global";
     }
-
 
     public int ActiveLeafCount => activeLeafCount;
 
@@ -275,6 +302,8 @@ public class BurstLeafSystem : MonoBehaviour
             Debug.LogWarning($"[BurstLeaf] Size range seems large! For small leaves, use values like 0.03-0.08. Current: {sizeRange}");
         }
 
+        // All arrays are allocated at max capacity upfront to avoid runtime
+        // reallocation, which would require disposing and recreating NativeArrays.
         positions = new NativeArray<float3>(maxLeaves, Allocator.Persistent);
         velocities = new NativeArray<float3>(maxLeaves, Allocator.Persistent);
         rotations = new NativeArray<quaternion>(maxLeaves, Allocator.Persistent);
@@ -286,13 +315,10 @@ public class BurstLeafSystem : MonoBehaviour
         prevWindForces = new NativeArray<float3>(maxLeaves, Allocator.Persistent);
         groundedTime = new NativeArray<float>(maxLeaves, Allocator.Persistent);
         groundedLiftFactor = new NativeArray<float>(maxLeaves, Allocator.Persistent);
-
         contactTime = new NativeArray<float>(maxLeaves, Allocator.Persistent);
         contactCount = new NativeArray<int>(maxLeaves, Allocator.Persistent);
-
         isSticky = new NativeArray<bool>(maxLeaves, Allocator.Persistent);
         isPermanentlySleeping = new NativeArray<bool>(maxLeaves, Allocator.Persistent);
-
         leafAge = new NativeArray<float>(maxLeaves, Allocator.Persistent);
         leafMaxLifetime = new NativeArray<float>(maxLeaves, Allocator.Persistent);
         fadeProgress = new NativeArray<float>(maxLeaves, Allocator.Persistent);
@@ -308,6 +334,8 @@ public class BurstLeafSystem : MonoBehaviour
         useParticleTypes = particleTypes != null && particleTypes.Length > 0;
         if (useParticleTypes)
         {
+            // Pre-sum spawn weights once so PickRandomParticleType doesn't
+            // recompute the total on every leaf spawn.
             totalSpawnWeight = 0f;
             foreach (var pType in particleTypes)
             {
@@ -328,6 +356,8 @@ public class BurstLeafSystem : MonoBehaviour
 
         Debug.Log($"[BurstLeaf] Native arrays created for {maxLeaves} leaves");
 
+        // Each batch maps to one DrawMeshInstanced call; pre-allocating arrays here
+        // avoids allocations inside LateUpdate's render loop.
         int batchCount = Mathf.CeilToInt((float)maxLeaves / batchSize);
         batchMatrices = new Matrix4x4[batchCount][];
         batchColors = new Vector4[batchCount][];
@@ -363,6 +393,8 @@ public class BurstLeafSystem : MonoBehaviour
             Debug.Log($"[BurstLeaf] Using provided material: {leafMaterial.name}");
             if (!leafMaterial.enableInstancing)
             {
+                // GPU instancing is required for DrawMeshInstanced to batch correctly;
+                // without it each leaf would be a separate draw call.
                 Debug.LogWarning("[BurstLeaf] Material does not have GPU instancing enabled! Enabling it now.");
                 leafMaterial.enableInstancing = true;
             }
@@ -392,6 +424,8 @@ public class BurstLeafSystem : MonoBehaviour
 
         try
         {
+            // Seed a small number of leaves immediately so the scene doesn't look empty
+            // on the first few frames while the spawn rate ramps up.
             Debug.Log("[BurstLeaf] About to spawn test leaves...");
             for (int i = 0; i < 10; i++)
             {
@@ -416,6 +450,7 @@ public class BurstLeafSystem : MonoBehaviour
             Debug.LogError($"[BurstLeaf] Stack trace: {e.StackTrace}");
         }
     }
+
     void Update()
     {
         if (autoSpawn && !spawnAllAtOnce && activeLeafCount < maxLeaves)
@@ -433,12 +468,16 @@ public class BurstLeafSystem : MonoBehaviour
                 SpawnLeaf();
             }
 
+            // Subtract only the consumed portion of the timer so fractional
+            // remainder carries over and keeps the rate accurate at any framerate.
             if (toSpawn > 0)
             {
                 spawnTimer -= toSpawn / spawnRate;
             }
         }
 
+        // Sample wind per-leaf on the main thread before the Burst job runs,
+        // because the wind manager is a managed object Burst cannot access.
         for (int i = 0; i < activeLeafCount; i++)
         {
             windForces[i] = GetWindForceAtPosition(positions[i]);
@@ -465,6 +504,8 @@ public class BurstLeafSystem : MonoBehaviour
             flutterOffsets = leafFlutterOffset
         };
 
+        // Batch size of 64 balances work per job thread vs. scheduling overhead
+        // for typical leaf counts in the thousands.
         JobHandle handle = physicsJob.Schedule(activeLeafCount, 64);
         handle.Complete();
 
@@ -474,6 +515,8 @@ public class BurstLeafSystem : MonoBehaviour
         }
         else
         {
+            // When collision is disabled, skip the sweep entirely and just integrate
+            // position, which is significantly cheaper for background scenes.
             for (int i = 0; i < activeLeafCount; i++)
             {
                 if (!isAsleep[i])
@@ -501,12 +544,16 @@ public class BurstLeafSystem : MonoBehaviour
     {
         int expiredCount = 0;
 
+        // Iterate in reverse so DeleteLeaf's swap-with-last doesn't skip
+        // the leaf that gets moved into the deleted slot.
         for (int i = activeLeafCount - 1; i >= 0; i--)
         {
             leafAge[i] += deltaTime;
 
             if (leafAge[i] >= leafMaxLifetime[i])
             {
+                // Snapshot alpha once at the start of fading so the lerp
+                // starts from the actual current opacity, not always 1.
                 if (fadeProgress[i] == 0f)
                 {
                     originalAlpha[i] = colors[i].w;
@@ -533,10 +580,14 @@ public class BurstLeafSystem : MonoBehaviour
         }
     }
 
+    // Leaves that are permanently wedged between two or more colliders won't flow
+    // naturally into the lifetime system, so this detects them and triggers their
+    // fade-out to prevent an ever-growing pool of invisible stuck leaves.
     void CheckAndDeleteStuckLeaves()
     {
         for (int i = activeLeafCount - 1; i >= 0; i--)
         {
+            // Already fading — don't interfere with the active fade.
             if (fadeProgress[i] > 0f) continue;
 
             float3 pos = positions[i];
@@ -559,6 +610,8 @@ public class BurstLeafSystem : MonoBehaviour
 
                 if (contactTime[i] >= contactDeleteTime)
                 {
+                    // Force the leaf into its expired state so UpdateLeafLifetimes
+                    // picks it up and runs the normal fade-out path.
                     leafAge[i] = leafMaxLifetime[i];
 
                     if (showDebug)
@@ -575,6 +628,9 @@ public class BurstLeafSystem : MonoBehaviour
         }
     }
 
+    // Removes a leaf by swapping it with the last active leaf, then decrementing
+    // the count. This keeps the active region of every array contiguous without
+    // shifting elements, so deletion is O(1) regardless of array size.
     void DeleteLeaf(int index)
     {
         if (index < 0 || index >= activeLeafCount)
@@ -615,7 +671,8 @@ public class BurstLeafSystem : MonoBehaviour
         activeLeafCount--;
     }
 
-
+    // Uses a sweep cast rather than moving first and checking after, so fast-moving
+    // leaves don't tunnel through thin colliders between frames.
     void MoveWithSweepCollision(float deltaTime)
     {
         for (int idx = 0; idx < activeLeafCount; idx++)
@@ -642,6 +699,8 @@ public class BurstLeafSystem : MonoBehaviour
 
             if (hit.collider != null)
             {
+                // Place the leaf just touching the surface rather than at the exact hit point
+                // to avoid it sinking into the collider on the next frame.
                 Vector2 safePos = hit.centroid + hit.normal * 0.001f;
                 positions[idx] = new float3(safePos.x, safePos.y, 0);
 
@@ -652,11 +711,15 @@ public class BurstLeafSystem : MonoBehaviour
 
                     if (hit.normal.y > 0.5f)
                     {
+                        // Normal pointing mostly upward means the leaf landed on a floor.
+                        // Apply friction to bleed off horizontal sliding velocity.
                         vel2D.x *= (1f - groundFriction * deltaTime * 10f);
                         isGrounded = true;
 
                         if (enableStickyLeaves && isSticky[idx] && IsOnGroundLayer(hit.collider))
                         {
+                            // Sticky leaves on the ground layer stop permanently and
+                            // cost nothing in subsequent frames.
                             isPermanentlySleeping[idx] = true;
                             isAsleep[idx] = true;
                             velocities[idx] = float3.zero;
@@ -692,11 +755,15 @@ public class BurstLeafSystem : MonoBehaviour
 
             if (isGrounded)
             {
+                // Grounded lift ramps down the longer a leaf has been sitting still,
+                // so freshly-landed leaves blow away more easily than settled ones.
                 float rampDuration = 2f;
                 float groundedMultiplier = groundedLiftMultiplier
                                            * math.max(1f - groundedTime[idx] / rampDuration, 0f)
                                            * liftFactor;
 
+                // Boost lift during gusts that exceed the base wind speed, simulating
+                // the extra turbulence that lifts leaves in a sudden strong wind.
                 if (RealisticWindManager.Instance != null)
                 {
                     float baseWindMag = RealisticWindManager.Instance.CurrentWind.magnitude;
@@ -711,12 +778,15 @@ public class BurstLeafSystem : MonoBehaviour
                 v.y += wind.y * (groundedMultiplier * 5f);
                 v.x += wind.x * (groundedMultiplier * 10f);
 
+                // An upward wind spike this frame (positive deltaY) provides an
+                // extra impulse, analogous to a leaf being flicked up by a gust front.
                 if (deltaY > 0f)
                     v.y += deltaY * (groundedMultiplier * 5f) * deltaTime;
 
                 v.x += wind.x * (groundedMultiplier * 10f) * deltaTime;
 
-
+                // Only add spin when the leaf is about to be lifted — spinning a
+                // leaf that stays on the ground looks wrong.
                 if (v.y > 0.01f)
                 {
                     float swirlBase = math.clamp(math.abs(wind.x) * 2f, 0f, 5f);
@@ -730,7 +800,6 @@ public class BurstLeafSystem : MonoBehaviour
                 v.y += wind.y * deltaTime * airborneMultiplier;
                 if (deltaY > 0f)
                     v.y += deltaY * deltaTime * airborneMultiplier;
-
             }
 
             velocities[idx] = v;
@@ -739,6 +808,9 @@ public class BurstLeafSystem : MonoBehaviour
 
         ResolveExistingPenetrations(deltaTime);
     }
+
+    // Handles the case where a leaf is already overlapping a collider at the start
+    // of the frame — typically after a solid object moves into it between updates.
     void ResolveExistingPenetrations(float deltaTime)
     {
         for (int idx = 0; idx < activeLeafCount; idx++)
@@ -752,6 +824,9 @@ public class BurstLeafSystem : MonoBehaviour
             float radius = size * 0.4f;
 
             Vector2 pos2D = new Vector2(pos.x, pos.y);
+
+            // Use a tiny fraction of the radius for the overlap test so only
+            // genuine penetrations are detected, not near-surface grazing contact.
             Collider2D overlap = Physics2D.OverlapCircle(pos2D, radius * 0.001f, collisionLayers);
 
             if (overlap != null)
@@ -760,6 +835,8 @@ public class BurstLeafSystem : MonoBehaviour
                 Vector2 toLeaf = pos2D - closestPoint;
                 float dist = toLeaf.magnitude;
 
+                // If the leaf is exactly at the surface centre, push it straight up
+                // as a safe default rather than trying to normalise a zero vector.
                 Vector2 exitDir = dist < 0.001f ? Vector2.up : toLeaf / dist;
                 Vector2 safePos = closestPoint + exitDir * (radius + 0.01f);
                 positions[idx] = new float3(safePos.x, safePos.y, 0);
@@ -818,7 +895,6 @@ public class BurstLeafSystem : MonoBehaviour
                         v.y += deltaY * groundedMultiplier * deltaTime;
                     v.x += wind.x * (groundedMultiplier * 10f) * deltaTime;
 
-
                     velocities[idx] = v;
                 }
                 else
@@ -834,9 +910,6 @@ public class BurstLeafSystem : MonoBehaviour
             }
         }
     }
-
-
-
 
     void LateUpdate()
     {
@@ -861,6 +934,8 @@ public class BurstLeafSystem : MonoBehaviour
             Debug.Log($"[BurstLeaf] Rendering {activeLeafCount} leaves in {batchMatrices.Length} batches");
         }
 
+        // Submit render batches in LateUpdate so all physics and animation
+        // updates are finished before we build the final transform matrices.
         for (int i = 0; i < batchMatrices.Length; i++)
         {
             if (batchMatrices[i].Length == 0) continue;
@@ -868,6 +943,8 @@ public class BurstLeafSystem : MonoBehaviour
             int count = Mathf.Min(batchSize, activeLeafCount - i * batchSize);
             if (count <= 0) break;
 
+            // Both _BaseColor and _Color are set because different URP shader
+            // variants use different property names for the instance color.
             propertyBlocks[i].SetVectorArray("_BaseColor", batchColors[i]);
             propertyBlocks[i].SetVectorArray("_Color", batchColors[i]);
 
@@ -879,6 +956,8 @@ public class BurstLeafSystem : MonoBehaviour
                 Debug.Log($"[BurstLeaf] First leaf color: {batchColors[0][0]}");
             }
 
+            // Shadows and light probes are disabled because leaves are tiny and
+            // the cost of shadow casting per-instance would far outweigh the visual benefit.
             Graphics.DrawMeshInstanced(
                 leafMesh,
                 0,
@@ -894,7 +973,9 @@ public class BurstLeafSystem : MonoBehaviour
             );
         }
     }
+
     private System.Random colorRandom = new System.Random();
+
     void SpawnLeaf()
     {
         SpawnLeafInternal(
@@ -906,6 +987,8 @@ public class BurstLeafSystem : MonoBehaviour
         );
     }
 
+    // Weighted random selection so particle types with higher spawnWeight
+    // appear proportionally more often without needing a lookup table.
     int PickRandomParticleType()
     {
         if (!useParticleTypes) return -1;
@@ -933,6 +1016,8 @@ public class BurstLeafSystem : MonoBehaviour
         float leafAirResVal, leafFlutterVal, leafFlutterSpeedVal;
         Gradient leafGradient;
 
+        // Resolve all per-type properties once here so the hot path below
+        // doesn't need to branch on type index for every property assignment.
         if (resolvedType >= 0 && resolvedType < particleTypes.Length)
         {
             var pType = particleTypes[resolvedType];
@@ -960,6 +1045,8 @@ public class BurstLeafSystem : MonoBehaviour
         float size = UnityEngine.Random.Range(leafSizeMin, leafSizeMax);
         float radius = size * 0.5f;
 
+        // Nudge the spawn position up to 5 times to avoid spawning inside a collider,
+        // which would cause an immediate penetration resolution jitter.
         for (int attempt = 0; attempt < 5; attempt++)
         {
             if (Physics2D.OverlapCircle(spawnPos, radius, collisionLayers) == null)
@@ -967,6 +1054,8 @@ public class BurstLeafSystem : MonoBehaviour
             spawnPos += UnityEngine.Random.insideUnitCircle * size * 2f;
         }
 
+        // Small random z offset staggers overlapping leaves in depth so they
+        // don't all share the exact same z plane and cause z-fighting artefacts.
         float zOffset = UnityEngine.Random.Range(-0.01f, 0.01f);
         positions[index] = new float3(spawnPos.x, spawnPos.y, zOffset);
         sizes[index] = size;
@@ -979,6 +1068,8 @@ public class BurstLeafSystem : MonoBehaviour
         leafFlutterSpeed[index] = leafFlutterSpeedVal;
         leafFlutterOffset[index] = UnityEngine.Random.Range(0f, Mathf.PI * 2f);
 
+        // Smaller leaves get a stronger ground lift factor so they blow away more
+        // easily than large heavy leaves, which matches real-world behaviour.
         float globalMin = useParticleTypes ? GetSmallestSizeMin() : sizeRange.x;
         float globalMax = useParticleTypes ? GetLargestSizeMax() : sizeRange.y;
         float sizeFactor = 1f - Mathf.Clamp01((size - globalMin) / Mathf.Max(globalMax - globalMin, 0.001f));
@@ -992,6 +1083,8 @@ public class BurstLeafSystem : MonoBehaviour
         Color col = leafGradient.Evaluate(t);
         colors[index] = new float4(col.r, col.g, col.b, col.a);
 
+        // Keep batchColors in sync at spawn time so there's no single frame
+        // where a leaf renders with the default black color before UpdateRenderingData runs.
         int batchIndex = index / batchSize;
         int indexInBatch = index % batchSize;
         batchColors[batchIndex][indexInBatch] = new Vector4(col.r, col.g, col.b, col.a);
@@ -1037,6 +1130,9 @@ public class BurstLeafSystem : MonoBehaviour
         return max;
     }
 
+    // Tries preferred shaders in order of quality/compatibility so the system
+    // degrades gracefully on hardware or render pipelines that don't support
+    // the custom instanced shader.
     Material CreateDefaultMaterial()
     {
         Material mat = null;
@@ -1119,6 +1215,9 @@ public class BurstLeafSystem : MonoBehaviour
         return new float3(wind.x, wind.y, 0) * windMultiplier;
     }
 
+    // Rebuilds the GPU-ready transform matrices from the current simulation state
+    // every frame. This is intentionally separate from the physics update so the
+    // two can run at different rates in future.
     void UpdateRenderingData()
     {
         int batchIndex = 0;
@@ -1162,6 +1261,8 @@ public class BurstLeafSystem : MonoBehaviour
         return ((1 << collider.gameObject.layer) & groundLayer) != 0;
     }
 
+    // Generates a simple tapered leaf shape procedurally so the system works
+    // out of the box without requiring an art asset.
     Mesh CreateLeafMesh()
     {
         Mesh mesh = new Mesh();
@@ -1171,6 +1272,7 @@ public class BurstLeafSystem : MonoBehaviour
 
         Vector3[] vertices = new Vector3[segments * 2 + 1];
 
+        // Tip vertex at the bottom — the leaf tapers to a point here.
         vertices[0] = new Vector3(0, -0.5f, 0);
 
         for (int i = 0; i < segments; i++)
@@ -1178,9 +1280,11 @@ public class BurstLeafSystem : MonoBehaviour
             float t = (float)(i + 1) / segments;
             float y = Mathf.Lerp(-0.5f, 0.5f, t);
 
+            // Sin envelope gives the characteristic widest-in-the-middle leaf silhouette.
             float widthT = Mathf.Sin(t * Mathf.PI * 0.85f);
             float width = widthT * 0.35f;
 
+            // Slight asymmetry breaks the perfect symmetry for a more natural look.
             float asymmetry = Mathf.Sin(t * Mathf.PI * 2f) * 0.03f;
 
             vertices[1 + i] = new Vector3(-width + asymmetry, y, 0);
@@ -1190,6 +1294,7 @@ public class BurstLeafSystem : MonoBehaviour
         int[] triangles = new int[(segments * 2 - 1) * 3];
         int tri = 0;
 
+        // Base triangle fans from the tip vertex to the first pair of edge vertices.
         triangles[tri++] = 0;
         triangles[tri++] = 1;
         triangles[tri++] = 1 + segments;
@@ -1219,6 +1324,8 @@ public class BurstLeafSystem : MonoBehaviour
             uvs[1 + segments + i] = new Vector2(1, v);
         }
 
+        // All normals point toward the camera (Vector3.back) since this is a
+        // 2D sprite-style mesh and we don't need accurate 3D lighting.
         Vector3[] normals = new Vector3[vertices.Length];
         for (int i = 0; i < normals.Length; i++)
         {
@@ -1235,7 +1342,6 @@ public class BurstLeafSystem : MonoBehaviour
 
         return mesh;
     }
-
 
     public void SpawnLeavesInArea(Vector2 center, Vector2 areaSize, int count, SpawnPattern pattern = SpawnPattern.Rectangle, int typeIndex = -1)
     {
@@ -1260,6 +1366,8 @@ public class BurstLeafSystem : MonoBehaviour
                     break;
 
                 case SpawnPattern.Cluster:
+                    // Average three random values to produce a bell-curve distribution,
+                    // so leaves clump toward the centre rather than spreading uniformly.
                     float clusterRadius = Mathf.Min(areaSize.x, areaSize.y) * 0.5f;
                     float rx = (UnityEngine.Random.value + UnityEngine.Random.value + UnityEngine.Random.value) / 3f;
                     float ry = (UnityEngine.Random.value + UnityEngine.Random.value + UnityEngine.Random.value) / 3f;
@@ -1281,6 +1389,9 @@ public class BurstLeafSystem : MonoBehaviour
         }
     }
 
+    // Radial impulse for explosions or area events. Heavier leaves (higher mass)
+    // receive less velocity change than lighter ones via the massRatio factor,
+    // so a blast scatters petals further than oak leaves.
     public void ApplyBlastForce(Vector2 origin, float radius, float force, float upwardBias = 0.3f)
     {
         int affected = 0;
@@ -1313,6 +1424,8 @@ public class BurstLeafSystem : MonoBehaviour
                 falloff = t * 0.25f;
             }
 
+            // If the leaf is at the exact origin, push it in a random direction
+            // to avoid a zero-length direction vector.
             Vector2 blastDir = dist > 0.01f ? delta / dist : UnityEngine.Random.insideUnitCircle.normalized;
 
             blastDir = (blastDir + Vector2.up * upwardBias).normalized;
@@ -1328,6 +1441,7 @@ public class BurstLeafSystem : MonoBehaviour
 
             angularVelocities[i] += UnityEngine.Random.Range(-15f, 15f) * falloff;
 
+            // Wake any sleeping leaves in the blast radius so they respond.
             isAsleep[i] = false;
             if (isPermanentlySleeping[i])
             {
@@ -1344,6 +1458,8 @@ public class BurstLeafSystem : MonoBehaviour
         }
     }
 
+    // Three-phase muzzle blast simulates how a real gunshot disturbs the environment:
+    // 1. Forward pressure cone (shockwave), 2. Brief vacuum pull-back, 3. Turbulent wake.
     public void ApplyMuzzleBlast(Vector2 origin, Vector2 fireDirection, MuzzleBlastSettings settings = null)
     {
         if (settings == null) settings = new MuzzleBlastSettings();
@@ -1414,6 +1530,8 @@ public class BurstLeafSystem : MonoBehaviour
         public float turbulenceBurstInterval = 0.1f;
     }
 
+    // Applies the initial directional cone of the muzzle blast and an optional
+    // ground-level shockwave that lifts leaves regardless of aim direction.
     int ApplyConeBurst(Vector2 origin, Vector2 dir, MuzzleBlastSettings s)
     {
         int affected = 0;
@@ -1421,6 +1539,7 @@ public class BurstLeafSystem : MonoBehaviour
         float rearRadiusSq = s.rearWashRadius * s.rearWashRadius;
         float cosHalfAngle = Mathf.Cos(s.coneHalfAngle * Mathf.Deg2Rad);
 
+        // Perpendicular vector is used to scatter leaves sideways within the cone.
         Vector2 perp = new Vector2(-dir.y, dir.x);
 
         for (int i = 0; i < activeLeafCount; i++)
@@ -1437,6 +1556,8 @@ public class BurstLeafSystem : MonoBehaviour
             if (dist < 0.01f) dist = 0.01f;
             Vector2 toLeaf = delta / dist;
 
+            // Dot product with fire direction tells us whether the leaf is in
+            // front of (positive) or behind (negative) the muzzle.
             float alignment = Vector2.Dot(toLeaf, dir);
 
             float totalForce = 0f;
@@ -1447,17 +1568,21 @@ public class BurstLeafSystem : MonoBehaviour
                 float distFalloff = 1f - (dist / s.coneRadius);
                 distFalloff = distFalloff * distFalloff;
 
+                // Leaves directly ahead receive full force; those at the cone edge
+                // get proportionally less, shaped by a sqrt curve for a natural feel.
                 float angleFactor = Mathf.InverseLerp(cosHalfAngle, 1f, alignment);
                 angleFactor = Mathf.Sqrt(angleFactor);
 
                 totalForce = s.coneForce * distFalloff * angleFactor;
 
+                // Add lateral scatter so the blast fans leaves outward, not just forward.
                 float scatter = (1f - angleFactor) * 0.5f;
                 float sideSign = Vector2.Dot(toLeaf, perp) > 0 ? 1f : -1f;
                 forceDir = (dir + perp * sideSign * scatter + Vector2.up * s.upwardBias).normalized;
             }
             else if (distSq <= rearRadiusSq)
             {
+                // Leaves behind the muzzle get a weaker radial push from the side-wash.
                 float distFalloff = 1f - (dist / s.rearWashRadius);
                 distFalloff *= distFalloff;
 
@@ -1481,6 +1606,8 @@ public class BurstLeafSystem : MonoBehaviour
             vel.y += forceDir.y * totalForce;
             velocities[i] = vel;
 
+            // Spin intensity is proportional to blast force so lightly-grazed
+            // leaves tumble less dramatically than those at the centre.
             float spinIntensity = totalForce / s.coneForce;
             angularVelocities[i] += UnityEngine.Random.Range(-25f, 25f) * spinIntensity;
 
@@ -1496,6 +1623,8 @@ public class BurstLeafSystem : MonoBehaviour
 
         if (s.enableGroundShockwave)
         {
+            // Ground shockwave is radial (not directional) to catch leaves the
+            // aimed cone might have missed at ground level around the shooter.
             float gsRadiusSq = s.groundShockwaveRadius * s.groundShockwaveRadius;
 
             for (int i = 0; i < activeLeafCount; i++)
@@ -1542,6 +1671,9 @@ public class BurstLeafSystem : MonoBehaviour
         return affected;
     }
 
+    // Runs the delayed phases of the muzzle blast over time.
+    // A coroutine is used so the vacuum and turbulence can apply forces across
+    // multiple frames without blocking the main update loop.
     IEnumerator MuzzleBlastSequence(Vector2 origin, Vector2 dir, MuzzleBlastSettings s)
     {
         yield return new WaitForSeconds(s.vacuumDelay);
@@ -1549,6 +1681,8 @@ public class BurstLeafSystem : MonoBehaviour
         float vacuumElapsed = 0f;
         float vacuumRadiusSq = s.vacuumRadius * s.vacuumRadius;
 
+        // The vacuum phase sucks leaves back toward the muzzle as the pressure
+        // wave passes, using a sin curve so the pull rises and falls smoothly.
         while (vacuumElapsed < s.vacuumDuration)
         {
             float dt = Time.deltaTime;
@@ -1571,6 +1705,7 @@ public class BurstLeafSystem : MonoBehaviour
                 float dist = Mathf.Sqrt(distSq);
                 float falloff = 1f - (dist / s.vacuumRadius);
 
+                // Pull direction is toward the origin (negative delta).
                 Vector2 pullDir = -delta / dist;
 
                 float refMass = useParticleTypes ? particleTypes[0].mass : mass;
@@ -1596,11 +1731,15 @@ public class BurstLeafSystem : MonoBehaviour
 
         float turbRadiusSq = s.turbulenceRadius * s.turbulenceRadius;
 
+        // Multiple turbulence bursts with a shared swirl bias prevent the chaos
+        // from looking purely random — leaves tend to orbit in one direction,
+        // like the actual air rotation behind a muzzle blast.
         for (int burst = 0; burst < s.turbulenceBursts; burst++)
         {
             float swirlAngle = UnityEngine.Random.Range(0f, 360f) * Mathf.Deg2Rad;
             Vector2 swirlDir = new Vector2(Mathf.Cos(swirlAngle), Mathf.Sin(swirlAngle));
 
+            // Each successive burst is weaker so the disturbance decays naturally.
             float burstFalloff = 1f - ((float)burst / s.turbulenceBursts);
 
             for (int i = 0; i < activeLeafCount; i++)
@@ -1618,6 +1757,8 @@ public class BurstLeafSystem : MonoBehaviour
                 float falloff = 1f - (dist / s.turbulenceRadius);
                 falloff *= falloff;
 
+                // Blend structured swirl with random chaos so the wake isn't
+                // perfectly circular, which would look artificial.
                 Vector2 chaos = UnityEngine.Random.insideUnitCircle;
                 Vector2 turbDir = (swirlDir * 0.4f + chaos * 0.6f).normalized;
 
@@ -1649,7 +1790,8 @@ public class BurstLeafSystem : MonoBehaviour
         SpawnLeafInternal(worldPosition, typeIndex);
     }
 
-
+    // Static helpers let external code broadcast to all active leaf systems
+    // without needing to hold references to each individual instance.
     public static void BlastAll(Vector2 origin, float radius, float force, float upwardBias = 0.3f)
     {
         for (int i = 0; i < allInstances.Count; i++)
@@ -1666,6 +1808,9 @@ public class BurstLeafSystem : MonoBehaviour
         }
     }
 
+    // NativeArrays must be explicitly disposed because they are allocated outside
+    // the GC heap. Failing to dispose them causes memory leaks that persist
+    // between editor play sessions.
     void OnDestroy()
     {
         allInstances.Remove(this);
@@ -1698,12 +1843,15 @@ public class BurstLeafSystem : MonoBehaviour
         if (leafFlutterOffset.IsCreated) leafFlutterOffset.Dispose();
     }
 
-
     void OnDrawGizmos()
     {
+        // Show the spawn volume in the Scene view so designers can see exactly
+        // where new leaves will appear without entering play mode.
         Gizmos.color = Color.green;
         Gizmos.DrawWireCube(transform.position, new Vector3(spawnArea.x, spawnArea.y, 0));
 
+        // Visualise a sample of active leaves to diagnose size or position issues
+        // without rendering all of them (capped at 100 to keep gizmo overhead low).
         if (Application.isPlaying && activeLeafCount > 0 && positions.IsCreated)
         {
             Gizmos.color = Color.yellow;
@@ -1732,6 +1880,8 @@ public struct LeafPhysicsJob : IJobParallelFor
     public NativeArray<float3> velocities;
     public NativeArray<quaternion> rotations;
     public NativeArray<float> angularVelocities;
+
+    // ReadOnly so multiple job threads can safely read shared state in parallel.
     [ReadOnly] public NativeArray<bool> isAsleep;
 
     [ReadOnly] public float deltaTime;
@@ -1753,22 +1903,32 @@ public struct LeafPhysicsJob : IJobParallelFor
         float leafMass = math.max(masses[index], 0.00001f);
         float3 vel = velocities[index];
 
+        // Wind force is divided by mass so lighter leaves accelerate more from
+        // the same wind, matching F = ma (a = F/m).
         float3 force = gravity + windForces[index] / leafMass;
         vel += force * deltaTime;
 
+        // Global drag bleeds velocity uniformly, simulating air resistance
+        // in all directions (as opposed to the directional air resistance below).
         float leafDrag = drags[index];
         vel *= (1f - leafDrag * deltaTime);
 
+        // Extra downward drag only activates when the leaf is actually falling,
+        // simulating a flat surface cupping air to slow its descent.
         float ar = airResistances[index];
         if (ar > 0f && vel.y < 0f)
         {
             float fallSpeed = -vel.y;
             float resistanceForce = ar * fallSpeed * deltaTime;
 
+            // Cap the resistance to 90% of fall speed so the leaf can never
+            // be pushed upward by this term alone.
             resistanceForce = math.min(resistanceForce, fallSpeed * 0.9f);
             vel.y += resistanceForce;
         }
 
+        // Flutter is only active while the leaf is falling — a rising or hovering
+        // leaf doesn't sway the same way as one drifting downward.
         float flut = flutters[index];
         if (flut > 0f && vel.y < -0.05f)
         {
@@ -1777,6 +1937,8 @@ public struct LeafPhysicsJob : IJobParallelFor
 
             float sway = math.sin(currentTime * speed + offset) * flut;
 
+            // Scale sway by fall speed so fast-falling leaves flutter more
+            // visibly, which matches how real leaves behave in freefall.
             float fallFactor = math.clamp(-vel.y * 0.5f, 0.2f, 1.5f);
             vel.x += sway * fallFactor * deltaTime;
 
@@ -1791,6 +1953,8 @@ public struct LeafPhysicsJob : IJobParallelFor
         angVelFinal *= (1f - angularDrag * deltaTime);
         angularVelocities[index] = angVelFinal;
 
+        // Normalise after every multiply to prevent floating-point drift from
+        // accumulating into a non-unit quaternion over thousands of frames.
         quaternion deltaRotation = quaternion.Euler(0, 0, angVelFinal * deltaTime);
         rotations[index] = math.normalize(math.mul(rotations[index], deltaRotation));
     }
