@@ -37,6 +37,8 @@ public class WindBall : MonoBehaviour
     [SerializeField] private float pushAuraRadius = 2f;
     [SerializeField] private float pushForce = 4f;
     [SerializeField] private float pushInterval = 0.1f;
+    // Heavy objects are excluded from proximity push so the ball doesn't
+    // send large physics props flying uncontrollably as it passes by.
     [SerializeField] private float pushMaxMass = 2f;
 
     [Header("Structural Collapse Settings")]
@@ -63,36 +65,26 @@ public class WindBall : MonoBehaviour
     [Tooltip("Number of orbiting wisp trails. 2-3 gives the natural multi-curl look.")]
     [Range(1, 4)]
     [SerializeField] private int wispCount = 2;
-
     [Tooltip("Starting orbit radius when first fired. Expands outward over wispExpandTime seconds.")]
     [SerializeField] private float wispOrbitRadius = 0.25f;
-
     [Tooltip("Maximum orbit radius the wisps grow to as the ball travels.")]
     [SerializeField] private float wispOrbitRadiusMax = 1.2f;
-
     [Tooltip("Seconds to expand from wispOrbitRadius to wispOrbitRadiusMax.")]
     [SerializeField] private float wispExpandTime = 1.5f;
-
     [Tooltip("Orbit speed in rotations per second. Higher = tighter loops carved into the trail.")]
     [SerializeField] private float wispOrbitSpeed = 1.8f;
-
     [Tooltip("Each wisp pivot also pulses its orbit radius at this frequency (Hz), making the trail thickness vary organically.")]
     [SerializeField] private float wispPulseFrequency = 1.1f;
-
     [Tooltip("How much the orbit radius pulses (0 = constant circle, 0.5 = radius halves and doubles).")]
     [Range(0f, 0.8f)]
     [SerializeField] private float wispPulseAmount = 0.28f;
-
     [Tooltip("How long each wisp trail lingers. Longer = bigger looping S-shapes visible.")]
     [SerializeField] private float wispTrailTime = 0.75f;
-
     [Tooltip("Max width of the wisp at its thickest point.")]
     [SerializeField] private float wispWidthMax = 0.042f;
-
     [Tooltip("Opacity at the thickest point of the wisp.")]
     [Range(0f, 1f)]
     [SerializeField] private float wispAlpha = 0.6f;
-
     [Tooltip("A secondary smaller, faster wisp for the fine curling tips seen in the reference.")]
     [SerializeField] private bool enableTipWisp = true;
     [SerializeField] private float tipWispOrbitRadius = 0.18f;
@@ -100,7 +92,6 @@ public class WindBall : MonoBehaviour
     [SerializeField] private float tipWispOrbitSpeed = 4.5f;
     [SerializeField] private float tipWispTrailTime = 0.38f;
     [SerializeField] private float tipWispWidthMax = 0.016f;
-
     [SerializeField] private int wispSortingOrder = 11;
 
     [Header("Debug Visualization")]
@@ -111,8 +102,14 @@ public class WindBall : MonoBehaviour
     [SerializeField] private Color debugPushColor = new Color(0.4f, 0.8f, 1f, 0.1f);
 
     private float lifetime = 0f;
+
+    // Guards against OnCollisionEnter2D triggering impact logic more than once
+    // if multiple contacts are resolved in the same physics frame.
     private bool hasImpacted = false;
     private Rigidbody2D rb;
+
+    // Cached in FixedUpdate because collision.relativeVelocity reflects the
+    // post-contact solver state, which can distort the true incoming speed.
     private Vector2 preImpactVelocity;
 
     private float leafSweepTimer = 0f;
@@ -121,6 +118,8 @@ public class WindBall : MonoBehaviour
     private SpriteRenderer debugRenderer;
     private SpriteRenderer debugPushRenderer;
 
+    // Struct keeps all per-wisp state together so the update loop can process
+    // each wisp without indexing into multiple parallel arrays.
     private struct WispTrail
     {
         public Transform pivot;
@@ -131,10 +130,14 @@ public class WindBall : MonoBehaviour
         public float pulseFreq;
         public float pulseAmt;
         public float phaseOffset;
+        // SmoothDamp state for damped position interpolation.
         public Vector2 smoothedPos;
         public Vector2 smoothVelocity;
     }
     private WispTrail[] wisps;
+
+    // Single shared material for all wisp trail renderers — avoids creating a
+    // duplicate material per wisp, which would break GPU batching.
     private Material wispMaterial;
 
     void Start()
@@ -143,6 +146,8 @@ public class WindBall : MonoBehaviour
 
         rb = GetComponent<Rigidbody2D>();
         if (rb == null) rb = gameObject.AddComponent<Rigidbody2D>();
+        // Zero gravity makes the ball travel in a straight arc like a real gust
+        // of wind rather than dropping like a thrown object.
         rb.gravityScale = gravityScale;
         rb.linearDamping = linearDrag;
 
@@ -163,9 +168,13 @@ public class WindBall : MonoBehaviour
     {
         wispMaterial = CreateWispMaterial();
 
+        // Tip wisps get the same count as main wisps — each main wisp has a
+        // smaller, faster companion to create the fine curling tip detail.
         int tipCount = enableTipWisp ? wispCount : 0;
         wisps = new WispTrail[wispCount + tipCount];
 
+        // Evenly distribute main wisps around the orbit so at wispCount=2 they
+        // sit opposite each other, producing the classic yin-yang swirl.
         for (int i = 0; i < wispCount; i++)
         {
             float phase = (Mathf.PI * 2f / wispCount) * i;
@@ -179,6 +188,8 @@ public class WindBall : MonoBehaviour
             );
         }
 
+        // Tip wisps are offset by half a slot so they sit between the main wisps,
+        // filling in the visual gaps and giving the effect more density.
         for (int i = 0; i < tipCount; i++)
         {
             float phase = (Mathf.PI * 2f / wispCount) * i + Mathf.PI / wispCount;
@@ -203,6 +214,8 @@ public class WindBall : MonoBehaviour
 
         TrailRenderer tr = pivotGO.AddComponent<TrailRenderer>();
         tr.time = trailTime;
+        // Very small minimum vertex distance produces smooth curved trails
+        // rather than visibly segmented polygons.
         tr.minVertexDistance = 0.003f;
         tr.autodestruct = false;
         tr.emitting = true;
@@ -212,6 +225,9 @@ public class WindBall : MonoBehaviour
         tr.sortingOrder = wispSortingOrder;
         tr.material = wispMaterial;
 
+        // Width curve shapes the wisp cross-section — it rises sharply from the
+        // head, stays full through the middle, then tapers to nothing at the tail,
+        // giving the characteristic comet-like silhouette.
         AnimationCurve wc = new AnimationCurve();
         wc.AddKey(new Keyframe(0f, 0f, 0f, widthMax * 8f));
         wc.AddKey(new Keyframe(0.08f, widthMax, 0f, 0f));
@@ -220,6 +236,9 @@ public class WindBall : MonoBehaviour
         wc.AddKey(new Keyframe(1f, 0f, -widthMax * 2f, 0f));
         tr.widthCurve = wc;
 
+        // Alpha gradient fades in quickly at the head and lingers through the
+        // middle before dropping to invisible near the tail end, matching how
+        // a real wisp of smoke or vapour disperses over distance.
         Gradient grad = new Gradient();
         grad.SetKeys(
             new GradientColorKey[]
@@ -257,6 +276,8 @@ public class WindBall : MonoBehaviour
 
     Material CreateWispMaterial()
     {
+        // Additive-style blending (SrcAlpha + One) makes overlapping wisps
+        // brighten each other rather than occlude, which looks like glowing energy.
         Shader shader = Shader.Find("Sprites/Default");
         if (shader == null) shader = Shader.Find("Unlit/Transparent");
         if (shader == null) shader = Shader.Find("Standard");
@@ -302,6 +323,9 @@ public class WindBall : MonoBehaviour
         {
             Vector2 ballPos = transform.position;
 
+            // Expand the orbit radius over time using an ease-out curve so the
+            // wisps start tightly wound near the muzzle and gradually open up
+            // into their full spiral as the ball travels.
             float expandT = Mathf.Clamp01(lifetime / wispExpandTime);
             float eased = 1f - Mathf.Pow(1f - expandT, 2.5f);
 
@@ -312,12 +336,16 @@ public class WindBall : MonoBehaviour
 
                 float currentRadius = Mathf.Lerp(w.orbitRadiusMin, w.orbitRadiusMax, eased);
 
+                // Sinusoidal pulse makes the orbit radius breathe, so the spiral
+                // looks organic rather than a perfect constant-radius helix.
                 float pulse = 1f + Mathf.Sin(lifetime * w.pulseFreq * Mathf.PI * 2f + w.phaseOffset) * w.pulseAmt;
                 float radius = currentRadius * pulse;
 
                 float angle = lifetime * w.orbitSpeed * Mathf.PI * 2f + w.phaseOffset;
                 Vector2 target = ballPos + new Vector2(Mathf.Cos(angle), Mathf.Sin(angle)) * radius;
 
+                // SmoothDamp prevents the trail from snapping when the ball
+                // changes direction suddenly, keeping the wisp animation fluid.
                 w.smoothedPos = Vector2.SmoothDamp(
                     w.smoothedPos, target,
                     ref w.smoothVelocity,
@@ -336,6 +364,9 @@ public class WindBall : MonoBehaviour
             if (leafSweepTimer >= leafSweepInterval)
             {
                 leafSweepTimer = 0f;
+                // Negative force pulls leaves toward the ball's path rather than
+                // blasting them away, simulating a low-pressure vortex that a
+                // strong gust of wind would create.
                 BurstLeafSystem.BlastAll(transform.position, leafSweepRadius, -leafSweepForce, 0f);
             }
         }
@@ -343,12 +374,16 @@ public class WindBall : MonoBehaviour
 
     void SetupDebugVisual()
     {
+        // Disable any existing SpriteRenderer on this GameObject — the wind ball
+        // intentionally has no opaque visual body; the wisps are the whole effect.
         SpriteRenderer existingSr = GetComponent<SpriteRenderer>();
         if (existingSr != null) existingSr.enabled = false;
         if (!showDebugVisual) return;
 
         Sprite circle = CreateCircleSprite(64);
 
+        // Render the debug ball as a child object so it can be toggled
+        // independently without affecting the main GameObject's components.
         GameObject ballVisual = new GameObject("DebugBallVisual");
         ballVisual.transform.SetParent(transform, false);
         debugRenderer = ballVisual.AddComponent<SpriteRenderer>();
@@ -360,6 +395,8 @@ public class WindBall : MonoBehaviour
 
         if (showPushRadius && enableProximityPush)
         {
+            // A second, larger semi-transparent disc visualises the push aura
+            // radius in the Scene view so designers can tune it without guesswork.
             GameObject pushVisual = new GameObject("DebugPushVisual");
             pushVisual.transform.SetParent(transform, false);
             debugPushRenderer = pushVisual.AddComponent<SpriteRenderer>();
@@ -381,6 +418,8 @@ public class WindBall : MonoBehaviour
             for (int y = 0; y < size; y++)
             {
                 float dist = Mathf.Sqrt((x - cx) * (x - cx) + (y - cy) * (y - cy));
+                // Narrow anti-aliasing band at the rim produces a clean circular edge
+                // without a hard pixel staircase.
                 float alpha = Mathf.Clamp01((r - dist) / (r * 0.1f));
                 tex.SetPixel(x, y, new Color(1f, 1f, 1f, alpha));
             }
@@ -396,9 +435,15 @@ public class WindBall : MonoBehaviour
             if (col.gameObject == gameObject) continue;
             if (ShouldExcludeObject(col.gameObject)) continue;
             Rigidbody2D otherRb = col.GetComponent<Rigidbody2D>();
+
+            // Objects without a Rigidbody2D or heavier than pushMaxMass are
+            // unaffected — the wind ball shouldn't be able to budge static scenery.
             if (otherRb == null || otherRb.mass > pushMaxMass) continue;
             Vector2 pushDir = ((Vector2)col.transform.position - (Vector2)transform.position).normalized;
             float distance = Vector2.Distance(transform.position, col.transform.position);
+
+            // Falloff ensures objects at the edge of the aura feel a gentle nudge
+            // while those closest to the ball's centre get the full force.
             float falloff = 1f - Mathf.Clamp01(distance / pushAuraRadius);
             otherRb.AddForce(pushDir * pushForce * falloff, ForceMode2D.Force);
         }
@@ -408,6 +453,9 @@ public class WindBall : MonoBehaviour
     {
         if (hasImpacted) return;
 
+        // The BurstLeafSystem's child objects (individual leaf meshes) should be
+        // ignored so the ball passes through the leaf cloud without triggering
+        // a wall-impact on every individual leaf it touches.
         if (IsBurstLeaf(collision.gameObject)) return;
 
         if (ShouldExcludeObject(collision.gameObject)) return;
@@ -420,6 +468,8 @@ public class WindBall : MonoBehaviour
         if (showDebugInfo)
             Debug.Log($"[WindBall] Hit {hitObject.name} at {impactPoint}, vel={impactVelocity.magnitude:F1}");
 
+        // Detach wisps so their trails linger in world space after the ball is
+        // destroyed, giving the impression that the wind disperses on impact.
         if (wisps != null)
         {
             foreach (var w in wisps)
@@ -429,6 +479,8 @@ public class WindBall : MonoBehaviour
                 if (w.pivot != null)
                 {
                     w.pivot.SetParent(null);
+                    // Destroy each detached wisp after the longest trail time has
+                    // elapsed so nothing lingers invisibly in the scene.
                     float maxTrailTime = Mathf.Max(wispTrailTime, tipWispTrailTime);
                     Destroy(w.pivot.gameObject, maxTrailTime + 0.1f);
                 }
@@ -456,6 +508,9 @@ public class WindBall : MonoBehaviour
         Destroy(gameObject);
     }
 
+    // BurstLeafSystem child objects don't have their own colliders tagged as
+    // leaves, so this walks up the hierarchy to find the system component as
+    // an authoritative check.
     bool IsBurstLeaf(GameObject obj)
     {
         if (obj.CompareTag("BurstLeaf")) return true;
@@ -470,6 +525,8 @@ public class WindBall : MonoBehaviour
         return false;
     }
 
+    // Same entry/exit raycast logic as IncendiaryBall — kept simpler here since
+    // WindBall has incident cut disabled by default and doesn't need debug logging.
     GameObject PerformIncidentCut(GameObject hitObject, Vector2 impactPoint, Vector2 impactVelocity, Vector2 surfaceNormal)
     {
         RaycastReceiver receiver = hitObject.GetComponent<RaycastReceiver>();
@@ -485,6 +542,8 @@ public class WindBall : MonoBehaviour
         Collider2D hitCollider = hitObject.GetComponent<Collider2D>();
         if (hitCollider != null)
         {
+            // Start slightly behind the impact point so the ray doesn't originate
+            // inside the collider and miss the entry surface.
             Vector2 rayOrigin = impactPoint - incidentDirection * 0.5f;
             RaycastHit2D[] hits = Physics2D.RaycastAll(rayOrigin, incidentDirection, cutRaycastDistance);
 
@@ -501,6 +560,8 @@ public class WindBall : MonoBehaviour
 
             if (!foundExit)
             {
+                // Reverse cast handles concave shapes or geometries the forward
+                // ray exits through a non-entered face.
                 Bounds bounds = hitCollider.bounds;
                 Vector2 farPoint = rayOrigin + incidentDirection * (cutRaycastDistance + bounds.size.magnitude);
                 RaycastHit2D[] reverseHits = Physics2D.RaycastAll(farPoint, -incidentDirection, cutRaycastDistance + bounds.size.magnitude);
@@ -522,6 +583,8 @@ public class WindBall : MonoBehaviour
         GameObject explosionTarget = null;
         RaycastReceiver.OnLargePieceSpawned callback = null;
 
+        // Subscribe before the cut so we can capture the spawned piece
+        // synchronously inside the ExecuteCutDirect call.
         if (!explosionAffectsParent)
         {
             callback = (GameObject piece) => { explosionTarget = piece; };
@@ -529,6 +592,9 @@ public class WindBall : MonoBehaviour
         }
 
         receiver.ExecuteCutDirect(entryPoint, exitPoint, null);
+
+        // Unsubscribe immediately to prevent stale delegates accumulating if
+        // this object is reused or the receiver outlives the ball.
         if (callback != null) receiver.LargePieceSpawned -= callback;
 
         if (explosionAffectsParent) return hitObject;
@@ -540,6 +606,8 @@ public class WindBall : MonoBehaviour
         if (((1 << obj.layer) & excludedLayers) != 0) return true;
         foreach (string tag in excludedTags)
             if (obj.CompareTag(tag)) return true;
+        // Name-based check catches dynamically spawned fragments that may not
+        // have been tagged at creation time.
         if (obj.name.Contains("Debris") || obj.name.Contains("Fragment")) return true;
         return false;
     }

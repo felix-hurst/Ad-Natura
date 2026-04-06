@@ -39,6 +39,9 @@ public class ExplosiveBall : MonoBehaviour
     [SerializeField] private Color warningColor = Color.red;
 
     private float lifetime = 0f;
+
+    // Guards against OnCollisionEnter2D firing more than once in the same
+    // frame if multiple contacts are detected simultaneously.
     private bool hasExploded = false;
     private List<GameObject> weaknessTargets = new List<GameObject>();
 
@@ -51,6 +54,8 @@ public class ExplosiveBall : MonoBehaviour
     {
         lifetime += Time.deltaTime;
 
+        // Destroy the ball if it never hits anything, preventing it from
+        // persisting indefinitely off-screen or in a corner.
         if (lifetime >= maxLifetime)
         {
             Destroy(gameObject);
@@ -65,6 +70,8 @@ public class ExplosiveBall : MonoBehaviour
             sr = gameObject.AddComponent<SpriteRenderer>();
 
             Texture2D texture = CreateCircleTexture(64);
+            // Pixels-per-unit is set relative to ballRadius so the sprite scales
+            // correctly to the intended world-space size regardless of the texture resolution.
             Sprite sprite = Sprite.Create(texture, new Rect(0, 0, 64, 64), new Vector2(0.5f, 0.5f), 32f / ballRadius);
 
             sr.sprite = sprite;
@@ -80,6 +87,8 @@ public class ExplosiveBall : MonoBehaviour
             collider = gameObject.AddComponent<CircleCollider2D>();
         }
 
+        // Radius is 0.5 in local space — the world-space radius is driven by
+        // localScale above, which keeps the collider and visual in sync.
         collider.radius = 0.5f;
     }
 
@@ -96,6 +105,8 @@ public class ExplosiveBall : MonoBehaviour
             for (int x = 0; x < size; x++)
             {
                 float distance = Vector2.Distance(new Vector2(x, y), center);
+                // Hard cutoff at the radius produces a clean circle edge;
+                // outside pixels are fully transparent so the background shows through.
                 pixels[y * size + x] = distance <= radius ? Color.white : Color.clear;
             }
         }
@@ -111,6 +122,8 @@ public class ExplosiveBall : MonoBehaviour
     {
         if (hasExploded) return;
 
+        // Excluded objects (player, already-broken debris) should not trigger
+        // an explosion — the ball passes through or bounces off them instead.
         if (ShouldExcludeObject(collision.gameObject))
         {
             return;
@@ -118,6 +131,9 @@ public class ExplosiveBall : MonoBehaviour
 
         GameObject hitObject = collision.gameObject;
 
+        // Delegate the explosion timing and fracture logic to the manager so this
+        // ball class stays focused on detection and doesn't need to know the details
+        // of how structural collapse works.
         StructuralCollapseManager.Instance.ScheduleDelayedExplosion(
             hitObject,
             transform.position,
@@ -140,6 +156,8 @@ public class ExplosiveBall : MonoBehaviour
 
     bool ShouldExcludeObject(GameObject obj)
     {
+        // Layer exclusion handles broad categories (e.g. a whole "Water" layer)
+        // without needing a tag on every individual object.
         if (((1 << obj.layer) & excludedLayers) != 0)
         {
             return true;
@@ -153,6 +171,8 @@ public class ExplosiveBall : MonoBehaviour
             }
         }
 
+        // Name-based fallback catches dynamically spawned debris that may not
+        // have been tagged correctly at spawn time.
         if (obj.name.Contains("Debris") || obj.name.Contains("Fragment"))
         {
             return true;
@@ -161,7 +181,8 @@ public class ExplosiveBall : MonoBehaviour
         return false;
     }
 
-
+    // Resolves the world-space bounds of an object regardless of whether its
+    // visual comes from a Renderer on itself, a child, or only a collider.
     Bounds GetObjectBounds(GameObject obj)
     {
         Renderer renderer = obj.GetComponent<Renderer>();
@@ -174,7 +195,6 @@ public class ExplosiveBall : MonoBehaviour
         if (renderer != null)
         {
             return renderer.bounds;
-
         }
 
         Collider2D collider = obj.GetComponent<Collider2D>();
@@ -183,6 +203,8 @@ public class ExplosiveBall : MonoBehaviour
             return collider.bounds;
         }
 
+        // Last resort — a unit cube centred on the object so callers always
+        // get a valid Bounds and don't need to null-check the return value.
         return new Bounds(obj.transform.position, Vector3.one);
     }
 }
