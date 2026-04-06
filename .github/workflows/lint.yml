@@ -24,10 +24,10 @@ jobs:
       - name: Cache Library
         uses: actions/cache@v4
         with:
-          path: src/my_project/Library
-          key: Library-my_project-${{ runner.os }}-${{ hashFiles('src/my_project/Assets/**', 'src/my_project/Packages/**', 'src/my_project/ProjectSettings/**') }}
+          path: src/Library
+          key: Library-src-${{ runner.os }}-${{ hashFiles('src/Assets/**', 'src/Packages/**', 'src/ProjectSettings/**') }}
           restore-keys: |
-            Library-my_project-${{ runner.os }}-
+            Library-src-${{ runner.os }}-
 
       - name: Generate Solution
         uses: game-ci/unity-test-runner@v4
@@ -36,7 +36,7 @@ jobs:
           UNITY_EMAIL: ${{ secrets.UNITY_EMAIL }}
           UNITY_PASSWORD: ${{ secrets.UNITY_PASSWORD }}
         with:
-          projectPath: src/my_project
+          projectPath: src
           customParameters: -batchmode -executeMethod Packages.Rider.Editor.RiderScriptEditor.SyncSolution -quit
 
       - name: Setup .NET
@@ -47,7 +47,7 @@ jobs:
       - name: Fix and Commit Formatting
         shell: bash
         run: |
-          SLN_PATH=$(find src/my_project -maxdepth 1 -name "*.sln" | head -n 1)
+          SLN_PATH=$(find src -maxdepth 1 -name "*.sln" | head -n 1)
           echo "Found solution at: $SLN_PATH"
 
           # Run the fixer
