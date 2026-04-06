@@ -83,7 +83,7 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Transform hipsTransform;
     [SerializeField] private float torsoLeanWeight = 0.2f;
     [SerializeField] private float headLeanWeight = 0.5f;
-    [SerializeField] private float hipsLeanWeight = 0.4f; 
+    [SerializeField] private float hipsLeanWeight = 0.4f;
 
     [Header("Gun Sprites")]
     [SerializeField] private SpriteRenderer nearArmSpriteRenderer;
