@@ -81,9 +81,9 @@ public class PlayerController : MonoBehaviour
     [SerializeField] private Transform torsoTransform;
     [SerializeField] private Transform headTransform;
     [SerializeField] private Transform hipsTransform;
-    [SerializeField] private float torsoLeanWeight = 0.2f; // 20% of arm angle
-    [SerializeField] private float headLeanWeight = 0.5f;  // 50% of arm angle
-    [SerializeField] private float hipsLeanWeight = 0.4f;  // 20% of arm angle
+    [SerializeField] private float torsoLeanWeight = 0.2f;
+    [SerializeField] private float headLeanWeight = 0.5f;
+    [SerializeField] private float hipsLeanWeight = 0.4f; 
 
     [Header("Gun Sprites")]
     [SerializeField] private SpriteRenderer nearArmSpriteRenderer;
@@ -150,6 +150,7 @@ public class PlayerController : MonoBehaviour
 
     void Start()
     {
+        //Initialize tools, player model, and sounds
         rb = GetComponent<Rigidbody2D>();
         originalGravityScale = rb.gravityScale;
 
@@ -174,6 +175,7 @@ public class PlayerController : MonoBehaviour
 
     void Update()
     {
+        //Check if the player is running
         velocityX = Mathf.Abs(rb.linearVelocity.x);
         if (velocityX > 0.1f)
         {
@@ -216,6 +218,7 @@ public class PlayerController : MonoBehaviour
             footstepSource.Stop();
             footstepTimer = 0f;
         }
+        //Handle the movement and positioning of the player model
         HandleSpriteFlipping();
         currentRecoilAngle = Mathf.Lerp(currentRecoilAngle, 0f, Time.deltaTime * recoilReturnSpeed);
         currentRecoilUpAngle = Mathf.Lerp(currentRecoilUpAngle, 0f, Time.deltaTime * recoilReturnSpeed);
@@ -224,8 +227,10 @@ public class PlayerController : MonoBehaviour
         HandleArmRotation();
         HandleVisualSwitch();
 
+        //Handles ammunition for the tools, as well as which tool is being used
         if (raycast != null)
         {
+            //Checking to see if current tool has ammo
             bool hasAmmo = true;
             if (currentTool == ToolType.WaterBall) hasAmmo = waterAmmo > 0;
             else if (currentTool == ToolType.IncendiaryBall) hasAmmo = incendiaryAmmo > 0;
@@ -262,6 +267,7 @@ public class PlayerController : MonoBehaviour
             }
         }
 
+        //Setting the variables values for the animator (that controls which animation the character is playing at a given point)
         if (anim != null)
         {
             anim.SetBool("isRunning", isRunning);
@@ -372,13 +378,12 @@ public class PlayerController : MonoBehaviour
     }
     private void ApplyRecoil(float kickMultiplier = 1f)
     {
-        // ADD the kick - this was missing entirely
         currentRecoilAngle += recoilKickAngle * kickMultiplier;
         currentRecoilUpAngle += recoilUpAngle * kickMultiplier;
         currentTorsoRecoil += recoilKickAngle * torsoRecoilMultiplier * kickMultiplier;
         currentHeadRecoil += recoilKickAngle * headRecoilMultiplier * kickMultiplier;
 
-        // Body pushback - opposite of aim direction
+        //Body pushback opposite of aim direction
         if (muzzle != null && gameCamera != null)
         {
             Vector3 mousePos = gameCamera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
@@ -428,6 +433,7 @@ public class PlayerController : MonoBehaviour
         Debug.Log("All Ammo Refilled!");
     }
 
+    //Sprite flips when aiming other way
     private void HandleSpriteFlipping()
     {
         if (!isRunning && !isWallClimbing)
@@ -451,6 +457,7 @@ public class PlayerController : MonoBehaviour
     {
         if (nearArmGun == null || gameCamera == null) return;
 
+        //Gun, arm, and body rotates while aiming
         if (isAiming)
         {
             Vector3 mousePos = gameCamera.ScreenToWorldPoint(Mouse.current.position.ReadValue());
@@ -459,8 +466,6 @@ public class PlayerController : MonoBehaviour
 
             //Rotate Gun and near arm
             float angle = Mathf.Atan2(lookDir.y, lookDir.x) * Mathf.Rad2Deg;
-            // When localScale.x is -1, the Z-axis rotation is inverted. 
-            // We add 180 to point the gun the right way, then multiply by facing to correct the rotation direction.
             float recoilOffset = facing < 0 ? -currentRecoilAngle : currentRecoilAngle;
             float upwardOffset = facing < 0 ? currentRecoilUpAngle : currentRecoilUpAngle;
             float finalAngle = (facing < 0) ? (angle + 180f) : angle;
@@ -471,6 +476,7 @@ public class PlayerController : MonoBehaviour
             //Calculate the base vertical angle (always 0 to 90 or 0 to -90)
             float verticalAimAngle = Mathf.Atan2(lookDir.y, Mathf.Abs(lookDir.x)) * Mathf.Rad2Deg;
 
+            //Rotate other body parts
             if (hipsTransform != null)
             {
                 float hLean = verticalAimAngle * hipsLeanWeight;
@@ -492,7 +498,7 @@ public class PlayerController : MonoBehaviour
                 headTransform.localRotation = Quaternion.Slerp(headTransform.localRotation, Quaternion.Euler(0, 0, hLean), Time.deltaTime * 15f);
             }
 
-            //Stretch the far arm
+            //Stretch the far arm to grip the tool
             if (farHandGrip != null && farArm != null)
             {
                 Vector2 shoulderToGrip = (Vector2)farHandGrip.position - (Vector2)farArm.position;
@@ -513,8 +519,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
-
-
+    //Classic model is all non-aiming animations, aiming model is aiming animations
     private void HandleVisualSwitch()
     {
         if (classicModel == null || aimingModel == null) return;
@@ -553,6 +558,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    //Checks slime surface to see if surface is climbable
     void CheckSlimeSurface()
     {
         if (!enableSlimeClimbing)
@@ -639,6 +645,7 @@ public class PlayerController : MonoBehaviour
         }
     }
 
+    //This triggers when colliding with an object and staying in collision range.
     private void OnCollisionStay2D(Collision2D collision)
     {
         isGrounded = false;

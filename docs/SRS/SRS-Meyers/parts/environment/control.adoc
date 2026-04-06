@@ -1,7 +1,7 @@
 [discrete]
 === Control Information
 
-.{project-title} -- Versionning Information -- Environment Book
+.{project-title} -- Versioning Information -- Environment Book
 [cols="^1,^1,^2,^2,^2,^2"]
 |===
 |Section | Version | Lead | Delivered | Reviewer | Approved 

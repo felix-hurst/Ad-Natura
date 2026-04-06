@@ -1,4 +1,5 @@
-==== Verification setup (baseline)
+[#s6,reftext=S.6]
+=== (S.6) Verification setup (baseline)
 
 * Test scene: <<gl-bench,Benchmark Scene>> with scripted inputs.
 * Hardware target: <<gl-minspec,Minimum Spec>> (lab box or equivalent VM).
@@ -102,4 +103,4 @@
 
 * A build **passes** S.6 only if all **Must** IDs above are met on <<gl-minspec,Minimum Spec>> in the <<gl-bench,benchmark scene>>.
 * Failures on **Should** items are acceptable only if all **Must** remain green and the de-scope order in S.5 is followed.
-* Relevant invariants and effects referenced: <<e-inv-publish-latency>>, <<e-inv-finite>>, <<e-inv-bounds>>, <<e-inv-atomic-edit>>, <<e-inv-collision-coherence>>, <<e-inv-seeded-tests>>, <<e5-reveal-water>>, <<e5-add-heat>>, <<e5-adjust-light>>.
+* Relevant invariants and effects referenced: <<e6>>,

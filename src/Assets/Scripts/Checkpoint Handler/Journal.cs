@@ -112,6 +112,7 @@ public class Journal : MonoBehaviour
         nextButton.interactable = currentPage + 2 < pages.Count;
     }
 
+    //Splits a long text into as many pages as is necessary
     private List<string> SplitIntoPages(string fullText, int maxWords)
     {
         List<string> result = new List<string>();

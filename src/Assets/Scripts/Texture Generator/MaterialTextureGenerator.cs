@@ -57,6 +57,7 @@ public class MaterialTextureGenerator : MonoBehaviour
     [SerializeField] private TextAsset materialTexturesJson;
     [SerializeField] private MaterialTextureProfile defaultProfile = new MaterialTextureProfile();
 
+    //Caches the dictionaries, this prevents the same texture from generating multiple times, improving performance
     private Dictionary<string, MaterialTextureProfile> profileDictionary = new Dictionary<string, MaterialTextureProfile>();
     private Dictionary<string, Texture2D> generatedTextures = new Dictionary<string, Texture2D>();
 
@@ -65,6 +66,7 @@ public class MaterialTextureGenerator : MonoBehaviour
         LoadProfiles();
     }
 
+    //Loads the profiles into a dictionary for constant, fast lookup time
     void LoadProfiles()
     {
         if (materialTexturesJson != null)
@@ -115,6 +117,8 @@ public class MaterialTextureGenerator : MonoBehaviour
 
         return texture;
     }
+
+
     Texture2D GenerateMinecraftTexture(MaterialTextureProfile profile)
     {
         int size = profile.textureSize;
@@ -126,13 +130,17 @@ public class MaterialTextureGenerator : MonoBehaviour
         Color lightColor = profile.lightColor.ToColor();
         Color darkColor = profile.darkColor.ToColor();
 
+        //Random noise is used for variation in textures, so keep it interesting
         float[,] noiseMap = GenerateNoiseMap(size, profile.noiseScale);
 
         float[,] lightingMap = GenerateMinecraftLighting(size, profile.shadingStrength);
 
+        //Map each pixel to its respective cluster to know what to colour them later
         List<PixelCluster> clusters = GeneratePixelClusters(size, profile.clusters);
 
         int[,] clusterMap = new int[size, size];
+
+        //Initializes the clusters to a default state
         for (int i = 0; i < size; i++)
         {
             for (int j = 0; j < size; j++)
@@ -141,6 +149,7 @@ public class MaterialTextureGenerator : MonoBehaviour
             }
         }
 
+        //for each pixel in the cluster with valid size, assign it the clusterindex to keep track of which is which
         for (int clusterIndex = 0; clusterIndex < clusters.Count; clusterIndex++)
         {
             PixelCluster cluster = clusters[clusterIndex];
@@ -164,10 +173,12 @@ public class MaterialTextureGenerator : MonoBehaviour
 
                 if (clusterIndex >= 0)
                 {
+                    //Applies colour and shading to the cluster
                     PixelCluster cluster = clusters[clusterIndex];
                     pixelColor = cluster.color;
                     applyShading = cluster.hasShading;
 
+                    //Adding the noise/variation
                     float noise = noiseMap[x, y];
                     float variation = (noise - 0.5f) * 0.1f;
                     pixelColor.r = Mathf.Clamp01(pixelColor.r + variation);
@@ -176,6 +187,7 @@ public class MaterialTextureGenerator : MonoBehaviour
                 }
                 else
                 {
+                    //Apply default colour, shading, noise
                     pixelColor = baseColor;
                     applyShading = profile.enableShading;
 
@@ -189,6 +201,7 @@ public class MaterialTextureGenerator : MonoBehaviour
 
                     if (clusterIndex >= 0)
                     {
+                        //For valid clusters, apply shading and lighting
                         Color clusterLight = pixelColor * 1.3f;
                         clusterLight.a = pixelColor.a;
                         Color clusterDark = pixelColor * 0.7f;
@@ -236,16 +249,19 @@ public class MaterialTextureGenerator : MonoBehaviour
         {
             for (int i = 0; i < def.count; i++)
             {
+                //Applies all the necessary info that a cluster needs, and assigns it a random size
                 PixelCluster cluster = new PixelCluster();
                 cluster.color = def.color.ToColor();
                 cluster.hasShading = def.hasShading;
                 cluster.pixels = new List<Vector2Int>();
 
+                //Cluster is seeded at a random point
                 int startX = Random.Range(0, size);
                 int startY = Random.Range(0, size);
 
                 int clusterSize = Random.Range(def.minSize, def.maxSize + 1);
 
+                //Keeps track of which clusters have been processed/need to be processed
                 Queue<Vector2Int> toProcess = new Queue<Vector2Int>();
                 HashSet<Vector2Int> processed = new HashSet<Vector2Int>();
 
@@ -261,6 +277,7 @@ public class MaterialTextureGenerator : MonoBehaviour
                     processed.Add(current);
                     cluster.pixels.Add(current);
 
+                    //Think of clustersize*clustersize as the maximum size of the cluster, if there is room still in the cluster, "grow outwards"
                     if (cluster.pixels.Count < clusterSize * clusterSize)
                     {
                         Vector2Int[] neighbors = new Vector2Int[]
@@ -271,6 +288,7 @@ public class MaterialTextureGenerator : MonoBehaviour
                             new Vector2Int(current.x, current.y - 1),
                         };
 
+                        //Dont make every neighbour queue up to introduce randomness
                         foreach (Vector2Int neighbor in neighbors)
                         {
                             if (!processed.Contains(neighbor) && Random.value > 0.4f)
@@ -376,9 +394,11 @@ public static class MaterialTextureExtensions
             materialName = obj.name;
         }
 
+        //Get texture and convert to sprite 
         Texture2D texture = generator.GetTexture(materialName);
-
         SpriteRenderer spriteRenderer = obj.GetComponent<SpriteRenderer>();
+
+        //Calculate scale based on texture dimensions
         if (spriteRenderer != null)
         {
             MaterialTextureProfile profile = generator.GetProfile(materialName);

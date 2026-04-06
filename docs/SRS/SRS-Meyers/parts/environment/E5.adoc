@@ -7,7 +7,7 @@ endif::[]
 
 ==== Effects (what changes in the environment when the system acts)
 
-NOTE: “Publish” = the environment makes updated data available to the system. Exact system responses live in S.* and will be verified in S.6.
+NOTE: “Publish” = the environment makes updated data available to the system. Exact system responses live in S.* and will be verified in <<s6>>.
 
 [%header,cols="3,5,2,2,3"]
 |===
@@ -22,11 +22,16 @@ NOTE: “Publish” = the environment makes updated data available to the system
 |===
 
 Platform / OS facing effects (non-level):
-* Saves & settings: write/update small files under a user-writable path.
-* Logs: append diagnostic entries to a text log (rotation defined in Project).
-* Display: present frames to the primary display device.
-* Audio: play sound on the current output device; if none, continue silently.
-* Controller rumble (if present): activate vibration for a specified duration.
 
-(See E.6 for invariants like “no NaN/Inf” and “a cell cannot be both passable and blocked in the same frame”.)
+*Saves & settings: write/update small files under a user-writable path.
+
+*Logs: append diagnostic entries to a text log (rotation defined in Project).
+
+*Display: present frames to the primary display device.
+
+*Audio: play sound on the current output device; if none, continue silently.
+
+*Controller rumble (if present): activate vibration for a specified duration.
+
+(See <<e6>> for invariants like “no NaN/Inf” and “a cell cannot be both passable and blocked in the same frame”.)
 

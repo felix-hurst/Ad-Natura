@@ -29,6 +29,8 @@ public class ApplyPhysicsMaterial : MonoBehaviour
         }
     }
 
+    /// Fetches the appropriate physics material and applies it to all attached 2D colliders.
+    /// This ensures consistent friction and bounciness across similar object types.
     public void ApplyMaterial()
     {
         if (physicsManager == null)
@@ -65,6 +67,8 @@ public class ApplyPhysicsMaterial : MonoBehaviour
         }
     }
 
+    //Resolves which material name to look up based on a hierarchy of priority
+    // Manual > Object Tag > Object name
     string GetMaterialName()
     {
         if (!string.IsNullOrEmpty(overrideMaterialName))
