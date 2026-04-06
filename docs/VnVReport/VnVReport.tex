@@ -106,15 +106,12 @@ were running background event checks far too many times per second, slowing down
 system. This issue was quickly corrected.
 
 \subsection{Automated Testing and Verification Tools}
-Due to the inaccessibility of Unity Unit Testing integration to GitHub Actions,
-automated testing was not able to be performed.
+Our team implemented Unity C# Linter to check for defects in our source code, and to ensure a certain level of code quality. This tool was used throughout development, and helped us identify and fix issues in our code as they arose. Furthermore, tex files have compile checkers that were used to ensure the formatting and structure of our documents were correct, and to catch any errors in the tex code.
 
 \subsection{Software Validation}
 A large volume of useful and thought-provoking feedback was given to us
 from the PoC and Rev 0 demonstrations we presented. Through speaking with some of
-our stakeholders, including our instructor, TA and supervisors, we learned
-that our project was lacking unified direction and was failing to meet the
-goals that we had laid out for it in our prior documents, such as the
+our stakeholders, including our instructor, TA and supervisors, we were encouraged to focus our game direction and to align our efforts more closely to the goals that we had laid out for it in our prior documents, such as the
 \href{https://github.com/felix-hurst/Ad-Natura/blob/main/docs/ProblemStatementAndGoals/ProblemStatement.pdf}{\bf{Problem Statement and Goals}} document.
 
 This led to major changes in our development plans. As a team, we held
@@ -135,18 +132,19 @@ in the \href{https://github.com/felix-hurst/Ad-Natura/blob/main/docs/Extras/Usab
 
 \subsection{Tests for Functional Requirements}
 
+The following tests verify that the core gameplay mechanics behave as intended, covering object destruction, slime mold interactions, and player movement.
 
 \subsubsection{ObjectDestructionTest-FRT01}
 
 
-\textbf{Initial State}: Character at beginning of level, with a destructible
-obstacle in their path.
+\textbf{Initial State}: Player at beginning of level, with a destructible
+obstacle in their path. Player is 5 units away from the obstacle, and has the rifle tool selected.
 
-\textbf{Input}: Select destructive ball tool, approach a destructible obstacle, aim,
+\textbf{Input}: Select rifle tool, approach a destructible obstacle, aim,
 and fire the tool at the object.
 
 \textbf{Expected Output}: A destructive ball is fired from the tool at the object.
-About one second after contact, the object breaks into smaller pieces.
+About one second after contact, the object breaks into smaller pieces. Note that distance does not impact destruction behaviour.
 
 \textbf{Actual Output}: Same as expected.
 
@@ -203,6 +201,7 @@ enough of the wall, the wall becomes climbable, and the character ascends it suc
 
 \subsection{Tests for Non-Functional Requirements}
 
+The following tests evaluate the quality attributes of the system, including performance under load and the unpredictability of slime mold behaviour.
 
 \subsubsection{PerformanceTest-NFRT01}
 
@@ -222,11 +221,11 @@ should stay within reasonable bounds, averaging 30 fps or higher.
 
 \textbf{Initial State}: Freshly loaded level.
 
-\textbf{Input}: Repeated reloads of a single part of a level, each time aiming
+\textbf{Input}: 5 reloads of a single part of a level, each time aiming
 the water ball tool in the same place to direct the slime mold toward the first
 wood obstacle.
 
-\textbf{Expected Output}: The slime mold should have subtly different, random behaviour each time.
+\textbf{Expected Output}: The slime mold should have subtly different, random behaviour each time. At marked debug intervals on the object, slime mold agents should be observed to take different paths, and to decompose the wood obstacle at different speeds, each time the test is run.
 
 \textbf{Actual Output}: Same as expected.
 
@@ -238,6 +237,7 @@ Refer to the original
 
 \section{Unit Tests}\label{unittests}
 
+The following unit tests isolate and validate individual components of the system, including physics, fluid simulation, and agent behaviour.
 
 \subsection{Tests}
 
@@ -312,21 +312,43 @@ best appearance that will reflect natural and realistic particle
 movement, which is important for the artistic and educational aspects
 of our project.
 
-In addition, we plan to increase the amount of playable content in
-the game to give our players a deeper experience that will elicit
-further emotion and learning.
 %Later this will include what changes we DID make to the final product
 
 
 \section{Code Coverage Metrics}
 The system and unit test suites together are designed to ensure near-100\%
-{\bf{branch coverage}} of the source code, for all important functionality,
-including player movement, tool usage, slime mold behaviour, and destructible
-object behaviour. We believe branch coverage is sufficient for our project
-given the time we have to perform tests, as it guarantees every major block
-of code, as well as every major control-flow path, has been executed at least once.
-However, it would become too tedious to strive for condition or
+{\bf{branch coverage}} of the source code for all important functionality.
+We believe branch coverage is sufficient for our project given the time
+available, as it guarantees every major code block and control-flow path
+has been executed at least once, without the overhead of condition or
 multiple condition coverage.
+
+The following breaks down how coverage is achieved across each major module:
+
+\begin{itemize}
+    \item \textbf{Tool Usage}: FRT01, FRT02, and FRT03 collectively exercise
+    all three tools (destructive ball, water ball, and spore fan), covering
+    the branching logic for tool selection, projectile firing, and on-contact
+    effects.
+
+    \item \textbf{Destructible Object Behaviour}: FRT01 and UT01 together cover
+    the two main destruction paths --- gradual fracturing on impact and
+    raycast-based splitting --- ensuring both the fracture and object-generation
+    branches are reached.
+
+    \item \textbf{Slime Mold Behaviour}: FRT02, FRT03, NFRT02, and UT03 cover
+    the key branches in slime mold logic, including agent attraction to water,
+    traversal toward a target, decomposition of wood obstacles, and spore
+    spreading and germination.
+
+    \item \textbf{Fluid Simulation}: UT02 covers the branching logic for water
+    accumulation, specifically the steady-state cap that prevents unbounded
+    pooling, ensuring both the filling and capacity-reached branches are exercised.
+
+    \item \textbf{Performance and Particle Systems}: NFRT01 exercises the
+    high-load branches of the particle and physics systems by spawning the
+    maximum feasible number of particles and fragments simultaneously.
+\end{itemize}
 
 \newpage{}
 \section*{Appendix --- Reflection}
