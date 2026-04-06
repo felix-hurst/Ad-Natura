@@ -37,6 +37,7 @@ public class JournalCheckpoint : MonoBehaviour
 
     void Update()
     {
+        //Allows for the player to interact with the journal
         Collider2D player = Physics2D.OverlapCircle(transform.position, interactRange, playerLayer);
         playerInRange = player != null;
 
