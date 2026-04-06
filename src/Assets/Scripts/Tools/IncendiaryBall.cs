@@ -36,7 +36,6 @@ public class IncendiaryBall : MonoBehaviour
     [SerializeField] private Color impactColor = new Color(1f, 0.5f, 0f, 1f);
     [SerializeField] private float impactDuration = 0.3f;
 
-
     [Header("Structural Collapse Settings")]
     [SerializeField] private float weaknessDelay = 1.5f;
     [SerializeField] private int minRayCount = 3;
@@ -62,10 +61,17 @@ public class IncendiaryBall : MonoBehaviour
     [SerializeField] private bool showDebugInfo = false;
 
     private float lifetime = 0f;
+
+    // Guards against OnCollisionEnter2D triggering the impact sequence
+    // more than once if multiple contacts are resolved in the same frame.
     private bool hasImpacted = false;
     private IncendiaryImpactSystem incendiarySystem;
     private Rigidbody2D rb;
     private SpriteRenderer spriteRenderer;
+
+    // Velocity is cached in FixedUpdate rather than read from the collision
+    // event because collision.relativeVelocity can be affected by the physics
+    // solver's post-contact resolution, which distorts the true incoming speed.
     private Vector2 preImpactVelocity;
 
     void Start()
@@ -86,7 +92,8 @@ public class IncendiaryBall : MonoBehaviour
             Debug.LogWarning("IncendiaryBall: No IncendiaryImpactSystem found in scene! Impact effects will not work.");
         }
 
-        // Muzzle smoke on spawn
+        // Spawn muzzle smoke pointing opposite to the launch direction so it
+        // looks like a trail puff from the barrel rather than from the ball itself.
         if (incendiarySystem != null && rb != null)
         {
             Vector2 smokeDirection = rb.linearVelocity.magnitude > 0.1f
@@ -98,10 +105,10 @@ public class IncendiaryBall : MonoBehaviour
         preImpactVelocity = Vector2.zero;
     }
 
-
-
     void FixedUpdate()
     {
+        // Snapshot velocity every physics step so the most recent pre-contact
+        // value is available when OnCollisionEnter2D fires.
         if (!hasImpacted && rb != null)
         {
             preImpactVelocity = rb.linearVelocity;
@@ -119,8 +126,6 @@ public class IncendiaryBall : MonoBehaviour
         }
     }
 
-
-
     void CreateVisual()
     {
         spriteRenderer = GetComponent<SpriteRenderer>();
@@ -129,6 +134,8 @@ public class IncendiaryBall : MonoBehaviour
             spriteRenderer = gameObject.AddComponent<SpriteRenderer>();
 
             Texture2D texture = CreateIncendiaryTexture(64);
+            // Pixels-per-unit is derived from ballRadius so the sprite fills the
+            // intended world-space size regardless of texture resolution.
             Sprite sprite = Sprite.Create(texture, new Rect(0, 0, 64, 64), new Vector2(0.5f, 0.5f), 32f / ballRadius);
 
             spriteRenderer.sprite = sprite;
@@ -144,6 +151,8 @@ public class IncendiaryBall : MonoBehaviour
             collider = gameObject.AddComponent<CircleCollider2D>();
         }
 
+        // Radius stays at 0.5 in local space — world-space size is controlled
+        // by localScale, keeping the collider perfectly in sync with the visual.
         collider.radius = 0.5f;
     }
 
@@ -155,6 +164,8 @@ public class IncendiaryBall : MonoBehaviour
         Vector2 center = new Vector2(size / 2f, size / 2f);
         float radius = size / 2f;
 
+        // Three-zone gradient from near-white core to transparent edge simulates
+        // a molten/burning appearance without needing a particle system.
         Color coreColor = new Color(1f, 1f, 0.9f, 1f);
         Color midColor = new Color(1f, 0.9f, 0.5f, 1f);
         Color edgeColor = new Color(1f, 0.6f, 0.2f, 0.9f);
@@ -182,10 +193,14 @@ public class IncendiaryBall : MonoBehaviour
                     }
                     else
                     {
+                        // Outer 30% fades to transparent so the ball blends
+                        // softly into the scene rather than having a hard edge.
                         float t = (normalizedDist - 0.7f) / 0.3f;
                         pixelColor = Color.Lerp(edgeColor, new Color(edgeColor.r, edgeColor.g, edgeColor.b, 0f), t);
                     }
 
+                    // Perlin noise adds subtle brightness variation that makes the
+                    // surface look like it's flickering or burning unevenly.
                     float noise = Mathf.PerlinNoise(x * 0.1f, y * 0.1f);
                     pixelColor *= Mathf.Lerp(0.9f, 1.1f, noise);
 
@@ -218,6 +233,9 @@ public class IncendiaryBall : MonoBehaviour
         bool isExcluded = ShouldExcludeObject(collision.gameObject);
         if (isExcluded)
         {
+            // Still trigger the visual/audio impact for excluded objects (e.g.
+            // player surfaces) so the collision doesn't feel silent or invisible,
+            // even though no structural damage is applied.
             if (incendiarySystem != null)
                 CreateIncendiaryImpact(impactPoint, preImpactVelocity, surfaceNormal);
 
@@ -243,13 +261,14 @@ public class IncendiaryBall : MonoBehaviour
             Debug.Log($"nohere {collision.gameObject.layer}");
         }
 
-        // REMOVED the duplicate Vector2 declarations that were here
-
         GameObject hitObject = collision.gameObject;
 
         Debug.Log($"[Ball {gameObject.GetInstanceID()}] Hit object: {hitObject.name} (ID: {hitObject.GetInstanceID()})");
         Debug.Log($"[Ball {gameObject.GetInstanceID()}] Impact point: {impactPoint}, Velocity: {impactVelocity.magnitude:F2}");
 
+        // If incident cutting is enabled, the explosion should target the freshly
+        // severed piece rather than the whole object, so that only the cut portion
+        // is structurally weakened.
         GameObject targetForExplosion = hitObject;
         if (enableIncidentCut)
         {
@@ -304,6 +323,10 @@ public class IncendiaryBall : MonoBehaviour
         Destroy(gameObject);
     }
 
+    // Casts a ray through the hit object along the ball's travel direction to
+    // find entry and exit points, then slices the object so the explosion can
+    // target only the detached piece. Returns the cut piece if one was spawned,
+    // or the original object if the cut failed.
     GameObject PerformIncidentCut(GameObject hitObject, Vector2 impactPoint, Vector2 impactVelocity, Vector2 surfaceNormal)
     {
         Debug.Log($"=== PerformIncidentCut START for ball {gameObject.GetInstanceID()} hitting {hitObject.name} (ID: {hitObject.GetInstanceID()}) ===");
@@ -320,6 +343,8 @@ public class IncendiaryBall : MonoBehaviour
         Vector2 incidentDirection = impactVelocity.normalized;
         if (incidentDirection.magnitude < 0.1f)
         {
+            // Fall back to surface-normal direction if velocity is negligible
+            // (e.g. a slow roll into a wall), so the cut is still well-defined.
             incidentDirection = -surfaceNormal;
         }
 
@@ -330,11 +355,15 @@ public class IncendiaryBall : MonoBehaviour
         Collider2D hitCollider = hitObject.GetComponent<Collider2D>();
         if (hitCollider != null)
         {
+            // Start slightly behind the impact point to avoid the ray originating
+            // inside the collider and missing the entry surface altogether.
             Vector2 rayOrigin = impactPoint - incidentDirection * 0.5f;
             RaycastHit2D[] hits = Physics2D.RaycastAll(rayOrigin, incidentDirection, cutRaycastDistance);
 
             Debug.Log($"[Ball {gameObject.GetInstanceID()}] Raycasting for entry/exit points - found {hits.Length} hits");
 
+            // The first hit of the target collider is the entry face,
+            // the second is the exit face — together they define the cut line.
             int hitCount = 0;
             foreach (RaycastHit2D hit in hits)
             {
@@ -358,6 +387,9 @@ public class IncendiaryBall : MonoBehaviour
 
             if (!foundExit)
             {
+                // A reverse raycast from behind the object finds the exit face when
+                // the forward ray exits through a face that was never entered (e.g.
+                // a concave shape or a very thin geometry).
                 Debug.Log($"[Ball {gameObject.GetInstanceID()}] No exit found in forward raycast, trying reverse...");
                 Bounds bounds = hitCollider.bounds;
                 Vector2 farPoint = rayOrigin + incidentDirection * (cutRaycastDistance + bounds.size.magnitude);
@@ -392,6 +424,9 @@ public class IncendiaryBall : MonoBehaviour
 
         GameObject explosionTarget = null;
 
+        // Subscribe to the LargePieceSpawned event before calling ExecuteCutDirect
+        // so the callback fires synchronously during the cut and we can capture
+        // which piece was created. Unsubscribe immediately after to avoid leaks.
         RaycastReceiver.OnLargePieceSpawned callback = null;
 
         if (!explosionAffectsParent)
@@ -438,6 +473,9 @@ public class IncendiaryBall : MonoBehaviour
             }
             else
             {
+                // The cut may have produced only small fragments below the area
+                // threshold, in which case no large piece event fires. Fall back
+                // to the parent so the explosion still has a valid target.
                 Debug.LogWarning($"[Ball {gameObject.GetInstanceID()}] WARNING: Cut piece was not captured, defaulting to parent {hitObject.name}");
                 Debug.Log($"=== PerformIncidentCut END ===\n");
                 return hitObject;
@@ -457,12 +495,16 @@ public class IncendiaryBall : MonoBehaviour
 
         if (scaleWithVelocity)
         {
+            // A slow-moving ball produces a gentler effect; a fast-moving one
+            // produces a more dramatic burst, making the weapon feel responsive.
             float velocityMagnitude = velocity.magnitude;
             float velocityIntensity = Mathf.Clamp01(velocityMagnitude / maxVelocityForImpact);
             intensity *= velocityIntensity;
             intensity = Mathf.Clamp01(intensity);
         }
 
+        // Minimum floor prevents the impact effect from being so weak it's
+        // invisible, which would make the collision feel like it didn't register.
         intensity = Mathf.Max(intensity, 0.3f);
 
         incendiarySystem.TriggerIncendiaryImpactWithNormal(impactPoint, velocity, surfaceNormal, intensity);
@@ -473,6 +515,8 @@ public class IncendiaryBall : MonoBehaviour
         }
     }
 
+    // Brief ring drawn at the impact point gives the player immediate visual
+    // confirmation that the collision was detected, before the delayed explosion fires.
     void ShowImpactEffect(Vector2 impactPoint)
     {
         GameObject impactVis = new GameObject("IncendiaryBallImpact");
@@ -521,6 +565,7 @@ public class IncendiaryBall : MonoBehaviour
             }
         }
 
+        // Name-based check catches dynamically spawned debris that may lack a tag.
         if (obj.name.Contains("Debris") || obj.name.Contains("Fragment"))
         {
             return true;

@@ -34,6 +34,7 @@
 \midrule
 All & 1.0 & March 5, 2026\\
 Felix Hurst & 1.1 & March 7, 2026\\
+Felix Hurst & 1.2 & April 6, 2026\\
 \bottomrule
 \end{tabularx}
 
@@ -56,7 +57,8 @@ This document will report on and discuss the results of the Usability Survey.
 \section{General Information}
 The Usability Survey was conducted by deploying a demo build of our project
 executable, and distributing it to our stakeholders, our players. They were asked
-to play our game and then submit a survey to tell us about their experience.
+to play our game from start to finish, and then submit a survey to tell us about 
+their experience.
 
 For a list of the questions found in the Usability Survey, refer to the
 \href{https://github.com/felix-hurst/Ad-Natura/blob/main/docs/VnVPlan/VnVPlan.pdf}{VnV Plan} document.
@@ -65,24 +67,29 @@ This report is also closely tied with our
 \href{https://github.com/felix-hurst/Ad-Natura/blob/main/docs/VnVReport/VnVReport.pdf}{Verification and Validation Report},
 as this report serves to determine the level of validation we have with our stakeholders.
 
-\section{Usability Survey Results}
-This section will report a summary of the results from each major section
-of the survey form. This survey was conducted from March 4th to March 7th, 2026.
+\section{Usability Survey Round 1}
+This was our first of two rounds of usability testing.
+This survey was conducted from March 4th to March 7th, 2026.
+There were a total of 5 participants in this survey.
 
-\subsection{Performance Report}
+\subsection{Survey Results}
+This section will report a summary of the results from each major section
+of the survey form.
+
+\subsubsection{Performance Report}
 Reported average frame rates ranged from 12.80 fps to 35.44 fps,
 resulting in an overall average of 23.8 fps. This is not ideal,
 as we were aiming for an overall average of at least 30 fps,
 though it is still playable and will not harm the experience by
 a lot, especially considering our pixel art style.
 
-\subsection{Demographics}
+\subsubsection{Demographics}
 The people who participated in the survey included a mix of North
 Americans and Europeans. They were aged 22+ and predominantly male.
 Most preferred the genres of Action and RPG. There were many different
 themes enjoyed by responders.
 
-\subsection{Learnability}
+\subsubsection{Learnability}
 Participants played the game for 5--20 minutes before finishing or
 deciding to submit the survey. The basic controls were learned quickly,
 however, the game mechanics were not very intuitive to the player.
@@ -94,9 +101,11 @@ obvious usage for the tools. In particular, the destructive ball tool
 currently looks too much like a fireball, and gives the wrong impression
 of how to use it, with players trying to vaporize water or burn wood
 rather than destroy the breakable stone objects. Overall, responders
-thought the puzzles were a bit too difficult to overcome.
+thought the puzzles were a bit too difficult to overcome, but this 
+difficulty primarily stemmed from confusion about what they needed 
+to do, rather than a skill requirement.
 
-\subsection{Entertainment Value}
+\subsubsection{Entertainment Value}
 Participants enjoyed the visual aspects of the game, including the
 slime mold's movement, the art style and environment, the player
 animations and aiming of the tools, and the water splashing.
@@ -106,20 +115,20 @@ the slime mold, and overall lack of direction for the puzzles.
 In particular, the wall climbing section at the end of the level
 was considered the least entertaining game mechanic.
 
-\subsection{Business Requirements}
+\subsubsection{Business Requirements}
 We received mixed ratings for the business requirements of the
 project. No one experienced game freezes, crashes, and other
 similar software exceptions. However, there were a mix of high
 and low ratings for whether the game was worth their time.
 
-\subsection{Story / Message}
+\subsubsection{Story / Message}
 Most participants felt that the demo was too short to discern
 a story or message from it, but a few responders did catch on to
 exactly what we were intending to present in terms of story: The
 ideas of working with nature instead of against it, and avoiding
 interjecting man-made items and waste into the environment.
 
-\subsection{Emotions}
+\subsubsection{Emotions}
 There were a mix of emotions that participants experienced. Those that
 struggled with the game mechanics felt confusion and irritation,
 and others felt intrigue and curiosity, as well as accomplishment
@@ -127,7 +136,7 @@ when solving puzzles. A particular moment of emotion happened when
 players figured out they could break the stone objects to expose
 water sources, serving as an ``Aha!" moment.
 
-\subsection{Exploring the Slime Mold Algorithm}
+\subsubsection{Exploring the Slime Mold Algorithm}
 Most participants learned that the slime mold is attracted to water.
 They indicated the game does not make the slime mold's mechanics
 clear, but it does behave in a natural and unpredictable manner.
@@ -137,7 +146,7 @@ wondered why the slime mold was even present in the world.
 Some responders enjoyed the slime mold's pulsing visual and unique
 concept.
 
-\section{Discussion of Survey Results}
+\subsection{Discussion of Survey Results}
 It is clear that our project in its current state is lacking a lot
 of key elements that make a game fun to play. Currently, the game
 does not give the player instructions or tutorials, and as a result,
@@ -147,7 +156,19 @@ enjoyment. However, we did succeed in part in sending the message we
 intended to send, eliciting feelings of curiosity and intrigue,
 and teaching the player of some aspects of the slime mold.
 
-\section{Changes Due To Results}
+We anticipated some of these issues, as we had already planned to add 
+more direct tutorials to the player, however, these were cut from the 
+build distributed in this round of surveys due to time constraints. 
+We decided it would still be beneficial to gain player insights on 
+learnability without these planned tutorials present, as it could 
+give us an idea of exactly how much information and instruction to give 
+the player, and prevent us from giving them too much direction. Another 
+reason that we went forward with the first round of surveys despite some 
+missing features, was that we intended to gather information 
+about other aspects of our product, and to help measure our improvement 
+over time.
+
+\subsection{Changes Due To Results}
 Our next major focus should be on introducing proper menus and
 tutorials to the game, explaining to the player what they can do
 with their tools, and give them hints on how to overcome puzzles.
@@ -162,5 +183,158 @@ We plan on running a second Usability Survey in late March after
 making improvements to the project, so that we may measure our
 success again and compare our results to our past results, to
 see how much we succeeded in improving the project.
+
+\section{Usability Survey Round 2}
+This was our second of two rounds of usability testing.
+This survey was conducted from March 29th to April 6th, 2026.
+There were a total of 3 participants in this survey.
+
+\subsection{Survey Results}
+This section will report a summary of the results from each major section
+of the survey form.
+
+\subsubsection{Performance Report}
+Unfortunately, due to some technical limitations, only players on Windows 
+were able to submit a performance report. One respondent submitted a 
+performance report, indicating an average frame rate of 30.38 fps. 
+However, this respondent did indicate some severe frame drops, lowering 
+game speed to an estimated 5--10 fps, when certain objects were broken 
+into several small pieces at once. This is still not ideal, as we were 
+aiming for a smooth frame rate of about 30 fps for the whole experience.
+However, these frame drops are uncommon, so it is not a major issue.
+
+\subsubsection{Demographics}
+The people who participated in the survey included two North
+Americans and one European. They were aged 22+ and all male.
+Most preferred the genres of Action and RPG. There were many different
+themes enjoyed by responders.
+
+\subsubsection{Learnability}
+Participants played the game for 5--10 minutes before finishing or deciding 
+to submit the survey. The basic controls were learned quickly and intuitive, 
+thanks to our newly added pause menu detailing the control scheme, tool 
+descriptions, and journal logs providing additional guidance to players.
+
+The most difficult game mechanic to learn was how to blow spores into a 
+specific location to spawn new slime mold sources. This mechanic was not 
+made clear enough, with some nuances such as a requirement for a specific 
+number of spores to be placed together in one place. These exact details 
+were not given to the player, and so it caused some confusion and frustration 
+when the mechanic appeared inconsistent from the player's perspective.
+
+\subsubsection{Entertainment Value}
+Participants enjoyed the visual appearance of the game, like in the first round 
+of testing. Returning respondents from the first survey mentioned that several 
+visual improvements were made, including wood obstacles changing colour when 
+taking decomposition damage from slime molds, the player's climbing animation, 
+the player's body/arms rotating more realistically while aiming, and the overall 
+cohesion of the background and object sprites.
+
+Players enjoyed the presence of music and sound effects, adding a new layer 
+of depth to feedback for actions performed and environmental events.
+
+Players enjoyed interacting with the journal objects, flipping 
+back and forth between the pages, serving as another immersive element.
+
+Players also indicated that having unlimited ammo for each tool was fun, blasting 
+down calamity obstacles in the second chapter of the game, for instance. However, 
+a suggestion was made to introduce a resource management system, where ammo is 
+mostly limited, perhaps only able to be refilled at certain checkpoints. This 
+kind of mechanic could make the game more interesting, introducing a requirement 
+for strategy and skill, which would consequently let the player feel more 
+accomplished upon successful completion of a level.
+
+Lastly, players who participated in the first round of surveys indicated that 
+they appreciated how the slime mold moves faster than before, meaning that they 
+do not have to wait as long for slime mold to complete a task, and can instead 
+spend more time active in the game. They also enjoyed the increase in the amount 
+of levels and things to do in the game overall.
+
+\subsubsection{Business Requirements}
+No one experienced game freezes, crashes, and other similar software exceptions.
+Additionally, there was a fairly high (average 4/5) rating for the game being 
+worth their time playing.
+
+One respondent was left-handed and indicated that it would have been helpful 
+to be able to move the player using the arrow keys instead of WASD.
+
+\subsubsection{Story / Message}
+Participants indicated that the story was very clear this time around. This 
+was accomplished through the cutscenes that displayed text for the player to read, 
+as well as the journal logs providing additional context and exposition. The players 
+understood that the game's message was about protecting nature and peacefully working 
+with it. One respondent especially liked the final objective of planting the seeds 
+of the calamity-resistant flower.
+
+However, the storytelling is a bit too upfront, as it is presented primarily through 
+text readings. Responders suggested that if we were to develop more chapters and levels 
+in the future, it would be a great idea to incorporate more environmental storytelling 
+that could be noticed across this longer progression of levels and environments. A 
+``show, don't tell'' approach.
+
+\subsubsection{Emotions}
+There were a mix of emotions that participants experienced, again. For most of the game, 
+two players were having fun and feeling happy, while one felt lonely, likely due 
+to the game's apocalyptic setting and lack of other human characters. This is good, as 
+it means that player was well-immersed in the game and invested in the story.
+
+As mentioned before, the slime mold spore spreading mechanic was a point of frustration 
+for most players, as it was unclear and difficult to overcome as a result. However, 
+one respondent indicated they felt ``frustrated but in a good way\dots wanted to keep playing''.
+
+\subsubsection{Exploring the Slime Mold Algorithm}
+All of this round's responders had some prior knowledge of the slime mold, and so 
+did not provide any specific insights on specific slime mold characteristics 
+learned from the game. However, responders indicated intrigue and curiosity with 
+the slime mold, its distributed intelligence, and its organic, unpredictable behaviour.
+
+\subsection{Discussion of Survey Results}
+At this stage of development, our project is accomplishing the goals we laid out very well.
+There are still some areas where improvements can be made, however. Notably, while we saw 
+a good variance of emotions being experienced, we did not see the emotions of hope and 
+empathy. It is possible our players felt these emotions, but not strongly enough to 
+comment on them while responding to our survey. These two emotions were what we intended 
+the player to feel near the end of the game, especially as the newly planted seeds begin 
+to sprout. We succeeded in getting our message across, to protect the environment, but 
+we believe this message would be strongly reinforced by the feelings of hope and empathy, 
+so this should stay a focus.
+
+\newpage
+\subsection{Changes Due To Results}
+We plan on incorporating the following changes:
+\begin{itemize}
+    \item Add support for arrow key controls for player movement, for left-handed people
+    \item Add a resource management system for tool ammunition
+    \item Improve clarity and/or simplify slime mold spore spreading mechanic
+    \item Use more environmental storytelling and less text-based storytelling
+    \item Improve senses of hope and empathy
+\end{itemize}
+
+In particular, for improving the sense of empathy, a suggestion was made in the first 
+round of usability testing to add something that could harm the slime mold, which could 
+make the player feel sad while watching the slime mold get hurt. This was incorporated 
+into the game as the calamity objects and light sources, both of which harm and destroy 
+the slime mold. However, the implementation could use adjustment. Improving the slime mold's 
+visual reaction to these repulsive sources, for instance, making it more frantically flee,
+could be a way to better elicit the emotion of empathy.
+
+As for hope, this could be accomplished by continuing the story beyond what is currently seen 
+in our product. As it stands currently, the story ends when the player plants the seeds of a 
+calamity-resistant flower, with the hope that the growth of these plants will spread across 
+the land where previous plants died due to the calamity, and the environment will be restored.
+If the story continues with the player having to protect the newly sprouting 
+seeds of the calamity-resistant flower, again with the help of the slime mold, they will 
+feel even more invested in the story. Then, over time, we could show how the world evolves 
+over time, with nature returning to the lands and the calamity fading away. The player would 
+feel more and more hope as the world slowly returns to normal, until finally feeling relief.
+
+\section{Summary of Improvement from Rounds 1 to 2}
+After incorporating feedback received from the first round of usability testing, our 
+game became much more fun, and it was much more clear what the player had to, resulting 
+in an overall major increase in learnability. Additionally, there were significant 
+improvements in the way of graphics and sound design, and improvement in storytelling 
+via cutscenes and interactable journals. Lastly, there was improvement in the presentation 
+of our message, and in eliciting emotions from the player, albeit not as much improvement 
+as we had wanted.
 
 \end{document}

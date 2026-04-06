@@ -74,6 +74,8 @@ public class CalamityObject : MonoBehaviour
 
     private List<Vector2> generatedShape;
     private Mesh visualMesh;
+
+    // Guards against double-spawning if Spawn is called more than once.
     private bool hasSpawned = false;
     private Vector3 targetScale;
     private float groundY;
@@ -88,6 +90,9 @@ public class CalamityObject : MonoBehaviour
         hasSpawned = true;
         groundY = groundYPosition;
 
+        // Save and restore Unity's global random state so shape generation with
+        // a fixed seed produces identical geometry regardless of what other code
+        // has been calling Random before this point.
         int seed = shapeSeed == -1 ? Random.Range(0, 999999) : shapeSeed;
         Random.State previousState = Random.state;
         Random.InitState(seed);
@@ -100,6 +105,8 @@ public class CalamityObject : MonoBehaviour
             StartCoroutine(SproutAnimation());
     }
 
+    // Instant variant skips the sprout coroutine — useful for objects that
+    // need to be fully collidable from the first frame (e.g. pre-placed scenery).
     public void SpawnInstant(float groundYPosition)
     {
         if (hasSpawned) return;
@@ -118,6 +125,8 @@ public class CalamityObject : MonoBehaviour
     public List<Vector2> GetShape() => generatedShape;
     public bool HasSpawned() => hasSpawned;
 
+    // Allows a previously static object to start participating in physics,
+    // for example when it is cut free from the ground by a destruction event.
     public void MakeDynamic()
     {
         Rigidbody2D rb = GetComponent<Rigidbody2D>();
@@ -138,8 +147,13 @@ public class CalamityObject : MonoBehaviour
         List<Vector2> vertices = new List<Vector2>();
         float halfBase = baseWidth * 0.5f;
         float halfTop = topWidth * 0.5f;
+
+        // Lean gives each monolith a slight tilt so they don't all look identical
+        // even when their seeds are close together.
         float leanAmount = Random.Range(-asymmetry, asymmetry) * height * 0.35f;
 
+        // Horizontal constriction bands create the organic "waist" indentations
+        // that prevent the silhouette from looking like a plain trapezoid.
         int bandCount = Random.Range(2, 5);
         float[] bandT = new float[bandCount];
         float[] bandDepth = new float[bandCount];
@@ -149,14 +163,19 @@ public class CalamityObject : MonoBehaviour
             bandDepth[b] = Random.Range(0.08f, 0.22f);
         }
 
+        // Bottom-left corner — the contour is built counter-clockwise starting here.
         vertices.Add(new Vector2(-halfBase, 0f));
 
+        // Left edge — built bottom-to-top so the winding order stays consistent
+        // with Unity's polygon collider expectations.
         for (int i = 1; i <= edgeVerticesPerSide; i++)
         {
             float t = (float)i / (edgeVerticesPerSide + 1);
             float y = t * height;
             float baseProfile = Mathf.Lerp(halfBase, halfTop, EaseInMonolith(t));
 
+            // Gaussian squeeze around each band centre — strong at the band,
+            // fading to zero away from it, so indentations blend naturally.
             float squeeze = 0f;
             for (int b = 0; b < bandCount; b++)
             {
@@ -165,6 +184,8 @@ public class CalamityObject : MonoBehaviour
             }
             float w = Mathf.Max(baseProfile - squeeze, halfTop * 0.25f);
 
+            // Fractal Perlin noise adds organic surface roughness. Multiple
+            // octaves give both large-scale undulation and fine-grained detail.
             float noise = 0f, amp = surfaceRoughness * w * 0.9f, freq = 1f;
             for (int oct = 0; oct < 4; oct++)
             {
@@ -174,8 +195,12 @@ public class CalamityObject : MonoBehaviour
             vertices.Add(new Vector2(-(w + noise) + leanAmount * t, y));
         }
 
+        // Crown forms the jagged top silhouette between the left and right edges.
         vertices.AddRange(GenerateCrown(leanAmount, halfTop));
 
+        // Right edge — built top-to-bottom to complete the closed polygon.
+        // A different noise seed offset (+10f) ensures the right side doesn't
+        // mirror the left, which would look unnatural.
         for (int i = edgeVerticesPerSide; i >= 1; i--)
         {
             float t = (float)i / (edgeVerticesPerSide + 1);
@@ -199,6 +224,7 @@ public class CalamityObject : MonoBehaviour
             vertices.Add(new Vector2((w + noise) + leanAmount * t, y));
         }
 
+        // Bottom-right corner closes the polygon back at ground level.
         vertices.Add(new Vector2(halfBase, 0f));
 
         if (branchCount > 0)
@@ -213,6 +239,8 @@ public class CalamityObject : MonoBehaviour
     {
         List<Vector2> crown = new List<Vector2>();
 
+        // Odd point count so there is always a centre peak directly above the
+        // monolith's axis, which reads as the dominant highest point.
         int crownPoints = Random.Range(1, 3) * 2 + 1;
         float spread = halfTop * Random.Range(0.9f, 1.4f);
 
@@ -221,7 +249,12 @@ public class CalamityObject : MonoBehaviour
             float t = (float)i / (crownPoints - 1);
             float x = Mathf.Lerp(-spread, spread, t) + leanAmount;
 
+            // Alternate between peaks (even index) and valleys (odd index) to
+            // create the serrated top silhouette characteristic of the aesthetic.
             bool isPeak = (i % 2 == 0);
+
+            // Centre peaks are taller — the monolith's highest point is in the
+            // middle, which draws the eye upward and looks more imposing.
             float centreFalloff = Mathf.Clamp01(1f - Mathf.Abs(t - 0.5f) * 1.6f);
             float peakY = isPeak
                 ? height + Random.Range(0.03f, 0.10f) * height * (0.1f + centreFalloff * 0.15f)
@@ -237,6 +270,9 @@ public class CalamityObject : MonoBehaviour
         List<Vector2> result = new List<Vector2>(shape);
         for (int b = 0; b < branchCount; b++)
         {
+            // Reject edge vertices at the very top or bottom — branches near
+            // the ground would clip into the floor, and crown branches would
+            // overlap the intentional silhouette.
             int edgeIndex = -1;
             for (int attempt = 0; attempt < 60; attempt++)
             {
@@ -247,6 +283,7 @@ public class CalamityObject : MonoBehaviour
             if (edgeIndex == -1) continue;
 
             Vector2 anchor = result[edgeIndex];
+            // Branch always grows away from the body centre, not inward.
             Vector2 outward = (anchor.x < 0f ? Vector2.left : Vector2.right);
             outward = (outward + Vector2.up * Random.Range(0.1f, 0.5f)).normalized;
             Vector2 perp = new Vector2(-outward.y, outward.x);
@@ -254,11 +291,16 @@ public class CalamityObject : MonoBehaviour
             float shelfThick = shelfLen * Random.Range(0.25f, 0.55f);
             int segments = Random.Range(3, 6);
 
+            // Build the branch outline as a sub-list of vertices that will be
+            // inserted directly into the parent polygon, keeping it a single
+            // non-holed shape that the triangulator and collider can handle.
             List<Vector2> shelf = new List<Vector2>();
             shelf.Add(anchor + perp * (-shelfThick * 0.4f));
             for (int s = 0; s <= segments; s++)
             {
                 float st = (float)s / segments;
+                // Sin envelope gives the branch a natural bulge in the middle
+                // rather than a constant width.
                 float reach = shelfLen * Mathf.Sin(st * Mathf.PI) * Random.Range(0.75f, 1.05f);
                 reach = Mathf.Max(reach, shelfLen * 0.08f);
                 float hVar = Random.Range(-shelfThick * 0.35f, shelfThick * 0.35f);
@@ -271,6 +313,8 @@ public class CalamityObject : MonoBehaviour
         return result;
     }
 
+    // Smoothstep variant — keeps the profile narrow near the base and wider higher up,
+    // so the monolith reads as rooted and heavy rather than a simple tapered rectangle.
     float EaseInMonolith(float t) => t * t * (3f - 2f * t);
 
     // ─────────────────────────────────────────────────────────────────────────
@@ -284,17 +328,23 @@ public class CalamityObject : MonoBehaviour
         gameObject.tag = materialTag;
         gameObject.layer = LayerMask.NameToLayer("Default");
 
+        // The polygon collider is driven entirely by the procedural shape so
+        // physics matches the visual silhouette exactly.
         PolygonCollider2D polyCollider = gameObject.GetComponent<PolygonCollider2D>();
         if (polyCollider == null) polyCollider = gameObject.AddComponent<PolygonCollider2D>();
         polyCollider.points = generatedShape.ToArray();
         if (physicsMaterial != null) polyCollider.sharedMaterial = physicsMaterial;
 
+        // Continuous detection prevents fast-moving projectiles from tunnelling
+        // through the monolith between physics steps.
         Rigidbody2D rb = gameObject.GetComponent<Rigidbody2D>();
         if (rb == null) rb = gameObject.AddComponent<Rigidbody2D>();
         rb.mass = mass;
         rb.bodyType = isStatic ? RigidbodyType2D.Static : RigidbodyType2D.Dynamic;
         rb.collisionDetectionMode = CollisionDetectionMode2D.Continuous;
 
+        // The SpriteRenderer is disabled because the actual visual comes from
+        // the procedural mesh child object, not a sprite atlas cell.
         SpriteRenderer sr = gameObject.GetComponent<SpriteRenderer>();
         if (sr == null) sr = gameObject.AddComponent<SpriteRenderer>();
         sr.color = baseColor; sr.sortingOrder = sortingOrder;
@@ -308,6 +358,8 @@ public class CalamityObject : MonoBehaviour
         ObjectReshape reshape = gameObject.GetComponent<ObjectReshape>();
         if (reshape == null) reshape = gameObject.AddComponent<ObjectReshape>();
 
+        // The RaycastReceiver (cut/destruction logic) is deferred until after the
+        // sprout animation finishes so the object can't be destroyed mid-animation.
         if (!animateSprout)
             AttachRaycastReceiver();
 
@@ -330,6 +382,8 @@ public class CalamityObject : MonoBehaviour
 
     void BuildVisualMesh()
     {
+        // Destroy any stale mesh child from a previous build so hot-reloading
+        // in the editor doesn't accumulate duplicate renderers.
         foreach (Transform child in transform)
             if (child.name.Contains("_CalamityMesh")) Destroy(child.gameObject);
 
@@ -362,7 +416,8 @@ public class CalamityObject : MonoBehaviour
         int size = pixelTextureSize;
         Texture2D tex = new Texture2D(size, size, TextureFormat.RGBA32, false);
 
-        // Point filtering = hard pixel edges, no blending between texels
+        // Point filtering keeps pixel edges sharp, preserving the intentional
+        // lo-fi aesthetic instead of blurring the colour variation.
         tex.filterMode = FilterMode.Point;
         tex.wrapMode = TextureWrapMode.Clamp;
 
@@ -376,19 +431,24 @@ public class CalamityObject : MonoBehaviour
                 float u = (float)x / size;
                 float v = (float)y / size;
 
-                // Two octaves of Perlin noise for surface colour variation
+                // Two octaves of Perlin noise for surface colour variation —
+                // low frequency gives broad patches, high frequency adds grit.
                 float n = Mathf.PerlinNoise(u * 3.7f + seed * 0.001f, v * 3.7f) * 0.65f
                          + Mathf.PerlinNoise(u * 8.1f + seed * 0.002f, v * 8.1f) * 0.35f;
 
-                // Darken toward the edges to give a subtle rim
+                // Darken toward the edges to give a subtle rim that makes the
+                // object read as three-dimensional without needing a real light source.
                 float rim = Mathf.Clamp01(Mathf.Min(u, 1f - u, v, 1f - v) * 4f);
                 n *= 0.85f + rim * 0.15f;
 
-                // Shift baseColor slightly per pixel
+                // Shift the base colour slightly per pixel so the surface has
+                // organic variation rather than being a flat fill.
                 float shift = (n - 0.5f) * pixelColorVariance;
                 Color c = new Color(
                     Mathf.Clamp01(baseColor.r + shift),
                     Mathf.Clamp01(baseColor.g + shift * 0.8f),
+                    // Blue channel gets a stronger shift to add a slight cool/warm
+                    // variation that reads as subsurface depth on dark materials.
                     Mathf.Clamp01(baseColor.b + shift * 1.2f),
                     baseColor.a);
 
@@ -409,6 +469,11 @@ public class CalamityObject : MonoBehaviour
         foreach (Transform child in transform)
             if (child.name.Contains("_FluidMist")) Destroy(child.gameObject);
 
+        // Two layers are used so mist appears to wrap around the rock —
+        // the back layer reads as mist rising from behind, the front layer
+        // as mist pooling at the base in front of it. Together they sell
+        // depth without needing volumetric rendering.
+
         // Both quads are IDENTICAL in size and position so their edge fades
         // overlap perfectly and blend at the rock silhouette. The only difference
         // is sorting order — one renders behind the rock, one in front.
@@ -427,14 +492,15 @@ public class CalamityObject : MonoBehaviour
             vorticity: mistVorticity * 1.1f
         );
 
-        // Front layer — in front of the rock, same quad dimensions as back
+        // Front layer — same quad dimensions as back layer so silhouette edges
+        // align. Slightly stronger emitter so it reads as the primary mist source.
         CreateFluidInstance(
             label: "_FluidMistFront",
-            sortOrder: sortingOrder + 1,   // restored: in front of rock
+            sortOrder: sortingOrder + 1,
             opacity: mistOpacity * 0.6f,
-            quadWidthMult: 4.0f,               // identical to back
-            quadHeightMult: 2.0f,               // identical to back
-            quadYOff: -0.05f,             // identical to back
+            quadWidthMult: 4.0f,
+            quadHeightMult: 2.0f,
+            quadYOff: -0.05f,
             emitY: 0.12f,
             emitStrength: mistEmitterStrength,
             densStrength: mistDensityStrength,
@@ -491,6 +557,8 @@ public class CalamityObject : MonoBehaviour
         int[] triangles = TriangulatePolygon(vertices);
         if (triangles == null || triangles.Length < 3) return null;
 
+        // UV coordinates are normalised to the polygon's bounding box so the
+        // tiling texture maps to the full extent of the shape regardless of size.
         Vector2[] uvs = new Vector2[vertices.Count];
         Bounds bounds = CalculateBounds(vertices);
         if (bounds.size.x > 0 && bounds.size.y > 0)
@@ -506,6 +574,9 @@ public class CalamityObject : MonoBehaviour
         return mesh;
     }
 
+    // Ear-clipping triangulation converts the arbitrary concave polygon into
+    // triangles the GPU can render. An ear is a triangle whose interior contains
+    // no other polygon vertices, making it safe to cut away.
     int[] TriangulatePolygon(List<Vector2> vertices)
     {
         List<int> triangles = new List<int>();
@@ -522,6 +593,9 @@ public class CalamityObject : MonoBehaviour
                 int next = indices[(i + 1) % indices.Count];
 
                 Vector2 a = vertices[prev], b = vertices[curr], c = vertices[next];
+
+                // Cross product sign determines winding — negative cross means the
+                // vertex is reflex (concave) and cannot be an ear tip.
                 float cross = (a.x - b.x) * (c.y - b.y) - (a.y - b.y) * (c.x - b.x);
                 if (cross <= 0) continue;
 
@@ -540,6 +614,9 @@ public class CalamityObject : MonoBehaviour
                 }
             }
 
+            // If no ear can be found the polygon may be self-intersecting or
+            // degenerate. Fall back to a simple fan from vertex 0, which at
+            // least produces a renderable result rather than an empty mesh.
             if (!earFound)
             {
                 triangles.Clear();
@@ -555,6 +632,8 @@ public class CalamityObject : MonoBehaviour
         return triangles.ToArray();
     }
 
+    // Barycentric coordinates test — a point is inside the triangle when all
+    // three weights are positive, meaning it lies on the correct side of every edge.
     bool PointInTriangle(Vector2 p, Vector2 a, Vector2 b, Vector2 c)
     {
         float d = ((b.y - c.y) * (a.x - c.x) + (c.x - b.x) * (a.y - c.y));
@@ -583,8 +662,13 @@ public class CalamityObject : MonoBehaviour
     IEnumerator SproutAnimation()
     {
         targetScale = transform.localScale;
+
+        // Start with zero Y scale so the object appears to rise from the ground.
         transform.localScale = new Vector3(targetScale.x, 0f, targetScale.z);
 
+        // Disable the collider while growing so the monolith doesn't push
+        // physics objects away during the animation — it should look like it's
+        // emerging through the ground, not shoving things aside.
         PolygonCollider2D col = GetComponent<PolygonCollider2D>();
         if (col != null) col.enabled = false;
 
@@ -601,10 +685,15 @@ public class CalamityObject : MonoBehaviour
         }
 
         transform.localScale = targetScale;
+
+        // Re-enable the collider and attach the destruction receiver only after
+        // the animation finishes so the object is fully formed before it can be cut.
         if (col != null) col.enabled = true;
         AttachRaycastReceiver();
     }
 
+    // Lateral shake during the sprout implies the monolith is bursting through
+    // the ground with force. Intensity ramps down so the shake decays naturally.
     IEnumerator GroundShake()
     {
         Vector3 originalPos = transform.position;
