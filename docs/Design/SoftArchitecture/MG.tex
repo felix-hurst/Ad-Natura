@@ -60,6 +60,7 @@
 Nov 13 & 1.0 & Initial doc\\
 Jan 13 & 1.1 & Added Slime Mold Algorithm modules (M16-M18) per Issue \#75\\
 Jan 19 & 1.2 & Various formatting fixes\\
+Mar 26 & 2.0 & Final SMA update: corrected agent count and attraction map architecture; added Microphone Input module (M19), Decomposition module (M20); updated M16/M17/M18 to match implemented code; added AC21-AC23, DD7-DD8; updated traceability\\
 \bottomrule
 \end{tabularx}
 
@@ -155,8 +156,10 @@ The Destructible Objects module uses several derived data types: sequences, vect
 
 The following additional types are used in the Slime Mold Algorithm modules (Section~\ref{SecSMA}):
 \begin{itemize}
-\item \textbf{Agent} := (\textit{position} : Vector2, \textit{angle} : $\mathbb{R}$, \textit{type} : $\mathbb{Z}$) --- Represents a single slime mold agent with its world position, heading angle, and type identifier.
+\item \textbf{Agent} := (\textit{position} : Vector2, \textit{angle} : $\mathbb{R}$, \textit{type} : Vector4) --- Represents a single slime mold agent with its world position, heading angle in radians, and species type vector.
 \item \textbf{Texture2D} --- A Unity engine type representing a 2D raster image (grid of pixel values). Used to store pheromone trail maps and attraction maps in the SMA modules.
+\item \textbf{RenderTexture} --- A GPU-resident texture that can be written to by compute shaders. Used for double-buffered trail maps (\texttt{ARGBFloat} format) and multi-channel attraction maps (\texttt{RFloat} format).
+\item \textbf{StructuredBuffer$\langle$Agent$\rangle$} --- A GPU buffer holding the agent array, accessed by compute shader threads in parallel.
 \end{itemize}
 
 \subsection{Geometric Notation}
@@ -413,8 +416,11 @@ change.
 \item[\refstepcounter{acnum} \actheacnum\label{AC16}:] Number of slime mold agents and simulation resolution.
 \item[\refstepcounter{acnum} \actheacnum\label{AC17}:] Slime mold agent movement parameters (speed, turn rate, sensor angles).
 \item[\refstepcounter{acnum} \actheacnum\label{AC18}:] Trail diffusion and evaporation rates for pheromone simulation.
-\item[\refstepcounter{acnum} \actheacnum\label{AC19}:] Attraction source types and strength parameters (water, light, etc.).
+\item[\refstepcounter{acnum} \actheacnum\label{AC19}:] Attraction source types and strength parameters (water, light, hazard, decomposition).
 \item[\refstepcounter{acnum} \actheacnum\label{AC20}:] The availability of accessibility modes, such as contrast adjustments for colorblindness.
+\item[\refstepcounter{acnum} \actheacnum\label{AC21}:] Microphone input parameters: gain, smoothing speed, FFT size, and reactivity gain mappings (amplitude, pitch, onset).
+\item[\refstepcounter{acnum} \actheacnum\label{AC22}:] Consent/resistance thresholds and timing: stress threshold, accumulation rate, recovery rate, refractory duration.
+\item[\refstepcounter{acnum} \actheacnum\label{AC23}:] Entropic decay, pulse, and behavioral drift parameters controlling visual organic behavior.
 \end{description}
 
 
@@ -472,9 +478,11 @@ actually be implemented.
 & Physics Update & \hyperref[M14]{M14}\\
 & Material Properties & \hyperref[M15]{M15}\\
 \hline
-\multirow{3}{*}{Slime Mold Algorithm} & Slime Mold Simulation & \hyperref[M16]{M16}\\
+\multirow{5}{*}{Slime Mold Algorithm} & Slime Mold Simulation & \hyperref[M16]{M16}\\
 & Slime Mold Manager & \hyperref[M17]{M17}\\
 & Attraction Source & \hyperref[M18]{M18}\\
+& Microphone Input & \hyperref[M19]{M19}\\
+& Slime Decomposition & \hyperref[M20]{M20}\\
 \hline
 
 \end{tabular}
@@ -546,12 +554,38 @@ object mass is updated proportionally to the change in area, maintaining consist
 \textbf{DD6: GPU-Accelerated Slime Mold Simulation}
 \newline
 In order to meet the requirement for real-time slime mold pathfinding (R11), the simulation is executed
-on the GPU via compute shaders. This allows tens of thousands of agents to be simulated
-simultaneously without impacting frame rate. Attraction sources (water, light) are represented
-as 2D texture maps passed to the shader, decoupling the source representation from the
-simulation algorithm.
+on the GPU via compute shaders. 1024 agents are dispatched as 64 thread groups of 16 threads each.
+Attraction sources are encoded into a single multi-channel \texttt{RenderTexture}
+(\texttt{WaterAttractionMap}): the G channel stores water attraction and the R channel stores
+light fear/repulsion. This single-texture design eliminates an extra texture bind and
+simplifies the shader interface.
 \newline
 \textit{Related modules: \hyperref[M16]{M16}, \hyperref[M17]{M17}, \hyperref[M18]{M18}}
+
+\vspace{5mm}
+\noindent
+\textbf{DD7: Microphone Input as Decoupled Modulation Source}
+\newline
+Real-time audio input from the system microphone modulates simulation parameters (evaporation,
+turn speed, diffusion, sensor range, pulse frequency). The \texttt{MicrophoneInput} component
+(\hyperref[M19]{M19}) is a standalone MonoBehaviour with no dependency on the simulation code.
+\texttt{Slime.cs} reads mic values into per-frame local copies and modulates them without mutating
+Inspector-serialized defaults. This decoupling means the mic is entirely optional: if no
+\texttt{MicrophoneInput} is assigned, the simulation runs identically to its non-mic configuration.
+\newline
+\textit{Related modules: \hyperref[M16]{M16}, \hyperref[M19]{M19}}
+
+\vspace{5mm}
+\noindent
+\textbf{DD8: Consent State Split Between CPU and GPU}
+\newline
+The consent/resistance system splits responsibility: the CPU (\texttt{Slime.cs}) runs the stress
+accumulator and refractory timer because these require temporal state across frames, while the
+GPU (\texttt{Slime.compute}) applies the resulting dampening to per-agent speed, drift, trail
+deposit, and pulse amplitude because these are massively parallel per-agent or per-pixel
+operations. Two float uniforms (\texttt{micStress}, \texttt{refractoryState}) bridge the two.
+\newline
+\textit{Related modules: \hyperref[M16]{M16}, \hyperref[M19]{M19}}
 
 
 % ======================================================================
@@ -1357,38 +1391,50 @@ Library
 \subsection{Slime Mold Algorithm Modules}\label{SecSMA}
 
 The Slime Mold Algorithm (SMA) modules implement a GPU-accelerated agent-based simulation
-inspired by the growth patterns of real slime mold behaviours. Agents (type \textbf{Agent},
-defined in Section~\ref{SecNotation}) move through the environment depositing pheromone
-trails stored in \textbf{Texture2D} maps (also defined in Section~\ref{SecNotation}),
-and steer toward attraction sources such as water and light. Over time, these trails
-converge into efficient network-like paths that guide gameplay elements. This category
-contains three modules: the core simulation running on the GPU (\hyperref[M16]{M16}),
-the manager that coordinates attraction data (\hyperref[M17]{M17}), and the individual
-attraction source components placed in the scene (\hyperref[M18]{M18}).
+inspired by the growth patterns of \textit{Physarum polycephalum}, a single-celled organism
+capable of decentralized decision-making and adaptive network formation without any central
+control. 1024 autonomous agents deposit chemical trails, sense their environment through
+three-sensor chemotaxis, and collectively produce emergent network structures.
+
+This category contains five modules: the core simulation running on the GPU
+(\hyperref[M16]{M16}), the manager that coordinates environmental maps
+(\hyperref[M17]{M17}), the individual attraction/repulsion source components
+(\hyperref[M18]{M18}), the microphone input system (\hyperref[M19]{M19}), and
+the decomposition system (\hyperref[M20]{M20}).
 
 \subsubsection{Slime Mold Simulation Module (M16)} \label{M16}
 
 \paragraph{Secrets:}
-The GPU compute shader implementation for simulating slime mold agent behaviour, including movement, trail sensing, and pheromone deposition.
+The GPU compute shader implementation for simulating slime mold agent behaviour, including
+three-sensor chemotaxis, trail deposition, ping-pong double-buffered trail processing
+(diffusion, entropic decay, cytoplasmic pulse, metabolic glow), behavioral drift,
+microphone-driven parameter modulation, and consent/resistance withdrawal.
 
 \paragraph{State Variables:}
 \begin{itemize}
-\item $agents : \text{seq of Agent}$ --- Buffer containing all agent positions, angles, and types (see Section~\ref{SecNotation} for the Agent type definition)
-\item $trailMap : \text{Texture2D}$ --- 2D texture storing pheromone trail intensities (see Section~\ref{SecNotation} for the Texture2D type definition)
-\item $numAgents : \mathbb{N}$ --- Number of active agents in simulation
-\item $moveSpeed : \mathbb{R}^+$ --- Agent movement speed per frame
-\item $turnSpeed : \mathbb{R}^+$ --- Maximum agent turn rate in degrees
+\item $agents : \text{StructuredBuffer}\langle\text{Agent}\rangle$ --- GPU buffer of 1024 agent positions and angles
+\item $trailMapA, trailMapB : \text{RenderTexture}$ --- Ping-pong double-buffered trail maps (ARGBFloat)
+\item $numAgents : \mathbb{N}$ --- Number of active agents (default 1024, snapped to multiple of 16)
+\item $moveSpeed, idleSpeed, turnSpeed, sensorLength, sensorAngle, trailWeight : \mathbb{R}^+$ --- Base chemotaxis parameters
+\item $evaporateSpeed, diffuseSpeed : \mathbb{R}^+$ --- Trail decay parameters
+\item $pulseAmplitude, pulseMinFreq, pulseMaxFreq, pulseWaveScale : \mathbb{R}^+$ --- Cytoplasmic streaming parameters
+\item $entropyScale, entropySpeed, entropyStrength : \mathbb{R}^+$ --- Non-uniform decay noise parameters
+\item $driftStrength, driftSpeed : \mathbb{R}^+$ --- Per-agent behavioral variation parameters
+\item $stressLevel : \mathbb{R}$ --- Current mic-driven stress accumulator (CPU state)
+\item $refractoryTimer : \mathbb{R}$ --- Withdrawal countdown timer (CPU state)
+\item $smoothRefractory : \mathbb{R}$ --- Smoothed refractory signal sent to GPU (prevents harsh visual snap)
 \end{itemize}
 
 \paragraph{Environment Variables:}
 \begin{itemize}
 \item GPU compute capabilities (DirectX 11 / OpenGL 4.3 or higher required)
-\item System time for deltaTime calculations
+\item System time for deltaTime and gameTime calculations
+\item Optional: MicrophoneInput component reference (\hyperref[M19]{M19})
 \end{itemize}
 
 \paragraph{Exported Constants}
 \begin{itemize}
-\item $DEFAULT\_NUM\_AGENTS = 10000$
+\item $DEFAULT\_NUM\_AGENTS = 1024$
 \item $DEFAULT\_MOVE\_SPEED = 50.0$
 \item $DEFAULT\_TURN\_SPEED = 50.0$
 \item $DEFAULT\_SENSOR\_ANGLE = 30.0$
@@ -1397,26 +1443,37 @@ The GPU compute shader implementation for simulating slime mold agent behaviour,
 \paragraph{Access Programs:}
 
 \begin{center}
-\begin{tabular}{p{35mm}p{42mm}p{18mm}p{42mm}}
+\begin{tabular}{p{35mm}p{42mm}p{22mm}p{35mm}}
 \toprule
 \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
 \midrule
 InitializeAgents & int & - & exc := $numAgents \leq 0$ \\
-UpdateAgents & float & - & - \\
-GetTrailMap & - & Texture2D & - \\
-SetAttractionMaps & Texture2D, Texture2D & - & - \\
+FixedUpdate & - & - & - \\
+GetTrailTexture & - & Texture2D & - \\
+SetAttractionMaps & RenderTexture, float & - & - \\
+SetHazardMap & Texture2D & - & - \\
+GetWorldBounds & - & Rect & - \\
+SetWorldBounds & Rect & - & - \\
 \bottomrule
 \end{tabular}
 \end{center}
 
 \paragraph{Services:}
-Initializes agents in random positions, executes GPU compute shader to update agent positions based on trail sensing and attraction sources, applies trail diffusion and evaporation in post-processing pass, provides trail map texture for rendering.
+Initializes agents in a circular spawn disk, dispatches two GPU kernels each FixedUpdate:
+the \textbf{Update} kernel (64 thread groups $\times$ 16 threads = 1024 agents) handles sensing,
+behavioral drift, consent-modulated turning, boundary handling, hazard death/respawn, and trail
+deposition; the \textbf{Postprocess} kernel (per-texel) handles 3$\times$3 diffusion, noise-modulated
+entropic decay, density-thresholded cytoplasmic pulse with brightness tapering, and additive
+metabolic glow. If a \hyperref[M19]{M19} component is assigned, mic values modulate per-frame
+local copies of simulation parameters (evaporation, turn speed, diffusion, sensor range, pulse
+frequency) without mutating Inspector defaults. The consent system runs outside the mic guard:
+stress accumulates during loud input, triggers gradual withdrawal, and recovery requires silence.
 
 \paragraph{Assumptions:}
 \begin{itemize}
 \item GPU supports compute shaders (DirectX 11 / OpenGL 4.3 or higher)
-\item Sufficient GPU memory is available for agent buffers and trail textures
-\item Frame rate is stable enough for consistent deltaTime calculations
+\item Sufficient GPU memory for agent buffers and two ARGBFloat trail textures
+\item FixedUpdate provides stable deltaTime for simulation consistency
 \end{itemize}
 
 \paragraph{Implemented By:}
@@ -1430,54 +1487,63 @@ Abstract Object
 \subsubsection{Slime Mold Manager Module (M17)} \label{M17}
 
 \paragraph{Secrets:}
-The coordination of multiple attraction sources and generation of attraction maps for the slime mold simulation.
+The coordination of environmental data sources and generation of multi-channel attraction maps,
+hazard maps, and soft avoidance fields for the slime mold simulation.
 
 \paragraph{State Variables:}
 \begin{itemize}
-\item $waterSources : \text{seq of WaterSource}$ --- List of water attraction points
-\item $lightSources : \text{seq of LightSource}$ --- List of light attraction points
-\item $waterMap : \text{Texture2D}$ --- Generated water attraction intensity map
-\item $lightMap : \text{Texture2D}$ --- Generated light attraction intensity map
-\item $waterStrength : \mathbb{R}^+$ --- Global water attraction multiplier
-\item $lightStrength : \mathbb{R}^+$ --- Global light attraction multiplier
+\item $waterSources : \text{seq of WaterSource}$ --- Discovered water attraction components
+\item $lightSources : \text{seq of LightSource}$ --- Discovered light repulsion components
+\item $attractionMap : \text{RenderTexture}$ --- Single multi-channel map (R = light fear, G = water attraction)
+\item $hazardMap : \text{Texture2D}$ --- CPU-baked hazard map (R = solid contact + proximity gradient)
+\item $waterAttractionStrength : \mathbb{R}^+$ --- Global water attraction multiplier
+\item $liquidSim : \text{CellularLiquidSimulation}$ --- Optional reference to live liquid system
 \end{itemize}
 
 \paragraph{Environment Variables:}
 \begin{itemize}
 \item Scene hierarchy for source discovery
+\item Physics layers for soft avoidance colliders
+\item ``Calamity''-tagged GameObjects for hazard rasterization
 \end{itemize}
 
 \paragraph{Exported Constants}
 \begin{itemize}
-\item $DEFAULT\_MAP\_RESOLUTION = 512$
-\item $DEFAULT\_UPDATE\_INTERVAL = 0.1$
+\item $DEFAULT\_MAP\_UPDATE\_INTERVAL = 0.1$
+\item $DEFAULT\_HAZARD\_REFRESH\_INTERVAL = 0.5$
 \end{itemize}
 
 \paragraph{Access Programs:}
 
 \begin{center}
-\begin{tabular}{p{45mm}p{1cm}p{2cm}p{22mm}}
+\begin{tabular}{p{50mm}p{2.5cm}p{2.5cm}p{22mm}}
 \toprule
 \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
 \midrule
-FindAllSources & - & - & - \\
-UpdateAttractionMaps & - & - & - \\
-GetWaterMap & - & Texture2D & - \\
-GetLightMap & - & Texture2D & - \\
+RefreshSources & - & - & - \\
+UpdateAttractionMap & - & - & - \\
+UpdateHazardMap & - & - & - \\
+PaintLightAversion & - & - & - \\
+PaintLayerAvoidance & - & - & - \\
+SampleLiquidOverlap & - & - & - \\
 \bottomrule
 \end{tabular}
 \end{center}
 
 \paragraph{Services:}
-Discovers attraction sources in scene hierarchy, generates 2D attraction maps
-with radial falloff from each source, coordinates with \hyperref[M16]{M16} to provide attraction
-data for agent steering, supports real-time source addition/removal.
+Discovers water and light sources in the scene, samples the live liquid simulation grid,
+paints radial water attraction gradients (G channel) and light fear regions (R channel)
+into a single multi-channel \texttt{RenderTexture}. Rasterizes ``Calamity''-tagged colliders
+into a CPU-baked hazard map with solid contact detection, minimum pixel radius dilation, and
+smoothstep proximity gradient. Paints soft layer avoidance using physics collider distance
+fields. Coordinates with \hyperref[M20]{M20} to add decomposable object attraction signals.
+Provides completed maps to \hyperref[M16]{M16} each update cycle.
 
 \paragraph{Assumptions:}
 \begin{itemize}
-\item Attraction sources are tagged or use specific component types for discovery
-\item Map resolution is sufficient to represent attraction gradients accurately
+\item Attraction sources use specific component types (\texttt{WaterSource}, \texttt{LightSource})
 \item The slime mold simulation module (\hyperref[M16]{M16}) is initialized before maps are provided
+\item Calamity objects are tagged ``Calamity'' with valid Collider2D components
 \end{itemize}
 
 \paragraph{Implemented By:}
@@ -1491,14 +1557,17 @@ Abstract Object
 \subsubsection{Attraction Source Module (M18)} \label{M18}
 
 \paragraph{Secrets:}
-The representation and configuration of individual attraction points that influence slime mold agent behaviour.
+The representation and configuration of individual attraction and repulsion sources that
+influence slime mold agent behaviour.
 
 \paragraph{State Variables:}
 \begin{itemize}
-\item $position : \mathbb{R}^2$ --- World position of attraction source
-\item $radius : \mathbb{R}^+$ --- Effective radius of attraction influence
-\item $strength : \mathbb{R}$ --- Attraction strength multiplier (0-1)
+\item $position : \mathbb{R}^2$ --- World position of source
+\item $radius : \mathbb{R}^+$ --- Effective radius of influence
+\item $strength : \mathbb{R}$ --- Attraction (positive) or repulsion (negative) strength
 \item $isActive : \mathbb{B}$ --- Whether source is currently affecting simulation
+\item $shape : \{Circle, Rectangle\}$ --- Shape of influence region (LightSource only)
+\item $repulsionStrength : \mathbb{R}^+$ --- Soft gradient falloff strength (LightSource only)
 \end{itemize}
 
 \paragraph{Environment Variables:}
@@ -1520,6 +1589,7 @@ The representation and configuration of individual attraction points that influe
 \textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
 \midrule
 GetInfluence & Vector2 & $\mathbb{R}$ & - \\
+GetAttractionAt & Vector2 & $\mathbb{R}$ & - \\
 SetActive & $\mathbb{B}$ & - & - \\
 GetWorldPosition & - & Vector2 & - \\
 \bottomrule
@@ -1527,7 +1597,11 @@ GetWorldPosition & - & Vector2 & - \\
 \end{center}
 
 \paragraph{Services:}
-Calculates attraction influence at a given point using radial falloff function, provides visual debugging gizmos in editor, supports enable/disable for dynamic gameplay scenarios.
+Calculates attraction or repulsion influence at a given point using radial/rectangular
+falloff. \texttt{WaterSource} provides positive attraction (G channel).
+\texttt{LightSource} provides fear/repulsion (R channel) with configurable shape (circle or
+rectangle) and a soft cubic falloff hill for smooth agent steering. Supports enable/disable
+for dynamic gameplay scenarios.
 
 \paragraph{Assumptions:}
 \begin{itemize}
@@ -1538,6 +1612,126 @@ Calculates attraction influence at a given point using radial falloff function, 
 
 \paragraph{Implemented By:}
 WaterSource.cs, LightSource.cs
+
+\paragraph{Type of Module:}
+Abstract Object
+
+\vspace{10mm}
+
+\subsubsection{Microphone Input Module (M19)} \label{M19}
+
+\paragraph{Secrets:}
+Real-time audio capture and feature extraction from the system's default recording device.
+
+\paragraph{State Variables:}
+\begin{itemize}
+\item $micClip : \text{AudioClip}$ --- 10-second looping capture buffer
+\item $amplitude : \mathbb{R}$ --- Smoothed RMS amplitude $\in [0, 1]$
+\item $spectralCentroid : \mathbb{R}$ --- Smoothed energy-weighted mean frequency $\in [0, 1]$
+\item $onset : \mathbb{R}$ --- Transient detection spike, decays exponentially each frame
+\item $isActive : \mathbb{B}$ --- Whether a mic device is available and recording
+\end{itemize}
+
+\paragraph{Environment Variables:}
+\begin{itemize}
+\item System audio recording device (via Unity \texttt{Microphone} API)
+\end{itemize}
+
+\paragraph{Exported Constants}
+\begin{itemize}
+\item $DEFAULT\_SAMPLE\_RATE = 44100$
+\item $DEFAULT\_FFT\_SIZE = 1024$
+\item $DEFAULT\_MIC\_GAIN = 2.0$
+\end{itemize}
+
+\paragraph{Access Programs:}
+
+\begin{center}
+\begin{tabular}{p{35mm}p{2cm}p{2cm}p{30mm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+Amplitude & - & $\mathbb{R}$ & - \\
+SpectralCentroid & - & $\mathbb{R}$ & - \\
+Onset & - & $\mathbb{R}$ & - \\
+IsActive & - & $\mathbb{B}$ & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Services:}
+Starts a looping microphone capture using the system default device (or a named device).
+Each frame, extracts RMS amplitude from raw samples (offset 64 samples behind the write
+head to avoid race conditions), computes spectral centroid via Unity's FFT
+(Blackman-Harris window, half-spectrum), and detects onsets from positive amplitude deltas.
+All values are smoothed via exponential lerp. A hidden, muted \texttt{AudioSource} provides
+Unity's FFT pipeline with data without producing audible output.
+
+\paragraph{Assumptions:}
+\begin{itemize}
+\item At least one recording device is available to the OS
+\item The user has granted microphone permissions
+\item If no device is found, \texttt{IsActive} returns false and \hyperref[M16]{M16} skips all mic effects
+\end{itemize}
+
+\paragraph{Implemented By:}
+MicrophoneInput.cs
+
+\paragraph{Type of Module:}
+Abstract Object
+
+\vspace{10mm}
+
+\subsubsection{Slime Decomposition Module (M20)} \label{M20}
+
+\paragraph{Secrets:}
+The detection of organic matter within slime bounds and the application of trail-density-based
+decomposition damage.
+
+\paragraph{State Variables:}
+\begin{itemize}
+\item $trackedObjects : \text{seq of OrganicMatter}$ --- Organic objects overlapping slime bounds
+\item $baseDamagePerSecond : \mathbb{R}^+$ --- Base decomposition rate
+\item $minTrailDensity : \mathbb{R}^+$ --- Minimum trail intensity required for decomposition
+\item $attractionStrength : \mathbb{R}^+$ --- Strength of attraction field around decomposable objects
+\end{itemize}
+
+\paragraph{Environment Variables:}
+\begin{itemize}
+\item Scene hierarchy for OrganicMatter discovery
+\item Trail texture from \hyperref[M16]{M16} for density sampling
+\end{itemize}
+
+\paragraph{Access Programs:}
+
+\begin{center}
+\begin{tabular}{p{50mm}p{2.5cm}p{2.5cm}p{22mm}}
+\toprule
+\textbf{Name} & \textbf{In} & \textbf{Out} & \textbf{Exceptions} \\
+\midrule
+ScanForDecomposableObjects & - & - & - \\
+ProcessDecomposition & - & - & - \\
+GetDecomposableAttractions & pixel buffer & - & - \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\paragraph{Services:}
+Periodically scans for \texttt{OrganicMatter} components whose bounds overlap the slime
+simulation region. Samples the CPU trail texture at a 3$\times$3 grid per object, takes the
+maximum density, and applies damage scaled by an \texttt{AnimationCurve}. Writes attraction
+gradients for tracked objects into the manager's pixel buffer so the slime is drawn toward
+decomposable obstacles. Destroyed objects trigger tag-specific behavior: wood/rock fragment via
+structural collapse, dirt converts to climbable surface.
+
+\paragraph{Assumptions:}
+\begin{itemize}
+\item OrganicMatter components have valid Collider2D for bounds
+\item The trail texture from \hyperref[M16]{M16} is available for CPU sampling
+\end{itemize}
+
+\paragraph{Implemented By:}
+SlimeDecomposer.cs, OrganicMatter.cs
 
 \paragraph{Type of Module:}
 Abstract Object
@@ -1578,7 +1772,7 @@ R9: Visual Feedback & \mref{M3}, \mref{M6}, \mref{M7}\\
 \hline
 R10: Multiple Cuts on Same Object & \mref{M7}, \mref{M11}, \mref{M12}, \mref{M14}\\
 \hline
-R11: Slime Mold Pathfinding & \mref{M16}, \mref{M17}, \mref{M18}\\
+R11: Slime Mold Pathfinding & \mref{M16}, \mref{M17}, \mref{M18}, \mref{M19}, \mref{M20}\\
 \hline
 \end{tabular}
 \label{TblRT}
@@ -1611,6 +1805,9 @@ R11: Slime Mold Pathfinding & \mref{M16}, \mref{M17}, \mref{M18}\\
 \acref{AC18} &  \mref{M16}\\
 \acref{AC19} &  \mref{M17}, \mref{M18}\\
 \acref{AC20} &  \mref{M3}, \mref{M6}\\
+\acref{AC21} &  \mref{M16}, \mref{M19}\\
+\acref{AC22} &  \mref{M16}\\
+\acref{AC23} &  \mref{M16}\\
 \bottomrule
 \end{tabular}
 \label{TblACT}
@@ -1644,7 +1841,7 @@ downward through the hierarchy from user-facing modules to foundational hardware
 \hline
 4 & Coordination (Behaviour) & \mref{M6} (Raycast Visualization), \mref{M7} (Tool Raycast) \\
 \hline
-3 & Services (Coordination) & \mref{M8} (Debris), \mref{M9} (Cut Profile), \mref{M17} (SMA Manager), \mref{M18} (Attraction) \\
+3 & Services (Coordination) & \mref{M8} (Debris), \mref{M9} (Cut Profile), \mref{M17} (SMA Manager), \mref{M18} (Attraction), \mref{M19} (Mic Input), \mref{M20} (Decomposition) \\
 \hline
 2 & Algorithm (Core) & \mref{M11}, \mref{M12}, \mref{M13}, \mref{M14}, \mref{M15}, \mref{M16} \\
 \hline
@@ -1728,6 +1925,8 @@ M1 (Input) \quad M2 (Physics) \quad M3 (Rendering) \quad M4 (Collider) \\
 \item \mref{M9} - Cut Profile Manager
 \item \mref{M17} - Slime Mold Manager
 \item \mref{M18} - Attraction Source
+\item \mref{M19} - Microphone Input
+\item \mref{M20} - Slime Decomposition
 \end{itemize}
 
 \vspace{5mm}
@@ -1799,8 +1998,9 @@ The selected tool displays its damage type (Projectile, Water, or Wind).
 \item \textbf{Operating System:} Windows, macOS, or Linux (64-bit)
 \item \textbf{Display:} Standard monitor capable of rendering 2D graphics at 1280$\times$720 or higher
 \item \textbf{Input Devices:} Keyboard and mouse (primary), with potential future support for touchscreen
-\item \textbf{Graphics:} GPU with support for DirectX 11 or OpenGL 4.3 (or higher). This requirement is mandatory for Unity's 2D rendering pipeline and for the compute shaders used by the Slime Mold Simulation module (\hyperref[M16]{M16}).
-\item \textbf{Memory:} Sufficient RAM and GPU memory to maintain agent buffers and trail textures for the slime mold simulation (see \hyperref[M16]{M16}). GPU memory requirements scale with the number of agents ($DEFAULT\_NUM\_AGENTS = 10000$) and trail map resolution ($DEFAULT\_MAP\_RESOLUTION = 512$).
+\item \textbf{Graphics:} GPU with support for DirectX 11 or OpenGL 4.3 (or higher), required for Unity's 2D rendering pipeline and the slime mold compute shaders (\hyperref[M16]{M16})
+\item \textbf{Audio Input:} Microphone (built-in or external) for the microphone-as-interface feature (\hyperref[M19]{M19}); not required for base gameplay
+\item \textbf{Memory:} Sufficient RAM and GPU memory to maintain agent buffers and trail textures for the slime mold simulation (see \hyperref[M16]{M16}); requirements scale with simulation texture size and active GPU buffers
 \end{itemize}
 
 \section{Design of Communication Protocols}\label{SecDCP}
@@ -1881,7 +2081,7 @@ the team's GitHub repository.
 \hline
 Felix Hurst & Team Coordinator, Player Control (\mref{M5}) \\
 \hline
-Andy Liang & SMA modules (\mref{M16}, \mref{M17}, \mref{M18}) \\
+Andy Liang & SMA modules (\mref{M16}, \mref{M17}, \mref{M18}, \mref{M19}, \mref{M20}) \\
 \hline
 Bowen Liu & Cutting System (\mref{M6}--\mref{M15}) \\
 \hline
@@ -1916,19 +2116,26 @@ Marcos Hernandez-Rivero & Documentation, Testing, Integration Support \\
 \item \hyperref[M15]{M15}: Material Properties Module
 \end{itemize}
 
-\paragraph{Phase 4: Slime Mold Algorithm (Jan 1 -- Feb 15, 2026 --- In Progress)}
+\paragraph{Phase 4: Slime Mold Algorithm (Jan 1 -- Feb 15, 2026 --- Completed)}
 \begin{itemize}
-\item \hyperref[M16]{M16}: Slime Mold Simulation Module
-\item \hyperref[M17]{M17}: Slime Mold Manager Module
+\item \hyperref[M16]{M16}: Slime Mold Simulation Module (core agent simulation, trail system, pulse, entropic decay)
+\item \hyperref[M17]{M17}: Slime Mold Manager Module (attraction map, hazard map, water/light integration)
 \item \hyperref[M18]{M18}: Attraction Source Module
 \end{itemize}
 
-\paragraph{Phase 5: Visual Polish \& Integration (Feb 16 -- Mar 25, 2026 --- Not Started)}
+\paragraph{Phase 5: Microphone Interface \& Consent (Feb 16 -- Mar 26, 2026 --- Completed)}
+\begin{itemize}
+\item \hyperref[M19]{M19}: Microphone Input Module (RMS amplitude, spectral centroid, onset detection)
+\item \hyperref[M20]{M20}: Slime Decomposition Module
+\item Consent/resistance system (stress accumulator, refractory state, gradual withdrawal)
+\item Behavioral drift, anti-clustering safeguards, pulse brightness taper
+\end{itemize}
+
+\paragraph{Phase 6: Visual Polish \& Integration (Mar 27 -- Apr 6, 2026 --- Completed)}
 \begin{itemize}
 \item \hyperref[M13]{M13}: Pixelation Module
 \item Visual feedback refinements
-\item Debug visualization tools
-\item Full system integration testing and Rev1 preparation
+\item Full system integration testing and final documentation
 \end{itemize}
 
 \bibliographystyle{plainnat}
