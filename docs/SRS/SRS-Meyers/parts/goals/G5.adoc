@@ -16,7 +16,7 @@
 ==== UC3: Replayable and Reproducible Levels
 
 1. The player clicks “Play” in the main menu and is taken to the first level.
-2. The player gradually acquires all tools, with tutorials provided for each tool and mechanic.
+2. The player acquires all tools.
 3. The player uses available tools and the organic environment to traverse obstacles.
 4. When the player reaches the designated point in the level, the next level is loaded.
 

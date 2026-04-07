@@ -1,0 +1,203 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!1 &8969033245560523579
+GameObject:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  serializedVersion: 6
+  m_Component:
+  - component: {fileID: 3283153483605907420}
+  - component: {fileID: 8245078912163544819}
+  - component: {fileID: 3889617876163172301}
+  - component: {fileID: 602978517246409758}
+  - component: {fileID: 6518573254394005644}
+  m_Layer: 0
+  m_Name: SlimeMold
+  m_TagString: Untagged
+  m_Icon: {fileID: 0}
+  m_NavMeshLayer: 0
+  m_StaticEditorFlags: 0
+  m_IsActive: 1
+--- !u!4 &3283153483605907420
+Transform:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8969033245560523579}
+  serializedVersion: 2
+  m_LocalRotation: {x: 0, y: 0, z: 0, w: 1}
+  m_LocalPosition: {x: 1.11433, y: 0.83594, z: 0}
+  m_LocalScale: {x: 1, y: 1, z: 1}
+  m_ConstrainProportionsScale: 0
+  m_Children: []
+  m_Father: {fileID: 0}
+  m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &8245078912163544819
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8969033245560523579}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a4b7fcf2e66b6204ab73cd1d8759ce05, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  shader: {fileID: 7200000, guid: e4b9a491ba4848245b3df1095a872bc7, type: 3}
+  width: 128
+  height: 128
+  numAgents: 2048
+  moveSpeed: 2
+  diffuseSpeed: 0.069
+  evaporateSpeed: 0.061
+  trailWeight: 0.986
+  idleSpeed: 0.266
+  attractedSpeedMultiplier: 3
+  sensorLength: 11.25
+  sensorAngle: 24.86
+  turnSpeed: 6.33
+  spawnX: 0.5
+  spawnY: 0.85
+  spawnRadius: 0.102
+  boundingObject: {fileID: 0}
+  worldBounds:
+    serializedVersion: 2
+    x: -22.6
+    y: -5
+    width: 20
+    height: 20
+  pulseAmplitude: 0.023
+  pulseMinFreq: 0.186
+  pulseMaxFreq: 0.32
+  pulseWaveScale: 0.36
+  driftStrength: 0.51
+  driftSpeed: 0.195
+  entropyScale: 0.11
+  entropySpeed: 0.385
+  entropyStrength: 0.388
+  hazardAvoidanceStrength: 8
+  deathTint: {r: 0.7, g: 0.55, b: 0.1, a: 1}
+  hazardCorrosionRate: 6
+  hazardTrailDampen: 0.85
+  consumptionRate: 1.55
+  consumptionThreshold: 0.05
+  glowIntensity: 0.175
+  glowDecayRate: 1.54
+  micInput: {fileID: 6518573254394005644}
+  micInfluence: 1
+  micAmpEvaporateGain: 5
+  micAmpTurnGain: 4
+  micLowFreqDiffuseGain: 3
+  micHighFreqTurnGain: 3
+  micHighFreqSensorShrink: 0.7
+  micQuietPulseGain: 2
+  micOnsetTrailBurst: 5
+  stressThreshold: 0.395
+  stressAccumulationRate: 0.35
+  stressRecoveryRate: 0.06
+  refractoryThreshold: 0.75
+  refractoryDuration: 12
+  slimeColor: {r: 1, g: 0.9, b: 0.2, a: 1}
+  sortingOrder: 0
+--- !u!114 &3889617876163172301
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8969033245560523579}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aeb48c81012b04041b88a8a63e97b57f, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SlimeMoldManager
+  waterAttractionStrength: 8
+  autoFindSources: 1
+  sourceRefreshInterval: 0.5
+  manualWaterSources: []
+  enableLightAversion: 1
+  mapUpdateInterval: 0.066
+  liquidSimulation: {fileID: 0}
+  useLiquidSimulation: 1
+  autoSyncBounds: 0
+  liquidAttractionMultiplier: 3
+  minWaterThreshold: 0
+  enableCalamityHazard: 1
+  hazardRefreshInterval: 0.25
+  hazardGradientWidth: 0.8
+  minimumHazardPixelRadius: 3
+  avoidanceLayers:
+    serializedVersion: 2
+    m_Bits: 0
+  avoidanceStrength: 0.8
+  avoidanceGradientWidth: 1
+  avoidanceRefreshInterval: 0.1
+--- !u!114 &602978517246409758
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8969033245560523579}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 16316d0838a60ac489003418e026b952, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::SlimeDecomposer
+  requireDecomposeLayer: 1
+  detectionInterval: 0.2
+  baseDamagePerSecond: 50
+  minTrailDensity: 0.005
+  damageMultiplier:
+    serializedVersion: 2
+    m_Curve:
+    - serializedVersion: 3
+      time: 0
+      value: 0
+      inSlope: 0
+      outSlope: 1
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    - serializedVersion: 3
+      time: 1
+      value: 1
+      inSlope: 1
+      outSlope: 0
+      tangentMode: 0
+      weightedMode: 0
+      inWeight: 0
+      outWeight: 0
+    m_PreInfinity: 2
+    m_PostInfinity: 2
+    m_RotationOrder: 4
+  enableAttraction: 1
+  attractionStrength: 1
+  internalAttractionRadius: 0.05
+  showDebugGizmos: 0
+  logDecomposition: 0
+  debugDecomposition: 0
+--- !u!114 &6518573254394005644
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 8969033245560523579}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: e2a4c9f6a031ca44d9e613031870e1e6, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: Assembly-CSharp::MicrophoneInput
+  micDeviceName: 
+  sampleRate: 44100
+  fftSize: 1024
+  micGain: 20
+  smoothingSpeed: 5
+  onsetDecay: 8
+  showDebugValues: 0

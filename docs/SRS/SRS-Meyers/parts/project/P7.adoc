@@ -13,6 +13,6 @@ The requirements elicitation process will likely be done using open-ended survey
 
 *   Document analysis is the primary requirement elicitation method for Valve, as they are an established marketplace and regulator of content, they have certain standards which they have documented. Valve is generally not represented by just a few individuals so our normal requirements elicitation process does not work, but if after the document analysis we still have questions, asking questions to their support is the way to elicit requirements.
 
-*   Document analysis is the primary elicitation method for Government Organizations, as they are literally required to have their standards in writing. This will include studying regional legislation in places where we plan to make the game available, or other rating standards. In cases where regulation is unclear, formal correspondance or consultations with legal experts or compliance officers may be necessary
+*   Document analysis is the primary elicitation method for the ESRB, as they are literally required to have their standards in writing. This will include studying regional legislation in places where we plan to make the game available, or other rating standards. In cases where regulation is unclear, formal correspondance or consultations with legal experts or compliance officers may be necessary
 
 

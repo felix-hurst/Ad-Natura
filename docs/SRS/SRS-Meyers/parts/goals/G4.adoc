@@ -3,10 +3,12 @@
 
 The following are the functional requirements for our 2D pixel platformer game in no particular order.
 
-1. Destructible environment. Players are able to destroy environment objects and terrain to shape the landscape to clear and/or traverse past obstacles. Certain destroyed objects and terrain can also release water, which the slime mold is attracted to.
+\hypertarget{g4-sma}{}
 
-2. Organic dynamic paths (slime mold). By shaping the environment and thereby water sources, the player is able to guide the slime mold to create dynamic paths to bypass obstacles.
+1. Slime mold will be attracted to water, repelled by light and calamity, destroyed by calamity, and react to sound by dimming and minimizing movement while high frequencies are present. Slime mold will also decompose wet wood on contact.
 
-3. Replayable and reproducible levels. Due to the indeterministic nature of slime mold and the unpredictable nature of the destructible environment, every playthrough of the game will introduce new challenges to the player. While being challenging and replayable, it is also always possible to complete each level with enough thought.
+2. Slime mold spores will be destroyed by light, and can only turn into fully-fledged slime mold organisms in areas with low light level.
 
-4. Verticality as design and game mechanic. Not only is verticality central to the theme of the game, it also influences how the player navigates levels and utilizes the game’s mechanics to traverse height while watching out for falling objects.
+3. Destructible environment. Players destroy calamity objects or cracked stone to alter topography and release trapped water, which serves as a biological lure to redirect the slime mold.
+
+4. Replayable and reproducible levels. The combination of stochastic slime growth and unpredictable physics ensures every playthrough offers unique spatial challenges while maintaining a logically solvable core.

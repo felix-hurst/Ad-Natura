@@ -112,7 +112,7 @@ $(c_1 \Rightarrow r_1 | c_2 \Rightarrow r_2 | ... | c_n \Rightarrow r_n)$.
 
 \subsection{Primitive Data Types}
 
-The following table summarizes the primitive data types used by the Destructible Environment System.
+The following table summarizes the primitive data types used by the system.
 
 \begin{table}[h]
 \centering
@@ -133,7 +133,7 @@ boolean & $\mathbb{B}$ & A truth value: true or false \\
 
 \subsection{Derived Data Types}
 
-The Destructible Environment System uses several derived data types: sequences, vectors, polygons, and tuples.
+The Destructible Objects module uses several derived data types: sequences, vectors, polygons, tuples, agents, and textures.
 
 \textbf{Sequences} are lists filled with elements of the same data type, denoted as seq of T where T is the element type (ex. seq of Vector2 represents a sequence of 2D points).
 
@@ -1391,9 +1391,9 @@ Library
 \subsection{Slime Mold Algorithm Modules}\label{SecSMA}
 
 The Slime Mold Algorithm (SMA) modules implement a GPU-accelerated agent-based simulation
-of \textit{Physarum polycephalum}, a single-celled organism capable of decentralized
-decision-making and adaptive network formation without any central control.
-1024 autonomous agents deposit chemical trails, sense their environment through
+inspired by the growth patterns of \textit{Physarum polycephalum}, a single-celled organism
+capable of decentralized decision-making and adaptive network formation without any central
+control. 1024 autonomous agents deposit chemical trails, sense their environment through
 three-sensor chemotaxis, and collectively produce emergent network structures.
 
 This category contains five modules: the core simulation running on the GPU
@@ -1427,7 +1427,7 @@ microphone-driven parameter modulation, and consent/resistance withdrawal.
 
 \paragraph{Environment Variables:}
 \begin{itemize}
-\item GPU compute capabilities (DirectX 11 / OpenGL 4.3+)
+\item GPU compute capabilities (DirectX 11 / OpenGL 4.3 or higher required)
 \item System time for deltaTime and gameTime calculations
 \item Optional: MicrophoneInput component reference (\hyperref[M19]{M19})
 \end{itemize}
@@ -1824,10 +1824,12 @@ module hierarchy forms a Directed Acyclic Graph (DAG).\\
 
 \newpage
 
-\subsection{Use Hierarchy Diagram}
+\subsection{Use Hierarchy Levels}
 
-Table~\ref{TabUseHierarchy} shows the use hierarchy between modules organized by levels.
-Modules at higher levels use (depend on) modules at lower levels.
+Table~\ref{TabUseHierarchy} summarizes the use hierarchy between modules organized by level.
+Modules at higher levels use (depend on) modules at lower levels. Figure~\ref{FigUseHierarchy}
+provides a flowchart-style view of the same dependency structure, showing how control flows
+downward through the hierarchy from user-facing modules to foundational hardware-hiding modules.
 
 \begin{table}[H]
 \centering
@@ -1848,9 +1850,40 @@ Modules at higher levels use (depend on) modules at lower levels.
 0 & Foundation (Hardware) & \mref{M1} (Input), \mref{M2} (Physics), \mref{M3} (Rendering), \mref{M4} (Collider) \\
 \hline
 \end{tabular}
-\caption{Use Hierarchy Levels - Higher levels depend on lower levels}
+\caption{Use Hierarchy Levels --- Higher levels depend on lower levels}
 \label{TabUseHierarchy}
 \end{table}
+
+\begin{figure}[H]
+\centering
+\begin{tabular}{c}
+\fbox{\parbox{0.85\textwidth}{
+\centering
+\vspace{4pt}
+\textbf{Level 5 --- Application} \\
+M5 (Player Controller) \\[6pt]
+$\downarrow$ \\[6pt]
+\textbf{Level 4 --- Coordination} \\
+M6 (Raycast Visualization) \quad M7 (Tool Raycast) \\[6pt]
+$\downarrow$ \\[6pt]
+\textbf{Level 3 --- Services} \\
+M8 (Debris) \quad M9 (Cut Profile) \quad M17 (SMA Manager) \quad M18 (Attraction) \\[6pt]
+$\downarrow$ \\[6pt]
+\textbf{Level 2 --- Algorithm} \\
+M11 (Polygon Partition) \quad M12 (Mesh Gen) \quad M13 (Pixelation) \\
+M14 (Physics Update) \quad M15 (Material Props) \quad M16 (Slime Mold Sim) \\[6pt]
+$\downarrow$ \\[6pt]
+\textbf{Level 1 --- Utility} \\
+M10 (Geometric Operations) \\[6pt]
+$\downarrow$ \\[6pt]
+\textbf{Level 0 --- Foundation (Hardware)} \\
+M1 (Input) \quad M2 (Physics) \quad M3 (Rendering) \quad M4 (Collider) \\
+\vspace{4pt}
+}}
+\end{tabular}
+\caption{Use Hierarchy Flowchart --- Modules depend only on modules at lower levels}
+\label{FigUseHierarchy}
+\end{figure}
 
 \subsection{Use Hierarchy Levels (Detailed)}
 
@@ -1942,7 +1975,7 @@ run the system.
 \subsection*{Aiming Interface}
 \begin{figure}[h]
     \centering
-    \includegraphics[width=\textwidth]{images/aiming_diagram.PNG}
+    \includegraphics[width=\textwidth]{../../SRS/SRS-Meyers/images/aiming_diagram.PNG}
     \caption{Aiming interface diagram}
 \end{figure}
 The player's mouse draws a line symbolizing the path the strike will take from the character to the mouse position.
@@ -1952,7 +1985,7 @@ The player clicks to strike, which is always bound to the circular button.
 \subsection*{Tool Selection Interface}
 \begin{figure}[h]
     \centering
-    \includegraphics[width=\textwidth]{images/tool_selection_diagram.PNG}
+    \includegraphics[width=\textwidth]{../../SRS/SRS-Meyers/images/tool_selection_diagram.PNG}
     \caption{Tool selection interface diagram}
 \end{figure}
 The player holds the CTRL key to pause the game and uses the mouse wheel to scroll through the available tools.
@@ -1967,7 +2000,7 @@ The selected tool displays its damage type (Projectile, Water, or Wind).
 \item \textbf{Input Devices:} Keyboard and mouse (primary), with potential future support for touchscreen
 \item \textbf{Graphics:} GPU with support for DirectX 11 or OpenGL 4.3 (or higher), required for Unity's 2D rendering pipeline and the slime mold compute shaders (\hyperref[M16]{M16})
 \item \textbf{Audio Input:} Microphone (built-in or external) for the microphone-as-interface feature (\hyperref[M19]{M19}); not required for base gameplay
-\item \textbf{Memory:} Sufficient RAM and GPU memory to maintain agent buffers and trail textures for the slime mold simulation (see \hyperref[M16]{M16})
+\item \textbf{Memory:} Sufficient RAM and GPU memory to maintain agent buffers and trail textures for the slime mold simulation (see \hyperref[M16]{M16}); requirements scale with simulation texture size and active GPU buffers
 \end{itemize}
 
 \section{Design of Communication Protocols}\label{SecDCP}
@@ -1976,12 +2009,13 @@ The selected tool displays its damage type (Projectile, Water, or Wind).
 
 The system uses Unity's component-based architecture for module communication.
 In Unity, game logic is attached to scene objects via \texttt{MonoBehaviour} scripts.
-The engine automatically calls certain lifecycle methods on these scripts:
-\texttt{Update()} is called once per rendered frame for per-frame logic,
+The engine automatically calls certain lifecycle methods on these scripts.
+\texttt{Update()} is called once per rendered frame for per-frame logic.
 \texttt{FixedUpdate()} is called on a fixed physics timestep (configured in \hyperref[M2]{M2})
-for physics-dependent logic, and \texttt{OnCollisionEnter2D} is invoked when two
+for physics-dependent logic. \texttt{OnCollisionEnter2D} is invoked when two
 physics colliders first make contact. These callbacks form the backbone of Unity's
-event-driven communication model.
+event-driven communication model and are standard Unity engine functions; they are
+not defined within this system's modules but are provided by the Unity engine itself.
 
 \paragraph{Event-Based Communication:}
 \begin{itemize}
@@ -2028,8 +2062,9 @@ event-driven communication model.
 The project follows the SFWRENG 4G06 course schedule, with two major demonstration
 milestones: Rev0 (Revision 0 demonstration in late November 2025) and Rev1 (final
 demonstration in late March 2026). Development is divided into five phases, each
-targeting a functional milestone aligned with these deadlines. Detailed task
-assignments and issue tracking are maintained on the team's GitHub repository.
+targeting a functional milestone aligned with these deadlines. The high-level schedule
+is summarized below, with detailed task assignments and issue tracking maintained on
+the team's GitHub repository.
 
 \begin{itemize}
 \item \textbf{GitHub Repository:} \url{https://github.com/felix-hurst/Ad-Natura}
@@ -2103,23 +2138,18 @@ Marcos Hernandez-Rivero & Documentation, Testing, Integration Support \\
 \item Full system integration testing and final documentation
 \end{itemize}
 
-\bibliographystyle{plain}
+\bibliographystyle{plainnat}
 \begin{thebibliography}{9}
-
-\bibitem{Parnas1984}
-D.L. Parnas, P.C. Clement, and D.M. Weiss.
-\textit{The modular structure of complex systems}.
-In International Conference on Software Engineering, pages 408--419, 1984.
 
 \bibitem{Parnas1972}
 David L. Parnas.
 \textit{On the criteria to be used in decomposing systems into modules}.
 Comm. ACM, 15(2):1053--1058, December 1972.
 
-\bibitem{HoffmanStrooper1995}
-Daniel M. Hoffman and Paul A. Strooper.
-\textit{Software Design, Automated Testing, and Maintenance: A Practical Approach}.
-International Thomson Computer Press, 1995.
+\bibitem{Parnas1984}
+D.L. Parnas, P.C. Clement, and D.M. Weiss.
+\textit{The modular structure of complex systems}.
+In International Conference on Software Engineering, pages 408--419, 1984.
 
 \end{thebibliography}
 

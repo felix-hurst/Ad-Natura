@@ -12,4 +12,4 @@ include::./system/index.adoc[]
 
 include::./project/index.adoc[]
 
-include::./bibliography.adoc[]
+//include::./bibliography.adoc[]

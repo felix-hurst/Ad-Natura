@@ -34,10 +34,9 @@ Trigger:: Flowing water is released or guided by the player.
 ==== Main Success Scenario
 1. The player releases a water source at the correct location by striking an object or solving a puzzle.
 2. The slime mold finds a path from its original location to the water source.
-3. The player walks over the organic pathway to traverse previously unreachable areas.
 
 ==== Secondary Scenario
 _No alternate scenario applies._
 
 ==== Success Postcondition
-The player can traverse obstacles by breaking up game objects and debris, and/or by guiding water flow to unlock pathways and guide slime mold.
+Over 50% of the slime mold agents are now concentrated on the water's location.

@@ -6,13 +6,13 @@
 \input{../Comments}
 \input{../Common}
 
-\title{User Guide\\\progname}
-
-\author{\authname}
-
-\date{}
-
 \begin{document}
+
+\title{User Guide\\\progname}
+\author{\authname}
+\date{\today}
+
+\maketitle \thispagestyle{empty}
 
 \begin{table}[hp]
 \caption{Revision History} \label{TblRevisionHistory}
@@ -20,16 +20,65 @@
 \toprule
 \textbf{Date} & \textbf{Developer(s)} & \textbf{Change}\\
 \midrule
-Date1 & Name(s) & Description of changes\\
-Date2 & Name(s) & Description of changes\\
-... & ... & ...\\
+April 4th, 2026 & Felix Hurst & Initial version\\
 \bottomrule
 \end{tabularx}
 \end{table}
 
 \newpage
 
-\maketitle
+\pagenumbering{arabic}
 
+\section{Launching the Game}
+After installing the game as instructed in
+\href{https://github.com/felix-hurst/Ad-Natura/blob/main/INSTALL.md}{INSTALL.md}, 
+you can launch the game at any time by running the executable file, or your shortcut
+that links to the executable. On some operating systems, you may encounter a warning popup,
+this is because our software is not digitally signed yet. These warnings can typically
+be bypassed to run the file anyway.
+
+\section{Playing the Game}
+
+\subsection{Basic Control Scheme}
+The game is operated with keyboard and mouse controls. Controls are as follows:
+\begin{itemize}
+    \item \textbf{Move}: WASD or Arrow Keys
+    \item \textbf{Jump}: Space
+    \item \textbf{Select Tool}: 1, 2, 3
+    \item \textbf{Aim Tool}: Right Mouse Button
+    \item \textbf{Use Tool}: Left Mouse Button
+    \item \textbf{Reload Ammo}: R
+    \item \textbf{Pause}: Esc or P
+    \item \textbf{Interact}: E (only when near interactable objects)
+\end{itemize}
+
+For aiming tools, note that using the Right Mouse Button will toggle whether you are aiming or not,
+however, sometimes you may stop aiming if your character is no longer grounded. While aiming,
+point the mouse on the screen where you want to fire the tool.
+
+The controls can also be viewed via the pause menu in-game, as long as you are inside
+a level and not actively viewing a cutscene.
+
+Certain parts of the game UI also may contain buttons that you can click with your mouse,
+including cutscenes, the pause menu, and journal logs.
+
+Journal logs provide additional information to you, the player, to help instruct you on what
+you can do, and provide hints on how to make progress.
+
+\subsection{Known Issues with Controls}
+Some users have reported issues with basic game controls. If some controls appear to do nothing,
+please try unplugging extraneous input peripherals from your PC (ex.\ game controllers) and relaunch
+the game. We have been tracking this issue, but it is not fully reproducible on our end, and so
+we have not been able to implement a permanent fix for all users.
+
+\subsection{Restarting Levels}
+If you ever feel that you messed up a puzzle too badly and need to restart the current level,
+or simply want to try things a different way for fun, you can restart the level via a button in
+the pause menu. This will reload the current scene.
+
+\section{Closing the Game}
+The game can be closed at any time. You can do this via a button in the pause menu, or 
+you can use a key combination that your operating system uses to instantly close the active application,
+for instance, Alt+F4 on Windows.
 
 \end{document}

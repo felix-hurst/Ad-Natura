@@ -31,6 +31,7 @@
 2025-10-09 & All & Created Document\\
 2025-11-11 & Andy Liang & Addressed peer review feedback from Team 11: Added health/safety requirements (NF235-237) for photosensitivity and audio warnings; Added definition of "not fun to play" failure mode; Added detailed recommended actions for visual appeal issues\\
 2025-11-13 & Marcos Hernandez-Rivero & Addressed Feedback from Team 11\\
+2026-04-05 & Marcos Hernandez-Rivero & Addressed feedback from TA\\
 \bottomrule
 \end{tabularx}
 \end{table}
@@ -39,15 +40,17 @@
 \tableofcontents
 ~\newpage
 \listoftables
+\listoffigures
 ~\newpage
 
+\pagenumbering{roman}
 \section{Introduction}
 
-The primary goal of this Hazard Analysis is to identify, categorize, and evaluate potential risks and flaws in the game system and its development process. This proactive approach ensures that potential issues are addressed before they translate into significant problems during development or post-launch. By maintaining a high standard of quality assurance, we aim to deliver a stable, secure, and enjoyable product. A hazard is a flaw in the system that could lead to the user not enjoying our game, inhibited usability, or security/privacy risks.This document will proceed by identifying various hazards across technical, design, and operational domains. It will then analyze the severity and likelihood of each hazard, assigning a resultant risk level. Finally, for all non-trivial risks, concrete mitigation and contingency plans will be proposed to ensure project integrity and the quality of the final product.\\
+The primary goal of this Hazard Analysis is to identify, categorize, and evaluate potential risks and flaws in Ad Natura and its development process. This proactive approach ensures that potential issues are addressed before they translate into significant problems during development or post-launch. By maintaining a high standard of quality assurance, we aim to deliver a stable, secure, and enjoyable product. A hazard is a flaw in the system that could lead to the user not enjoying our game, inhibited usability, or security/privacy risks. This document will proceed by identifying various hazards across technical, design, and operational domains. It will then analyze the severity and likelihood of each hazard, assigning a resultant risk level. Finally, for all non-trivial risks, concrete mitigation and contingency plans will be proposed to ensure project integrity and the quality of the final product.\\
 
 \section{Scope and Purpose of Hazard Analysis}
 
-This hazard analysis covers the game software on Windows 10+ (Minimum Spec): input handling (keyboard/mouse; optional gamepad), rendering/audio, terrain \& debris, field publication (water/heat/light), organism traversal, and file I/O (saves/settings/logs). It excludes OS/hardware faults, the Steam client, mods, and online services. Potential future features (e.g., microphone input, external weather) are noted but out of scope for R1.\\
+This hazard analysis covers the game software on Windows 10+ (minimum spec): input handling (keyboard/mouse; optional gamepad), rendering/audio, terrain \& debris, field publication (water/heat/light), organism traversal, and file I/O (saves/settings/logs). It excludes OS/hardware faults, the Steam client, mods, and online services. Potential future features (e.g., microphone input, external weather) are noted but out of scope for Rev 1 Demo.\\
 
 Purpose
 \begin{itemize}
@@ -60,12 +63,12 @@ Purpose
 Potential losses if hazards occur
 \begin{itemize}
 \item{\textbf{Human health/safety:} photosensitive seizures (flashing), hearing damage (sudden loud audio), motion/visual discomfort. → Loss: injury or illness.}
-\item{\textbf{Accessibility/usability:} unreadable UI at 1280×720; non-functional keyboard/mouse paths. → Loss: players can’t play/progress.}
+\item{\textbf{Accessibility/usability:} unreadable UI at 1280×720; non-functional keyboard/mouse paths. → Loss: players can’t play/progress, uncomfortable for user's vision.}
 \item{\textbf{Data integrity:} corrupted/partial saves/settings/logs. → Loss: progress/time loss; inability to resume.}
 \item{\textbf{Privacy (future features):} unintended microphone capture/storage. → Loss: personal data exposure; reputational harm.}
 \item{\textbf{Stability/performance:} crashes, hangs, excessive resource use, high latency. → Loss: denial of service; unplayable experience.}
 \item{\textbf{Legal/compliance:} mis-licensed assets; writing outside user-writable paths. → Loss: policy violations; takedowns.}
-\item{\textbf{Project/academic outcome:} failure to meet Minimum Spec or acceptance criteria. → Loss: missed milestones; grading/demo impact.}
+\item{\textbf{Project/academic outcome:} failure to meet minimum spec or acceptance criteria. → Loss: missed milestones; grading/demo impact.}
 \end{itemize}
 
 Method (summary)\\
@@ -73,10 +76,10 @@ Use a checklist + what-if sweep and a simple severity/likelihood matrix (Low/Med
 
 \section{System Boundaries and Components}
 
-1. Debris System\\
-2. Inventory System\\
-3. Player Controller\\
-4. Organic Pathway System\\
+1. Debris System. This is a system related to when objects are destroyed by the player or the slime mold, that breaks down the objects into smaller and smaller chunks to mimic real destruction.\\
+2. Inventory System. This is a system governing what items the player possesses, from which tools they have available to what story-specific items the player has in that current moment (i.e. storing the fact that the player collects X item at Y level, and can therefore use the item in Z level in the future).\\
+3. Player Controller. This governs the player's movement. How they jump, interact with tools, interact with slime mold, interact with the general physical layout of the environment.\\
+4. Generation System. This governs how objects are created in-game, such as reproduction of slime molds and creation of calamity objects, which serve as an obstacle to slime molds.\\
 
 \section{Critical Assumptions}
 
@@ -84,9 +87,9 @@ This section outlines the foundational assumptions made about the project's deve
 
 A core assumption is the technical feasibility of the core requirements. It is assumed the specialized systems, the destructible environment and the slime mold traversal system, can be implemented successfully using the chosen engine and tools within the timeframe established by Sprint 0. Discovering fundamental limitations after that initial sprint will necessitate a critical reduction in the project's overall scope.\\
 
-It is also assumed the development environment will be stable. This means the chosen game engine and all associated third-party components (such as physics libraries) will remain stable, compatible, and maintainable throughout the entire development cycle, from Sprint 0 through Sprint 3. It is assumed there won't be any major, unscheduled, or breaking changes to the engine or dependencies during this time.\\
+It is also assumed the development environment will be stable. This means the chosen game engine and all associated third-party components (such as physics libraries) will remain stable, compatible, and maintainable throughout the entire development cycle, from Sprint 0 through Sprint 3 as defined in P.3 of the \href{https://github.com/felix-hurst/Ad-Natura/blob/main/docs/SRS/SRS.pdf}{SRS}. It is assumed there won't be any major, unscheduled, or breaking changes to the engine or dependencies during this time.\\
 
-The project relies on the availability of human resources. It is assumed that all core development team members will be available and committed to the project according to the schedule in P.4 of the SRS document. The successful delivery of key sprint items would be compromised if any critical team member experienced a prolonged, unplanned absence.\\
+The project relies on the availability of human resources. It is assumed that all core development team members will be available and committed to the project according to the schedule in P.4 of the \href{https://github.com/felix-hurst/Ad-Natura/blob/main/docs/SRS/SRS.pdf}{SRS document}. The successful delivery of key sprint items would be compromised if any critical team member experienced a prolonged, unplanned absence.\\
 
 Assumptions need to be made regarding user system specifications. This will be designed under the assumption that the final game will be run on hardware and operating systems that meet the minimum specifications to be defined in the Design Document (Revision 0). We manage performance hazards based on the expectation that end-users possess at least these minimum required specifications.\\
 
@@ -226,6 +229,8 @@ This structured approach ensures that visual appeal issues are addressed systema
 
 \section{Safety and Security Requirements}
 
+The identifiers (F/NF \#\#\#) refer to the identifiers used in the \href{https://github.com/felix-hurst/Ad-Natura/blob/main/docs/SRS/SRS.pdf}{SRS}\\
+
 \begin{itemize}
 \item{\textbf{Auto-save:} Each time the player completes a puzzle and progresses to the next scene, the game will automatically save their progress, updating the save file. (F213).}
 \item{\textbf{Reset Puzzle:} The player has the option to reset a puzzle room to start over, in case they got lost or softlocked. (F214).}
@@ -246,7 +251,7 @@ Once the core mechanics of the project are solidified, the game levels can be bu
 \newpage{}
 \section*{Appendix --- Reflection}
 \textbf{Team:}\\
-3. Before beginning this deliverable, we thought of risks such as:\\
+Before beginning this deliverable, we thought of risks such as:\\
 -The game not being fun, or not being visually appealling\\
 -Controller support\\
 The rest came about by imagining ourselves playing our game and thinking about what could go wrong at any step of the gameplay loop. It also came from thinking about our past experiences playing other games that had bugs or other issues. This led to thoughts of softlocks, crashes, lost save data, and so on.\\

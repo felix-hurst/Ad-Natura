@@ -1,13 +1,17 @@
 \documentclass{article}
 
-\usepackage{tabularx}
+\usepackage{xltabular}
+\usepackage{graphicx}
 \usepackage{booktabs}
+\usepackage{float}
+\usepackage{hyperref}
+\usepackage[numbers]{natbib}
 
 \title{Reflection and Traceability Report on \progname}
 
 \author{\authname}
 
-\date{}
+\date{\today}
 
 \input{../Comments}
 \input{../Common}
@@ -35,7 +39,7 @@ from the supervisor shaped your project.  In particular, you should highlight th
 supervisor's response to your Rev 0 demonstration to them.}
 
 \plt{Version control can make the summary relatively easy, if you used issues
-and meaningful commits.  If you feedback is in an issue, and you responded in
+and meaningful commits.  If your feedback is in an issue, and you responded in
 the issue tracker, you can point to the issue as part of explaining your
 changes.  If addressing the issue required changes to code or documentation, you
 can point to the specific commit that made the changes.  Although the links are
@@ -62,6 +66,38 @@ document, and likely the Revision 1 versions of the other documents will be
 low.} 
 
 \subsection{SRS and Hazard Analysis}
+This section will summarize the changes made in response to the feedback received from peers and the TA, for both the \href{https://github.com/felix-hurst/Ad-Natura/blob/main/docs/SRS/SRS.pdf}{Software Requirement Specification} and the \href{https://github.com/felix-hurst/Ad-Natura/blob/main/docs/HazardAnalysis/HazardAnalysis.pdf}{Hazard Analysis} documents.
+
+\begin{xltabular}{\textwidth}{|p{1.5cm}|p{2cm}|X|X|}
+\caption{Feedback table for SRS} \\
+\hline
+Feedback Item Number & Source of Feedback & Summary of Feedback & Changes made in response to feedback \\ \hline
+\endfirsthead
+1&TA scheduled meeting&TA told us that the dates should be more specific, and also some overlap is allowed& Changed dates in P.3 and P.4 (scheduling and tasks) \\ \hline
+2&  Peer Review & System assumptions were included, but not audience assumptions. Additionally, what are the accessibility options in the game \href{https://github.com/felix-hurst/Ad-Natura/issues/37}{Feedback Issue \#37} & Assumptions about audience were added \href{https://github.com/felix-hurst/Ad-Natura/commit/8d863e79b91bb23ba54e0fc92494ee030752ac46}{Commit fixing feedback} \\ \hline
+3&Peer Review&Game description implied main success scenario and secondary success scenario happening at the same time while success scenarios implied one or the other was working, steps in success scenario should also be numbered \href{https://github.com/felix-hurst/Ad-Natura/issues/39}{Feedback issue \#39}& Added numbering to the success scenarios, and changed a success scenario to better highlight that the main part of both the main and secondary success scenarios should be happening at the same time. \href{https://github.com/felix-hurst/Ad-Natura/commit/8d863e79b91bb23ba54e0fc92494ee030752ac46}{Commit fixing feedback}\\ \hline
+4& TA Feedback &Control tables have typo in "Versioning" and some were missing captions \href{https://github.com/felix-hurst/Ad-Natura/issues/42}{Issue containing feedback for SRS}& Fixed typos, added missing captions \href{https://github.com/felix-hurst/Ad-Natura/commit/c060d1f768c72ec774a56e5e9003a0c7b364edda}{Commit fixing Feedback}\\ \hline
+5&TA Feedback&General grammar issues, including typos, localization (using canadian spelling instead of american), formatting blocks of text to be lists \href{https://github.com/felix-hurst/Ad-Natura/issues/42}{Issue containing feedback for SRS}&                                   Fixing typos, changed spelling of 'color' to 'colour', and several parts that had blocks of text such as end of E.5 were formatted into lists \href{https://github.com/felix-hurst/Ad-Natura/commit/c060d1f768c72ec774a56e5e9003a0c7b364edda}{Commit fixing Feedback}\\ \hline
+6&TA Feedback&A lot of mentions to important parts (such as the slime mold's actions or the slime mold itself) were missing \href{https://github.com/felix-hurst/Ad-Natura/issues/42}{Issue containing feedback for SRS} & Descriptions were updated to be more accurate, and less vague, as well as mentions to systems (such as the slime mold) outside of the section where they were introduced is hyperlinked. \href{https://github.com/felix-hurst/Ad-Natura/commit/c060d1f768c72ec774a56e5e9003a0c7b364edda}{Commit fixing Feedback}\\ \hline
+7&TA Feedback&High level usage diagram is low quality (G.5) \href{https://github.com/felix-hurst/Ad-Natura/issues/42}{Issue containing feedback for SRS}&No changes were made, as the size is appropriate to capture the entire image, and poor quality happened straight from downloading it from website used to make the diagram, and we wanted to keep the current look of the diagram as we felt it made things the clearest \href{https://github.com/felix-hurst/Ad-Natura/commit/c060d1f768c72ec774a56e5e9003a0c7b364edda}{Commit fixing Feedback}\\ \hline
+\end{xltabular}%
+
+Feedback items number 4 to 7 were all part of the same feedback, just given different rows on the table to distinguish the nature of the feedback and make it clearer to read.
+
+\begin{xltabular}{\textwidth}{|p{1.5cm}|p{2cm}|X|X|}
+\caption{Feedback table for HA} \\
+\hline
+Feedback Item Number & Source of Feedback & Summary of Feedback & Changes made in response to feedback \\ \hline
+1& Peer Review& The FMEA table stated that only one person was responsible for resolving the issue of not being visually appealing in the failure mode, and it was ambiguous how the person responsible would solve this  \href{https://github.com/felix-hurst/Ad-Natura/issues/34}{Feedback Issue \#34}& Added a section explaining how to resolve the not visually appealing issue, including an actual proper process to follow. \href{https://github.com/felix-hurst/Ad-Natura/commit/801b7db48b469dcae4db8fcb9e86d8c89b342cb6}{Commit Fixing Feedback}\\ \hline
+2& Peer Review& One of the failure modes was "not fun to play" which was not elaborated on and was very unclear  \href{https://github.com/felix-hurst/Ad-Natura/issues/35}{Feedback Issue \#35}& Added a strict definition for "not fun to play" in the "Definition of Key Failure Modes" section. \href{https://github.com/felix-hurst/Ad-Natura/commit/801b7db48b469dcae4db8fcb9e86d8c89b342cb6}{Commit Fixing Feedback}\\ \hline
+3& Peer Review& One of the potential losses mentioned is human health and safety, which is a valid loss, but no reason was stated as to why (we never said that player's photosensitivty is triggered, for example)  \href{https://github.com/felix-hurst/Ad-Natura/issues/36}{Feedback Issue \#36}& In the safety and security requirements, added a health and safety warning, audio safety, and accessibility options line, detailing what the risks are and what requirements we will set for players to play safely\href{https://github.com/felix-hurst/Ad-Natura/commit/801b7db48b469dcae4db8fcb9e86d8c89b342cb6}{Commit Fixing Feedback}\\ \hline
+4& TA Scheduled Meeting& A few grammatical points need to be fixed and FMEA table should be a properly formatted table in LaTeX instead of an image of a table& Fixed language to stop using "we" so much, and also properly introduced the FMEA table, formatted as a LaTeX table \href{https://github.com/felix-hurst/Ad-Natura/commit/8707435bcd7c9df7fbed860b88926b758a643a11}{Commit fixing feedback}\\ \hline
+5& TA Feedback& General vagueness, "game system", which was used in our text, was not named, and our system boundaries section was also very vague, only containing the title of the systems with no explanation as to what they do and no context.\href{https://github.com/felix-hurst/Ad-Natura/issues/42}{Issue containing feedback for HA}& Named game system (to be the name of our game), and expanded on each of the system boundaries and components, giving a description of each one. Also changed the use of "R1" to be "Rev 1 Demo" to be more clear about what it wasa referring to. \href{https://github.com/felix-hurst/Ad-Natura/commit/7d394e97e27f93443ec8d7d2270e1095a9afa9b0}{Commit fixing feedback}\\ \hline
+6& TA Feedback& We need to expand on some of the accessibility/usability items in the scope and purpose section, and to properly explain what dangers exist so that the reader understands the scope of the necessary requirements. \href{https://github.com/felix-hurst/Ad-Natura/issues/42}{Feedback Issue \#42}& Added that an accessibility/usability hazard may cause uncomfortableness or damage to a player's eyes. \href{https://github.com/felix-hurst/Ad-Natura/commit/7d394e97e27f93443ec8d7d2270e1095a9afa9b0}{Commit fixing feedback}\\ \hline
+7& TA Feedback& General hyperlink and captioning issues. Documents were referenced that were not hyperlinked, and FMEA table was present without caption  \href{https://github.com/felix-hurst/Ad-Natura/issues/42}{Feedback Issue \#42}& Added list of tables and hyperlinks to relevant documents, also added caption to the FMEA table \href{https://github.com/felix-hurst/Ad-Natura/commit/7d394e97e27f93443ec8d7d2270e1095a9afa9b0}{Commit fixing feedback}\\ \hline
+\end{xltabular}%
+
+Feedback items number 5 to 7 were all part of the same feedback, just given different rows on the table to distinguish the nature of the feedback and make it clearer to read. 
 
 \subsection{Design and Design Documentation}
 
@@ -69,75 +105,324 @@ low.}
 
 \section{Extras}
 
-\plt{Summarize the extras that were tackled by this project.  Extras
-can include usability testing, code walkthroughs, user documentation, formal
-proof, GenderMag personas, Design Thinking, etc.  Extras should have already
-been approved by the course instructor as included in your problem statement.}
+In this section, we will summarize this project's two extra deliverables.
+
+\subsection{Usability Report} \label{UsabilityReport}
+
+The 
+\href{https://github.com/felix-hurst/Ad-Natura/blob/main/docs/Extras/UsabilityReport/UsabilityReport.pdf}{Usability Report}
+summarized feedback from beta testers of our product. We distributed beta builds
+of our project to people interested, gave them basic instructions on how to launch
+the game, asked them to play through the game to the end, and then to submit a
+feedback survey. The questions on the feedback survey are listed in the 
+\href{https://github.com/felix-hurst/Ad-Natura/blob/main/docs/VnVPlan/VnVPlan.pdf}{VnV Plan}
+document. Two rounds of usability testing were conducted: One in early March, and one 
+in early April. These two rounds allowed us to assess major points of success and failure 
+of our project, collect suggestions on potential improvements, and then measure whether
+we succeeded in implementing those improvements.
+
+Due to TA feedback, improvements were made to add more detail to the content of
+the report itself, including the exact number of participants of each survey,
+more of the suggestions given to our team by survey participants, and 
+further explanations of why our builds lacked certain features.
+
+\subsection{Technical Report on the Slime Mold Algorithm}
+
+The 
+\href{https://github.com/felix-hurst/Ad-Natura/blob/main/docs/Extras/TechnicalReportSMA/TechnicalReportSMA.pdf}{Technical Report on the Slime Mold Algorithm}
+explains the various queer characteristics of the slime mold organism, how they 
+were implemented into our project, and the rationale behind each slime mold related 
+design decision. Overall, this report provides much context for one of the primary 
+goals of our game, that being the artistic and educational display of the slime mold, 
+an organism that has so many unique traits that make it difficult to classify.
+
+Due to TA feedback, improvements were made to provide additional background information 
+for readers that are not familiar with the subject matter, and to improve formatting in 
+various places in the document.
 
 \section{Design Iteration (LO11 (PrototypeIterate))}
 
-\plt{Explain how you arrived at your final design and implementation.  How did
-the design evolve from the first version to the final version?} 
+Our design began with the idea of the entire world possibly being destructible through 
+the usage of tools like a shovel and rifle. Destroying terrain would turn it into very small
+particle-like chunks of debris. In addition, we had concepts for a plant representing the 
+slime mold, such as a vine. The player could interact with this vine primarily through 
+destroying terrain in such a way that moved existing sources of water. The vine 
+would then be attracted to the water, growing, building a bridge that crosses a gap, 
+and allowing the player  to proceed further through the level. The thought behind this 
+was that a vine would be more visually appealing compared to slime, and a vine's 
+tendril growth could still somewhat accurately represent the growth of a slime mold.
 
-\plt{Don't just say what you changed, say why you changed it.  The needs of the
-client should be part of the explanation.  For example, if you made changes in
-response to usability testing, explain what the testing found and what changes
-it led to.}
+In the early phases of design, we suffered from scope creep. Due to the open-ended nature 
+of our project, there are an infinite number of wildly different ways we could have 
+implemented a solution for our stakeholders. The only thing that truly stayed the same 
+from start to finish, was the notion of this project being a 2D pixel art puzzle platformer
+showcasing the slime mold algorithm in some way.
+
+However, we spent too much time generating ideas for game mechanics, such as the player's
+abilities, the types of obstacles in the way, and the method of representing the slime mold.
+We did not spend enough time settling on what to actually move forward with in these early 
+stages. 
+
+Eventually, through discussions within our team as well as with our supervisors, 
+we were able to settle on a core set of features. These core features included:
+\begin{itemize}
+    \item The player would have three tools: A water shooter, rifle (impact rounds), and wind fan.
+    The player no longer has a shovel tool, as that tool's functionality became obsolete.
+        \subitem{The water shooter helps the player attract the slime mold.}
+        \subitem{The impact rounds can break brittle objects.}
+        \subitem{The wind fan can blow slime mold spores.}
+    \item The slime mold is now represented accurately in terms of what they look like and 
+    do in real life, except in a pixel art style. They are no longer modelled by a plant.
+    \item The world is no longer entirely destructible. Instead, only certain objects 
+    can be damaged and destroyed, some only by the player, and some only by the slime mold.
+\end{itemize}
+
+These changes were done primarily in accordance with wishes from our supervisors.
+
+First, we realized it would be best to represent the slime mold closely to what they look 
+like and do in real life, as it is important to our project to showcase slime mold and why it 
+is so special. It would not do to have a plant model the slime mold instead, even if a 
+plant is more visually appealing in a general sense, compared to slime. Instead of building 
+bridges, the slime became capable of decomposing wood to clear it out of the player's path, 
+and to coat walls to allow the player to climb up.
+
+Second, we determined it would not be feasible for the entire world to be destructible, as 
+it would defeat the purpose of requiring the player to interact with the slime mold to 
+overcome obstacles. If players could just break everything in their way, they might ignore 
+the slime mold completely. Therefore, we made most environmental terrain indestructible,
+and only certain objects can be destroyed directly by the player. Additionally, wood obstacles 
+can only be destroyed by the slime mold, so this serves to force players to interact with 
+the slime mold.
+
+Third, our supervisors helped us come up with ideas for game mechanics, such as the concept 
+of blowing slime mold spores from one side of an area to another, to help them grow into 
+new slime molds, demonstrating the organism's full life cycle. We also opted to give the 
+player a way to spawn water instead of relying on water from the environment, through the 
+water shooter tool. This gives the player a bit more control over what they can do to help 
+the slime mold, though they still do not have full control over the slime mold.
+This lack of full control over the slime mold is also important, as it teaches the player 
+an important lesson about consent. 
+
+From this, we were able to refine the details of the interactions between the player, the 
+obstacles, the slime mold, and the user interface. We developed a story with clear objectives
+for the player to follow, so they would understand their place in this fictional world.
+
+In addition to discussion with our supervisors, we also conducted usability testing.
+This allowed us to get a better picture of what our end users felt about our product.
+For more details on the Usability Report, see Section~\ref{UsabilityReport}.
+In summary, survey participants were impressed by the game's aesthetic and visuals,
+but frustrated by its lack of clarity about game mechanics, what the player could do,
+and what they were supposed to do to overcome each puzzle. We took this feedback to 
+heart, and immediately began implementing much more UI elements to explain player state, 
+teach them the basics, and give them hints on how to proceed. One major feature involved 
+in this is the journal logs. These interactable objects provide additional context and 
+tips to the player, while still feeling like they are part of the story and experience.
 
 \section{Design Decisions (LO12)}
 
-\plt{Reflect and justify your design decisions.  How did limitations,
- assumptions, and constraints influence your decisions?  Discuss each of these
- separately.}
+In this section, we will reflect on and justify our design decisions, considering 
+the influences of limitations, assumptions, and constraints.
+
+\subsection{Limitations}
+
+Our primary limitations came from our choice of game engine, Unity. For instance, 
+one of our early design ideas from our supervisors was the concept of having additional 
+input devices. Not just a keyboard and mouse, but also a microphone, and sensors that 
+could detect atmospheric conditions such as temperature and humidity. Unfortunately, 
+only the microphone concept was able to be implemented in the final product. Other kinds 
+of sensors do not have an API that Unity can easily interface with. We scrapped the idea 
+of having atmospheric sensors, instead opting for a product that anyone could play at 
+home with common peripherals.
+
+\subsection{Assumptions}
+
+We had to make the assumption that most of our audience and potential end users would 
+have a device of sufficient power to run Unity-made software, and that it would be running one 
+of our three supported platforms: Windows, Mac, or Linux. We also assumed that our end users 
+would likely have a keyboard and mouse with which to play, but not likely a game controller.
+For these reasons, we set up a control scheme for the game that is catered to PC keyboard 
+and mouse setups. We included keyboard and mouse inputs, but not game controller inputs, nor
+any kind of touchscreen input.
+
+Additionally, our assumptions on end user device performance influenced how much effort we 
+put into optimizing performance on our project's end. Our team owns laptops designed primarily 
+for office work rather than playing games, which we used to test the performance of our product.
+We aimed for a stable 30 frames per second on these laptops, and assumed that the performance 
+would be similar for most end users. However, ultimately, it will still depend on each person's 
+device, and we cannot guarantee a smooth experience for people with older devices.
+
+\subsection{Constraints}
+
+Our primary constraint was time. Much of our project's planned content had to be 
+trimmed, condensed, or scrapped, in order to keep up with the deadlines of the 
+Capstone course. This included:
+\begin{itemize}
+    \item Additional levels with new puzzles to overcome and more depth to the story
+    \item Additional behavioural traits of the slime mold
+    \item Background music for every level with a shifting emotional tone over time
+    \item A way to save and load progress
+\end{itemize}
+
+In the end, we were happy with the levels we created, the story we told, the 
+slime mold features we presented, and the two songs that play at the beginning 
+and end of the game. The game ended up being short enough that it is not a huge 
+issue that there is no saving system, either.
 
 \section{Economic Considerations (LO23)}
 
-\plt{Is there a market for your product? What would be involved in marketing your 
-product? What is your estimate of the cost to produce a version that you could 
-sell?  What would you charge for your product?  How many units would you have to 
-sell to make money? If your product isn't something that would be sold, like an 
-open source project, how would you go about attracting users?  How many potential 
-users currently exist?}
+There is currently a booming market for AA and indie games developed by limited 
+team sizes. As legacy studios grow in size and bureaucracy and shareholder interests 
+prevail, there is a growing demand by consumers for games which are unique in not 
+only game direction, but as well as artstyle and concept, which is why we believe 
+our game is perfectly positioned in this industry. Due to our team's small size 
+and non-traditional working environment, we estimate the cost of our game to be under 
+\$20,000 in terms of possible third party assets, although the diverse skill sets 
+of our members (scripting, art, sound, music, etc.) mitigates the need to outsource 
+aspects of our game. If our team remains a volunteer development team, the staffing 
+cost could be proportional to revenue gained. Marketing cost can be lowered to a 
+minimum by grassroots promotions, such as major content creators reviewing the 
+product for free in exchange for engaging content. Marketing could also 
+simultaneously be done via short form content and developer logs, which are 
+free to make and publish on social media sites. We are anticipated to price our 
+game at around \$7.99, which is the current average price for games within 
+average market price of our scope and genre (indie pixel art platformer tags)~\cite{SteamDB}. 
+If simply offsetting our game development cost, as well as accounting for each 
+member's salary as compared with Talent.com averages (\$117,000 in Canada)~\cite{Talent.com}, 
+our game needs to sell around ((\$20,000 + (\$117,000*4))/\$7.99) = \$61,076 copies.
+According to Valve, in 2025, around 5863 games earned over \$100,000 out of around 
+40,000 games (including AI-made and low effort games)~\cite{Valve}. This puts our goals at a 
+difficult to attain threshold, however, if the overall gameplay loop is engaging, 
+and time and effort is put into polish and game direction, even one-man teams 
+are able to surpass \$100,000 (Stardew Valley, Hollow Knight, etc.)~\cite{SteamDB}. As mentioned 
+above, there is already a considerable market for games in our genre and scope, 
+and by leveraging social media and grassroots marketing, we believe there will 
+be a healthy audience base for our upcoming game.
 
 \section{Reflection on Project Management (LO24)}
 
-\plt{This question focuses on processes and tools used for project management.}
+This section will reflect on processes and tools used for project management.
 
 \subsection{How Does Your Project Management Compare to Your Development Plan}
 
-\plt{Did you follow your Development plan, with respect to the team meeting plan, 
-team communication plan, team member roles and workflow plan.  Did you use the 
-technology you planned on using?}
+We followed some aspects of our development plan, but other aspects were ignored 
+and forgotten over time. Most team members showed up to the majority of our 
+meetings, whether it was a team meeting, TA meeting, or supervisor meeting.
+Team members were generally communicative and responsive in our Discord server.
+We effectively used polls to vote on matters we disagreed on, breaking ties 
+randomly when needed. For most of the project, we remained respectful and 
+professional with one another, except for a few incidents, which we resolved
+through conflict resolution with the instructor and TA's assistance.
+Team members had some roles defined early on in the project, however, these 
+were not closely adhered to. The roles ended up shifting over time. In terms of 
+our workflow plan, we only began developing with a steady pace, as a full team, 
+beginning in February 2026, when we introduced weekly sprints and began 
+tracking each team member's tasks more clearly and closely. We tried using a 
+Kanban board on our GitHub repository for this at first, but stopped using it 
+after a while, as it was much easier to track things solely in our Discord server.
+
+We did use the Unity game engine throughout the whole project as we anticipated.
+However, we struggled to get unit testing to work with GitHub Actions, so we had 
+to pivot to implementing code style formatting for our CI/CD element.
 
 \subsection{What Went Well?}
 
-\plt{What went well for your project management in terms of processes and 
-technology?}
+The team leader, Felix Hurst, prepared agendas for most meetings, and kept 
+detailed notes of what was shared, discussed and agreed on during meetings.
+
+We had a good way of keeping track of who was contributing to the project 
+and who was not, recording meeting absences and other incidents for the 
+Team Productivity Report. We contacted the instructor when appropriate to 
+help resolve major incidents.
+
+Our sprint system from February onward helped us keep a relatively steady 
+pace of developments in the final stretch of the Capstone course.
+
+We have also kept up steady and healthy communications with our supervisors 
+throughout the course to keep them updated on our progress and get their help 
+with making decisions or generating new ideas.
 
 \subsection{What Went Wrong?}
 
-\plt{What went wrong in terms of processes and technology?}
+One of the biggest issues we had in the first half of this course was that 
+we lacked a rule or agreement to frequently share progress in the form of 
+actual commits to the source code in the repository. This led to a lot of 
+trust being placed on certain team members to complete a task on time, with 
+other teammates being unable to assist as they did not have even a work-in-progress 
+version of the code to look at. It also meant that, after the code was finally pushed 
+to the repository, it would take extra time for the rest of the team to read 
+through it and understand how it worked and how it could be modified, improved and 
+interfaced with. This resulted in significant setbacks.
+
+Additionally, we initially relied on Google Docs to prepare our documentation, 
+when we should have been using Latex from the start. This would have prevented us 
+from having formatting issues with our documents caused by lack of experience with 
+the typesetting system.
 
 \subsection{What Would you Do Differently Next Time?}
 
-\plt{What will you do differently for your next project?}
+Next time, we would need to set clearer expectations for a steady and consistent 
+pace of development work, and stricter punishments for failing to meet these 
+expectations. It would not be extremely strict, for instance, we would still have 
+allowable excuses for missed deadlines, but those must be communicated ahead of time 
+if possible, with alternative arrangements in place for other teammates to pick up 
+on the unfinished work if necessary, or a promise to catch up after the fact. These 
+rules should be enforced throughout the whole term, not having us slowly let more 
+and more violations slide over time.
+
+Additionally, it likely would have been effective to employ some team building 
+exercises early on in the project's life span, such as some hangout activities 
+in person. Our team did not end up hanging out in person, as half of our team 
+lived far from campus and found it cumbersome to travel such a long distance 
+unless absolutely necessary. However, these kinds of activities could have 
+sparked a friendship among our team members and served to increase productivity 
+as a result, as we would not want to let each other down.
 
 \section{Ethics and Equity (LO18)}
 
-\plt{Describe how your team applied the principle of equity and universal design
-to ensure equitable treatment of all stakeholders.}
+Our game design is rooted in equity for all prospective players, as well as the 
+game development community as a whole. Our team worked hard to ensure playability 
+for players with baseline skill in games of our similar genre, as well as made 
+sure control schemes are intuitive for our levels and players' expectations. 
+Additionally, we are resolving to implement graphics settings to ensure more 
+players of different hardware processing power are able to enjoy the game as 
+well. On the game development community side, we are ensuring no assets in the 
+final game are the product of generative AI, in order to ensure copyright 
+integrity in the industry.
 
 \section{Reflection on Capstone}
 
-\plt{This question focuses on what you learned during the course of the capstone project.}
+Our team learned a considerable amount throughout the development of our project. 
+For many of us, it was the first time developing a game within a game engine editor, 
+and as such, there were many things to learn and improve on during the development 
+process. Our team gained experience in technical areas such as compute shaders, 
+high to low level instruction compiling for optimization, runtime object geometry 
+modification, data caching, and much more. Setting up animations and building levels 
+with C\# script modules were also a major learning area for our team as well. On the 
+non-technical side, whilst our team had members who were experienced in visual and 
+audio design, integration with our game levels and module mechanics provided us 
+with new learning challenges as we navigated both the technical and non-technical side.
 
 \subsection{Which Courses Were Relevant}
 
-\plt{Which of the courses you have taken were relevant for the capstone project?}
+Courses that were relevant in this course included 2AA4 as well as 4HC3. These 
+courses built and improved our planning and problem-solving skills, especially 
+with the technically demanding modules in our game, encouraging us to tackle a 
+difficult problem iteratively, step by step. Furthermore, 4HC3 taught us the 
+fundamentals of how users interact with software, and thus, how we can improve our 
+UI/UX designs to be more intuitive and enjoyable for the user. Lastly, as 
+these two courses involved group work tasks, it built our teamwork skills in how 
+to delegate and manage progress of deliverables, including sprint planning and task 
+delegation.
 
 \subsection{Knowledge/Skills Outside of Courses}
 
-\plt{What skills/knowledge did you need to acquire for your capstone project
-that was outside of the courses you took?}
+Our team utilized our team members' skills outside of the software development 
+courses, such as visual and sound asset creation, as well as Unity game engine 
+knowledge. Visual and sound assets needed to align with our C\# script logic 
+and vice versa. Our Unity game also required hooking up scripts and setting 
+up animations and scenes, which is done in the Unity game engine editor.
+
+\bibliographystyle{IEEEtranN}
+\bibliography{References}
 
 \end{document}
