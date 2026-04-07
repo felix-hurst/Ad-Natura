@@ -58,6 +58,21 @@ Feedback items number 5 to 7 were all part of the same feedback, just given diff
 
 \subsection{Design and Design Documentation}
 
+\begin{xltabular}{\textwidth}{|p{1.5cm}|p{2cm}|X|X|}
+\caption{Feedback table for Design and Design Documentation} \\
+\hline
+Feedback Item Number & Source of Feedback & Summary of Feedback & Changes made in response to feedback \\ \hline
+\endfirsthead
+1 & TA Feedback & References may need reordering, and in-text citations may need fixing so that they occur in order. Reference [3] has no in-text citations and could be removed if unused. & Reordered references and removed redundant references \\ \hline
+2 & TA Feedback & Section 7 (Connection Between Requirements and Design): None of the design decisions reference the Slime Mold Algorithm. References to the SMA could be added based on relevant design choices. & References to slime mold have been added, including GPU accelerated mold simulation and microphone input as a decoupled modulation source \\ \hline
+3 & TA Feedback & Section 8 (Module Decomposition): Each subheading (e.g., "8.1 Hardware Hiding Modules") could use a short introductory paragraph before listing modules, to briefly explain what kinds of modules belong in that category. & Added introductions to the relevant subheadings, and introduced module summaries similar to those in 8.3 and 8.4 \\ \hline
+4 & TA Feedback & Section 10 (Use Hierarchy Between Modules): The first table in this section should be replaced with a flowchart-like diagram. & Added a flowchart diagram in addition to the current diagram to explain module flow and hierarchy with labelled modules \\ \hline
+5 & Team Member Feedback & Section 11 (User Interfaces): Incorrect image locations and outdated images compared to the current gameplay system. & Updated images in accordance with the updated gameplay and fixed image links \\ \hline
+6 & TA Feedback & Section 11.3: Hardware requirements are not specific enough. New requirements such as DirectX 11 / OpenGL 4.3+ as mentioned in 8.4.1 should be included. & Added hardware references to DirectX 11 and OpenGL 4.3, and outlined the need for sufficient RAM. All hardware requirements are justified from gameplay module needs \\ \hline
+7 & TA Feedback & Section 12 (Design of Communication Protocols): Function calls mentioned (e.g., "Update()", "FixedUpdate()") are not defined or mentioned elsewhere and feel unexplained. & Improved the descriptions of the purpose and functionality of the calls in the sections where they are mentioned \\ \hline
+8 & TA Feedback & Section 13.2 (Development Phases): Dates for each phase should be listed, and slime mold modules are missing from the timeline. & Timelines rewritten to encompass all game modules; deadlines are now based on expected feature module delivery dates and refinement timelines \\ \hline
+\end{xltabular}%
+
 \subsection{VnV Plan and Report}
 
 \begin{xltabular}{\textwidth}{|p{1.5cm}|p{2cm}|X|X|}
